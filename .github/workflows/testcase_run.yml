@@ -34,3 +34,6 @@ jobs:
         if: always()
         with:
           junit_files: 'build/test-results/**/*.xml'
+        permissions:
+          checks: write
+          security-events: write
