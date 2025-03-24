@@ -151,6 +151,9 @@ public class Schedule extends AuditingFields {
         List<LocalTime> workTimes = getUser().convertWorkTimeToLocalTime();
         LocalTime startTime = getStartDate().toLocalTime();
 
+        if (!getType().isVacationType()) { return true; }
+        if (getType().equals(ScheduleType.DAYOFF)) { return true; }
+
         return (startTime.isAfter(workTimes.get(0)) || startTime.equals(workTimes.get(0))) &&
                 (startTime.isBefore(workTimes.get(1)) || startTime.equals(workTimes.get(1)));
     }
