@@ -2,7 +2,7 @@ package com.lshdainty.myhr.service;
 
 import com.lshdainty.myhr.domain.Holiday;
 import com.lshdainty.myhr.domain.HolidayType;
-import com.lshdainty.myhr.repository.HolidayRepository;
+import com.lshdainty.myhr.repository.HolidayRepositoryImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -16,12 +16,12 @@ import java.util.Objects;
 @Slf4j
 @Transactional(readOnly = true)
 public class HolidayService {
-    private final HolidayRepository holidayRepository;
+    private final HolidayRepositoryImpl holidayRepositoryImpl;
 
     @Transactional
     public Long save(String name, String date, HolidayType type) {
         Holiday holiday = Holiday.createHoliday(name, date, type);
-        holidayRepository.save(holiday);
+        holidayRepositoryImpl.save(holiday);
         return holiday.getSeq();
     }
 
@@ -30,11 +30,11 @@ public class HolidayService {
     }
 
     public List<Holiday> findHolidays() {
-        return holidayRepository.findHolidays();
+        return holidayRepositoryImpl.findHolidays();
     }
 
     public List<Holiday> findHolidaysByType(HolidayType type) {
-        return holidayRepository.findHolidaysByType(type);
+        return holidayRepositoryImpl.findHolidaysByType(type);
     }
 
     @Transactional
@@ -46,11 +46,11 @@ public class HolidayService {
     @Transactional
     public void deleteHoliday(Long holidaySeq) {
         Holiday findHoliday = checkHolidayExist(holidaySeq);
-        holidayRepository.delete(findHoliday);
+        holidayRepositoryImpl.delete(findHoliday);
     }
 
     public Holiday checkHolidayExist(Long holidaySeq) {
-        Holiday findHoliday = holidayRepository.findHoliday(holidaySeq);
+        Holiday findHoliday = holidayRepositoryImpl.findHoliday(holidaySeq);
         if (Objects.isNull(findHoliday)) { throw new IllegalArgumentException("holiday not found"); }
         return findHoliday;
     }

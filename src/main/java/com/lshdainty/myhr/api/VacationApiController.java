@@ -1,22 +1,15 @@
 package com.lshdainty.myhr.api;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.lshdainty.myhr.domain.User;
 import com.lshdainty.myhr.domain.Vacation;
-import com.lshdainty.myhr.domain.VacationType;
 import com.lshdainty.myhr.dto.UserDto;
 import com.lshdainty.myhr.dto.VacationDto;
 import com.lshdainty.myhr.service.VacationService;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;

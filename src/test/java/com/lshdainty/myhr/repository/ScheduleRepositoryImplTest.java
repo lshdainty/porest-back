@@ -16,12 +16,12 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.*;
 
 @DataJpaTest
-@Import(ScheduleRepository.class)
+@Import(ScheduleRepositoryImpl.class)
 @Transactional
 @DisplayName("JPA 스케줄 레포지토리 테스트")
-public class ScheduleRepositoryTest {
+public class ScheduleRepositoryImplTest {
     @Autowired
-    private ScheduleRepository scheduleRepository;
+    private ScheduleRepositoryImpl scheduleRepositoryImpl;
 
     @Autowired
     private TestEntityManager em;
@@ -45,12 +45,12 @@ public class ScheduleRepositoryTest {
         Schedule schedule = Schedule.createSchedule(user, vacation, desc, type, start, end, 0L, "");
 
         // when
-        scheduleRepository.save(schedule);
+        scheduleRepositoryImpl.save(schedule);
         em.flush();
         em.clear();
 
         // then
-        Schedule findSchedule = scheduleRepository.findById(schedule.getId());
+        Schedule findSchedule = scheduleRepositoryImpl.findById(schedule.getId());
         assertThat(findSchedule).isNotNull();
         assertThat(findSchedule.getType()).isEqualTo(type);
         assertThat(findSchedule.getDesc()).isEqualTo(desc);
@@ -82,11 +82,11 @@ public class ScheduleRepositoryTest {
 
         for (int i = 0; i < descs.length; i++) {
             Schedule schedule = Schedule.createSchedule(user, vacation, descs[i], types[i], starts[i], ends[i], 0L, "");
-            scheduleRepository.save(schedule);
+            scheduleRepositoryImpl.save(schedule);
         }
 
         // when
-        List<Schedule> findSchedules = scheduleRepository.findSchedulesByUserNo(user.getId());
+        List<Schedule> findSchedules = scheduleRepositoryImpl.findSchedulesByUserNo(user.getId());
 
         // then
         assertThat(findSchedules.size()).isEqualTo(2);
@@ -124,11 +124,11 @@ public class ScheduleRepositoryTest {
 
         for (int i = 0; i < descs.length; i++) {
             Schedule schedule = Schedule.createSchedule(user, vacation, descs[i], types[i], starts[i], ends[i], 0L, "");
-            scheduleRepository.save(schedule);
+            scheduleRepositoryImpl.save(schedule);
         }
 
         // when
-        List<Schedule> findSchedules = scheduleRepository.findSchedulesByPeriod(
+        List<Schedule> findSchedules = scheduleRepositoryImpl.findSchedulesByPeriod(
                 LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0),
                 LocalDateTime.of(now.getYear(), 1, 4, 0, 0, 0)
         );
@@ -169,19 +169,19 @@ public class ScheduleRepositoryTest {
 
         for (int i = 0; i < descs.length; i++) {
             Schedule schedule = Schedule.createSchedule(user, vacation, descs[i], types[i], starts[i], ends[i], 0L, "");
-            scheduleRepository.save(schedule);
+            scheduleRepositoryImpl.save(schedule);
         }
 
         // when
-        List<Schedule> scheduleLeft = scheduleRepository.findSchedulesByPeriod(
+        List<Schedule> scheduleLeft = scheduleRepositoryImpl.findSchedulesByPeriod(
                 LocalDateTime.of(now.getYear(), 1, 2, 0, 0, 0),
                 LocalDateTime.of(now.getYear(), 1, 3, 0, 0, 0)
         );
-        List<Schedule> scheduleRight = scheduleRepository.findSchedulesByPeriod(
+        List<Schedule> scheduleRight = scheduleRepositoryImpl.findSchedulesByPeriod(
                 LocalDateTime.of(now.getYear(), 2, 1, 0, 0, 0),
                 LocalDateTime.of(now.getYear(), 2, 3, 0, 0, 0)
         );
-        List<Schedule> schedule = scheduleRepository.findSchedulesByPeriod(
+        List<Schedule> schedule = scheduleRepositoryImpl.findSchedulesByPeriod(
                 LocalDateTime.of(now.getYear(), 3, 27, 0, 0, 0),
                 LocalDateTime.of(now.getYear(), 3, 28, 0, 0, 0)
         );
@@ -230,11 +230,11 @@ public class ScheduleRepositoryTest {
 
         for (int i = 0; i < descs.length; i++) {
             Schedule schedule = Schedule.createSchedule(user, vacation, descs[i], types[i], starts[i], ends[i], 0L, "");
-            scheduleRepository.save(schedule);
+            scheduleRepositoryImpl.save(schedule);
         }
 
         // when
-        List<Schedule> schedules = scheduleRepository.findCountByVacation(vacation);
+        List<Schedule> schedules = scheduleRepositoryImpl.findCountByVacation(vacation);
 
         // then
         assertThat(schedules.size()).isEqualTo(4);

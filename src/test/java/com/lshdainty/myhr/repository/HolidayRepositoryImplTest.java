@@ -11,18 +11,16 @@ import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
-@Import(HolidayRepository.class)
+@Import(HolidayRepositoryImpl.class)
 @Transactional
 @DisplayName("JPA 공휴일 레포지토리 테스트")
-class HolidayRepositoryTest {
+class HolidayRepositoryImplTest {
     @Autowired
-    private HolidayRepository holidayRepository;
+    private HolidayRepositoryImpl holidayRepositoryImpl;
 
     @Autowired
     private TestEntityManager em;
@@ -38,12 +36,12 @@ class HolidayRepositoryTest {
         Holiday holiday = Holiday.createHoliday(name, date, type);
 
         // when
-        holidayRepository.save(holiday);
+        holidayRepositoryImpl.save(holiday);
         em.flush();
         em.clear();
 
         // then
-        Holiday findHoliday = holidayRepository.findHoliday(holiday.getSeq());
+        Holiday findHoliday = holidayRepositoryImpl.findHoliday(holiday.getSeq());
         assertThat(findHoliday).isNotNull();
         assertThat(findHoliday.getName()).isEqualTo(name);
         assertThat(findHoliday.getDate()).isEqualTo(date);
@@ -60,11 +58,11 @@ class HolidayRepositoryTest {
 
         for (int i = 0; i < names.length; i++) {
             Holiday holiday = Holiday.createHoliday(names[i], dates[i], types[i]);
-            holidayRepository.save(holiday);
+            holidayRepositoryImpl.save(holiday);
         }
 
         // when
-        List<Holiday> holidays = holidayRepository.findHolidays();
+        List<Holiday> holidays = holidayRepositoryImpl.findHolidays();
 
         // then
         assertThat(holidays.size()).isEqualTo(names.length);
@@ -84,11 +82,11 @@ class HolidayRepositoryTest {
 
         for (int i = 0; i < names.length; i++) {
             Holiday holiday = Holiday.createHoliday(names[i], dates[i], types[i]);
-            holidayRepository.save(holiday);
+            holidayRepositoryImpl.save(holiday);
         }
 
         // when
-        List<Holiday> holidays = holidayRepository.findHolidaysByStartEndDate("20241201", "20250131");
+        List<Holiday> holidays = holidayRepositoryImpl.findHolidaysByStartEndDate("20241201", "20250131");
 
         // then
         assertThat(holidays.size()).isEqualTo(1);
@@ -107,13 +105,13 @@ class HolidayRepositoryTest {
 
         for (int i = 0; i < names.length; i++) {
             Holiday holiday = Holiday.createHoliday(names[i], dates[i], types[i]);
-            holidayRepository.save(holiday);
+            holidayRepositoryImpl.save(holiday);
         }
 
         // when
-        List<Holiday> holidayLeft = holidayRepository.findHolidaysByStartEndDate("20250101", "20250504");
-        List<Holiday> holidayRight = holidayRepository.findHolidaysByStartEndDate("20250102", "20250505");
-        List<Holiday> holidayNo = holidayRepository.findHolidaysByStartEndDate("20250102", "20250504");
+        List<Holiday> holidayLeft = holidayRepositoryImpl.findHolidaysByStartEndDate("20250101", "20250504");
+        List<Holiday> holidayRight = holidayRepositoryImpl.findHolidaysByStartEndDate("20250102", "20250505");
+        List<Holiday> holidayNo = holidayRepositoryImpl.findHolidaysByStartEndDate("20250102", "20250504");
 
         // then
         assertThat(holidayLeft.size()).isEqualTo(1);
@@ -139,12 +137,12 @@ class HolidayRepositoryTest {
 
         for (int i = 0; i < names.length; i++) {
             Holiday holiday = Holiday.createHoliday(names[i], dates[i], types[i]);
-            holidayRepository.save(holiday);
+            holidayRepositoryImpl.save(holiday);
         }
 
         // when
-        List<Holiday> publics = holidayRepository.findHolidaysByType(HolidayType.PUBLIC);
-        List<Holiday> recommends = holidayRepository.findHolidaysByType(HolidayType.RECOMMEND);
+        List<Holiday> publics = holidayRepositoryImpl.findHolidaysByType(HolidayType.PUBLIC);
+        List<Holiday> recommends = holidayRepositoryImpl.findHolidaysByType(HolidayType.RECOMMEND);
 
         // then
         assertThat(publics.size()).isEqualTo(2);
@@ -160,15 +158,15 @@ class HolidayRepositoryTest {
         HolidayType type = HolidayType.PUBLIC;
 
         Holiday holiday = Holiday.createHoliday(name, date, type);
-        holidayRepository.save(holiday);
+        holidayRepositoryImpl.save(holiday);
 
         // when
-        holidayRepository.delete(holiday);
+        holidayRepositoryImpl.delete(holiday);
         em.flush();
         em.clear();
 
         // then
-        Holiday findHoliday = holidayRepository.findHoliday(holiday.getSeq());
+        Holiday findHoliday = holidayRepositoryImpl.findHoliday(holiday.getSeq());
         assertThat(findHoliday).isNull();
     }
 }

@@ -3,8 +3,8 @@ package com.lshdainty.myhr.service;
 import com.lshdainty.myhr.domain.User;
 import com.lshdainty.myhr.domain.Vacation;
 import com.lshdainty.myhr.domain.VacationType;
-import com.lshdainty.myhr.repository.UserRepository;
-import com.lshdainty.myhr.repository.VacationRepository;
+import com.lshdainty.myhr.repository.UserRepositoryImpl;
+import com.lshdainty.myhr.repository.VacationRepositoryImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,12 +20,12 @@ import java.util.Objects;
 @Slf4j
 @Transactional(readOnly = true)
 public class VacationService {
-    private final VacationRepository vacationRepository;
-    private final UserRepository userRepository;
+    private final VacationRepositoryImpl vacationRepositoryImpl;
+    private final UserRepositoryImpl userRepositoryImpl;
 
     @Transactional
     public Long addVacation(Long userNo, String name, String desc, VacationType type, BigDecimal grantTime, LocalDateTime occurDate, LocalDateTime expiryDate, Long addUserNo, String clientIP) {
-        User user = userRepository.findById(userNo);
+        User user = userRepositoryImpl.findById(userNo);
 
         if (Objects.isNull(user)) { throw new IllegalArgumentException("user not found"); }
 
@@ -33,22 +33,22 @@ public class VacationService {
 
         if (vacation.isBeforeOccur()) { throw new IllegalArgumentException("the expiration date is earlier than the occurrence date"); }
 
-        vacationRepository.save(vacation);
+        vacationRepositoryImpl.save(vacation);
 
         return vacation.getId();
     }
 
     public List<Vacation> findVacationsByUser(Long userNo) {
-        return vacationRepository.findVacationsByUserNo(userNo);
+        return vacationRepositoryImpl.findVacationsByUserNo(userNo);
     }
 
     public List<User> findVacationsByUserGroup() {
-        return userRepository.findUsersWithVacations();
+        return userRepositoryImpl.findUsersWithVacations();
     }
 
     @Transactional
     public Vacation editVacation(Long vacationId, Long userNo, String reqName, String reqDesc, VacationType reqType, BigDecimal reqGrantTime, LocalDateTime reqOccurDate, LocalDateTime reqExpiryDate, Long addUserNo, String clientIP) {
-        Vacation findVacation = vacationRepository.findById(vacationId);
+        Vacation findVacation = vacationRepositoryImpl.findById(vacationId);
 
         if (Objects.isNull(findVacation)) { throw new IllegalArgumentException("vacation not found"); }
 
@@ -70,7 +70,7 @@ public class VacationService {
         LocalDateTime expiryDate = null;
         if (Objects.isNull(reqExpiryDate)) { expiryDate = findVacation.getExpiryDate(); } else { expiryDate = reqExpiryDate; }
 
-        User user = userRepository.findById(userNo);
+        User user = userRepositoryImpl.findById(userNo);
 
         if (Objects.isNull(user)) { throw new IllegalArgumentException("user not found"); }
 
@@ -79,14 +79,14 @@ public class VacationService {
         if (newVacation.isBeforeOccur()) { throw new IllegalArgumentException("the expiration date is earlier than the occurrence date"); }
 
         findVacation.deleteVacation(addUserNo, clientIP);
-        vacationRepository.save(newVacation);
+        vacationRepositoryImpl.save(newVacation);
 
-        return vacationRepository.findById(newVacation.getId());
+        return vacationRepositoryImpl.findById(newVacation.getId());
     }
 
     @Transactional
     public void deleteVacation(Long vacationId, Long delUserNo, String clientIP) {
-        Vacation findVacation = vacationRepository.findById(vacationId);
+        Vacation findVacation = vacationRepositoryImpl.findById(vacationId);
 
         if (Objects.isNull(findVacation)) { throw new IllegalArgumentException("vacation not found"); }
 

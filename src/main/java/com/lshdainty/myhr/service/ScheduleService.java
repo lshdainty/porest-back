@@ -1,10 +1,10 @@
 package com.lshdainty.myhr.service;
 
 import com.lshdainty.myhr.domain.*;
-import com.lshdainty.myhr.repository.HolidayRepository;
-import com.lshdainty.myhr.repository.ScheduleRepository;
-import com.lshdainty.myhr.repository.UserRepository;
-import com.lshdainty.myhr.repository.VacationRepository;
+import com.lshdainty.myhr.repository.HolidayRepositoryImpl;
+import com.lshdainty.myhr.repository.ScheduleRepositoryImpl;
+import com.lshdainty.myhr.repository.UserRepositoryImpl;
+import com.lshdainty.myhr.repository.VacationRepositoryImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,21 +21,21 @@ import java.util.*;
 @Slf4j
 @Transactional(readOnly = true)
 public class ScheduleService {
-    private final ScheduleRepository scheduleRepository;
-    private final VacationRepository vacationRepository;
-    private final HolidayRepository holidayRepository;
-    private final UserRepository userRepository;
+    private final ScheduleRepositoryImpl scheduleRepositoryImpl;
+    private final VacationRepositoryImpl vacationRepositoryImpl;
+    private final HolidayRepositoryImpl holidayRepositoryImpl;
+    private final UserRepositoryImpl userRepositoryImpl;
 
     @Transactional
     public Long addSchedule(Long userNo, Long vacationId, ScheduleType type, String desc, LocalDateTime start, LocalDateTime end, Long addUserNo, String clientIP) {
         // 유저 조회
-        User user = userRepository.findById(userNo);
+        User user = userRepositoryImpl.findById(userNo);
 
         // 유저 없으면 에러 반환
         if (Objects.isNull(user) || user.getDelYN().equals("Y")) { throw new IllegalArgumentException("user not found"); }
 
         // 휴가 조회
-        Vacation vacation = vacationRepository.findById(vacationId);
+        Vacation vacation = vacationRepositoryImpl.findById(vacationId);
 
         // 사용하려는 휴가가 없으면 에러 반환
         if (Objects.isNull(vacation) || vacation.getDelYN().equals("Y")) { throw new IllegalArgumentException("vacation not found"); }
@@ -43,7 +43,7 @@ public class ScheduleService {
         if (vacation.getExpiryDate().isBefore(LocalDateTime.now())) { throw new IllegalArgumentException("this vacation has expired"); }
 
         // 이제까지 해당 휴가에 사용된 스케줄 리스트 가져오기
-        List<Schedule> findSchedules = scheduleRepository.findCountByVacation(vacation);
+        List<Schedule> findSchedules = scheduleRepositoryImpl.findCountByVacation(vacation);
 
         // 공휴일 리스트를 가져오기 위한 startDate 최소값 구하기
         int minStartDate = findSchedules.stream()
@@ -64,7 +64,7 @@ public class ScheduleService {
         log.debug("add schedule minStartDate : {}, maxEndDate : {}", minStartDate, maxEndDate);
 
         // 계산에 필요한 공휴일 리스트 가져오기
-        List<Holiday> holidays = holidayRepository.findHolidaysByStartEndDate(Integer.toString(minStartDate), Integer.toString(maxEndDate));
+        List<Holiday> holidays = holidayRepositoryImpl.findHolidaysByStartEndDate(Integer.toString(minStartDate), Integer.toString(maxEndDate));
 
         // 공휴일 리스트 타입 변경
         List<LocalDate> holidayDates = holidays.stream()
@@ -93,7 +93,7 @@ public class ScheduleService {
         if (!schedule.isBetweenWorkTime()) { throw new IllegalArgumentException("please match the start and end times to work time"); }
 
         // 휴가 등록
-        scheduleRepository.save(schedule);
+        scheduleRepositoryImpl.save(schedule);
 
         return schedule.getId();
     }
@@ -101,7 +101,7 @@ public class ScheduleService {
     @Transactional
     public Long addSchedule(Long userNo, ScheduleType type, String desc, LocalDateTime start, LocalDateTime end, Long addUserNo, String clientIP) {
         // 유저 조회
-        User user = userRepository.findById(userNo);
+        User user = userRepositoryImpl.findById(userNo);
 
         // 유저 없으면 에러 반환
         if (Objects.isNull(user) || user.getDelYN().equals("Y")) { throw new IllegalArgumentException("user not found"); }
@@ -109,18 +109,18 @@ public class ScheduleService {
         Schedule schedule = Schedule.createSchedule(user, null, desc, type, start, end, addUserNo, clientIP);
 
         // 휴가 등록
-        scheduleRepository.save(schedule);
+        scheduleRepositoryImpl.save(schedule);
 
         return schedule.getId();
     }
 
     public List<Schedule> findSchedulesByUserNo(Long userNo) {
-        return scheduleRepository.findSchedulesByUserNo(userNo);
+        return scheduleRepositoryImpl.findSchedulesByUserNo(userNo);
     }
 
     @Transactional
     public void deleteSchedule(Long scheduleId, Long delUserNo, String clientIP) {
-        Schedule schedule = scheduleRepository.findById(scheduleId);
+        Schedule schedule = scheduleRepositoryImpl.findById(scheduleId);
 
         if (Objects.isNull(schedule) || schedule.getDelYN().equals("Y")) { throw new IllegalArgumentException("schedule not found"); }
 
@@ -140,16 +140,12 @@ public class ScheduleService {
      * @return 스케줄의 실제 사용 시간 (휴가, 주말 등 제외)
      */
     public BigDecimal calculateRealUsed(Schedule schedule, List<LocalDate> holidays) {
-        BigDecimal used = new BigDecimal(0);
-
         List<LocalDate> dates = schedule.getBetweenDatesByDayOfWeek(new int[]{6, 7});
         dates.addAll(holidays);
         log.debug("calculateRealUse dates : {}", dates);
 
         List<LocalDate> results = schedule.removeAllDates(dates);
 
-        used = used.add(schedule.getType().convertToValue(results.size()));
-
-        return used;
+        return new BigDecimal(0).add(schedule.getType().convertToValue(results.size()));
     }
 }

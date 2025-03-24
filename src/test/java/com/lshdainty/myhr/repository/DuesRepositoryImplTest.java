@@ -15,12 +15,12 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.*;
 
 @DataJpaTest
-@Import(DuesRepository.class)
+@Import(DuesRepositoryImpl.class)
 @Transactional
 @DisplayName("JPA 회비 레포지토리 테스트")
-class DuesRepositoryTest {
+class DuesRepositoryImplTest {
     @Autowired
-    private DuesRepository duesRepository;
+    private DuesRepositoryImpl duesRepositoryImpl;
 
     @Autowired
     private TestEntityManager em;
@@ -38,12 +38,12 @@ class DuesRepositoryTest {
         Dues dues = Dues.createDues(userName, amount, type, date, detail);
 
         // when
-        duesRepository.save(dues);
+        duesRepositoryImpl.save(dues);
         em.flush();
         em.clear();
 
         // then
-        Dues findDues = duesRepository.findById(dues.getSeq());
+        Dues findDues = duesRepositoryImpl.findById(dues.getSeq());
         assertThat(findDues).isNotNull();
         assertThat(findDues.getUserName()).isEqualTo(userName);
         assertThat(findDues.getAmount()).isEqualTo(amount);
@@ -64,11 +64,11 @@ class DuesRepositoryTest {
 
         for (int i = 0; i < names.length; i++) {
             Dues dues = Dues.createDues(names[i], amounts[i], types[i], dates[i], details[i]);
-            duesRepository.save(dues);
+            duesRepositoryImpl.save(dues);
         }
 
         // when
-        List<Dues> dues = duesRepository.findDues();
+        List<Dues> dues = duesRepositoryImpl.findDues();
 
         // then
         assertThat(dues.size()).isEqualTo(names.length);
@@ -92,11 +92,11 @@ class DuesRepositoryTest {
 
         for (int i = 0; i < names.length; i++) {
             Dues dues = Dues.createDues(names[i], amounts[i], types[i], dates[i], details[i]);
-            duesRepository.save(dues);
+            duesRepositoryImpl.save(dues);
         }
 
         // when
-        List<Dues> dues = duesRepository.findDuesByYear("2025");
+        List<Dues> dues = duesRepositoryImpl.findDuesByYear("2025");
 
         // then
         assertThat(dues.size()).isEqualTo(2);
@@ -119,15 +119,15 @@ class DuesRepositoryTest {
         String detail = "1월 생일 회비";
 
         Dues dues = Dues.createDues(userName, amount, type, date, detail);
-        duesRepository.save(dues);
+        duesRepositoryImpl.save(dues);
 
         // when
-        duesRepository.delete(dues);
+        duesRepositoryImpl.delete(dues);
         em.flush();
         em.clear();
 
         // then
-        Dues findDues = duesRepository.findById(dues.getSeq());
+        Dues findDues = duesRepositoryImpl.findById(dues.getSeq());
         assertThat(findDues).isNull();
     }
 }

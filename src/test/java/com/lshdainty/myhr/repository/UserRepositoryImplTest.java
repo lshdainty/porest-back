@@ -18,12 +18,12 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.*;
 
 @DataJpaTest
-@Import(UserRepository.class)
+@Import(UserRepositoryImpl.class)
 @Transactional
 @DisplayName("JPA 유저 레포지토리 테스트")
-class UserRepositoryTest {
+class UserRepositoryImplTest {
     @Autowired
-    private UserRepository userRepository;
+    private UserRepositoryImpl userRepositoryImpl;
 
     @Autowired
     private TestEntityManager em;
@@ -41,12 +41,12 @@ class UserRepositoryTest {
         User user = User.createUser(name, birth, employ, workTime, lunarYN);
 
         // when
-        userRepository.save(user);
+        userRepositoryImpl.save(user);
         em.flush();
         em.clear();
 
         // then
-        User findUser = userRepository.findById(user.getId());
+        User findUser = userRepositoryImpl.findById(user.getId());
         assertThat(findUser).isNotNull();
         assertThat(findUser.getName()).isEqualTo(name);
         assertThat(findUser.getBirth()).isEqualTo(birth);
@@ -67,11 +67,11 @@ class UserRepositoryTest {
 
         for (int i = 0; i < names.length; i++) {
             User user = User.createUser(names[i], births[i], employs[i], workTimes[i], lunarYNs[i]);
-            userRepository.save(user);
+            userRepositoryImpl.save(user);
         }
 
         // when
-        List<User> users = userRepository.findUsers();
+        List<User> users = userRepositoryImpl.findUsers();
 
         // then
         assertThat(users.size()).isEqualTo(names.length);
@@ -93,7 +93,7 @@ class UserRepositoryTest {
         String lunarYN = "N";
 
         User user = User.createUser(name, birth, employ, workTime, lunarYN);
-        userRepository.save(user);
+        userRepositoryImpl.save(user);
 
         // when
         user.deleteUser();
@@ -101,7 +101,7 @@ class UserRepositoryTest {
         em.clear();
 
         // then
-        User findUser = userRepository.findById(user.getId());
+        User findUser = userRepositoryImpl.findById(user.getId());
         assertThat(findUser.getDelYN()).isEqualTo("Y");
     }
 
@@ -116,7 +116,7 @@ class UserRepositoryTest {
         String lunarYN = "N";
 
         User user = User.createUser(name, birth, employ, workTime, lunarYN);
-        userRepository.save(user);
+        userRepositoryImpl.save(user);
 
         name = "이서준";
         workTime = "10 ~ 7";
@@ -127,7 +127,7 @@ class UserRepositoryTest {
         em.clear();
 
         // then
-        User findUser = userRepository.findById(user.getId());
+        User findUser = userRepositoryImpl.findById(user.getId());
         assertThat(findUser.getName()).isEqualTo(name);
         assertThat(findUser.getBirth()).isEqualTo(birth);
         assertThat(findUser.getEmploy()).isEqualTo(employ);
@@ -142,9 +142,9 @@ class UserRepositoryTest {
         User userA = User.createUser("이서준", "19700723", "9 ~ 6", "ADMIN", "N");
         User userB = User.createUser("김서연", "19701026", "8 ~ 5", "BP", "N");
         User userC = User.createUser("김지후", "19740115", "10 ~ 7", "BP", "Y");
-        userRepository.save(userA);
-        userRepository.save(userB);
-        userRepository.save(userC);
+        userRepositoryImpl.save(userA);
+        userRepositoryImpl.save(userB);
+        userRepositoryImpl.save(userC);
 
         LocalDateTime now = LocalDateTime.now();
         em.persist(Vacation.createVacation(userA, "1분기 휴가", "", VacationType.BASIC, new BigDecimal("32"), LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59), LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0), 0L, "127.0.0.1"));
@@ -156,7 +156,7 @@ class UserRepositoryTest {
         userB.deleteUser();
 
         // when
-        List<User> users = userRepository.findUsersWithVacations();
+        List<User> users = userRepositoryImpl.findUsersWithVacations();
         int countA = 0;
         int countC = 0;
         for (User user : users) {

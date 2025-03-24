@@ -3,8 +3,8 @@ package com.lshdainty.myhr.service;
 import com.lshdainty.myhr.domain.User;
 import com.lshdainty.myhr.domain.Vacation;
 import com.lshdainty.myhr.domain.VacationType;
-import com.lshdainty.myhr.repository.UserRepository;
-import com.lshdainty.myhr.repository.VacationRepository;
+import com.lshdainty.myhr.repository.UserRepositoryImpl;
+import com.lshdainty.myhr.repository.VacationRepositoryImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,10 +28,10 @@ import static org.mockito.BDDMockito.*;
 @DisplayName("휴가 서비스 테스트")
 class VacationServiceTest {
     @Mock
-    private VacationRepository vacationRepository;
+    private VacationRepositoryImpl vacationRepositoryImpl;
 
     @Mock
-    private UserRepository userRepository;
+    private UserRepositoryImpl userRepositoryImpl;
 
     @InjectMocks
     private VacationService vacationService;
@@ -54,15 +54,15 @@ class VacationServiceTest {
         // Reflection을 사용하여 id 설정
         setUserNo(user, userNo);
 
-        given(userRepository.findById(userNo)).willReturn(user);
-        willDoNothing().given(vacationRepository).save(any(Vacation.class));
+        given(userRepositoryImpl.findById(userNo)).willReturn(user);
+        willDoNothing().given(vacationRepositoryImpl).save(any(Vacation.class));
 
         // When
         Long vacationId = vacationService.addVacation(userNo, name, desc, type, grantTime, occurDate, expiryDate, 0L, "127.0.0.1");
 
         // Then
-        then(userRepository).should().findById(userNo);
-        then(vacationRepository).should().save(any(Vacation.class));
+        then(userRepositoryImpl).should().findById(userNo);
+        then(vacationRepositoryImpl).should().save(any(Vacation.class));
     }
 
     @Test
@@ -77,13 +77,13 @@ class VacationServiceTest {
         LocalDateTime expiryDate = LocalDateTime.of(LocalDateTime.now().getYear(), 12, 31, 23, 59, 59);
 
         Long userNo = 900L;
-        given(userRepository.findById(userNo)).willReturn(null);
+        given(userRepositoryImpl.findById(userNo)).willReturn(null);
 
         // When & Then
         assertThrows(IllegalArgumentException.class, () ->
                 vacationService.addVacation(userNo, name, desc, type, grantTime, occurDate, expiryDate,0L, "127.0.0.1"));
-        then(userRepository).should().findById(userNo);
-        then(vacationRepository).should(never()).save(any(Vacation.class));
+        then(userRepositoryImpl).should().findById(userNo);
+        then(vacationRepositoryImpl).should(never()).save(any(Vacation.class));
     }
 
     @Test
@@ -102,13 +102,13 @@ class VacationServiceTest {
 
         // Reflection을 사용하여 id 설정
         setUserNo(user, userNo);
-        given(userRepository.findById(userNo)).willReturn(user);
+        given(userRepositoryImpl.findById(userNo)).willReturn(user);
 
         // When & Then
         assertThrows(IllegalArgumentException.class, () ->
                 vacationService.addVacation(userNo, name, desc, type, grantTime, occurDate, expiryDate,0L, "127.0.0.1"));
-        then(userRepository).should().findById(userNo);
-        then(vacationRepository).should(never()).save(any(Vacation.class));
+        then(userRepositoryImpl).should().findById(userNo);
+        then(vacationRepositoryImpl).should(never()).save(any(Vacation.class));
     }
 
     @Test
@@ -119,7 +119,7 @@ class VacationServiceTest {
         User user = User.createUser("이서준", "19700723", "9 ~ 6", "ADMIN", "N");
 
         LocalDateTime now = LocalDateTime.now();
-        given(vacationRepository.findVacationsByUserNo(userNo)).willReturn(List.of(
+        given(vacationRepositoryImpl.findVacationsByUserNo(userNo)).willReturn(List.of(
                 Vacation.createVacation(user, "정기 휴가", "25년 1분기 정기 휴가", VacationType.BASIC, new BigDecimal("32"), LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0), LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59), 0L, "127.0.0.1"),
                 Vacation.createVacation(user, "출산 휴가", "출산 추가 휴가 부여", VacationType.ADDED, new BigDecimal("80"), LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0, 0, 0), LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 23, 59, 59).plusMonths(6), 0L, "127.0.0.1"),
                 Vacation.createVacation(user, "OT 정산", "월마감 지원", VacationType.ADDED, new BigDecimal("3"), LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0), LocalDateTime.of(2025, 1, 31, 23, 59, 59), 0L, "127.0.0.1")
@@ -129,7 +129,7 @@ class VacationServiceTest {
         List<Vacation> vacations = vacationService.findVacationsByUser(userNo);
 
         // Then
-        then(vacationRepository).should().findVacationsByUserNo(userNo);
+        then(vacationRepositoryImpl).should().findVacationsByUserNo(userNo);
         assertThat(vacations).hasSize(3);
         assertThat(vacations)
                 .extracting("name")
@@ -141,13 +141,13 @@ class VacationServiceTest {
     void findVacationsByUserEmptyResultTest() {
         // Given
         Long userNo = 1L;
-        given(vacationRepository.findVacationsByUserNo(userNo)).willReturn(Collections.emptyList());
+        given(vacationRepositoryImpl.findVacationsByUserNo(userNo)).willReturn(Collections.emptyList());
 
         // When
         List<Vacation> vacations = vacationService.findVacationsByUser(userNo);
 
         // Then
-        then(vacationRepository).should().findVacationsByUserNo(userNo);
+        then(vacationRepositoryImpl).should().findVacationsByUserNo(userNo);
         assertThat(vacations).isEmpty();
     }
 
@@ -165,7 +165,7 @@ class VacationServiceTest {
         Vacation v3 = Vacation.createVacation(userA, "OT 정산", "월마감 지원", VacationType.ADDED, new BigDecimal("3"), LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0), LocalDateTime.of(2025, 1, 31, 23, 59, 59), 0L, "127.0.0.1");
         Vacation v4 = Vacation.createVacation(userB, "정기 휴가", "25년 1분기 정기 휴가", VacationType.BASIC, new BigDecimal("32"), LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0), LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59), 0L, "127.0.0.1");
 
-        given(userRepository.findUsersWithVacations()).willReturn(List.of(
+        given(userRepositoryImpl.findUsersWithVacations()).willReturn(List.of(
                 userA, userB, userC
         ));
 
@@ -173,7 +173,7 @@ class VacationServiceTest {
         List<User> users = vacationService.findVacationsByUserGroup();
 
         // Then
-        then(userRepository).should().findUsersWithVacations();
+        then(userRepositoryImpl).should().findUsersWithVacations();
         assertThat(users).hasSize(3);
         assertThat(users)
                 .filteredOn(u -> u.getName().equals("이서준"))
@@ -209,19 +209,19 @@ class VacationServiceTest {
         Long newVacationId = 2L;
         setVacationId(newVacation, newVacationId);
 
-        given(vacationRepository.findById(oldVacationId)).willReturn(oldVacation);
-        given(userRepository.findById(userNo)).willReturn(user);
-        willDoNothing().given(vacationRepository).save(any(Vacation.class));
-        given(vacationRepository.findById(null)).willReturn(newVacation);
+        given(vacationRepositoryImpl.findById(oldVacationId)).willReturn(oldVacation);
+        given(userRepositoryImpl.findById(userNo)).willReturn(user);
+        willDoNothing().given(vacationRepositoryImpl).save(any(Vacation.class));
+        given(vacationRepositoryImpl.findById(null)).willReturn(newVacation);
 
         // When
         Vacation result = vacationService.editVacation(oldVacationId, userNo, null, null, null,
                 newGrantTime, null, null, 0L, "127.0.0.1");
 
         // Then
-        then(vacationRepository).should().findById(oldVacationId);
-        then(userRepository).should().findById(userNo);
-        then(vacationRepository).should().save(any(Vacation.class));
+        then(vacationRepositoryImpl).should().findById(oldVacationId);
+        then(userRepositoryImpl).should().findById(userNo);
+        then(vacationRepositoryImpl).should().save(any(Vacation.class));
 
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(newVacationId);
@@ -239,14 +239,14 @@ class VacationServiceTest {
         // Given
         Long vacationId = 900L;
         Long userNo = 1L;
-        given(vacationRepository.findById(vacationId)).willReturn(null);
+        given(vacationRepositoryImpl.findById(vacationId)).willReturn(null);
 
         // When & Then
         assertThrows(IllegalArgumentException.class, () ->
                 vacationService.editVacation(vacationId, userNo, null, null, null, new BigDecimal("24"), null, null, 0L, "127.0.0.1"));
 
-        then(vacationRepository).should().findById(vacationId);
-        then(userRepository).should(never()).findById(any(Long.class));
+        then(vacationRepositoryImpl).should().findById(vacationId);
+        then(userRepositoryImpl).should(never()).findById(any(Long.class));
     }
 
     @Test
@@ -267,15 +267,15 @@ class VacationServiceTest {
         Long oldVacationId = 1L;
         setVacationId(oldVacation, oldVacationId);
 
-        given(vacationRepository.findById(oldVacationId)).willReturn(oldVacation);
-        given(userRepository.findById(userNo)).willReturn(null);
+        given(vacationRepositoryImpl.findById(oldVacationId)).willReturn(oldVacation);
+        given(userRepositoryImpl.findById(userNo)).willReturn(null);
 
         // When & Then
         assertThrows(IllegalArgumentException.class, () ->
                 vacationService.editVacation(oldVacationId, userNo, null, null, null, new BigDecimal("24"), null, null, 0L, "127.0.0.1"));
 
-        then(vacationRepository).should().findById(oldVacationId);
-        then(userRepository).should().findById(userNo);
+        then(vacationRepositoryImpl).should().findById(oldVacationId);
+        then(userRepositoryImpl).should().findById(userNo);
     }
 
     @Test
@@ -296,16 +296,16 @@ class VacationServiceTest {
         Long oldVacationId = 1L;
         setVacationId(oldVacation, oldVacationId);
 
-        given(vacationRepository.findById(oldVacationId)).willReturn(oldVacation);
-        given(userRepository.findById(userNo)).willReturn(null);
+        given(vacationRepositoryImpl.findById(oldVacationId)).willReturn(oldVacation);
+        given(userRepositoryImpl.findById(userNo)).willReturn(null);
 
         // When & Then
         assertThrows(IllegalArgumentException.class, () ->
                 vacationService.editVacation(oldVacationId, userNo, null, null, null, new BigDecimal("24"), LocalDateTime.of(LocalDateTime.now().getYear(), 12, 31, 23, 59, 59), LocalDateTime.of(LocalDateTime.now().getYear(), 1, 1, 0, 0, 0), 0L, "127.0.0.1"));
 
-        then(vacationRepository).should().findById(oldVacationId);
-        then(userRepository).should().findById(userNo);
-        then(vacationRepository).should(never()).save(any(Vacation.class));
+        then(vacationRepositoryImpl).should().findById(oldVacationId);
+        then(userRepositoryImpl).should().findById(userNo);
+        then(vacationRepositoryImpl).should(never()).save(any(Vacation.class));
     }
 
     @Test
@@ -323,13 +323,13 @@ class VacationServiceTest {
         LocalDateTime expiryDate = LocalDateTime.of(LocalDateTime.now().getYear(), 12, 31, 23, 59, 59);
         Vacation vacation = Vacation.createVacation(user, name, desc, type, oldGrantTime, occurDate, expiryDate, 0L, "127.0.0.1");
 
-        given(vacationRepository.findById(vacationId)).willReturn(vacation);
+        given(vacationRepositoryImpl.findById(vacationId)).willReturn(vacation);
 
         // When
         vacationService.deleteVacation(vacationId, 0L, "127.0.0.1");
 
         // Then
-        then(vacationRepository).should().findById(vacationId);
+        then(vacationRepositoryImpl).should().findById(vacationId);
         assertThat(vacation.getDelYN()).isEqualTo("Y");
     }
 
@@ -339,13 +339,13 @@ class VacationServiceTest {
         // Given
         Long vacationId = 900L;
 
-        given(vacationRepository.findById(vacationId)).willReturn(null);
+        given(vacationRepositoryImpl.findById(vacationId)).willReturn(null);
 
         // When & Then
         assertThrows(IllegalArgumentException.class, () ->
                 vacationService.deleteVacation(vacationId, 0L, "127.0.0.1"));
 
-        then(vacationRepository).should().findById(vacationId);
+        then(vacationRepositoryImpl).should().findById(vacationId);
     }
 
     // 테스트 헬퍼 메서드

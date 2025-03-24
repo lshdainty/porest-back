@@ -1,7 +1,7 @@
 package com.lshdainty.myhr.service;
 
 import com.lshdainty.myhr.domain.User;
-import com.lshdainty.myhr.repository.UserRepository;
+import com.lshdainty.myhr.repository.UserRepositoryImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,12 +15,12 @@ import java.util.Objects;
 @Slf4j
 @Transactional(readOnly = true)
 public class UserService {
-    private final UserRepository userRepository;
+    private final UserRepositoryImpl userRepositoryImpl;
 
     @Transactional
     public Long join(String name, String birth, String employ, String workTime, String lunar) {
         User user = User.createUser(name, birth, employ, workTime, lunar);
-        userRepository.save(user);
+        userRepositoryImpl.save(user);
         return user.getId();
     }
 
@@ -29,7 +29,7 @@ public class UserService {
     }
 
     public List<User> findUsers() {
-        return userRepository.findUsers();
+        return userRepositoryImpl.findUsers();
     }
 
     @Transactional
@@ -45,7 +45,7 @@ public class UserService {
     }
 
     public User checkUserExist(Long userId) {
-        User findUser = userRepository.findById(userId);
+        User findUser = userRepositoryImpl.findById(userId);
         if (Objects.isNull(findUser) || findUser.getDelYN().equals("Y")) { throw new IllegalArgumentException("user not found"); }
         return findUser;
     }

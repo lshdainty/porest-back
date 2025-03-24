@@ -18,12 +18,12 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@Import(VacationRepository.class)
+@Import(VacationRepositoryImpl.class)
 @Transactional
 @DisplayName("JPA 휴가 레포지토리 테스트")
-public class VacationRepositoryTest {
+public class VacationRepositoryImplTest {
     @Autowired
-    private VacationRepository vacationRepository;
+    private VacationRepositoryImpl vacationRepositoryImpl;
 
     @Autowired
     private EntityManager em;
@@ -46,12 +46,12 @@ public class VacationRepositoryTest {
         Vacation vacation = Vacation.createVacation(user, name, desc, type, grantTime, occurDate, expiryDate, 0L, "");
 
         // when
-        vacationRepository.save(vacation);
+        vacationRepositoryImpl.save(vacation);
         em.flush();
         em.clear();
 
         // then
-        Vacation findVacation = vacationRepository.findById(vacation.getId());
+        Vacation findVacation = vacationRepositoryImpl.findById(vacation.getId());
         assertThat(findVacation).isNotNull();
         assertThat(findVacation.getUser().getId()).isEqualTo(user.getId());
         assertThat(findVacation.getName()).isEqualTo(name);
@@ -85,11 +85,11 @@ public class VacationRepositoryTest {
 
         for (int i = 0; i < names.length; i++) {
             Vacation vacation = Vacation.createVacation(user, names[i], descs[i], types[i], grantTimes[i], occurDates[i], expiryDates[i], 0L, "");
-            vacationRepository.save(vacation);
+            vacationRepositoryImpl.save(vacation);
         }
 
         // when
-        List<Vacation> vacations = vacationRepository.findVacationsByUserNo(user.getId());
+        List<Vacation> vacations = vacationRepositoryImpl.findVacationsByUserNo(user.getId());
 
         // then
         assertThat(vacations.size()).isEqualTo(2);
@@ -124,11 +124,11 @@ public class VacationRepositoryTest {
 
         for (int i = 0; i < names.length; i++) {
             Vacation vacation = Vacation.createVacation(user, names[i], descs[i], types[i], grantTimes[i], occurDates[i], expiryDates[i], 0L, "");
-            vacationRepository.save(vacation);
+            vacationRepositoryImpl.save(vacation);
         }
 
         // when
-        List<Vacation> vacations = vacationRepository.findVacationsByYear(String.valueOf(now.getYear()));
+        List<Vacation> vacations = vacationRepositoryImpl.findVacationsByYear(String.valueOf(now.getYear()));
 
         // then
         assertThat(vacations).hasSize(1);
@@ -160,11 +160,11 @@ public class VacationRepositoryTest {
 
         for (int i = 0; i < names.length; i++) {
             Vacation vacation = Vacation.createVacation(user, names[i], descs[i], types[i], grantTimes[i], occurDates[i], expiryDates[i], 0L, "");
-            vacationRepository.save(vacation);
+            vacationRepositoryImpl.save(vacation);
         }
 
         // when
-        List<Vacation> vacations = vacationRepository.findVacationByParameterTime(user.getId(), now);
+        List<Vacation> vacations = vacationRepositoryImpl.findVacationByParameterTime(user.getId(), now);
 
         // then
         assertThat(vacations).hasSize(1);
@@ -189,7 +189,7 @@ public class VacationRepositoryTest {
         LocalDateTime expiryDate = LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59);
 
         Vacation vacation = Vacation.createVacation(user, name, desc, type, grantTime, occurDate, expiryDate, 0L, "");
-        vacationRepository.save(vacation);
+        vacationRepositoryImpl.save(vacation);
 
         // when
         vacation.deleteVacation(0L, "");
@@ -197,7 +197,7 @@ public class VacationRepositoryTest {
         em.clear();
 
         // then
-        Vacation findVacation = vacationRepository.findById(vacation.getId());
+        Vacation findVacation = vacationRepositoryImpl.findById(vacation.getId());
         assertThat(findVacation.getDelYN()).isEqualTo("Y");
     }
 }

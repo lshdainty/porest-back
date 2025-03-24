@@ -1,7 +1,7 @@
 package com.lshdainty.myhr.service;
 
 import com.lshdainty.myhr.domain.User;
-import com.lshdainty.myhr.repository.UserRepository;
+import com.lshdainty.myhr.repository.UserRepositoryImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ import static org.mockito.BDDMockito.*;
 @DisplayName("유저 서비스 테스트")
 class UserServiceTest {
     @Mock
-    private UserRepository userRepository;
+    private UserRepositoryImpl userRepositoryImpl;
 
     @InjectMocks
     private UserService userService;
@@ -36,13 +36,13 @@ class UserServiceTest {
         String workTime = "9 ~ 6";
         String employ = "ADMIN";
         String lunar = "N";
-        willDoNothing().given(userRepository).save(any(User.class));
+        willDoNothing().given(userRepositoryImpl).save(any(User.class));
 
         // when
         Long userId = userService.join(name, birth, employ, workTime, lunar);
 
         // then
-        then(userRepository).should().save(any(User.class));
+        then(userRepositoryImpl).should().save(any(User.class));
     }
 
     @Test
@@ -66,13 +66,13 @@ class UserServiceTest {
             e.printStackTrace();
         }
 
-        given(userRepository.findById(id)).willReturn(user);
+        given(userRepositoryImpl.findById(id)).willReturn(user);
 
         // when
-        User findUser = userRepository.findById(id);
+        User findUser = userRepositoryImpl.findById(id);
 
         // then
-        then(userRepository).should().findById(id);
+        then(userRepositoryImpl).should().findById(id);
         assertThat(findUser).isNotNull();
         assertThat(findUser.getId()).isEqualTo(id);
         assertThat(findUser.getName()).isEqualTo(name);
@@ -88,19 +88,19 @@ class UserServiceTest {
     void findUserFailTest() {
         // given
         Long id = 900L;
-        given(userRepository.findById(id)).willReturn(null);
+        given(userRepositoryImpl.findById(id)).willReturn(null);
 
         // when, then
         assertThrows(IllegalArgumentException.class,
                 () -> userService.findUser(id));
-        then(userRepository).should().findById(id);
+        then(userRepositoryImpl).should().findById(id);
     }
 
     @Test
     @DisplayName("전체 유저 조회 테스트 - 성공")
     void findUsersSuccessTest() {
         // given
-        given(userRepository.findUsers()).willReturn(List.of(
+        given(userRepositoryImpl.findUsers()).willReturn(List.of(
                 User.createUser("이서준", "19700723", "ADMIN", "9 ~ 6", "N"),
                 User.createUser("김서연", "19701026", "BP", "8 ~ 5", "N"),
                 User.createUser("김지후", "19740115", "BP", "10 ~ 7", "Y")
@@ -110,7 +110,7 @@ class UserServiceTest {
         List<User> findUsers = userService.findUsers();
 
         // then
-        then(userRepository).should().findUsers();
+        then(userRepositoryImpl).should().findUsers();
         assertThat(findUsers).hasSize(3);
         assertThat(findUsers)
                 .extracting(User::getName)
@@ -137,7 +137,7 @@ class UserServiceTest {
             e.printStackTrace();
         }
 
-        given(userRepository.findById(id)).willReturn(user);
+        given(userRepositoryImpl.findById(id)).willReturn(user);
 
         // when
         name = "이하은";
@@ -145,7 +145,7 @@ class UserServiceTest {
         userService.editUser(id, name, null, null, workTime, null);
 
         // then
-        then(userRepository).should().findById(id);
+        then(userRepositoryImpl).should().findById(id);
         assertThat(user.getId()).isEqualTo(id);
         assertThat(user.getName()).isEqualTo(name);
         assertThat(user.getBirth()).isEqualTo(birth);
@@ -159,12 +159,12 @@ class UserServiceTest {
     void editUserFailTest() {
         // given
         Long id = 900L;
-        given(userRepository.findById(id)).willReturn(null);
+        given(userRepositoryImpl.findById(id)).willReturn(null);
 
         // when & then
         assertThrows(IllegalArgumentException.class,
                 () -> userService.editUser(id, "이하은", null, null, null, null));
-        then(userRepository).should().findById(id);
+        then(userRepositoryImpl).should().findById(id);
     }
 
     @Test
@@ -187,13 +187,13 @@ class UserServiceTest {
             e.printStackTrace();
         }
 
-        given(userRepository.findById(id)).willReturn(user);
+        given(userRepositoryImpl.findById(id)).willReturn(user);
 
         // when
         userService.deleteUser(id);
 
         // then
-        then(userRepository).should().findById(id);
+        then(userRepositoryImpl).should().findById(id);
         assertThat(user.getDelYN()).isEqualTo("Y");
     }
 
@@ -202,11 +202,11 @@ class UserServiceTest {
     void deleteUserFailTest() {
         // given
         Long id = 900L;
-        given(userRepository.findById(id)).willReturn(null);
+        given(userRepositoryImpl.findById(id)).willReturn(null);
 
         // when & then
         assertThrows(IllegalArgumentException.class,
                 () -> userService.deleteUser(id));
-        then(userRepository).should().findById(id);
+        then(userRepositoryImpl).should().findById(id);
     }
 }

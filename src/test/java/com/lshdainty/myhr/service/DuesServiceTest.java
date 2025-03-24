@@ -3,7 +3,7 @@ package com.lshdainty.myhr.service;
 
 import com.lshdainty.myhr.domain.Dues;
 import com.lshdainty.myhr.domain.DuesType;
-import com.lshdainty.myhr.repository.DuesRepository;
+import com.lshdainty.myhr.repository.DuesRepositoryImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,7 +24,7 @@ import static org.mockito.BDDMockito.*;
 @DisplayName("회비 서비스 테스트")
 class DuesServiceTest {
     @Mock
-    private DuesRepository duesRepository;
+    private DuesRepositoryImpl duesRepositoryImpl;
 
     @InjectMocks
     private DuesService duesService;
@@ -38,20 +38,20 @@ class DuesServiceTest {
         DuesType type = DuesType.PLUS;
         String date = "20250101";
         String detail = "1월 회비";
-        willDoNothing().given(duesRepository).save(any(Dues.class));
+        willDoNothing().given(duesRepositoryImpl).save(any(Dues.class));
 
         // When
         Long duesSeq = duesService.save(userName, amount, type, date, detail);
 
         // Then
-        then(duesRepository).should().save(any(Dues.class));
+        then(duesRepositoryImpl).should().save(any(Dues.class));
     }
 
     @Test
     @DisplayName("전체 회비 조회 테스트 - 성공 (시간 정렬)")
     void findDuesSuccessTest() {
         // Given
-        given(duesRepository.findDues()).willReturn(List.of(
+        given(duesRepositoryImpl.findDues()).willReturn(List.of(
                 Dues.createDues("이서준", 50000, DuesType.PLUS, "20250101", "1월 회비"),
                 Dues.createDues("김서연", 10000, DuesType.PLUS, "20250101", "1월 회비"),
                 Dues.createDues("김지후", 10000, DuesType.PLUS, "20250101", "1월 회비")
@@ -61,7 +61,7 @@ class DuesServiceTest {
         List<Dues> duesList = duesService.findDues();
 
         // Then
-        then(duesRepository).should().findDues();
+        then(duesRepositoryImpl).should().findDues();
         assertThat(duesList).hasSize(3);
         // date 기준 order by이므로 순서 중요
         assertThat(duesList)
@@ -77,7 +77,7 @@ class DuesServiceTest {
     void findDuesByYearSuccessTest() {
         // Given
         String year = "2025";
-        given(duesRepository.findDuesByYear(year)).willReturn(List.of(
+        given(duesRepositoryImpl.findDuesByYear(year)).willReturn(List.of(
                 Dues.createDues("이서준", 50000, DuesType.PLUS, "20250101", "1월 회비"),
                 Dues.createDues("김서연", 10000, DuesType.PLUS, "20250101", "1월 회비"),
                 Dues.createDues("김지후", 10000, DuesType.PLUS, "20250101", "1월 회비")
@@ -87,7 +87,7 @@ class DuesServiceTest {
         List<Dues> duesList = duesService.findDuesByYear(year);
 
         // Then
-        then(duesRepository).should().findDuesByYear(year);
+        then(duesRepositoryImpl).should().findDuesByYear(year);
         assertThat(duesList).hasSize(3);
         assertThat(duesList)
                 .extracting("date")
@@ -110,15 +110,15 @@ class DuesServiceTest {
             e.printStackTrace();
         }
 
-        given(duesRepository.findById(seq)).willReturn(dues);
-        willDoNothing().given(duesRepository).delete(dues);
+        given(duesRepositoryImpl.findById(seq)).willReturn(dues);
+        willDoNothing().given(duesRepositoryImpl).delete(dues);
 
         // When
         duesService.deleteDues(seq);
 
         // Then
-        then(duesRepository).should().findById(seq);
-        then(duesRepository).should().delete(dues);
+        then(duesRepositoryImpl).should().findById(seq);
+        then(duesRepositoryImpl).should().delete(dues);
     }
 
     @Test
@@ -126,11 +126,11 @@ class DuesServiceTest {
     void deleteDuesFailTest() {
         // Given
         Long seq = 900L;
-        given(duesRepository.findById(seq)).willReturn(null);
+        given(duesRepositoryImpl.findById(seq)).willReturn(null);
 
         // When & Then
         assertThrows(IllegalArgumentException.class, () -> duesService.deleteDues(seq));
-        then(duesRepository).should().findById(seq);
-        then(duesRepository).should(never()).delete(any(Dues.class));
+        then(duesRepositoryImpl).should().findById(seq);
+        then(duesRepositoryImpl).should(never()).delete(any(Dues.class));
     }
 }

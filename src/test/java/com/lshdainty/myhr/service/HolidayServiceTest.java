@@ -2,7 +2,7 @@ package com.lshdainty.myhr.service;
 
 import com.lshdainty.myhr.domain.Holiday;
 import com.lshdainty.myhr.domain.HolidayType;
-import com.lshdainty.myhr.repository.HolidayRepository;
+import com.lshdainty.myhr.repository.HolidayRepositoryImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,7 @@ import static org.mockito.BDDMockito.*;
 @DisplayName("공휴일 서비스 테스트")
 class HolidayServiceTest {
     @Mock
-    private HolidayRepository holidayRepository;
+    private HolidayRepositoryImpl holidayRepositoryImpl;
 
     @InjectMocks
     private HolidayService holidayService;
@@ -35,13 +35,13 @@ class HolidayServiceTest {
         String name = "신정";
         String date = "20250101";
         HolidayType type = HolidayType.PUBLIC;
-        willDoNothing().given(holidayRepository).save(any(Holiday.class));
+        willDoNothing().given(holidayRepositoryImpl).save(any(Holiday.class));
 
         // When
         Long savedSeq = holidayService.save(name, date, type);
 
         // Then
-        then(holidayRepository).should().save(any(Holiday.class));
+        then(holidayRepositoryImpl).should().save(any(Holiday.class));
     }
 
     @Test
@@ -63,13 +63,13 @@ class HolidayServiceTest {
             e.printStackTrace();
         }
 
-        given(holidayRepository.findHoliday(seq)).willReturn(holiday);
+        given(holidayRepositoryImpl.findHoliday(seq)).willReturn(holiday);
 
         // When
         Holiday findHoliday = holidayService.findHoliday(seq);
 
         // Then
-        then(holidayRepository).should().findHoliday(seq);
+        then(holidayRepositoryImpl).should().findHoliday(seq);
         assertThat(findHoliday).isNotNull();
         assertThat(findHoliday.getSeq()).isEqualTo(seq);
         assertThat(findHoliday.getName()).isEqualTo(name);
@@ -82,18 +82,18 @@ class HolidayServiceTest {
     void findHolidayFailTest() {
         // Given
         Long seq = 900L;
-        given(holidayRepository.findHoliday(seq)).willReturn(null);
+        given(holidayRepositoryImpl.findHoliday(seq)).willReturn(null);
 
         // When & Then
         assertThrows(IllegalArgumentException.class, () -> holidayService.findHoliday(seq));
-        then(holidayRepository).should().findHoliday(seq);
+        then(holidayRepositoryImpl).should().findHoliday(seq);
     }
 
     @Test
     @DisplayName("전체 휴일 조회 테스트 - 성공 (시간 정렬)")
     void findHolidaysSuccessTest() {
         // Given
-        given(holidayRepository.findHolidays()).willReturn(List.of(
+        given(holidayRepositoryImpl.findHolidays()).willReturn(List.of(
                 Holiday.createHoliday("신정", "20250101", HolidayType.PUBLIC),
                 Holiday.createHoliday("설날", "20250129", HolidayType.PUBLIC),
                 Holiday.createHoliday("권장휴가", "20250131", HolidayType.RECOMMEND)
@@ -103,7 +103,7 @@ class HolidayServiceTest {
         List<Holiday> holidays = holidayService.findHolidays();
 
         // Then
-        then(holidayRepository).should().findHolidays();
+        then(holidayRepositoryImpl).should().findHolidays();
         assertThat(holidays).hasSize(3);
         // date 기준 order by이므로 순서 중요
         assertThat(holidays)
@@ -116,7 +116,7 @@ class HolidayServiceTest {
     void findHolidaysByTypeTest() {
         // Given
         HolidayType type = HolidayType.RECOMMEND;
-        given(holidayRepository.findHolidaysByType(type)).willReturn(List.of(
+        given(holidayRepositoryImpl.findHolidaysByType(type)).willReturn(List.of(
                 Holiday.createHoliday("권장휴가", "20250131", HolidayType.RECOMMEND)
         ));
 
@@ -124,7 +124,7 @@ class HolidayServiceTest {
         List<Holiday> findHolidays = holidayService.findHolidaysByType(type);
 
         // Then
-        then(holidayRepository).should().findHolidaysByType(type);
+        then(holidayRepositoryImpl).should().findHolidaysByType(type);
         assertThat(findHolidays).hasSize(1);
         assertThat(findHolidays).extracting("type").containsOnly(type);
     }
@@ -148,7 +148,7 @@ class HolidayServiceTest {
             e.printStackTrace();
         }
 
-        given(holidayRepository.findHoliday(seq)).willReturn(holiday);
+        given(holidayRepositoryImpl.findHoliday(seq)).willReturn(holiday);
 
         // When
         name = "임시공휴일";
@@ -156,7 +156,7 @@ class HolidayServiceTest {
         holidayService.editHoliday(seq, name, date, null);
 
         // Then
-        then(holidayRepository).should().findHoliday(seq);
+        then(holidayRepositoryImpl).should().findHoliday(seq);
         assertThat(holiday.getSeq()).isEqualTo(seq);
         assertThat(holiday.getName()).isEqualTo(name);
         assertThat(holiday.getDate()).isEqualTo(date);
@@ -169,12 +169,12 @@ class HolidayServiceTest {
         // Given
         Long seq = 900L;
         String name = "신정";
-        given(holidayRepository.findHoliday(seq)).willReturn(null);
+        given(holidayRepositoryImpl.findHoliday(seq)).willReturn(null);
 
         // When & Then
         assertThrows(IllegalArgumentException.class,
                 () -> holidayService.editHoliday(seq, name, null, null));
-        then(holidayRepository).should().findHoliday(seq);
+        then(holidayRepositoryImpl).should().findHoliday(seq);
     }
 
     @Test
@@ -196,15 +196,15 @@ class HolidayServiceTest {
             e.printStackTrace();
         }
 
-        given(holidayRepository.findHoliday(seq)).willReturn(holiday);
-        willDoNothing().given(holidayRepository).delete(holiday);
+        given(holidayRepositoryImpl.findHoliday(seq)).willReturn(holiday);
+        willDoNothing().given(holidayRepositoryImpl).delete(holiday);
 
         // When
         holidayService.deleteHoliday(seq);
 
         // Then
-        then(holidayRepository).should().findHoliday(seq);
-        then(holidayRepository).should().delete(holiday);
+        then(holidayRepositoryImpl).should().findHoliday(seq);
+        then(holidayRepositoryImpl).should().delete(holiday);
     }
 
     @Test
@@ -212,12 +212,12 @@ class HolidayServiceTest {
     void deleteHolidayFailTest() {
         // Given
         Long seq = 900L;
-        given(holidayRepository.findHoliday(seq)).willReturn(null);
+        given(holidayRepositoryImpl.findHoliday(seq)).willReturn(null);
 
         // When & Then
         assertThrows(IllegalArgumentException.class,
                 () -> holidayService.deleteHoliday(seq));
-        then(holidayRepository).should().findHoliday(seq);
-        then(holidayRepository).should(never()).delete(any(Holiday.class));
+        then(holidayRepositoryImpl).should().findHoliday(seq);
+        then(holidayRepositoryImpl).should(never()).delete(any(Holiday.class));
     }
 }
