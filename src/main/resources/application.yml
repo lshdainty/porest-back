@@ -13,10 +13,13 @@ spring:
       ddl-auto: create
     properties:
       hibernate:
-        show_sql: true        # sys.out? ?? sql? ??? ??
-        format_sql: true
         highlight_sql: true
         default_batch_fetch_size: 100
+  sleuth:
+    jdbc:
+      p6spy:
+        tracing:
+          include-parameter-values: true
 
 server:
   servlet:
@@ -29,5 +32,10 @@ logging:
     com.lshdainty.myhr.repository: debug
     com.lshdainty.myhr.service: debug
     com.lshdainty.myhr.domain: debug
-    org.hibernate.sql: debug           # logger? ?? ?? sql? ??? ??
-    org.hibernate.orm.jdbc.bind: trace # ?? ????? ??? ??
+    p6spy: info
+
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: true
+      multiline: true
