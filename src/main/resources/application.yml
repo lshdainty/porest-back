@@ -13,8 +13,8 @@ spring:
       ddl-auto: create
     properties:
       hibernate:
-        highlight_sql: true
         default_batch_fetch_size: 100
+
   sleuth:
     jdbc:
       p6spy:

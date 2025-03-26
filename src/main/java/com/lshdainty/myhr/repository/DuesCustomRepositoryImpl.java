@@ -1,7 +1,6 @@
 package com.lshdainty.myhr.repository;
 
 import com.lshdainty.myhr.domain.Dues;
-import com.lshdainty.myhr.domain.QDues;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;

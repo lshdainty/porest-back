@@ -9,7 +9,7 @@ import com.p6spy.engine.spy.appender.MessageFormattingStrategy;
 
 public class P6SpyFormatter implements MessageFormattingStrategy {
 
-    private static final String NEW_LINE = "\n";
+    private static final String NEW_LINE = System.lineSeparator();
     private static final String TAP = "\t";
     private static final String CREATE = "create";
     private static final String ALTER = "alter";
@@ -25,40 +25,35 @@ public class P6SpyFormatter implements MessageFormattingStrategy {
     }
 
     private static String formatByCommand(String category) {
-        return NEW_LINE
-                + "Execute Command : "
-                + NEW_LINE
-                + NEW_LINE
-                + TAP
-                + category
-                + NEW_LINE
-                + NEW_LINE
-                + "----------------------------------------------------------------------------------------------------";
+        return new StringBuilder()
+                .append(NEW_LINE)
+                .append("Execute Command : ")
+                .append(NEW_LINE)
+                .append(TAP)
+                .append(category)
+                .toString();
     }
 
     private String formatBySql(String sql, String category) {
         if (isStatementDDL(sql, category)) {
-            return NEW_LINE
-                    + "Execute DDL : "
-                    + NEW_LINE
-                    + FormatStyle.DDL
-                    .getFormatter()
-                    .format(sql);
+            return new StringBuilder()
+                    .append(NEW_LINE)
+                    .append("Execute DDL : ")
+                    .append(FormatStyle.DDL.getFormatter().format(sql))
+                    .toString();
         }
-        return NEW_LINE
-                + "Execute DML : "
-                + NEW_LINE
-                + FormatStyle.BASIC
-                .getFormatter()
-                .format(sql);
+        return new StringBuilder()
+                .append(NEW_LINE)
+                .append("Execute DML : ")
+                .append(FormatStyle.BASIC.getFormatter().format(sql))
+                .toString();
     }
 
     private String getAdditionalMessages(long elapsed) {
-        return NEW_LINE
-                + NEW_LINE
-                + String.format("Execution Time: %s ms", elapsed)
-                + NEW_LINE
-                + "----------------------------------------------------------------------------------------------------";
+        return new StringBuilder()
+                .append(NEW_LINE)
+                .append(String.format("Execution Time: %d ms", elapsed))
+                .toString();
     }
 
     private boolean isStatementDDL(String sql, String category) {
