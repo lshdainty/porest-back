@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @RequiredArgsConstructor
-public class Config {
+public class WebConfig {
     private final EntityManager em;
 
     @Bean
