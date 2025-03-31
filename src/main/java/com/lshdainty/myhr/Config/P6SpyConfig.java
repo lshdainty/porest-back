@@ -1,5 +1,7 @@
-package com.lshdainty.myhr.log.p6spy;
+package com.lshdainty.myhr.Config;
 
+import com.lshdainty.myhr.lib.log.p6spy.P6SpyEventListener;
+import com.lshdainty.myhr.lib.log.p6spy.P6SpyFormatter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;

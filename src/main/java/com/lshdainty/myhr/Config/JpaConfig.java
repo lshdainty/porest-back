@@ -1,4 +1,4 @@
-package com.lshdainty.myhr;
+package com.lshdainty.myhr.Config;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @RequiredArgsConstructor
-public class WebConfig {
+public class JpaConfig {
     private final EntityManager em;
 
     @Bean

@@ -1,4 +1,4 @@
-package com.lshdainty.myhr.log.filter;
+package com.lshdainty.myhr.lib.log.filter;
 
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;

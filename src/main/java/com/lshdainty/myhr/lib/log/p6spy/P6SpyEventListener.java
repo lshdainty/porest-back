@@ -1,4 +1,4 @@
-package com.lshdainty.myhr.log.p6spy;
+package com.lshdainty.myhr.lib.log.p6spy;
 
 import java.sql.SQLException;
 
