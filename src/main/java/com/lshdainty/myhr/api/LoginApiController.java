@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -40,14 +41,14 @@ public class LoginApiController {
         return ApiResponse.success();
     }
 
-    @PostMapping("/jwt/login")
-    public ApiResponse jwtLogin(@RequestBody LoginDto loginDto, HttpServletRequest req) {
-        User user = userService.findUser(loginDto.getId());
+    @PostMapping("/jwt/convert/pw")
+    public ApiResponse jwtConvert(@RequestBody LoginDto loginDto, HttpServletRequest req) {
+        log.info("JWT convert request: {}", loginDto);
 
-        if (Objects.isNull(user)) {
-            throw new IllegalArgumentException("Invalid username or password");
-        }
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        String encodePw = encoder.encode(loginDto.getPw());
 
-        return ApiResponse.success();
+        return ApiResponse.success(encodePw);
     }
+
 }

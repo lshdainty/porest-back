@@ -50,7 +50,7 @@ public class SecurityConfig {
 
         // 경로별 인가 작업
         http.authorizeHttpRequests((auth) -> auth
-                .requestMatchers("/", "/login", "/join", "/jwt/login").permitAll() // 모든 권한 사용자 가능
+                .requestMatchers("/", "/login", "/join", "/jwt/login", "/jwt/convert/pw").permitAll() // 모든 권한 사용자 가능
                 .anyRequest().authenticated()   // 권한에 따른 접근
         );
 
@@ -62,9 +62,7 @@ public class SecurityConfig {
         * 자체적으로 생성한 JWT의 LoginFilter를
         * 기존 FormLogin 방식이 사용하는 UsernamePasswordAuthenticationFilter 위치에 추가하는 작업
         * */
-        LoginFilter loginFilter = new LoginFilter(authenticationManager(authConfig), jwtUtil);
-        loginFilter.setFilterProcessesUrl("/jwt/login");
-        http.addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterAt(new LoginFilter(authenticationManager(authConfig), jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
         // http 세션 설정 (중요)
         http.sessionManagement((session) -> session

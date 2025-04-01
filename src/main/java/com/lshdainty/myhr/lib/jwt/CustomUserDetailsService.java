@@ -3,6 +3,7 @@ package com.lshdainty.myhr.lib.jwt;
 import com.lshdainty.myhr.domain.User;
 import com.lshdainty.myhr.repository.UserRepositoryImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.MessageSource;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -14,15 +15,16 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
     private final UserRepositoryImpl userRepositoryImpl;
+    private final MessageSource ms;
 
     @Override
     public UserDetails loadUserByUsername(String userNo) throws UsernameNotFoundException {
         User user = userRepositoryImpl.findById(Long.valueOf(userNo));
 
-        if (!Objects.isNull(user)) {
-            return new CustomUserDetails(user);
+        if (Objects.isNull(user)) {
+            throw new UsernameNotFoundException(ms.getMessage("error.notfound.user", null, null));
         }
 
-        return null;
+        return new CustomUserDetails(user);
     }
 }
