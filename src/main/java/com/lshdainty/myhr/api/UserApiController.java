@@ -16,6 +16,16 @@ import java.util.stream.Collectors;
 public class UserApiController {
     private final UserService userService;
 
+    @GetMapping("/api/v1/test")
+    public ApiResponse test() {
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return ApiResponse.success();
+    }
+
     @PostMapping("/api/v1/user")
     public ApiResponse join(@RequestBody UserDto userDto) {
         Long userId = userService.join(
