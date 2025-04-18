@@ -52,6 +52,7 @@ public class InitDB {
             saveHoliday("근로자의 날", "20250501", HolidayType.PUBLIC);
             saveHoliday("어린이날", "20250505", HolidayType.PUBLIC);
             saveHoliday("대체공휴일(석가탄신일)", "20250506", HolidayType.PUBLIC);
+            saveHoliday("임시공휴일(제 21대 대선)", "20250603", HolidayType.PUBLIC);
             saveHoliday("현충일", "20250606", HolidayType.PUBLIC);
             saveHoliday("광복절", "20250815", HolidayType.PUBLIC);
             saveHoliday("개천절", "20251003", HolidayType.PUBLIC);

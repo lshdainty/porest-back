@@ -116,8 +116,32 @@ class HolidayServiceTest {
     }
 
     @Test
+    @DisplayName("휴일 기간별 조회 테스트 - 성공")
+    void findHolidaysByStartEndDateSuccessTest() {
+        // Given
+        String start = "";
+        String end = "";
+        given(holidayRepositoryImpl.findHolidaysByStartEndDate(start, end)).willReturn(List.of(
+                Holiday.createHoliday("신정", "20250101", HolidayType.PUBLIC),
+                Holiday.createHoliday("설날", "20250129", HolidayType.PUBLIC),
+                Holiday.createHoliday("권장휴가", "20250131", HolidayType.RECOMMEND),
+                Holiday.createHoliday("권장휴가", "20251231", HolidayType.RECOMMEND)
+        ));
+
+        // When
+        List<Holiday> holidays = holidayService.findHolidaysByStartEndDate(start, end);
+
+        // Then
+        then(holidayRepositoryImpl).should().findHolidaysByStartEndDate(start, end);
+        assertThat(holidays).hasSize(4);
+        assertThat(holidays)
+                .extracting("name")
+                .containsExactly("신정", "설날", "권장휴가", "권장휴가");
+    }
+
+    @Test
     @DisplayName("휴일 타입별 조회 테스트 - 성공")
-    void findHolidaysByTypeTest() {
+    void findHolidaysByTypeSuccessTest() {
         // Given
         HolidayType type = HolidayType.RECOMMEND;
         given(holidayRepositoryImpl.findHolidaysByType(type)).willReturn(List.of(
@@ -125,12 +149,12 @@ class HolidayServiceTest {
         ));
 
         // When
-        List<Holiday> findHolidays = holidayService.findHolidaysByType(type);
+        List<Holiday> holidays = holidayService.findHolidaysByType(type);
 
         // Then
         then(holidayRepositoryImpl).should().findHolidaysByType(type);
-        assertThat(findHolidays).hasSize(1);
-        assertThat(findHolidays).extracting("type").containsOnly(type);
+        assertThat(holidays).hasSize(1);
+        assertThat(holidays).extracting("type").containsOnly(type);
     }
 
     @Test
