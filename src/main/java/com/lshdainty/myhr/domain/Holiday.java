@@ -24,6 +24,7 @@ public class Holiday {
     @NotNull
     private String date;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "holiday_type")
     @NotNull
     private HolidayType type;
