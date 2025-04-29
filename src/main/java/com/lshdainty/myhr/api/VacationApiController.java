@@ -1,5 +1,6 @@
 package com.lshdainty.myhr.api;
 
+import com.lshdainty.myhr.domain.Schedule;
 import com.lshdainty.myhr.domain.User;
 import com.lshdainty.myhr.domain.Vacation;
 import com.lshdainty.myhr.dto.UserDto;
@@ -8,8 +9,10 @@ import com.lshdainty.myhr.service.VacationService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -86,6 +89,35 @@ public class VacationApiController {
     public ApiResponse deleteVacation(@PathVariable("id") Long vacationId, HttpServletRequest req) {
         Long delUserNo = 0L;   // 추후 로그인 한 사람의 id를 가져와서 삭제한 사람의 userNo에 세팅
         vacationService.deleteVacation(vacationId, delUserNo, req.getRemoteAddr());
+        return ApiResponse.success();
+    }
+
+    @GetMapping("/api/v1/vacation/check-possible/{userNo}")
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    public ApiResponse checkPossibleVacations(
+            @PathVariable("userNo") Long userNo,
+            @RequestParam("startDate") LocalDateTime startDate,
+            HttpServletRequest req) {
+
+        log.info("Check vacation by user no: {}", userNo);
+        log.info("Check vacation by startDate: {}", startDate);
+        List<Vacation> vacations = vacationService.checkPossibleVacations(userNo, startDate);
+
+        for (Vacation vacation : vacations) {
+            log.info("api controller Check vacation: {}", vacation);
+        }
+
+        List<VacationDto> vacationDtos = vacations.stream()
+                .map(v -> new VacationDto(v, true))
+                .collect(Collectors.toList());
+
+        for (VacationDto vacationDto : vacationDtos) {
+            log.info("hello world: {}", vacationDto);
+        }
+
+
+
+
         return ApiResponse.success();
     }
 }

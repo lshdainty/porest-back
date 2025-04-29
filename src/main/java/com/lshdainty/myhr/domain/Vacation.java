@@ -1,14 +1,15 @@
 package com.lshdainty.myhr.domain;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
+@ToString
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)  // -> protected Order() {}와 동일한 의미 (롬복으로 생성자 막기)
@@ -22,6 +23,10 @@ public class Vacation extends AuditingFields {
     @JoinColumn(name = "user_no")
     @Setter
     private User user;
+
+    @BatchSize(size = 100)
+    @OneToMany(mappedBy = "vacation", cascade = CascadeType.ALL)
+    private List<Schedule> schedules =  new ArrayList<>();
 
     @Column(name = "vacation_name")
     private String name;

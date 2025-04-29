@@ -3,6 +3,7 @@ package com.lshdainty.myhr.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.lshdainty.myhr.domain.Schedule;
 import com.lshdainty.myhr.domain.Vacation;
 import com.lshdainty.myhr.domain.VacationType;
 import lombok.Data;
@@ -10,6 +11,9 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @NoArgsConstructor
@@ -23,6 +27,9 @@ public class VacationDto {
     private BigDecimal grantTime;
     private LocalDateTime occurDate;
     private LocalDateTime expiryDate;
+    private BigDecimal usedTime;
+    private BigDecimal remainTime;
+    private List<ScheduleDto> schedules;
 
     private Long userNo;
 
@@ -31,12 +38,32 @@ public class VacationDto {
     }
 
     public VacationDto(Vacation vacation) {
-        this.vacationId = vacation.getId();
-        this.vacationName = vacation.getName();
-        this.vacationDesc = vacation.getDesc();
-        this.vacationType = vacation.getType();
-        this.grantTime = vacation.getGrantTime();
-        this.occurDate = vacation.getOccurDate();
-        this.expiryDate = vacation.getExpiryDate();
+        vacationId = vacation.getId();
+        vacationName = vacation.getName();
+        vacationDesc = vacation.getDesc();
+        vacationType = vacation.getType();
+        grantTime = vacation.getGrantTime();
+        occurDate = vacation.getOccurDate();
+        expiryDate = vacation.getExpiryDate();
+    }
+
+    public VacationDto(Vacation vacation, Boolean flag) {
+        vacationId = vacation.getId();
+        vacationName = vacation.getName();
+        vacationDesc = vacation.getDesc();
+        vacationType = vacation.getType();
+        grantTime = vacation.getGrantTime();
+        occurDate = vacation.getOccurDate();
+        expiryDate = vacation.getExpiryDate();
+
+        schedules = vacation.getSchedules().stream().map(
+                schedule -> new ScheduleDto(schedule)).collect(Collectors.toList());
+
+        usedTime = BigDecimal.ZERO;
+        remainTime = BigDecimal.ZERO;
+
+//        for (ScheduleDto schedule : schedules) {
+//            usedTime = usedTime.add(schedule.getScheduleType().convertToValue());
+//        }
     }
 }

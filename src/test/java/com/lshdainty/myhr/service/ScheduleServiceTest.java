@@ -63,7 +63,7 @@ class ScheduleServiceTest {
 
         given(userService.checkUserExist(userNo)).willReturn(user);
         given(vacationService.checkVacationExist(vacationId)).willReturn(vacation);
-        given(scheduleRepositoryImpl.findCountByVacation(any(Vacation.class))).willReturn(Collections.emptyList());
+        given(scheduleRepositoryImpl.findSchedulesByVacation(any(Vacation.class))).willReturn(Collections.emptyList());
         given(holidayRepositoryImpl.findHolidaysByStartEndDate(any(), any())).willReturn(Collections.emptyList());
         willDoNothing().given(scheduleRepositoryImpl).save(any(Schedule.class));
 
@@ -73,7 +73,7 @@ class ScheduleServiceTest {
         // Then
         then(userService).should().checkUserExist(userNo);
         then(vacationService).should().checkVacationExist(vacationId);
-        then(scheduleRepositoryImpl).should().findCountByVacation(any(Vacation.class));
+        then(scheduleRepositoryImpl).should().findSchedulesByVacation(any(Vacation.class));
         then(holidayRepositoryImpl).should().findHolidaysByStartEndDate(any(), any());
         then(scheduleRepositoryImpl).should().save(any(Schedule.class));
 
@@ -161,7 +161,7 @@ class ScheduleServiceTest {
 
         given(userService.checkUserExist(userNo)).willReturn(user);
         given(vacationService.checkVacationExist(vacationId)).willReturn(vacation);
-        given(scheduleRepositoryImpl.findCountByVacation(any(Vacation.class))).willReturn(Collections.emptyList());
+        given(scheduleRepositoryImpl.findSchedulesByVacation(any(Vacation.class))).willReturn(Collections.emptyList());
         given(holidayRepositoryImpl.findHolidaysByStartEndDate(any(), any())).willReturn(Collections.emptyList());
 
         // When & Then
@@ -169,7 +169,7 @@ class ScheduleServiceTest {
                 scheduleService.addSchedule(userNo, vacationId, type, desc, start, end, 0L, "127.0.0.1"));
         then(userService).should().checkUserExist(userNo);
         then(vacationService).should().checkVacationExist(vacationId);
-        then(scheduleRepositoryImpl).should().findCountByVacation(any(Vacation.class));
+        then(scheduleRepositoryImpl).should().findSchedulesByVacation(any(Vacation.class));
         then(holidayRepositoryImpl).should().findHolidaysByStartEndDate(any(), any());
     }
 
@@ -189,7 +189,7 @@ class ScheduleServiceTest {
 
         given(userService.checkUserExist(userNo)).willReturn(user);
         given(vacationService.checkVacationExist(vacationId)).willReturn(vacation);
-        given(scheduleRepositoryImpl.findCountByVacation(any(Vacation.class))).willReturn(Collections.emptyList());
+        given(scheduleRepositoryImpl.findSchedulesByVacation(any(Vacation.class))).willReturn(Collections.emptyList());
         given(holidayRepositoryImpl.findHolidaysByStartEndDate(any(), any())).willReturn(Collections.emptyList());
 
         // When & Then
@@ -197,7 +197,7 @@ class ScheduleServiceTest {
                 scheduleService.addSchedule(userNo, vacationId, type, desc, start, end, 0L, "127.0.0.1"));
         then(userService).should().checkUserExist(userNo);
         then(vacationService).should().checkVacationExist(vacationId);
-        then(scheduleRepositoryImpl).should().findCountByVacation(any(Vacation.class));
+        then(scheduleRepositoryImpl).should().findSchedulesByVacation(any(Vacation.class));
         then(holidayRepositoryImpl).should().findHolidaysByStartEndDate(any(), any());
     }
 
@@ -217,7 +217,7 @@ class ScheduleServiceTest {
 
         given(userService.checkUserExist(userNo)).willReturn(user);
         given(vacationService.checkVacationExist(vacationId)).willReturn(vacation);
-        given(scheduleRepositoryImpl.findCountByVacation(any(Vacation.class))).willReturn(Collections.emptyList());
+        given(scheduleRepositoryImpl.findSchedulesByVacation(any(Vacation.class))).willReturn(Collections.emptyList());
         given(holidayRepositoryImpl.findHolidaysByStartEndDate(any(), any())).willReturn(Collections.emptyList());
 
         // When & Then
@@ -225,7 +225,7 @@ class ScheduleServiceTest {
                 scheduleService.addSchedule(userNo, vacationId, type, desc, start, end, 0L, "127.0.0.1"));
         then(userService).should().checkUserExist(userNo);
         then(vacationService).should().checkVacationExist(vacationId);
-        then(scheduleRepositoryImpl).should().findCountByVacation(any(Vacation.class));
+        then(scheduleRepositoryImpl).should().findSchedulesByVacation(any(Vacation.class));
         then(holidayRepositoryImpl).should().findHolidaysByStartEndDate(any(), any());
     }
 

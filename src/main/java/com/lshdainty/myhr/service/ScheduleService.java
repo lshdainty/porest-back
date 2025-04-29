@@ -37,7 +37,7 @@ public class ScheduleService {
         if (vacation.getExpiryDate().isBefore(LocalDateTime.now())) { throw new IllegalArgumentException("this vacation has expired"); }
 
         // 이제까지 해당 휴가에 사용된 스케줄 리스트 가져오기
-        List<Schedule> findSchedules = scheduleRepositoryImpl.findCountByVacation(vacation);
+        List<Schedule> findSchedules = scheduleRepositoryImpl.findSchedulesByVacation(vacation);
 
         // 공휴일 리스트를 가져오기 위한 startDate 최소값 구하기
         int minStartDate = findSchedules.stream()

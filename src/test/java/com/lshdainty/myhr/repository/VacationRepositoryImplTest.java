@@ -164,7 +164,7 @@ public class VacationRepositoryImplTest {
         }
 
         // when
-        List<Vacation> vacations = vacationRepositoryImpl.findVacationByParameterTime(user.getId(), now);
+        List<Vacation> vacations = vacationRepositoryImpl.findVacationsByParameterTime(user.getId(), now);
 
         // then
         assertThat(vacations).hasSize(1);

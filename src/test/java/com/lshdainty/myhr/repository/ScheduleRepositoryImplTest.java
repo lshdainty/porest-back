@@ -234,7 +234,7 @@ public class ScheduleRepositoryImplTest {
         }
 
         // when
-        List<Schedule> schedules = scheduleRepositoryImpl.findCountByVacation(vacation);
+        List<Schedule> schedules = scheduleRepositoryImpl.findSchedulesByVacation(vacation);
 
         // then
         assertThat(schedules.size()).isEqualTo(4);

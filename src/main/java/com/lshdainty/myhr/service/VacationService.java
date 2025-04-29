@@ -87,6 +87,15 @@ public class VacationService {
         vacation.deleteVacation(delUserNo, clientIP);
     }
 
+    public List<Vacation> checkPossibleVacations(Long userNo, LocalDateTime standardTime) {
+        // 유저 조회
+        User user = userService.checkUserExist(userNo);
+        // 시작 날짜를 기준으로 등록 가능한 휴가날짜를 조회
+        List<Vacation> vacations = vacationRepositoryImpl.findVacationsByParameterTimeWithSchedules(userNo, standardTime);
+
+        return null;
+    }
+
     public Vacation checkVacationExist(Long vacationId) {
         Vacation findVacation = vacationRepositoryImpl.findById(vacationId);
         if (Objects.isNull(findVacation) || findVacation.getDelYN().equals("Y")) { throw new IllegalArgumentException(ms.getMessage("error.notfound.vacation", null, null)); }

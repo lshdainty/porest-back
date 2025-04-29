@@ -11,5 +11,5 @@ public interface ScheduleRepository {
     Schedule findById(Long scheduleId);
     List<Schedule> findSchedulesByUserNo(Long userNo);
     List<Schedule> findSchedulesByPeriod(LocalDateTime start, LocalDateTime end);
-    List<Schedule> findCountByVacation(Vacation vacation);
+    List<Schedule> findSchedulesByVacation(Vacation vacation);
 }

@@ -45,8 +45,18 @@ public class VacationRepositoryImpl implements VacationRepository {
 
     // 유저가 가진 휴가 중 기준 시간을 포함하는 휴가 리스트 조회
     @Override
-    public List<Vacation> findVacationByParameterTime(Long userNo, LocalDateTime standardTime) {
+    public List<Vacation> findVacationsByParameterTime(Long userNo, LocalDateTime standardTime) {
         return em.createQuery("select v from Vacation v where v.user.id = :userNo and :standardTime between v.occurDate and v.expiryDate and delYN = :delYN", Vacation.class)
+                .setParameter("userNo", userNo)
+                .setParameter("standardTime", standardTime)
+                .setParameter("delYN", "N")
+                .getResultList();
+    }
+
+    // 유저가 가진 휴가 중 기준 시간을 포함하는 휴가와 스케줄 조회
+    @Override
+    public List<Vacation> findVacationsByParameterTimeWithSchedules(Long userNo, LocalDateTime standardTime) {
+        return em.createQuery("select v from Vacation v left join fetch v.schedules s where v.user.id = :userNo and :standardTime between v.occurDate and v.expiryDate and v.delYN = :delYN", Vacation.class)
                 .setParameter("userNo", userNo)
                 .setParameter("standardTime", standardTime)
                 .setParameter("delYN", "N")

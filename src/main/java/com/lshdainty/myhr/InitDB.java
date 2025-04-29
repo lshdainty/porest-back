@@ -106,7 +106,7 @@ public class InitDB {
             saveVacation(5L, "4분기 휴가", "", VacationType.BASIC, new BigDecimal("24"), LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59), LocalDateTime.of(now.getYear(), 10, 1, 0, 0, 0));
             saveVacation(6L, "4분기 휴가", "", VacationType.BASIC, new BigDecimal("24"), LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59), LocalDateTime.of(now.getYear(), 10, 1, 0, 0, 0));
 
-            saveVacation(1L, "출산 휴가", "출산 추가 휴가 부여", VacationType.ADDED, new BigDecimal("80"), LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 23, 59, 59).plusMonths(6), LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0, 0, 0));
+            saveVacation(1L, "출산 휴가", "출산 추가 휴가 부여", VacationType.ADDED, new BigDecimal("80"), LocalDateTime.of(now.getYear(), 3, now.getDayOfMonth(), 23, 59, 59).plusMonths(6), LocalDateTime.of(now.getYear(), 3, now.getDayOfMonth(), 0, 0, 0));
             saveVacation(1L, "OT 정산", "월마감 지원", VacationType.ADDED, new BigDecimal("3"), LocalDateTime.of(2025, 1, 31, 23, 59, 59), LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0));
             saveVacation(1L, "OT 정산", "월마감 지원", VacationType.ADDED, new BigDecimal("1"), LocalDateTime.of(2025, 1, 31, 23, 59, 59), LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0));
             saveVacation(1L, "OT 정산", "월마감 지원", VacationType.ADDED, new BigDecimal("6"), LocalDateTime.of(2025, 12, 31, 23, 59, 59), LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0));
