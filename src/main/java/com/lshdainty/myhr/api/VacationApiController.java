@@ -5,6 +5,8 @@ import com.lshdainty.myhr.domain.Vacation;
 import com.lshdainty.myhr.dto.UserDto;
 import com.lshdainty.myhr.dto.VacationDto;
 import com.lshdainty.myhr.service.VacationService;
+import com.lshdainty.myhr.service.dto.ScheduleServiceDto;
+import com.lshdainty.myhr.service.dto.VacationServiceDto;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -100,23 +102,25 @@ public class VacationApiController {
 
         log.info("Check vacation by user no: {}", userNo);
         log.info("Check vacation by startDate: {}", startDate);
-        List<Vacation> vacations = vacationService.checkPossibleVacations(userNo, startDate);
+        List<VacationServiceDto> vacations = vacationService.checkPossibleVacations(userNo, startDate);
 
-        for (Vacation vacation : vacations) {
-            log.info("api controller Check vacation: {}", vacation);
+        for (VacationServiceDto vacation : vacations) {
+            log.info("Vacation: {}", vacation.toString());
+
+            if (vacation.getScheduleDtos() == null) {
+                continue;
+            }
+
+            for (ScheduleServiceDto schedule : vacation.getScheduleDtos()) {
+                log.info("Schedule: {}", schedule.toString());
+            }
+            log.info("\n");
         }
 
-        List<VacationDto> vacationDtos = vacations.stream()
-                .map(v -> new VacationDto(v, true))
-                .collect(Collectors.toList());
-
-        for (VacationDto vacationDto : vacationDtos) {
-            log.info("hello world: {}", vacationDto.toString());
-        }
+        List<VacationDto> resp = vacations.stream()
+                .map(v -> new VacationDto(v)).toList();
 
 
-
-
-        return ApiResponse.success();
+        return ApiResponse.success(resp);
     }
 }

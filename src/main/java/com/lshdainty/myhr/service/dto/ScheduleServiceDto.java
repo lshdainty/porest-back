@@ -5,11 +5,12 @@ import com.lshdainty.myhr.domain.User;
 import com.lshdainty.myhr.domain.Vacation;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Getter
+@Getter @Setter
 @Builder
 public class ScheduleServiceDto {
     private Long id;

@@ -5,9 +5,11 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.lshdainty.myhr.domain.Schedule;
 import com.lshdainty.myhr.domain.ScheduleType;
+import com.lshdainty.myhr.service.dto.ScheduleServiceDto;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -24,22 +26,38 @@ public class ScheduleDto {
     private String scheduleDesc;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
+    private BigDecimal realUsedTime;
 
     public ScheduleDto(Long id) {
-        this.scheduleId = id;
+        scheduleId = id;
     }
 
     public ScheduleDto(Schedule schedule) {
-        this.scheduleId = schedule.getId();
-        this.userNo = schedule.getUser().getId();
-        this.userName = schedule.getUser().getName();
+        scheduleId = schedule.getId();
+        userNo = schedule.getUser().getId();
+        userName = schedule.getUser().getName();
         if (schedule.getType().isVacationType()) {
-            this.vacationId = schedule.getVacation().getId();
+            vacationId = schedule.getVacation().getId();
         }
-        this.scheduleType = schedule.getType();
-        this.scheduleTypeName = schedule.getType().getTypeName();
-        this.scheduleDesc = schedule.getDesc();
-        this.startDate = schedule.getStartDate();
-        this.endDate = schedule.getEndDate();
+        scheduleType = schedule.getType();
+        scheduleTypeName = schedule.getType().getTypeName();
+        scheduleDesc = schedule.getDesc();
+        startDate = schedule.getStartDate();
+        endDate = schedule.getEndDate();
+    }
+
+    public ScheduleDto(ScheduleServiceDto schedule) {
+        scheduleId = schedule.getId();
+        userNo = schedule.getUser().getId();
+        userName = schedule.getUser().getName();
+        if (schedule.getType().isVacationType()) {
+            vacationId = schedule.getVacation().getId();
+        }
+        scheduleType = schedule.getType();
+        scheduleTypeName = schedule.getType().getTypeName();
+        scheduleDesc = schedule.getDesc();
+        startDate = schedule.getStartDate();
+        endDate = schedule.getEndDate();
+        realUsedTime = schedule.getRealUsedTime();
     }
 }

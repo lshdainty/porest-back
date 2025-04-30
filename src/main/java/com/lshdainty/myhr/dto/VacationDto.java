@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.lshdainty.myhr.domain.Schedule;
 import com.lshdainty.myhr.domain.Vacation;
 import com.lshdainty.myhr.domain.VacationType;
+import com.lshdainty.myhr.service.dto.ScheduleServiceDto;
+import com.lshdainty.myhr.service.dto.VacationServiceDto;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -47,23 +49,17 @@ public class VacationDto {
         expiryDate = vacation.getExpiryDate();
     }
 
-    public VacationDto(Vacation vacation, Boolean flag) {
+    public VacationDto(VacationServiceDto vacation) {
         vacationId = vacation.getId();
         vacationName = vacation.getName();
         vacationDesc = vacation.getDesc();
         vacationType = vacation.getType();
         grantTime = vacation.getGrantTime();
+        usedTime = vacation.getUsedTime();
+        remainTime = vacation.getRemainTime();
         occurDate = vacation.getOccurDate();
         expiryDate = vacation.getExpiryDate();
-
-        schedules = vacation.getSchedules().stream().map(
-                schedule -> new ScheduleDto(schedule)).collect(Collectors.toList());
-
-        usedTime = BigDecimal.ZERO;
-        remainTime = BigDecimal.ZERO;
-
-//        for (ScheduleDto schedule : schedules) {
-//            usedTime = usedTime.add(schedule.getScheduleType().convertToValue());
-//        }
+        schedules = vacation.getScheduleDtos().stream()
+                .map(s -> new ScheduleDto(s)).toList();
     }
 }

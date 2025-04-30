@@ -5,12 +5,13 @@ import com.lshdainty.myhr.domain.User;
 import com.lshdainty.myhr.domain.VacationType;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Getter
+@Getter @Setter
 @Builder
 public class VacationServiceDto {
     private Long id;
@@ -20,7 +21,7 @@ public class VacationServiceDto {
     private String name;
     private String desc;
     private VacationType type;
-    private BigDecimal grandTime;
+    private BigDecimal grantTime;
     private BigDecimal usedTime;
     private BigDecimal remainTime;
     private LocalDateTime occurDate;
@@ -34,7 +35,7 @@ public class VacationServiceDto {
                 ", name: '" + name + '\'' +
                 ", desc: '" + desc + '\'' +
                 ", type: " + type +
-                ", grandTime: " + grandTime +
+                ", grantTime: " + grantTime +
                 ", usedTime: " + usedTime +
                 ", remainTime: " + remainTime +
                 ", occurDate: " + occurDate +
