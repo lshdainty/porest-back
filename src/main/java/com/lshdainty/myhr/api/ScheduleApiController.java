@@ -20,11 +20,11 @@ public class ScheduleApiController {
     private final ScheduleService scheduleService;
 
     @PostMapping("/api/v1/schedule")
-    public ApiResponse addSchedule(@RequestBody ScheduleDto scheduleDto, HttpServletRequest req) {
+    public ApiResponse registSchedule(@RequestBody ScheduleDto scheduleDto, HttpServletRequest req) {
         Long scheduleId = null;
 
         if (scheduleDto.getScheduleType().isVacationType()) {
-            scheduleId = scheduleService.addSchedule(
+            scheduleId = scheduleService.registSchedule(
                     scheduleDto.getUserNo(),
                     scheduleDto.getVacationId(),
                     scheduleDto.getScheduleType(),
@@ -35,7 +35,7 @@ public class ScheduleApiController {
                     req.getRemoteAddr()
             );
         } else {
-            scheduleId = scheduleService.addSchedule(
+            scheduleId = scheduleService.registSchedule(
                     scheduleDto.getUserNo(),
                     scheduleDto.getScheduleType(),
                     scheduleDto.getScheduleDesc(),

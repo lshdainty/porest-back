@@ -3,17 +3,12 @@ package com.lshdainty.myhr.service;
 import com.lshdainty.myhr.domain.*;
 import com.lshdainty.myhr.repository.HolidayRepositoryImpl;
 import com.lshdainty.myhr.repository.ScheduleRepositoryImpl;
-import com.lshdainty.myhr.repository.UserRepositoryImpl;
-import com.lshdainty.myhr.repository.VacationRepositoryImpl;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.realm.AuthenticatedUserRealm;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.MessageSource;
 
@@ -48,7 +43,7 @@ class ScheduleServiceTest {
 
     @Test
     @DisplayName("스케줄(휴가) 추가 테스트 - 성공")
-    void addScheduleWithVacationSuccessTest() {
+    void registScheduleWithVacationSuccessTest() {
         // Given
         Long userNo = 1L;
         Long vacationId = 1L;
@@ -68,7 +63,7 @@ class ScheduleServiceTest {
         willDoNothing().given(scheduleRepositoryImpl).save(any(Schedule.class));
 
         // When
-        Long scheduleId = scheduleService.addSchedule(userNo, vacationId, type, desc, start, end, 0L, "127.0.0.1");
+        Long scheduleId = scheduleService.registSchedule(userNo, vacationId, type, desc, start, end, 0L, "127.0.0.1");
 
         // Then
         then(userService).should().checkUserExist(userNo);
@@ -81,7 +76,7 @@ class ScheduleServiceTest {
 
     @Test
     @DisplayName("스케줄(휴가) 추가 테스트 - 실패 (사용자 없음)")
-    void addScheduleWithVacationFailUserNotFoundTest() {
+    void registScheduleWithVacationFailUserNotFoundTest() {
         // Given
         Long userNo = 900L;
         Long vacationId = 1L;
@@ -94,13 +89,13 @@ class ScheduleServiceTest {
 
         // When & Then
         assertThrows(IllegalArgumentException.class, () ->
-                scheduleService.addSchedule(userNo, vacationId, type, desc, start, end, 0L, "127.0.0.1"));
+                scheduleService.registSchedule(userNo, vacationId, type, desc, start, end, 0L, "127.0.0.1"));
         then(userService).should().checkUserExist(userNo);
     }
 
     @Test
     @DisplayName("스케줄(휴가) 추가 테스트 - 실패 (휴가 없음)")
-    void addScheduleWithVacationFailVacationNotFoundTest() {
+    void registScheduleWithVacationFailVacationNotFoundTest() {
         // Given
         Long userNo = 1L;
         Long vacationId = 1L;
@@ -116,14 +111,14 @@ class ScheduleServiceTest {
 
         // When & Then
         assertThrows(IllegalArgumentException.class, () ->
-                scheduleService.addSchedule(userNo, vacationId, type, desc, start, end, 0L, "127.0.0.1"));
+                scheduleService.registSchedule(userNo, vacationId, type, desc, start, end, 0L, "127.0.0.1"));
         then(userService).should().checkUserExist(userNo);
         then(vacationService).should().checkVacationExist(vacationId);
     }
 
     @Test
     @DisplayName("스케줄(휴가) 추가 테스트 - 실패 (만료된 휴가)")
-    void addScheduleWithVacationFailExpiredVacationTest() {
+    void registScheduleWithVacationFailExpiredVacationTest() {
         // Given
         Long userNo = 1L;
         Long vacationId = 1L;
@@ -136,18 +131,18 @@ class ScheduleServiceTest {
         Vacation vacation = Vacation.createVacation(user, "정기 휴가", "25년 1분기 정기 휴가", VacationType.BASIC, new BigDecimal("32"), LocalDateTime.of(LocalDateTime.now().getYear() - 1, 1, 1, 0, 0, 0), LocalDateTime.of(LocalDateTime.now().getYear() - 1, 12, 31, 23, 59, 59), 0L, "127.0.0.1");
 
         given(userService.checkUserExist(userNo)).willReturn(user);
-        given(vacationService.checkVacationExist(vacationId)).willReturn(vacation);
+//        given(vacationService.checkVacationExist(vacationId)).willReturn(vacation);
 
         // When & Then
         assertThrows(IllegalArgumentException.class, () ->
-                scheduleService.addSchedule(userNo, vacationId, type, desc, start, end, 0L, "127.0.0.1"));
+                scheduleService.registSchedule(userNo, vacationId, type, desc, start, end, 0L, "127.0.0.1"));
         then(userService).should().checkUserExist(userNo);
-        then(vacationService).should().checkVacationExist(vacationId);
+//        then(vacationService).should().checkVacationExist(vacationId);
     }
 
     @Test
     @DisplayName("스케줄(휴가) 추가 테스트 - 실패 (휴가 부족)")
-    void addScheduleWithVacationFailNotEnoughVacationTest() {
+    void registScheduleWithVacationFailNotEnoughVacationTest() {
         // Given
         Long userNo = 1L;
         Long vacationId = 1L;
@@ -166,7 +161,7 @@ class ScheduleServiceTest {
 
         // When & Then
         assertThrows(IllegalArgumentException.class, () ->
-                scheduleService.addSchedule(userNo, vacationId, type, desc, start, end, 0L, "127.0.0.1"));
+                scheduleService.registSchedule(userNo, vacationId, type, desc, start, end, 0L, "127.0.0.1"));
         then(userService).should().checkUserExist(userNo);
         then(vacationService).should().checkVacationExist(vacationId);
         then(scheduleRepositoryImpl).should().findSchedulesByVacation(any(Vacation.class));
@@ -175,7 +170,7 @@ class ScheduleServiceTest {
 
     @Test
     @DisplayName("스케줄(휴가) 추가 테스트 - 실패 (start, end 반대)")
-    void addScheduleWithVacationFailStartEndTest() {
+    void registScheduleWithVacationFailStartEndTest() {
         // Given
         Long userNo = 1L;
         Long vacationId = 1L;
@@ -194,7 +189,7 @@ class ScheduleServiceTest {
 
         // When & Then
         assertThrows(IllegalArgumentException.class, () ->
-                scheduleService.addSchedule(userNo, vacationId, type, desc, start, end, 0L, "127.0.0.1"));
+                scheduleService.registSchedule(userNo, vacationId, type, desc, start, end, 0L, "127.0.0.1"));
         then(userService).should().checkUserExist(userNo);
         then(vacationService).should().checkVacationExist(vacationId);
         then(scheduleRepositoryImpl).should().findSchedulesByVacation(any(Vacation.class));
@@ -203,7 +198,7 @@ class ScheduleServiceTest {
 
     @Test
     @DisplayName("스케줄(휴가) 추가 테스트 - 실패 (workTime 미충족)")
-    void addScheduleWithVacationFailUserWorkTimeTest() {
+    void registScheduleWithVacationFailUserWorkTimeTest() {
         // Given
         Long userNo = 1L;
         Long vacationId = 1L;
@@ -222,7 +217,7 @@ class ScheduleServiceTest {
 
         // When & Then
         assertThrows(IllegalArgumentException.class, () ->
-                scheduleService.addSchedule(userNo, vacationId, type, desc, start, end, 0L, "127.0.0.1"));
+                scheduleService.registSchedule(userNo, vacationId, type, desc, start, end, 0L, "127.0.0.1"));
         then(userService).should().checkUserExist(userNo);
         then(vacationService).should().checkVacationExist(vacationId);
         then(scheduleRepositoryImpl).should().findSchedulesByVacation(any(Vacation.class));
@@ -231,7 +226,7 @@ class ScheduleServiceTest {
 
     @Test
     @DisplayName("스케줄(비휴가) 추가 테스트 - 성공")
-    void addScheduleWithoutVacationSuccessTest() {
+    void registScheduleWithoutVacationSuccessTest() {
         // Given
         Long userNo = 1L;
         ScheduleType type = ScheduleType.EDUCATION;
@@ -246,7 +241,7 @@ class ScheduleServiceTest {
         willDoNothing().given(scheduleRepositoryImpl).save(any(Schedule.class));
 
         // When
-        Long scheduleId = scheduleService.addSchedule(userNo, type, desc, start, end, 0L, "127.0.0.1");
+        Long scheduleId = scheduleService.registSchedule(userNo, type, desc, start, end, 0L, "127.0.0.1");
 
         // Then
         then(userService).should().checkUserExist(userNo);

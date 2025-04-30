@@ -5,6 +5,7 @@ import com.lshdainty.myhr.domain.Vacation;
 import com.lshdainty.myhr.domain.VacationType;
 import com.lshdainty.myhr.repository.UserRepositoryImpl;
 import com.lshdainty.myhr.repository.VacationRepositoryImpl;
+import com.lshdainty.myhr.service.dto.ScheduleServiceDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
@@ -25,6 +26,7 @@ public class VacationService {
     private final VacationRepositoryImpl vacationRepositoryImpl;
     private final UserRepositoryImpl userRepositoryImpl;
     private final UserService userService;
+    private final ScheduleService scheduleService;
 
     @Transactional
     public Long addVacation(Long userNo, String name, String desc, VacationType type, BigDecimal grantTime, LocalDateTime occurDate, LocalDateTime expiryDate, Long addUserNo, String clientIP) {
@@ -92,6 +94,11 @@ public class VacationService {
         User user = userService.checkUserExist(userNo);
         // 시작 날짜를 기준으로 등록 가능한 휴가날짜를 조회
         List<Vacation> vacations = vacationRepositoryImpl.findVacationsByParameterTimeWithSchedules(userNo, standardTime);
+
+        for (Vacation vacation : vacations) {
+            List<ScheduleServiceDto> lists = scheduleService.convertRealUsedTimeDto(vacation.getSchedules());
+            log.info("lists: {}", lists);
+        }
 
         return null;
     }

@@ -1,6 +1,5 @@
 package com.lshdainty.myhr.api;
 
-import com.lshdainty.myhr.domain.Schedule;
 import com.lshdainty.myhr.domain.User;
 import com.lshdainty.myhr.domain.Vacation;
 import com.lshdainty.myhr.dto.UserDto;
@@ -112,7 +111,7 @@ public class VacationApiController {
                 .collect(Collectors.toList());
 
         for (VacationDto vacationDto : vacationDtos) {
-            log.info("hello world: {}", vacationDto);
+            log.info("hello world: {}", vacationDto.toString());
         }
 
 
