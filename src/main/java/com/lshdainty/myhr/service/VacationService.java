@@ -117,6 +117,7 @@ public class VacationService {
                     .build();
 
             if (vacation.getSchedules().isEmpty()) {
+                vacationDto.setRemainTime(vacation.getGrantTime());
                 vacationDtos.add(vacationDto);
                 continue;
             }

@@ -34,7 +34,7 @@ public class ScheduleRepositoryImplTest {
         em.persist(user);
 
         LocalDateTime now = LocalDateTime.now();
-        Vacation vacation = Vacation.createVacation(user, "1분기 휴가", "", VacationType.BASIC, new BigDecimal("32.0000"), LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0), LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59), 0L, "");
+        Vacation vacation = Vacation.createVacation(user, "1분기 휴가", "", VacationType.BASIC, new BigDecimal("4.0000"), LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0), LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59), 0L, "");
         em.persist(vacation);
 
         String desc = "휴가";
@@ -66,7 +66,7 @@ public class ScheduleRepositoryImplTest {
         em.persist(user);
 
         LocalDateTime now = LocalDateTime.now();
-        Vacation vacation = Vacation.createVacation(user, "1분기 휴가", "", VacationType.BASIC, new BigDecimal("32.0000"), LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0), LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59), 0L, "");
+        Vacation vacation = Vacation.createVacation(user, "1분기 휴가", "", VacationType.BASIC, new BigDecimal("4.0000"), LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0), LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59), 0L, "");
         em.persist(vacation);
 
         String[] descs = {"휴가", "1시간"};
@@ -104,7 +104,7 @@ public class ScheduleRepositoryImplTest {
         em.persist(user);
 
         LocalDateTime now = LocalDateTime.now();
-        Vacation vacation = Vacation.createVacation(user, "1분기 휴가", "", VacationType.BASIC, new BigDecimal("32.0000"), LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0), LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59), 0L, "");
+        Vacation vacation = Vacation.createVacation(user, "1분기 휴가", "", VacationType.BASIC, new BigDecimal("4.0000"), LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0), LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59), 0L, "");
         em.persist(vacation);
 
         String[] descs = {"휴가", "1시간", "6시간", "오전반차"};
@@ -149,7 +149,7 @@ public class ScheduleRepositoryImplTest {
         em.persist(user);
 
         LocalDateTime now = LocalDateTime.now();
-        Vacation vacation = Vacation.createVacation(user, "1분기 휴가", "", VacationType.BASIC, new BigDecimal("32.0000"), LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0), LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59), 0L, "");
+        Vacation vacation = Vacation.createVacation(user, "1분기 휴가", "", VacationType.BASIC, new BigDecimal("4.0000"), LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0), LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59), 0L, "");
         em.persist(vacation);
 
         String[] descs = {"휴가", "1시간", "6시간", "오전반차"};
@@ -210,7 +210,7 @@ public class ScheduleRepositoryImplTest {
         em.persist(user);
 
         LocalDateTime now = LocalDateTime.now();
-        Vacation vacation = Vacation.createVacation(user, "1분기 휴가", "", VacationType.BASIC, new BigDecimal("32.0000"), LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0), LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59), 0L, "");
+        Vacation vacation = Vacation.createVacation(user, "1분기 휴가", "", VacationType.BASIC, new BigDecimal("4.0000"), LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0), LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59), 0L, "");
         em.persist(vacation);
 
         String[] descs = {"휴가", "1시간", "6시간", "오전반차"};
