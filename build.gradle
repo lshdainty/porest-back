@@ -100,7 +100,8 @@ jacocoTestCoverageVerification {
                     '**.domain/**',
                     '**.Config/**',
                     '**.lib/**',
-                    '**.dto/**']
+                    '**.dto/**'
+            ]
             limit {
                 counter = 'LINE'
                 value = 'COVEREDRATIO'
