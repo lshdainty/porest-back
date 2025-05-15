@@ -1,4 +1,4 @@
-[![](https://github.com/lshdainty/myHR/actions/workflows/ci-main.yml/badge.svg)](https://github.com/lshdainty/myHR/actions/workflows/ci-main.yml)
+[![](https://github.com/lshdainty/myHR-back/actions/workflows/ci-main.yml/badge.svg)](https://github.com/lshdainty/myHR-back/actions/workflows/ci-main.yml)
 [![codecov](https://codecov.io/gh/lshdainty/myHR-back/branch/main/graph/badge.svg)](https://codecov.io/gh/lshdainty/myHR-back)
 
 # myHR
