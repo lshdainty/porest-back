@@ -34,13 +34,14 @@ public class VacationService {
     public Long addVacation(Long userNo, String name, String desc, VacationType type, BigDecimal grantTime, LocalDateTime occurDate, LocalDateTime expiryDate, Long addUserNo, String clientIP) {
         User user = userService.checkUserExist(userNo);
 
-        Vacation vacation = Vacation.createVacation(user, name, desc, type, grantTime, occurDate, expiryDate, addUserNo, clientIP);
+//        Vacation vacation = Vacation.createVacation(user, name, desc, type, grantTime, occurDate, expiryDate, addUserNo, clientIP);
+//
+//        if (vacation.isBeforeOccur()) { throw new IllegalArgumentException("the expiration date is earlier than the occurrence date"); }
+//
+//        vacationRepositoryImpl.save(vacation);
 
-        if (vacation.isBeforeOccur()) { throw new IllegalArgumentException("the expiration date is earlier than the occurrence date"); }
-
-        vacationRepositoryImpl.save(vacation);
-
-        return vacation.getId();
+//        return vacation.getId();
+        return 0L;
     }
 
     public List<Vacation> findVacationsByUser(Long userNo) {
@@ -55,17 +56,11 @@ public class VacationService {
     public Vacation editVacation(Long vacationId, Long userNo, String reqName, String reqDesc, VacationType reqType, BigDecimal reqGrantTime, LocalDateTime reqOccurDate, LocalDateTime reqExpiryDate, Long addUserNo, String clientIP) {
         Vacation findVacation = checkVacationExist(vacationId);
 
-        String name = "";
-        if (Objects.isNull(reqName)) { name = findVacation.getName(); } else { name = reqName; }
-
-        String desc = "";
-        if (Objects.isNull(reqDesc)) { desc = findVacation.getDesc(); } else { desc = reqDesc; }
-
         VacationType type = null;
         if (Objects.isNull(reqType)) { type = findVacation.getType(); } else { type = reqType; }
 
-        BigDecimal grantTime = new BigDecimal(0);
-        if (reqGrantTime.compareTo(grantTime) == 0) { grantTime = findVacation.getGrantTime(); } else { grantTime = reqGrantTime; }
+//        BigDecimal grantTime = new BigDecimal(0);
+//        if (reqGrantTime.compareTo(grantTime) == 0) { grantTime = findVacation.getGrantTime(); } else { grantTime = reqGrantTime; }
 
         LocalDateTime occurDate = null;
         if (Objects.isNull(reqOccurDate)) { occurDate = findVacation.getOccurDate(); } else { occurDate = reqOccurDate; }
@@ -75,20 +70,21 @@ public class VacationService {
 
         User user = userService.checkUserExist(userNo);
 
-        Vacation newVacation = Vacation.createVacation(user, name, desc, type, grantTime, occurDate, expiryDate, addUserNo, clientIP);
+//        Vacation newVacation = Vacation.createVacation(user, name, desc, type, grantTime, occurDate, expiryDate, addUserNo, clientIP);
 
-        if (newVacation.isBeforeOccur()) { throw new IllegalArgumentException("the expiration date is earlier than the occurrence date"); }
+//        if (newVacation.isBeforeOccur()) { throw new IllegalArgumentException("the expiration date is earlier than the occurrence date"); }
 
-        findVacation.deleteVacation(addUserNo, clientIP);
-        vacationRepositoryImpl.save(newVacation);
+//        findVacation.deleteVacation(addUserNo, clientIP);
+//        vacationRepositoryImpl.save(newVacation);
 
-        return vacationRepositoryImpl.findById(newVacation.getId());
+//        return vacationRepositoryImpl.findById(newVacation.getId());
+        return null;
     }
 
     @Transactional
     public void deleteVacation(Long vacationId, Long delUserNo, String clientIP) {
         Vacation vacation = checkVacationExist(vacationId);
-        vacation.deleteVacation(delUserNo, clientIP);
+//        vacation.deleteVacation(delUserNo, clientIP);
     }
 
     public List<VacationServiceDto> checkPossibleVacations(Long userNo, LocalDateTime standardTime) {
@@ -103,36 +99,31 @@ public class VacationService {
             VacationServiceDto vacationDto = VacationServiceDto.builder()
                     .id(vacation.getId())
                     .user(vacation.getUser())
-                    .schedules(vacation.getSchedules())
                     .scheduleDtos(new ArrayList<>())
-                    .name(vacation.getName())
-                    .desc(vacation.getDesc())
                     .type(vacation.getType())
-                    .grantTime(vacation.getGrantTime())
                     .usedTime(new BigDecimal("0.0000"))
                     .remainTime(new BigDecimal("0.0000"))
                     .occurDate(vacation.getOccurDate())
                     .expiryDate(vacation.getExpiryDate())
-                    .delYN(vacation.getDelYN())
                     .build();
 
-            if (vacation.getSchedules().isEmpty()) {
-                vacationDto.setRemainTime(vacation.getGrantTime());
-                vacationDtos.add(vacationDto);
-                continue;
-            }
+//            if (vacation.getSchedules().isEmpty()) {
+//                vacationDto.setRemainTime(vacation.getGrantTime());
+//                vacationDtos.add(vacationDto);
+//                continue;
+//            }
 
-            List<ScheduleServiceDto> scheduleDtos = scheduleService.convertRealUsedTimeDto(vacation.getSchedules());
-            BigDecimal usedTime = new BigDecimal("0.0000");
-            for (ScheduleServiceDto scheduleDto : scheduleDtos) {
-                usedTime = usedTime.add(scheduleDto.getRealUsedTime());
-            }
+//            List<ScheduleServiceDto> scheduleDtos = scheduleService.convertRealUsedTimeDto(vacation.getSchedules());
+//            BigDecimal usedTime = new BigDecimal("0.0000");
+//            for (ScheduleServiceDto scheduleDto : scheduleDtos) {
+//                usedTime = usedTime.add(scheduleDto.getRealUsedTime());
+//            }
 
-            if (vacation.getGrantTime().compareTo(usedTime) == 0) { continue; }
+//            if (vacation.getGrantTime().compareTo(usedTime) == 0) { continue; }
 
-            vacationDto.setScheduleDtos(scheduleDtos);
-            vacationDto.setUsedTime(usedTime);
-            vacationDto.setRemainTime(vacation.getGrantTime().subtract(usedTime));
+//            vacationDto.setScheduleDtos(scheduleDtos);
+//            vacationDto.setUsedTime(usedTime);
+//            vacationDto.setRemainTime(vacation.getGrantTime().subtract(usedTime));
 
             vacationDtos.add(vacationDto);
         }
@@ -142,7 +133,7 @@ public class VacationService {
 
     public Vacation checkVacationExist(Long vacationId) {
         Vacation findVacation = vacationRepositoryImpl.findById(vacationId);
-        if (Objects.isNull(findVacation) || findVacation.getDelYN().equals("Y")) { throw new IllegalArgumentException(ms.getMessage("error.notfound.vacation", null, null)); }
+//        if (Objects.isNull(findVacation) || findVacation.getDelYN().equals("Y")) { throw new IllegalArgumentException(ms.getMessage("error.notfound.vacation", null, null)); }
         return findVacation;
     }
 }

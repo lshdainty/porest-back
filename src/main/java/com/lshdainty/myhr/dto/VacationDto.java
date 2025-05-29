@@ -41,10 +41,8 @@ public class VacationDto {
 
     public VacationDto(Vacation vacation) {
         vacationId = vacation.getId();
-        vacationName = vacation.getName();
-        vacationDesc = vacation.getDesc();
         vacationType = vacation.getType();
-        grantTime = vacation.getGrantTime();
+        grantTime = vacation.getRemainTime();
         occurDate = vacation.getOccurDate();
         expiryDate = vacation.getExpiryDate();
     }

@@ -20,7 +20,6 @@ public class ScheduleDto {
     private Long scheduleId;
     private Long userNo;
     private String userName;
-    private Long vacationId;
     private ScheduleType scheduleType;
     private String scheduleTypeName;
     private String scheduleDesc;
@@ -36,11 +35,8 @@ public class ScheduleDto {
         scheduleId = schedule.getId();
         userNo = schedule.getUser().getId();
         userName = schedule.getUser().getName();
-        if (schedule.getType().isVacationType()) {
-            vacationId = schedule.getVacation().getId();
-        }
         scheduleType = schedule.getType();
-        scheduleTypeName = schedule.getType().getTypeName();
+        scheduleTypeName = schedule.getType().getStrName();
         scheduleDesc = schedule.getDesc();
         startDate = schedule.getStartDate();
         endDate = schedule.getEndDate();
@@ -50,11 +46,8 @@ public class ScheduleDto {
         scheduleId = schedule.getId();
         userNo = schedule.getUser().getId();
         userName = schedule.getUser().getName();
-        if (schedule.getType().isVacationType()) {
-            vacationId = schedule.getVacation().getId();
-        }
         scheduleType = schedule.getType();
-        scheduleTypeName = schedule.getType().getTypeName();
+        scheduleTypeName = schedule.getType().getStrName();
         scheduleDesc = schedule.getDesc();
         startDate = schedule.getStartDate();
         endDate = schedule.getEndDate();

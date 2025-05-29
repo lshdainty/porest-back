@@ -23,10 +23,20 @@ public class ScheduleApiController {
     public ApiResponse registSchedule(@RequestBody ScheduleDto scheduleDto, HttpServletRequest req) {
         Long scheduleId = null;
 
-        if (scheduleDto.getScheduleType().isVacationType()) {
+//        if (scheduleDto.getScheduleType().isVacationType()) {
+//            scheduleId = scheduleService.registSchedule(
+//                    scheduleDto.getUserNo(),
+//                    scheduleDto.getVacationId(),
+//                    scheduleDto.getScheduleType(),
+//                    scheduleDto.getScheduleDesc(),
+//                    scheduleDto.getStartDate(),
+//                    scheduleDto.getEndDate(),
+//                    0L, // 추후 로그인한 유저의 id를 가져와서 여기에다 넣을 것
+//                    req.getRemoteAddr()
+//            );
+//        } else {
             scheduleId = scheduleService.registSchedule(
                     scheduleDto.getUserNo(),
-                    scheduleDto.getVacationId(),
                     scheduleDto.getScheduleType(),
                     scheduleDto.getScheduleDesc(),
                     scheduleDto.getStartDate(),
@@ -34,17 +44,7 @@ public class ScheduleApiController {
                     0L, // 추후 로그인한 유저의 id를 가져와서 여기에다 넣을 것
                     req.getRemoteAddr()
             );
-        } else {
-            scheduleId = scheduleService.registSchedule(
-                    scheduleDto.getUserNo(),
-                    scheduleDto.getScheduleType(),
-                    scheduleDto.getScheduleDesc(),
-                    scheduleDto.getStartDate(),
-                    scheduleDto.getEndDate(),
-                    0L, // 추후 로그인한 유저의 id를 가져와서 여기에다 넣을 것
-                    req.getRemoteAddr()
-            );
-        }
+//        }
 
         return ApiResponse.success(new ScheduleDto(scheduleId));
     }

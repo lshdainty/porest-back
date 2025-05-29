@@ -49,12 +49,12 @@ public class UserDto {
         this.addedTime = new BigDecimal(0);
         this.vacations = vacations;
 
-        this.vacations.forEach(v -> {
-            if (v.getVacationType().equals(VacationType.BASIC)) {
-                this.standardTime = getStandardTime().add(v.getGrantTime());
-            } else if (v.getVacationType().equals(VacationType.ADDED)) {
-                this.addedTime = getAddedTime().add(v.getGrantTime());
-            }
-        });
+//        this.vacations.forEach(v -> {
+//            if (v.getVacationType().equals(VacationType.BASIC)) {
+//                this.standardTime = getStandardTime().add(v.getGrantTime());
+//            } else if (v.getVacationType().equals(VacationType.ADDED)) {
+//                this.addedTime = getAddedTime().add(v.getGrantTime());
+//            }
+//        });
     }
 }
