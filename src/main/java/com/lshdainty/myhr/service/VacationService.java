@@ -4,9 +4,10 @@ import com.lshdainty.myhr.domain.User;
 import com.lshdainty.myhr.domain.Vacation;
 import com.lshdainty.myhr.domain.VacationType;
 import com.lshdainty.myhr.repository.UserRepositoryImpl;
+import com.lshdainty.myhr.repository.VacationHistoryRepositoryImpl;
 import com.lshdainty.myhr.repository.VacationRepositoryImpl;
-import com.lshdainty.myhr.service.dto.ScheduleServiceDto;
 import com.lshdainty.myhr.service.dto.VacationServiceDto;
+import com.lshdainty.myhr.service.vacation.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
@@ -26,12 +27,38 @@ import java.util.Objects;
 public class VacationService {
     private final MessageSource ms;
     private final VacationRepositoryImpl vacationRepositoryImpl;
+    private final VacationHistoryRepositoryImpl vacationHistoryRepositoryImpl;
     private final UserRepositoryImpl userRepositoryImpl;
     private final UserService userService;
-    private final ScheduleService scheduleService;
 
     @Transactional
-    public Long addVacation(Long userNo, String name, String desc, VacationType type, BigDecimal grantTime, LocalDateTime occurDate, LocalDateTime expiryDate, Long addUserNo, String clientIP) {
+    public Long registVacation(Long userNo, String desc, VacationType type, BigDecimal grantTime, LocalDateTime occurDate, LocalDateTime expiryDate, Long addUserNo, String clientIP) {
+        VacationService vacationService = null;
+        switch (type) {
+            case ANNUAL:
+                vacationService = new Annual(ms, vacationRepositoryImpl, vacationHistoryRepositoryImpl, userRepositoryImpl, userService);
+                break;
+            case MATERNITY:
+                vacationService = new Maternity(ms, vacationRepositoryImpl, vacationHistoryRepositoryImpl, userRepositoryImpl, userService);
+                break;
+            case WEDDING:
+                vacationService = new Wedding(ms, vacationRepositoryImpl, vacationHistoryRepositoryImpl, userRepositoryImpl, userService);
+                break;
+            case BEREAVEMENT:
+                vacationService = new Bereavement(ms, vacationRepositoryImpl, vacationHistoryRepositoryImpl, userRepositoryImpl, userService);
+                break;
+            case OVERTIME:
+                vacationService = new Overtime(ms, vacationRepositoryImpl, vacationHistoryRepositoryImpl, userRepositoryImpl, userService);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid VacationType");
+        }
+
+        return vacationService.registVacation(userNo, desc, type, grantTime, occurDate, expiryDate, addUserNo, clientIP);
+    }
+
+    @Transactional
+    public Long addUsedVacation(Long userNo, String name, String desc, VacationType type, BigDecimal grantTime, LocalDateTime occurDate, LocalDateTime expiryDate, Long addUserNo, String clientIP) {
         User user = userService.checkUserExist(userNo);
 
 //        Vacation vacation = Vacation.createVacation(user, name, desc, type, grantTime, occurDate, expiryDate, addUserNo, clientIP);
