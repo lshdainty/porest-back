@@ -7,19 +7,19 @@ import com.lshdainty.myhr.domain.Vacation;
 import com.lshdainty.myhr.domain.VacationTimeType;
 import com.lshdainty.myhr.domain.VacationType;
 import com.lshdainty.myhr.service.dto.VacationServiceDto;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Data
-@NoArgsConstructor
+@Getter @Setter
+@Builder
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class VacationDto {
     private Long vacationId;
     private VacationType vacationType;
+    private String vacationTypeName;
     private BigDecimal remainTime;
     private LocalDateTime occurDate;
     private LocalDateTime expiryDate;
@@ -36,26 +36,4 @@ public class VacationDto {
     private VacationTimeType vacationTimeType;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-
-    public VacationDto(Long vacationId) {
-        this.vacationId = vacationId;
-    }
-
-    public VacationDto(Vacation vacation) {
-        vacationId = vacation.getId();
-        vacationType = vacation.getType();
-        grantTime = vacation.getRemainTime();
-        occurDate = vacation.getOccurDate();
-        expiryDate = vacation.getExpiryDate();
-    }
-
-    public VacationDto(VacationServiceDto vacation) {
-        vacationId = vacation.getId();
-        vacationDesc = vacation.getDesc();
-        vacationType = vacation.getType();
-        grantTime = vacation.getGrantTime();
-        remainTime = vacation.getRemainTime();
-        occurDate = vacation.getOccurDate();
-        expiryDate = vacation.getExpiryDate();
-    }
 }

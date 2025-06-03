@@ -37,7 +37,7 @@ public class VacationApiController {
                 req.getRemoteAddr()
         );
 
-        return ApiResponse.success(new VacationDto(vacationId));
+        return ApiResponse.success(VacationDto.builder().vacationId(vacationId).build());
     }
 
     @PostMapping("/api/v1/vacation/use/{vacationId}")
@@ -53,7 +53,7 @@ public class VacationApiController {
                 req.getRemoteAddr()
         );
 
-        return ApiResponse.success(new VacationDto(vacationId));
+        return ApiResponse.success(VacationDto.builder().vacationId(vacationId).build());
     }
 
     @GetMapping("/api/v1/vacations/user/{userNo}")
@@ -61,8 +61,18 @@ public class VacationApiController {
         List<Vacation> vacations = vacationService.findVacationsByUser(userNo);
 
         List<VacationDto> resp = vacations.stream()
-                .map(v -> new VacationDto(v))
-                .collect(Collectors.toList());
+                .map(v -> VacationDto
+                        .builder()
+                        .userNo(v.getUser().getId())
+                        .userName(v.getUser().getName())
+                        .vacationId(v.getId())
+                        .vacationType(v.getType())
+                        .vacationTypeName(v.getType().getStrName())
+                        .remainTime(v.getRemainTime())
+                        .occurDate(v.getOccurDate())
+                        .expiryDate(v.getExpiryDate())
+                        .build())
+                .toList();
 
         return ApiResponse.success(resp);
     }
@@ -74,10 +84,24 @@ public class VacationApiController {
         List<UserDto> resp = new ArrayList<>();
         for (User user : usersVacations) {
             List<VacationDto> vacations = user.getVacations().stream()
-                    .map(VacationDto::new)
+                    .map(v -> VacationDto
+                            .builder()
+                            .vacationId(v.getId())
+                            .vacationType(v.getType())
+                            .vacationTypeName(v.getType().getStrName())
+                            .remainTime(v.getRemainTime())
+                            .occurDate(v.getOccurDate())
+                            .expiryDate(v.getExpiryDate())
+                            .build())
                     .toList();
 
-            resp.add(new UserDto(user, vacations));
+            resp.add(UserDto
+                    .builder()
+                    .userNo(user.getId())
+                    .userName(user.getName())
+                    .vacations(vacations)
+                    .build()
+            );
         }
 
         return ApiResponse.success(resp);
@@ -119,10 +143,11 @@ public class VacationApiController {
             log.info("\n");
         }
 
-        List<VacationDto> resp = vacations.stream()
-                .map(v -> new VacationDto(v)).toList();
+//        List<VacationDto> resp = vacations.stream()
+//                .map(v -> new VacationDto(v)).toList();
 
 
-        return ApiResponse.success(resp);
+//        return ApiResponse.success(resp);
+        return ApiResponse.success();
     }
 }

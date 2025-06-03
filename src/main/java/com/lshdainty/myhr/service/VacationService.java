@@ -59,7 +59,6 @@ public class VacationService {
     @Transactional
     public Long useVacation(Long userNo, Long vacatoinId, String desc, VacationTimeType type, LocalDateTime startDate, LocalDateTime endDate, Long addUserNo, String clientIP) {
         User user = userService.checkUserExist(userNo);
-
         Vacation vacation = checkVacationExist(vacatoinId);
 
         // 시작, 종료시간 시간 비교
@@ -90,13 +89,12 @@ public class VacationService {
                 .toList();
 
         weekDays = MyhrTime.addAllDates(weekDays, holidays);
-        log.info("weekDays : {}", weekDays);
 
         // 두 날짜 간 모든 날짜 가져오기
         List<LocalDate> betweenDates = MyhrTime.getBetweenDates(startDate, endDate);
-        log.info("betweenDates1 : {}", betweenDates);
+        log.info("betweenDates : {}, weekDays : {}", betweenDates, weekDays);
         betweenDates = MyhrTime.removeAllDates(betweenDates, weekDays);
-        log.info("betweenDates2 : {}", betweenDates);
+        log.info("remainDays : {}", betweenDates);
 
         BigDecimal useTime = new BigDecimal("0.0000").add(type.convertToValue(betweenDates.size()));
         if (vacation.getRemainTime().compareTo(useTime) < 0) {
