@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @Getter
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PROTECTED)  // -> protected Order() {}와 동일한 의미 (롬복으로 생성자 막기)
-@Table(name = "deptop_schedule")
+@Table(name = "schedule")
 public class Schedule extends AuditingFields {
     @Id
     @GeneratedValue

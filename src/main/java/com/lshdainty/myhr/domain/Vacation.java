@@ -13,7 +13,7 @@ import java.util.List;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)  // -> protected Order() {}와 동일한 의미 (롬복으로 생성자 막기)
-@Table(name = "deptop_vacation")
+@Table(name = "vacation")
 public class Vacation extends AuditingFields {
     @Id @GeneratedValue
     @Column(name = "vacation_id")
@@ -52,15 +52,15 @@ public class Vacation extends AuditingFields {
      * 최초 휴가 생성시 사용하는 생성자
      * Setter를 사용하지 말고 해당 생성자를 통해 생성 및 사용할 것
      */
-    public static Vacation createVacation(User user, VacationType type, BigDecimal grantTime, LocalDateTime occurDate, LocalDateTime expiryDate, Long userNo, String clientIP) {
+    public static Vacation createVacation(User user, VacationType type, BigDecimal grantTime, LocalDateTime occurDate, LocalDateTime expiryDate, Long crtUserNo, String clientIP) {
         Vacation vacation = new Vacation();
         vacation.addUser(user);
         vacation.type = type;
         vacation.remainTime = grantTime;
         vacation.occurDate = occurDate;
         vacation.expiryDate = expiryDate;
-        vacation.setCreated(userNo, clientIP);
-        vacation.setmodified(userNo, clientIP);
+        vacation.setCreated(crtUserNo, clientIP);
+        vacation.setmodified(crtUserNo, clientIP);
         return vacation;
     }
 
@@ -69,18 +69,18 @@ public class Vacation extends AuditingFields {
      * 휴가 추가 메소드<br>
      * remainTime(잔여시간)에 grantTime(추가시간)을 더함
      */
-    public void addVacation(BigDecimal grantTime, Long userNo, String clientIP) {
+    public void addVacation(BigDecimal grantTime, Long mdfUserNo, String clientIP) {
         this.remainTime =  getRemainTime().add(grantTime);
-        this.setmodified(LocalDateTime.now(), userNo, clientIP);
+        this.setmodified(LocalDateTime.now(), mdfUserNo, clientIP);
     }
 
     /**
      * 휴가 차감 메소드<br>
      * remainTime(잔여시간)에서 deductTime을(사용시간)을 뺌
      */
-    public void deductedVacation(BigDecimal deductTime, Long userNo, String clientIP) {
+    public void deductedVacation(BigDecimal deductTime, Long mdfUserNo, String clientIP) {
         this.remainTime =  getRemainTime().subtract(deductTime);
-        this.setmodified(LocalDateTime.now(), userNo, clientIP);
+        this.setmodified(LocalDateTime.now(), mdfUserNo, clientIP);
     }
 
     /**

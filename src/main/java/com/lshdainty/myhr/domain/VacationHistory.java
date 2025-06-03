@@ -14,7 +14,7 @@ import java.util.List;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)  // -> protected Order() {}와 동일한 의미 (롬복으로 생성자 막기)
-@Table(name = "deptop_vacation_history")
+@Table(name = "vacation_history")
 public class VacationHistory extends AuditingFields {
     @Id @GeneratedValue
     @Column(name = "vacation_history_id")
@@ -48,13 +48,13 @@ public class VacationHistory extends AuditingFields {
      * 휴가 등록에 따른 History 내역을 생성해주는 생성자
      * Setter를 사용하지 말고 해당 생성자를 통해 생성 및 사용할 것
      */
-    public static VacationHistory createRegistVacationHistory(Vacation vacation, String desc, BigDecimal grantTime, Long userNo, String clientIP) {
+    public static VacationHistory createRegistVacationHistory(Vacation vacation, String desc, BigDecimal grantTime, Long crtUserNo, String clientIP) {
         VacationHistory vacationHistory = new VacationHistory();
         vacationHistory.vacation = vacation;
         vacationHistory.desc = desc;
         vacationHistory.grantTime = grantTime;
         vacationHistory.delYN = "N";
-        vacationHistory.setCreated(userNo, clientIP);
+        vacationHistory.setCreated(crtUserNo, clientIP);
         return vacationHistory;
     }
 
@@ -63,14 +63,14 @@ public class VacationHistory extends AuditingFields {
      * 휴가 사용에 따른 History 내역을 생성해주는 생성자
      * Setter를 사용하지 말고 해당 생성자를 통해 생성 및 사용할 것
      */
-    public static VacationHistory createUseVacationHistory(Vacation vacation, String desc, VacationTimeType type, LocalDateTime usedDateTime, Long userNo, String clientIP) {
+    public static VacationHistory createUseVacationHistory(Vacation vacation, String desc, VacationTimeType type, LocalDateTime usedDateTime, Long crtUserNo, String clientIP) {
         VacationHistory vacationHistory = new VacationHistory();
         vacationHistory.vacation = vacation;
         vacationHistory.desc = desc;
         vacationHistory.type = type;
         vacationHistory.usedDateTime = usedDateTime;
         vacationHistory.delYN = "N";
-        vacationHistory.setCreated(userNo, clientIP);
+        vacationHistory.setCreated(crtUserNo, clientIP);
         return vacationHistory;
     }
 
@@ -78,8 +78,8 @@ public class VacationHistory extends AuditingFields {
      * 휴가 내역 삭제
      * Setter를 사용하지 말고 해당 메소드를 통해 설정할 것
      */
-    public void deleteVacationHistory(Long userNo, String clientIP) {
+    public void deleteVacationHistory(Long mdfUserNo, String clientIP) {
         this.delYN = "Y";
-        this.setmodified(LocalDateTime.now(), userNo, clientIP);
+        this.setmodified(LocalDateTime.now(), mdfUserNo, clientIP);
     }
 }

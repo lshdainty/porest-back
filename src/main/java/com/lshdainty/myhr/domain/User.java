@@ -13,7 +13,7 @@ import java.util.Objects;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)  // -> protected Order() {}와 동일한 의미 (롬복으로 생성자 막기)
-@Table(name = "deptop_user")
+@Table(name = "users")
 public class User {
     @Id @GeneratedValue
     @Column(name = "user_no")
@@ -34,9 +34,6 @@ public class User {
     @Column(name = "user_birth")
     private String birth;
 
-    @Column(name = "del_yn")
-    private String delYN;
-
     @Column(name = "user_work_time")
     private String workTime;
 
@@ -45,6 +42,9 @@ public class User {
 
     @Column(name = "lunar_yn")
     private String lunarYN;
+
+    @Column(name = "del_yn")
+    private String delYN;
 
     @OneToMany(mappedBy = "user")   // JPA에서는 mappedBy는 읽기 전용
     private List<Vacation> vacations;
