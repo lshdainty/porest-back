@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -50,7 +49,7 @@ public class HolidayApiController {
     public ApiResponse editHoliday(@PathVariable("seq") Long seq, @RequestBody HolidayDto req) {
         holidayService.editHoliday(seq, req.getHolidayName(), req.getHolidayDate(), req.getHolidayType());
 
-        Holiday findHoliday = holidayService.findHoliday(seq);
+        Holiday findHoliday = holidayService.findById(seq);
         return ApiResponse.success(new HolidayDto(findHoliday));
     }
 

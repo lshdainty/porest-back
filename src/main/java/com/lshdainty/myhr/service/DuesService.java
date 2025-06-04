@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -42,8 +43,8 @@ public class DuesService {
     }
 
     public Dues checkDuesExist(Long duesSeq) {
-        Dues findDues = duesRepositoryImpl.findById(duesSeq);
-        if (Objects.isNull(findDues)) { throw new IllegalArgumentException(ms.getMessage("error.notfound.dues", null, null)); }
-        return findDues;
+        Optional<Dues> dues = duesRepositoryImpl.findById(duesSeq);
+        dues.orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.dues", null, null)));
+        return dues.get();
     }
 }

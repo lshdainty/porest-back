@@ -58,9 +58,9 @@ public class ScheduleService {
     }
 
     public Schedule checkScheduleExist(Long scheduleId) {
-        Schedule findSchedule = scheduleRepositoryImpl.findById(scheduleId);
-        if (Objects.isNull(findSchedule) || findSchedule.getDelYN().equals("Y")) { throw new IllegalArgumentException(ms.getMessage("error.notfound.schedule", null, null)); }
-        return findSchedule;
+        Optional<Schedule> schedule = scheduleRepositoryImpl.findById(scheduleId);
+        if (schedule.isEmpty() || schedule.get().getDelYN().equals("Y")) { throw new IllegalArgumentException(ms.getMessage("error.notfound.schedule", null, null)); }
+        return schedule.get();
     }
 
     /**

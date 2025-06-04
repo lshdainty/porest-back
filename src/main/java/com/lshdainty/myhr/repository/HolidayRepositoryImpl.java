@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -21,8 +22,8 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 
     // 단건 휴일 조회
     @Override
-    public Holiday findHoliday(Long holidaySeq) {
-        return em.find(Holiday.class, holidaySeq);
+    public Optional<Holiday> findById(Long seq) {
+        return Optional.ofNullable(em.find(Holiday.class, seq));
     }
 
     // 전체 휴일 조회

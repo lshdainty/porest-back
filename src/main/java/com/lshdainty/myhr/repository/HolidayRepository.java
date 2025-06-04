@@ -4,10 +4,11 @@ import com.lshdainty.myhr.domain.Holiday;
 import com.lshdainty.myhr.domain.HolidayType;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface HolidayRepository {
     void save(Holiday holiday);
-    Holiday findHoliday(Long holidaySeq);
+    Optional<Holiday> findById(Long seq);
     List<Holiday> findHolidays();
     List<Holiday> findHolidaysByStartEndDate(String start, String end);
     List<Holiday> findHolidaysByType(HolidayType type);

@@ -50,7 +50,7 @@ class HolidayServiceTest {
 
     @Test
     @DisplayName("단건 휴일 조회 테스트 - 성공")
-    void findHolidaySuccessTest() {
+    void findByIdSuccessTest() {
         // Given
         Long seq = 1L;
         String name = "신정";
@@ -70,7 +70,7 @@ class HolidayServiceTest {
         given(holidayRepositoryImpl.findHoliday(seq)).willReturn(holiday);
 
         // When
-        Holiday findHoliday = holidayService.findHoliday(seq);
+        Holiday findHoliday = holidayService.findById(seq);
 
         // Then
         then(holidayRepositoryImpl).should().findHoliday(seq);
@@ -83,13 +83,13 @@ class HolidayServiceTest {
 
     @Test
     @DisplayName("단일 휴일 조회 테스트 - 실패 (휴일 없음)")
-    void findHolidayFailTest() {
+    void findByIdFailTest() {
         // Given
         Long seq = 900L;
         given(holidayRepositoryImpl.findHoliday(seq)).willReturn(null);
 
         // When & Then
-        assertThrows(IllegalArgumentException.class, () -> holidayService.findHoliday(seq));
+        assertThrows(IllegalArgumentException.class, () -> holidayService.findById(seq));
         then(holidayRepositoryImpl).should().findHoliday(seq);
     }
 

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -22,8 +23,8 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
 
     // 스케줄 단건 조회(delete용)
     @Override
-    public Schedule findById(Long scheduleId) {
-        return em.find(Schedule.class, scheduleId);
+    public Optional<Schedule> findById(Long scheduleId) {
+        return Optional.ofNullable(em.find(Schedule.class, scheduleId));
     }
 
     // 유저 스케줄 조회

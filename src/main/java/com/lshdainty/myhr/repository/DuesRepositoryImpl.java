@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -20,8 +21,8 @@ public class DuesRepositoryImpl implements DuesRepository {
 
     // 단건 회비 조회(delete용)
     @Override
-    public Dues findById(Long id) {
-        return em.find(Dues.class, id);
+    public Optional<Dues> findById(Long id) {
+        return Optional.ofNullable(em.find(Dues.class, id));
     }
 
     // 전체 회비 조회
