@@ -1,7 +1,5 @@
 package com.lshdainty.myhr.domain;
 
-import java.time.LocalDateTime;
-
 public enum VacationType {
     ANNUAL("연차"),
     MATERNITY("출산"),

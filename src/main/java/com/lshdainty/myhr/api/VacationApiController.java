@@ -42,7 +42,7 @@ public class VacationApiController {
 
     @PostMapping("/api/v1/vacation/use/{vacationId}")
     public ApiResponse useVacation(@PathVariable("vacationId") Long vacationId, @RequestBody VacationDto vacationDto, HttpServletRequest req) {
-        vacationService.useVacation(
+        Long respVacationId = vacationService.useVacation(
                 vacationDto.getUserNo(),
                 vacationId,
                 vacationDto.getVacationDesc(),
@@ -53,7 +53,7 @@ public class VacationApiController {
                 req.getRemoteAddr()
         );
 
-        return ApiResponse.success(VacationDto.builder().vacationId(vacationId).build());
+        return ApiResponse.success(VacationDto.builder().vacationId(respVacationId).build());
     }
 
     @GetMapping("/api/v1/vacations/user/{userNo}")
