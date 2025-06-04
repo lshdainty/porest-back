@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -20,8 +21,8 @@ public class UserRepositoryImpl implements UserRepository {
 
     // userId로 단일 유저 검색
     @Override
-    public User findById(Long userId) {
-        return em.find(User.class, userId);
+    public Optional<User> findById(Long userId) {
+        return Optional.ofNullable(em.find(User.class, userId));
     }
 
     // 전체 유저 목록 조회

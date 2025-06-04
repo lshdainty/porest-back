@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -47,8 +48,8 @@ public class UserService {
     }
 
     public User checkUserExist(Long userId) {
-        User findUser = userRepositoryImpl.findById(userId);
-        if (Objects.isNull(findUser) || findUser.getDelYN().equals("Y")) { throw new IllegalArgumentException(ms.getMessage("error.notfound.user", null, null)); }
-        return findUser;
+        Optional<User> findUser = userRepositoryImpl.findById(userId);
+        if ((findUser.isEmpty()) || findUser.get().getDelYN().equals("Y")) { throw new IllegalArgumentException(ms.getMessage("error.notfound.user", null, null)); }
+        return findUser.get();
     }
 }

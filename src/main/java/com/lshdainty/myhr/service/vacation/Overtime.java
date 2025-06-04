@@ -42,7 +42,7 @@ public class Overtime extends VacationService {
     }
 
     @Override
-    public Long registVacation(Long userNo, String desc, VacationType type, BigDecimal grantTime, LocalDateTime occurDate, LocalDateTime expiryDate, Long addUserNo, String clientIP) {
+    public Long registVacation(Long userNo, String desc, VacationType type, BigDecimal grantTime, LocalDateTime occurDate, LocalDateTime expiryDate, Long crtUserNo, String clientIP) {
         User user = userService.checkUserExist(userNo);
 
         Optional<Vacation> vacation = vacationRepositoryImpl.findVacationByTypeWithYear(userNo, type, String.valueOf(occurDate.getYear()));
@@ -52,12 +52,12 @@ public class Overtime extends VacationService {
             // 보상연차의 경우 당해년도 1월 1일부터 12월 31일로 고정 생성
             occurDate = LocalDateTime.of(occurDate.getYear(), 1, 1, 0, 0, 0);
             expiryDate = LocalDateTime.of(occurDate.getYear(), 12, 31, 23, 59, 59);
-            Vacation newVacation = Vacation.createVacation(user, type, grantTime, occurDate, expiryDate, addUserNo, clientIP);
+            Vacation newVacation = Vacation.createVacation(user, type, grantTime, occurDate, expiryDate, crtUserNo, clientIP);
             vacationRepositoryImpl.save(newVacation);
             vacation = Optional.of(newVacation);
         }
 
-        VacationHistory history = VacationHistory.createRegistVacationHistory(vacation.get(), desc, grantTime, addUserNo, clientIP);
+        VacationHistory history = VacationHistory.createRegistVacationHistory(vacation.get(), desc, grantTime, crtUserNo, clientIP);
         vacationHistoryRepositoryImpl.save(history);
 
         return vacation.get().getId();

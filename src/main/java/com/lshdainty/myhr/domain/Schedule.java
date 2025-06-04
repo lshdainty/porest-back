@@ -53,7 +53,7 @@ public class Schedule extends AuditingFields {
      * 최초 스케줄 생성시 사용하는 생성자
      * Setter를 사용하지 말고 해당 생성자를 통해 생성 및 사용할 것
      */
-    public static Schedule createSchedule(User user, String desc, ScheduleType type, LocalDateTime startDate, LocalDateTime endDate, Long userNo, String clientIP) {
+    public static Schedule createSchedule(User user, String desc, ScheduleType type, LocalDateTime startDate, LocalDateTime endDate, Long crtUserNo, String clientIP) {
         Schedule schedule = new Schedule();
         schedule.user = user;
         schedule.desc = desc;
@@ -61,7 +61,7 @@ public class Schedule extends AuditingFields {
         schedule.startDate = startDate;
         schedule.endDate = endDate;
         schedule.delYN = "N";
-        schedule.setCreated(LocalDateTime.now(), userNo, clientIP);
+        schedule.setCreated(LocalDateTime.now(), crtUserNo, clientIP);
         return schedule;
     }
 

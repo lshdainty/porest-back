@@ -41,13 +41,13 @@ public class Bereavement extends VacationService {
     }
 
     @Override
-    public Long registVacation(Long userNo, String desc, VacationType type, BigDecimal grantTime, LocalDateTime occurDate, LocalDateTime expiryDate, Long addUserNo, String clientIP) {
+    public Long registVacation(Long userNo, String desc, VacationType type, BigDecimal grantTime, LocalDateTime occurDate, LocalDateTime expiryDate, Long crtUserNo, String clientIP) {
         User user = userService.checkUserExist(userNo);
 
-        Vacation vacation = Vacation.createVacation(user, type, grantTime, occurDate, expiryDate, addUserNo, clientIP);
+        Vacation vacation = Vacation.createVacation(user, type, grantTime, occurDate, expiryDate, crtUserNo, clientIP);
         vacationRepositoryImpl.save(vacation);
 
-        VacationHistory history = VacationHistory.createRegistVacationHistory(vacation, desc, grantTime, addUserNo, clientIP);
+        VacationHistory history = VacationHistory.createRegistVacationHistory(vacation, desc, grantTime, crtUserNo, clientIP);
         vacationHistoryRepositoryImpl.save(history);
 
         return vacation.getId();

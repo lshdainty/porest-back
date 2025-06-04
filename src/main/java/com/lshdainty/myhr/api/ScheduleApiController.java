@@ -21,32 +21,17 @@ public class ScheduleApiController {
 
     @PostMapping("/api/v1/schedule")
     public ApiResponse registSchedule(@RequestBody ScheduleDto scheduleDto, HttpServletRequest req) {
-        Long scheduleId = null;
+        Long scheduleId = scheduleService.registSchedule(
+                scheduleDto.getUserNo(),
+                scheduleDto.getScheduleType(),
+                scheduleDto.getScheduleDesc(),
+                scheduleDto.getStartDate(),
+                scheduleDto.getEndDate(),
+                0L, // 추후 로그인한 유저의 id를 가져와서 여기에다 넣을 것
+                req.getRemoteAddr()
+        );
 
-//        if (scheduleDto.getScheduleType().isVacationType()) {
-//            scheduleId = scheduleService.registSchedule(
-//                    scheduleDto.getUserNo(),
-//                    scheduleDto.getVacationId(),
-//                    scheduleDto.getScheduleType(),
-//                    scheduleDto.getScheduleDesc(),
-//                    scheduleDto.getStartDate(),
-//                    scheduleDto.getEndDate(),
-//                    0L, // 추후 로그인한 유저의 id를 가져와서 여기에다 넣을 것
-//                    req.getRemoteAddr()
-//            );
-//        } else {
-            scheduleId = scheduleService.registSchedule(
-                    scheduleDto.getUserNo(),
-                    scheduleDto.getScheduleType(),
-                    scheduleDto.getScheduleDesc(),
-                    scheduleDto.getStartDate(),
-                    scheduleDto.getEndDate(),
-                    0L, // 추후 로그인한 유저의 id를 가져와서 여기에다 넣을 것
-                    req.getRemoteAddr()
-            );
-//        }
-
-        return ApiResponse.success(new ScheduleDto(scheduleId));
+        return ApiResponse.success(ScheduleDto.builder().scheduleId(scheduleId).build());
     }
 
     @GetMapping("/api/v1/schedules/user/{userNo}")
@@ -54,8 +39,19 @@ public class ScheduleApiController {
         List<Schedule> schedules = scheduleService.findSchedulesByUserNo(userNo);
 
         List<ScheduleDto> resp = schedules.stream()
-                .map(s -> new ScheduleDto(s))
-                .collect(Collectors.toList());
+                .map(s -> ScheduleDto
+                        .builder()
+                        .scheduleId(s.getId())
+                        .userNo(s.getUser().getId())
+                        .userName(s.getUser().getName())
+                        .scheduleType(s.getType())
+                        .scheduleTypeName(s.getType().getStrName())
+                        .scheduleDesc(s.getDesc())
+                        .startDate(s.getStartDate())
+                        .endDate(s.getEndDate())
+                        .build()
+                )
+                .toList();
 
         return ApiResponse.success(resp);
     }
@@ -68,8 +64,19 @@ public class ScheduleApiController {
         List<Schedule> schedules = scheduleService.findSchedulesByPeriod(startDate, endDate);
 
         List<ScheduleDto> resp = schedules.stream()
-                .map(s -> new ScheduleDto(s))
-                .collect(Collectors.toList());
+                .map(s -> ScheduleDto
+                        .builder()
+                        .scheduleId(s.getId())
+                        .userNo(s.getUser().getId())
+                        .userName(s.getUser().getName())
+                        .scheduleType(s.getType())
+                        .scheduleTypeName(s.getType().getStrName())
+                        .scheduleDesc(s.getDesc())
+                        .startDate(s.getStartDate())
+                        .endDate(s.getEndDate())
+                        .build()
+                )
+                .toList();
 
         return ApiResponse.success(resp);
     }

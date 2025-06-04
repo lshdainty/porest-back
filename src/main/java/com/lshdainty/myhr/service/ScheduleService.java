@@ -3,6 +3,7 @@ package com.lshdainty.myhr.service;
 import com.lshdainty.myhr.domain.*;
 import com.lshdainty.myhr.repository.*;
 import com.lshdainty.myhr.service.dto.ScheduleServiceDto;
+import com.lshdainty.myhr.util.MyhrTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
@@ -21,86 +22,21 @@ import java.util.*;
 @Transactional(readOnly = true)
 public class ScheduleService {
     private final MessageSource ms;
-    private final UserService userService;
-    private final VacationRepositoryImpl vacationRepositoryImpl;
     private final ScheduleRepositoryImpl scheduleRepositoryImpl;
     private final HolidayRepositoryImpl holidayRepositoryImpl;
-
-    @Transactional
-    public Long registSchedule(Long userNo, Long vacationId, ScheduleType type, String desc, LocalDateTime start, LocalDateTime end, Long addUserNo, String clientIP) {
-//        // 유저 조회
-//        User user = userService.checkUserExist(userNo);
-//
-//        // 휴가 조회
-//        Vacation vacation = vacationRepositoryImpl.findById(vacationId);
-//        if (Objects.isNull(vacation) || vacation.getDelYN().equals("Y")) { throw new IllegalArgumentException(ms.getMessage("error.notfound.vacation", null, null)); }
-//
-//        // 사용기한이 지난 휴가면 사용불가
-//        if (vacation.getExpiryDate().isBefore(LocalDateTime.now())) { throw new IllegalArgumentException("this vacation has expired"); }
-//
-//        // 이제까지 해당 휴가에 사용된 스케줄 리스트 가져오기
-//        List<Schedule> findSchedules = scheduleRepositoryImpl.findSchedulesByVacation(vacation);
-//
-//        // 공휴일 리스트를 가져오기 위한 startDate 최소값 구하기
-//        int minStartDate = findScheduleMinStartTime(findSchedules);
-//        // 등록하려는 스케줄의 시작 시간이 더 작을 수도 있어서 비교
-//        minStartDate = Math.min(minStartDate, Integer.parseInt(start.format(DateTimeFormatter.BASIC_ISO_DATE)));
-//
-//        // 공휴일 리스트를 가져오기 위한 endDate 최대값 구하기
-//        int maxEndDate = findScheduleMaxEndTime(findSchedules);
-//        // 등록하려는 스케줄의 종료 시간이 더 클 수도 있어서 비교
-//        maxEndDate = Math.max(maxEndDate, Integer.parseInt(end.format(DateTimeFormatter.BASIC_ISO_DATE)));
-//
-//        log.debug("regist schedule minStartDate : {}, maxEndDate : {}", minStartDate, maxEndDate);
-//
-//        // 계산에 필요한 공휴일 리스트 가져오기
-//        List<Holiday> holidays = holidayRepositoryImpl.findHolidaysByStartEndDate(Integer.toString(minStartDate), Integer.toString(maxEndDate));
-//
-//        // 공휴일 리스트 타입 변경
-//        List<LocalDate> holidayDates = holidays.stream()
-//                .map(h -> LocalDate.parse(h.getDate(), DateTimeFormatter.BASIC_ISO_DATE))
-//                .toList();
-//
-//        // 사용된 시간 계산
-//        BigDecimal used = new BigDecimal(0);
-//        for (Schedule schedule : findSchedules) {
-//            used = used.add(calculateRealUsed(schedule, holidayDates));
-//        }
-//
-//        // 휴가 등록이 가능한지 확인을 위한 스케줄 생성
-//        Schedule schedule = Schedule.createSchedule(user, vacation, desc, type, start, end, addUserNo, clientIP);
-//
-//        // 사용할 휴가의 실제 사용 시간 계산
-//        BigDecimal toBeUse = calculateRealUsed(schedule, holidayDates);
-//        log.debug("add schedule grantTime : {}, used : {}, toBeUse : {}", vacation.getGrantTime(), used, toBeUse);
-//
-//        // 남은 시간 계산
-//        // grantTime - totalUsed - tobeuse < 0
-//        if (vacation.getGrantTime().subtract(used).subtract(toBeUse).compareTo(BigDecimal.ZERO) < 0) { throw new IllegalArgumentException("there is not enough vacation left"); }
-//
-//        // start, end 시간이 사용자 workTime에 맞도록 설정되어 있는지 확인
-//        if (schedule.getStartDate().isAfter(schedule.getEndDate())) { throw new IllegalArgumentException("the start time is greater than the end time"); }
-//        if (!schedule.isBetweenWorkTime()) { throw new IllegalArgumentException("please match the start and end times to work time"); }
-//
-//        // 휴가 등록
-//        scheduleRepositoryImpl.save(schedule);
-//
-//        return schedule.getId();
-        return 0L;
-    }
+    private final UserService userService;
 
     @Transactional
     public Long registSchedule(Long userNo, ScheduleType type, String desc, LocalDateTime start, LocalDateTime end, Long addUserNo, String clientIP) {
-//        // 유저 조회
-//        User user = userService.checkUserExist(userNo);
-//
-//        Schedule schedule = Schedule.createSchedule(user, null, desc, type, start, end, addUserNo, clientIP);
-//
-//        // 휴가 등록
-//        scheduleRepositoryImpl.save(schedule);
-//
-//        return schedule.getId();
-        return 0L;
+        // 유저 조회
+        User user = userService.checkUserExist(userNo);
+
+        Schedule schedule = Schedule.createSchedule(user, desc, type, start, end, addUserNo, clientIP);
+
+        // 휴가 등록
+        scheduleRepositoryImpl.save(schedule);
+
+        return schedule.getId();
     }
 
     public List<Schedule> findSchedulesByUserNo(Long userNo) {
@@ -108,7 +44,7 @@ public class ScheduleService {
     }
 
     public List<Schedule> findSchedulesByPeriod(LocalDateTime start, LocalDateTime end) {
-//        if (Schedule.isAfterThanEndDate(start, end)) { throw new IllegalArgumentException("The starttime is after the endtime"); }
+        if (MyhrTime.isAfterThanEndDate(start, end)) { throw new IllegalArgumentException(ms.getMessage("error.validate.isAfterThanEndDate", null, null)); }
         return scheduleRepositoryImpl.findSchedulesByPeriod(start, end);
     }
 

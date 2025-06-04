@@ -43,8 +43,8 @@ public class VacationApiController {
     @PostMapping("/api/v1/vacation/use/{vacationId}")
     public ApiResponse useVacation(@PathVariable("vacationId") Long vacationId, @RequestBody VacationDto vacationDto, HttpServletRequest req) {
         vacationService.useVacation(
-                vacationId,
                 vacationDto.getUserNo(),
+                vacationId,
                 vacationDto.getVacationDesc(),
                 vacationDto.getVacationTimeType(),
                 vacationDto.getStartDate(),

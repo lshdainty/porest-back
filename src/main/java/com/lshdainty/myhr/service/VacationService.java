@@ -57,7 +57,7 @@ public class VacationService {
     }
 
     @Transactional
-    public Long useVacation(Long userNo, Long vacatoinId, String desc, VacationTimeType type, LocalDateTime startDate, LocalDateTime endDate, Long addUserNo, String clientIP) {
+    public Long useVacation(Long userNo, Long vacatoinId, String desc, VacationTimeType type, LocalDateTime startDate, LocalDateTime endDate, Long crtUserNo, String clientIP) {
         User user = userService.checkUserExist(userNo);
         Vacation vacation = checkVacationExist(vacatoinId);
 
@@ -71,7 +71,7 @@ public class VacationService {
         // 연차가 아닌 시간단위 휴가인 경우 유연근무제 시간 체크
         if (!type.equals(VacationTimeType.DAYOFF)) {
             if (user.isBetweenWorkTime(startDate.toLocalTime())) {
-                throw new IllegalArgumentException(ms.getMessage("error.vaildate.worktime.startendtime", null, null));
+                throw new IllegalArgumentException(ms.getMessage("error.vaildate.worktime.startEndTime", null, null));
             }
         }
 
@@ -98,7 +98,7 @@ public class VacationService {
 
         BigDecimal useTime = new BigDecimal("0.0000").add(type.convertToValue(betweenDates.size()));
         if (vacation.getRemainTime().compareTo(useTime) < 0) {
-            throw new IllegalArgumentException(ms.getMessage("error.vaildate.notremaintime", null, null));
+            throw new IllegalArgumentException(ms.getMessage("error.vaildate.notRemainTime", null, null));
         }
 
         for (LocalDate betweenDate : betweenDates) {
@@ -107,13 +107,13 @@ public class VacationService {
                     desc,
                     type,
                     LocalDateTime.of(betweenDate, LocalTime.of(startDate.toLocalTime().getHour(), startDate.toLocalTime().getMinute(), 0)),
-                    addUserNo,
+                    crtUserNo,
                     clientIP
             );
             vacationHistoryRepositoryImpl.save(history);
         }
 
-        vacation.deductedVacation(useTime, addUserNo, clientIP);
+        vacation.deductedVacation(useTime, crtUserNo, clientIP);
 
         return vacation.getId();
     }
