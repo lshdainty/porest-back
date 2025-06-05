@@ -42,8 +42,6 @@ public class ScheduleApiController {
                 .map(s -> ScheduleDto
                         .builder()
                         .scheduleId(s.getId())
-                        .userNo(s.getUser().getId())
-                        .userName(s.getUser().getName())
                         .scheduleType(s.getType())
                         .scheduleTypeName(s.getType().getStrName())
                         .scheduleDesc(s.getDesc())

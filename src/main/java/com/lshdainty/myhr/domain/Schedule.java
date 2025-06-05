@@ -69,8 +69,8 @@ public class Schedule extends AuditingFields {
      * 스케줄 삭제
      * Setter를 사용하지 말고 해당 메소드를 통해 설정할 것
      */
-    public void deleteSchedule(Long userNo, String clientIP) {
+    public void deleteSchedule(Long mdfUserNo, String clientIP) {
         this.delYN = "Y";
-        this.setmodified(LocalDateTime.now(), userNo, clientIP);
+        this.setmodified(LocalDateTime.now(), mdfUserNo, clientIP);
     }
 }

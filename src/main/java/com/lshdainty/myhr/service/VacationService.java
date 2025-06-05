@@ -94,7 +94,7 @@ public class VacationService {
 
         BigDecimal useTime = new BigDecimal("0.0000").add(type.convertToValue(betweenDates.size()));
         if (vacation.getRemainTime().compareTo(useTime) < 0) {
-            throw new IllegalArgumentException(ms.getMessage("error.validate.notRemainTime", null, null));
+            throw new IllegalArgumentException(ms.getMessage("error.validate.notEnoughRemainTime", null, null));
         }
 
         for (LocalDate betweenDate : betweenDates) {
@@ -136,7 +136,7 @@ public class VacationService {
         Vacation vacation = checkVacationExist(history.getVacation().getId());
 
         if (MyhrTime.isAfterThanEndDate(LocalDateTime.now(), vacation.getExpiryDate())) {
-            throw new IllegalArgumentException(ms.getMessage("error.validate.expiryDateisAfterThanNow", null, null));
+            throw new IllegalArgumentException(ms.getMessage("error.validate.expiry.isBeforeThanNow", null, null));
         }
 
         if (Objects.isNull(history.getType())) {
@@ -149,7 +149,7 @@ public class VacationService {
         } else {
             // 휴가 사용 내역
             if (MyhrTime.isAfterThanEndDate(LocalDateTime.now(), history.getUsedDateTime())) {
-                throw new IllegalArgumentException(ms.getMessage("error.validate.usedDateisAfterThanNow", null, null));
+                throw new IllegalArgumentException(ms.getMessage("error.validate.delete.isBeforeThanNow", null, null));
             }
 
             history.deleteUseVacationHistory(vacation, delUserNo, clientIP);

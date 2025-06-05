@@ -45,13 +45,4 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
                 .setParameter("delYN", "N")
                 .getResultList();
     }
-
-    // 휴가에 속한 스케줄 조회
-    @Override
-    public List<Schedule> findSchedulesByVacation(Vacation vacation) {
-        return em.createQuery("select s from Schedule s where s.vacation.id = :vacationId and s.delYN = :delYN", Schedule.class)
-                .setParameter("vacationId", vacation.getId())
-                .setParameter("delYN", "N")
-                .getResultList();
-    }
 }

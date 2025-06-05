@@ -1,8 +1,12 @@
 package com.lshdainty.myhr.util;
 
+import com.lshdainty.myhr.domain.Schedule;
+
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -95,5 +99,43 @@ public class MyhrTime {
         return sourceSet.stream()
                 .map(LocalDate::from)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * List의 시간 값 중에<br>
+     * 가장 큰 시간 값을 반환하는 함수
+     *
+     * @param dateTimes 시간 리스트
+     * @return LocalDateTime 타입의 가장 큰 시간
+     */
+    public LocalDateTime findMaxDateTime(List<LocalDateTime> dateTimes) {
+        DateTimeFormatter dateTimeFormat = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+
+        int maxDateTimeInt = dateTimes.stream()
+                .map(t -> t.format(dateTimeFormat))
+                .mapToInt(Integer::parseInt)
+                .summaryStatistics()
+                .getMax();
+
+        return LocalDateTime.parse(Integer.toString(maxDateTimeInt), dateTimeFormat);
+    }
+
+    /**
+     * List의 시간 값 중에<br>
+     * 가장 작은 시간 값을 반환하는 함수
+     *
+     * @param dateTimes 시간 리스트
+     * @return LocalDateTime 타입의 가장 작은 시간
+     */
+    public LocalDateTime findMinDateTime(List<LocalDateTime> dateTimes) {
+        DateTimeFormatter dateTimeFormat = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+
+        int minDateTimeInt = dateTimes.stream()
+                .map(t -> t.format(dateTimeFormat))
+                .mapToInt(Integer::parseInt)
+                .summaryStatistics()
+                .getMin();
+
+        return LocalDateTime.parse(Integer.toString(minDateTimeInt), dateTimeFormat);
     }
 }
