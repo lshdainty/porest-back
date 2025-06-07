@@ -58,4 +58,11 @@ public class VacationRepositoryImpl implements VacationRepository {
                 .setParameter("baseTime", baseTime)
                 .getResultList();
     }
+
+    @Override
+    public List<Vacation> findVacationsByIdsWithUser(List<Long> vacationIds) {
+        return em.createQuery("select v from Vacation v join fetch v.user u where v.id in :vacationIds", Vacation.class)
+                .setParameter("vacationIds", vacationIds)
+                .getResultList();
+    }
 }

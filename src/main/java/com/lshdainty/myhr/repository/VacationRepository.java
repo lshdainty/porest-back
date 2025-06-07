@@ -1,7 +1,6 @@
 package com.lshdainty.myhr.repository;
 
 import com.lshdainty.myhr.domain.Vacation;
-import com.lshdainty.myhr.domain.VacationHistory;
 import com.lshdainty.myhr.domain.VacationType;
 
 import java.time.LocalDateTime;
@@ -21,4 +20,6 @@ public interface VacationRepository {
     List<Vacation> findVacationsByBaseTime(Long userNo, LocalDateTime baseTime);
     // 유저가 가진 휴가 중 기준 시간을 포함하는 휴가와 스케줄 조회
     List<Vacation> findVacationsByBaseTimeWithHistory(Long userNo, LocalDateTime baseTime);
+    // 휴가 여러건 조회(IDS, 유저정보 포함)
+    List<Vacation> findVacationsByIdsWithUser(List<Long> vacationIds);
 }

@@ -5,7 +5,6 @@ import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
@@ -21,7 +20,7 @@ public class AuditingFields {
     @Column(name = "create_by")
     private Long createBy;
 
-    @Column(name = "creaet_ip")
+    @Column(name = "create_ip")
     private String createIP;
 
 //    @LastModifiedDate
@@ -45,13 +44,13 @@ public class AuditingFields {
         this.createIP = ip;
     }
 
-    public void setmodified(LocalDateTime date, Long no, String ip) {
+    public void setModified(LocalDateTime date, Long no, String ip) {
         this.modifyDate = date;
         this.modifyBy = no;
         this.modifyIP = ip;
     }
 
-    public void setmodified(Long no, String ip) {
+    public void setModified(Long no, String ip) {
         this.modifyBy = no;
         this.modifyIP = ip;
     }

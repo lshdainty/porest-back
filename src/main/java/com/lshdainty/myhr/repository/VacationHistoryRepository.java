@@ -2,6 +2,8 @@ package com.lshdainty.myhr.repository;
 
 import com.lshdainty.myhr.domain.VacationHistory;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface VacationHistoryRepository {
@@ -9,4 +11,6 @@ public interface VacationHistoryRepository {
     void save(VacationHistory vacationHistory);
     // 단건 휴가내역 조회(delete용)
     Optional<VacationHistory> findById(Long vacationHistoryId);
+    // Calendar용 기간 휴가 내역 조회
+    List<VacationHistory> findVacationHistorysByPeriod(LocalDateTime start, LocalDateTime end);
 }

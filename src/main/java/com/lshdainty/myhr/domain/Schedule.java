@@ -4,18 +4,9 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -71,6 +62,6 @@ public class Schedule extends AuditingFields {
      */
     public void deleteSchedule(Long mdfUserNo, String clientIP) {
         this.delYN = "Y";
-        this.setmodified(LocalDateTime.now(), mdfUserNo, clientIP);
+        this.setModified(LocalDateTime.now(), mdfUserNo, clientIP);
     }
 }

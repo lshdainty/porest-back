@@ -60,7 +60,7 @@ public class Vacation extends AuditingFields {
         vacation.occurDate = occurDate;
         vacation.expiryDate = expiryDate;
         vacation.setCreated(crtUserNo, clientIP);
-        vacation.setmodified(crtUserNo, clientIP);
+        vacation.setModified(crtUserNo, clientIP);
         return vacation;
     }
 
@@ -71,7 +71,7 @@ public class Vacation extends AuditingFields {
      */
     public void addVacation(BigDecimal grantTime, Long mdfUserNo, String clientIP) {
         this.remainTime =  getRemainTime().add(grantTime);
-        this.setmodified(LocalDateTime.now(), mdfUserNo, clientIP);
+        this.setModified(LocalDateTime.now(), mdfUserNo, clientIP);
     }
 
     /**
@@ -80,7 +80,7 @@ public class Vacation extends AuditingFields {
      */
     public void deductedVacation(BigDecimal deductTime, Long mdfUserNo, String clientIP) {
         this.remainTime =  getRemainTime().subtract(deductTime);
-        this.setmodified(LocalDateTime.now(), mdfUserNo, clientIP);
+        this.setModified(LocalDateTime.now(), mdfUserNo, clientIP);
     }
 
     /**

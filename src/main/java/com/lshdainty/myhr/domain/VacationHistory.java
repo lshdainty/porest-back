@@ -2,13 +2,9 @@ package com.lshdainty.myhr.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.BatchSize;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @ToString
 @Entity
@@ -42,6 +38,18 @@ public class VacationHistory extends AuditingFields {
 
     @Column(name = "del_yn")
     private String delYN;
+
+    @Override
+    public String toString() {
+        return "VacationHistory{" +
+                "id=" + id +
+                ", desc='" + desc + '\'' +
+                ", grantTime=" + grantTime +
+                ", type=" + type +
+                ", usedDateTime=" + usedDateTime +
+                ", delYN='" + delYN + '\'' +
+                '}';
+    }
 
     /**
      * 휴가 등록 내역 생성자
@@ -81,7 +89,7 @@ public class VacationHistory extends AuditingFields {
     public void deleteRegistVacationHistory(Vacation vacation, Long mdfUserNo, String clientIP) {
         vacation.deductedVacation(getGrantTime(), mdfUserNo, clientIP);
         this.delYN = "Y";
-        this.setmodified(LocalDateTime.now(), mdfUserNo, clientIP);
+        this.setModified(LocalDateTime.now(), mdfUserNo, clientIP);
     }
 
     /**
@@ -91,6 +99,6 @@ public class VacationHistory extends AuditingFields {
     public void deleteUseVacationHistory(Vacation vacation,Long mdfUserNo, String clientIP) {
         vacation.addVacation(getType().convertToValue(1), mdfUserNo, clientIP);
         this.delYN = "Y";
-        this.setmodified(LocalDateTime.now(), mdfUserNo, clientIP);
+        this.setModified(LocalDateTime.now(), mdfUserNo, clientIP);
     }
 }

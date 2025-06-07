@@ -5,6 +5,7 @@ import com.lshdainty.myhr.repository.HolidayRepositoryImpl;
 import com.lshdainty.myhr.repository.UserRepositoryImpl;
 import com.lshdainty.myhr.repository.VacationHistoryRepositoryImpl;
 import com.lshdainty.myhr.repository.VacationRepositoryImpl;
+import com.lshdainty.myhr.service.dto.VacationServiceDto;
 import com.lshdainty.myhr.service.vacation.*;
 import com.lshdainty.myhr.util.MyhrTime;
 import lombok.RequiredArgsConstructor;
@@ -18,9 +19,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -156,6 +158,37 @@ public class VacationService {
         }
     }
 
+    public List<VacationServiceDto> getVacationHistoriesByPeriod(LocalDateTime startDate, LocalDateTime endDate) {
+        List<VacationHistory> histories = vacationHistoryRepositoryImpl.findVacationHistorysByPeriod(startDate, endDate);
+
+        List<Vacation> vacations = vacationRepositoryImpl.findVacationsByIdsWithUser(histories.stream()
+                .map(h -> h.getVacation().getId())
+                .distinct()
+                .toList()
+        );
+
+        Map<Long, User> userMap = vacations.stream()
+                .collect(Collectors.toMap(Vacation::getId, v -> v.getUser()));
+
+        List<VacationHistory> dayHistories = histories.stream()
+                .filter(h -> h.getType().equals(VacationTimeType.DAYOFF))
+                .collect(Collectors.toList());
+
+        List<VacationHistory> hourHistories = histories.stream()
+                .filter(h -> !h.getType().equals(VacationTimeType.DAYOFF))
+                .collect(Collectors.toList());
+
+        List<VacationServiceDto> result = Stream.of(makeDayGroupDto(dayHistories), makeHourGroupDto(hourHistories))
+                .flatMap(Collection::stream)
+                .toList();
+
+        for (VacationServiceDto dto : result) {
+            dto.setUser(userMap.get(dto.getId()));
+        }
+
+        return result;
+    }
+
     public Vacation checkVacationExist(Long vacationId) {
         Optional<Vacation> vacation = vacationRepositoryImpl.findById(vacationId);
         vacation.orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.vacation", null, null)));
@@ -166,5 +199,90 @@ public class VacationService {
         Optional<VacationHistory> history = vacationHistoryRepositoryImpl.findById(vacationHistoryId);
         history.orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.vacation.history", null, null)));
         return history.get();
+    }
+
+    private List<VacationServiceDto> makeDayGroupDto(List<VacationHistory> dayHistories) {
+        List<VacationServiceDto> vacationDtos = new ArrayList<>();
+
+        String previousGroupKey = null;
+        VacationServiceDto vacationDto = null;
+        LocalDateTime previousDate = null;
+        List<Long> historyIds = null;
+
+        for (VacationHistory history : dayHistories) {
+            // 그룹 비교 키 생성
+            String currentGroupKey = history.getVacation().getId() + "-" + history.getType().name();
+            LocalDateTime currentDate = history.getUsedDateTime();
+
+            // 첫 행 || 이전 그룹 키와 다른 경우
+            if (previousGroupKey == null || !previousGroupKey.equals(currentGroupKey)) {
+                // 이전 그룹이 있다면 결과에 추가
+                if (previousGroupKey != null) {
+                    vacationDtos.add(vacationDto);
+                }
+
+                // 새로운 그룹 시작
+                previousGroupKey = currentGroupKey;
+                previousDate = currentDate;
+                historyIds = new ArrayList<>();
+                historyIds.add(history.getId());
+                vacationDto = VacationServiceDto.builder()
+                        .id(history.getVacation().getId())
+                        .historyIds(historyIds)
+                        .timeType(history.getType())
+                        .desc(history.getDesc())
+                        .startDate(currentDate)
+                        .endDate(currentDate.plusSeconds(history.getType().getSeconds()))
+                        .build();
+            } else {    // 이전 그룹 키와 같은 경우
+                // 연속된 날짜인지 확인 (1일 차이)
+                if (ChronoUnit.DAYS.between(previousDate, currentDate) == 1) {
+                    historyIds.add(history.getId());
+                    vacationDto.setHistoryIds(historyIds);
+                    vacationDto.setEndDate(currentDate.plusSeconds(VacationTimeType.DAYOFF.getSeconds()));
+                } else {
+                    // 연속되지 않으므로 현재 그룹을 완료하고 새 그룹 시작
+                    vacationDtos.add(vacationDto);
+
+                    historyIds = new ArrayList<>();
+                    historyIds.add(history.getId());
+                    vacationDto = VacationServiceDto.builder()
+                            .id(history.getVacation().getId())
+                            .historyIds(historyIds)
+                            .timeType(history.getType())
+                            .desc(history.getDesc())
+                            .startDate(currentDate)
+                            .endDate(currentDate.plusSeconds(history.getType().getSeconds()))
+                            .build();
+                }
+                previousDate = currentDate;
+            }
+        }
+
+        // 마지막 그룹 추가
+        if (previousGroupKey != null) {
+            vacationDtos.add(vacationDto);
+        }
+
+        return vacationDtos;
+    }
+
+    private List<VacationServiceDto> makeHourGroupDto(List<VacationHistory> hourHistories) {
+        List<VacationServiceDto> vacationDtos = new ArrayList<>();
+
+        for (VacationHistory history : hourHistories) {
+            vacationDtos.add(
+                    VacationServiceDto.builder()
+                            .id(history.getVacation().getId())
+                            .historyIds(List.of(history.getId()))
+                            .timeType(history.getType())
+                            .desc(history.getDesc())
+                            .startDate(history.getUsedDateTime())
+                            .endDate(history.getUsedDateTime().plusSeconds(history.getType().getSeconds()))
+                            .build()
+            );
+        }
+
+        return vacationDtos;
     }
 }
