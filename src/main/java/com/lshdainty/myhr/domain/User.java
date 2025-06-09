@@ -120,7 +120,6 @@ public class User {
      */
     public boolean isBetweenWorkTime(LocalTime time) {
         List<LocalTime> workTimes = convertWorkTimeToLocalTime();
-
         return (time.isAfter(workTimes.get(0)) || time.equals(workTimes.get(0))) &&
                 (time.isBefore(workTimes.get(1)) || time.equals(workTimes.get(1)));
     }
