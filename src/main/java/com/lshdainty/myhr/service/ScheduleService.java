@@ -26,6 +26,8 @@ public class ScheduleService {
         // 유저 조회
         User user = userService.checkUserExist(userNo);
 
+        if (MyhrTime.isAfterThanEndDate(start, end)) { throw new IllegalArgumentException(ms.getMessage("error.validate.startIsAfterThanEnd", null, null)); }
+
         Schedule schedule = Schedule.createSchedule(user, desc, type, start, end, crtUserNo, clientIP);
 
         // 휴가 등록

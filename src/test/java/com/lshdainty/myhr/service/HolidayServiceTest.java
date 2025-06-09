@@ -23,9 +23,9 @@ import static org.mockito.BDDMockito.*;
 @ExtendWith(MockitoExtension.class)
 @DisplayName("공휴일 서비스 테스트")
 class HolidayServiceTest {
+    // 삭제하지 말 것 (NullpointException 발생)
     @Mock
     private MessageSource ms;
-
     @Mock
     private HolidayRepositoryImpl holidayRepositoryImpl;
 
@@ -42,7 +42,7 @@ class HolidayServiceTest {
         willDoNothing().given(holidayRepositoryImpl).save(any(Holiday.class));
 
         // When
-        Long savedSeq = holidayService.save(name, date, type);
+        holidayService.save(name, date, type);
 
         // Then
         then(holidayRepositoryImpl).should().save(any(Holiday.class));
@@ -58,15 +58,6 @@ class HolidayServiceTest {
         HolidayType type = HolidayType.PUBLIC;
         Holiday holiday = Holiday.createHoliday(name, date, type);
 
-        // Reflection을 사용하여 seq 설정 (테스트용)
-        try {
-            java.lang.reflect.Field field = Holiday.class.getDeclaredField("seq");
-            field.setAccessible(true);
-            field.set(holiday, seq);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
         given(holidayRepositoryImpl.findById(seq)).willReturn(Optional.of(holiday));
 
         // When
@@ -75,7 +66,6 @@ class HolidayServiceTest {
         // Then
         then(holidayRepositoryImpl).should().findById(seq);
         assertThat(findHoliday).isNotNull();
-        assertThat(findHoliday.getSeq()).isEqualTo(seq);
         assertThat(findHoliday.getName()).isEqualTo(name);
         assertThat(findHoliday.getDate()).isEqualTo(date);
         assertThat(findHoliday.getType()).isEqualTo(type);
@@ -83,7 +73,7 @@ class HolidayServiceTest {
 
     @Test
     @DisplayName("단일 공휴일 조회 테스트 - 실패 (공휴일 없음)")
-    void findByIdFailTest() {
+    void findByIdFailHolidayNotFoundTest() {
         // Given
         Long seq = 900L;
         given(holidayRepositoryImpl.findById(seq)).willReturn(Optional.empty());
@@ -119,8 +109,8 @@ class HolidayServiceTest {
     @DisplayName("공휴일 기간별 조회 테스트 - 성공")
     void findHolidaysByStartEndDateSuccessTest() {
         // Given
-        String start = "";
-        String end = "";
+        String start = "20250101";
+        String end = "20251231";
         given(holidayRepositoryImpl.findHolidaysByStartEndDate(start, end)).willReturn(List.of(
                 Holiday.createHoliday("신정", "20250101", HolidayType.PUBLIC),
                 Holiday.createHoliday("설날", "20250129", HolidayType.PUBLIC),
@@ -167,15 +157,6 @@ class HolidayServiceTest {
         HolidayType type = HolidayType.PUBLIC;
         Holiday holiday = Holiday.createHoliday(name, date, type);
 
-        // Reflection을 사용하여 seq 설정 (테스트용)
-        try {
-            java.lang.reflect.Field field = Holiday.class.getDeclaredField("seq");
-            field.setAccessible(true);
-            field.set(holiday, seq);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
         given(holidayRepositoryImpl.findById(seq)).willReturn(Optional.of(holiday));
 
         // When
@@ -185,7 +166,6 @@ class HolidayServiceTest {
 
         // Then
         then(holidayRepositoryImpl).should().findById(seq);
-        assertThat(holiday.getSeq()).isEqualTo(seq);
         assertThat(holiday.getName()).isEqualTo(name);
         assertThat(holiday.getDate()).isEqualTo(date);
         assertThat(holiday.getType()).isEqualTo(type);
@@ -193,7 +173,7 @@ class HolidayServiceTest {
 
     @Test
     @DisplayName("공휴일 수정 테스트 - 실패 (공휴일 없음)")
-    void editHolidayFailTest() {
+    void editHolidayFailHolidayNotFoundTest() {
         // Given
         Long seq = 900L;
         String name = "신정";
@@ -215,15 +195,6 @@ class HolidayServiceTest {
         HolidayType type = HolidayType.PUBLIC;
         Holiday holiday = Holiday.createHoliday(name, date, type);
 
-        // Reflection을 사용하여 seq 설정 (테스트용)
-        try {
-            java.lang.reflect.Field field = Holiday.class.getDeclaredField("seq");
-            field.setAccessible(true);
-            field.set(holiday, seq);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
         given(holidayRepositoryImpl.findById(seq)).willReturn(Optional.of(holiday));
         willDoNothing().given(holidayRepositoryImpl).delete(holiday);
 
@@ -237,7 +208,7 @@ class HolidayServiceTest {
 
     @Test
     @DisplayName("공휴일 삭제 테스트 - 실패 (공휴일 없음)")
-    void deleteHolidayFailTest() {
+    void deleteHolidayFailHolidayNotFoundTest() {
         // Given
         Long seq = 900L;
         given(holidayRepositoryImpl.findById(seq)).willReturn(Optional.empty());
