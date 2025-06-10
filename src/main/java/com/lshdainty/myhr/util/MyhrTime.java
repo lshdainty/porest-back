@@ -1,12 +1,9 @@
 package com.lshdainty.myhr.util;
 
-import com.lshdainty.myhr.domain.Schedule;
-
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;

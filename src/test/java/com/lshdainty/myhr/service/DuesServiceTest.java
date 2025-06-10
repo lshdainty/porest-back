@@ -45,7 +45,7 @@ class DuesServiceTest {
         willDoNothing().given(duesRepositoryImpl).save(any(Dues.class));
 
         // When
-        Long duesSeq = duesService.save(userName, amount, type, date, detail);
+        duesService.save(userName, amount, type, date, detail);
 
         // Then
         then(duesRepositoryImpl).should().save(any(Dues.class));

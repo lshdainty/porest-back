@@ -115,8 +115,8 @@ public class User {
      * 날짜가 유저의 유연근무제에 맞춰<br>
      * 정상적으로 설정되어 있는지 확인하는 함수
      *
-     * @Param stratTime
-     * @Param endTime
+     * @param startTime 검사 대상 시작 시간
+     * @param endTime 검사 대항 종료 시간
      * @return true, false 반환
      */
     public boolean isBetweenWorkTime(LocalTime startTime, LocalTime endTime) {
