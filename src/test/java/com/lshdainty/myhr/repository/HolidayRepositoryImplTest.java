@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -26,7 +27,7 @@ class HolidayRepositoryImplTest {
     private TestEntityManager em;
 
     @Test
-    @DisplayName("휴일 저장 및 단건 조회")
+    @DisplayName("공휴일 저장 및 단건 조회")
     void save() {
         // given
         String name = "신정";
@@ -41,20 +42,33 @@ class HolidayRepositoryImplTest {
         em.clear();
 
         // then
-        Holiday findHoliday = holidayRepositoryImpl.findHoliday(holiday.getSeq());
-        assertThat(findHoliday).isNotNull();
-        assertThat(findHoliday.getName()).isEqualTo(name);
-        assertThat(findHoliday.getDate()).isEqualTo(date);
-        assertThat(findHoliday.getType()).isEqualTo(type);
+        Optional<Holiday> findHoliday = holidayRepositoryImpl.findById(holiday.getSeq());
+        assertThat(findHoliday.isPresent()).isTrue();
+        assertThat(findHoliday.get().getName()).isEqualTo(name);
+        assertThat(findHoliday.get().getDate()).isEqualTo(date);
+        assertThat(findHoliday.get().getType()).isEqualTo(type);
     }
 
     @Test
-    @DisplayName("휴일 리스트 조회")
+    @DisplayName("단건 조회 시 공휴일이 없어도 Null이 반환되면 안된다.")
+    void findByIdEmpty() {
+        // given
+        Long vacationId = 999L;
+
+        // when
+        Optional<Holiday> findHoliday = holidayRepositoryImpl.findById(vacationId);
+
+        // then
+        assertThat(findHoliday.isEmpty()).isTrue();
+    }
+
+    @Test
+    @DisplayName("공휴일 목록을 조회한다.")
     void getHolidays() {
         // given
         String[] names = {"신정", "어린이날", "크리스마스"};
-        String[] dates = {"20250101", "20250505", "20251225"};
-        HolidayType[] types = {HolidayType.PUBLIC, HolidayType.PUBLIC, HolidayType.PUBLIC};
+        String[] dates = {"20250101", "20250505", "20251226"};
+        HolidayType[] types = {HolidayType.PUBLIC, HolidayType.PUBLIC, HolidayType.RECOMMEND};
 
         for (int i = 0; i < names.length; i++) {
             Holiday holiday = Holiday.createHoliday(names[i], dates[i], types[i]);
@@ -73,7 +87,17 @@ class HolidayRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("기간에 해당하는 휴일만 나오는지 조회 (정상 케이스)")
+    @DisplayName("공휴일 목록이 없더라도 Null이 반환되면 안된다.")
+    void getHolidaysEmpty() {
+        // given & when
+        List<Holiday> holidays = holidayRepositoryImpl.findHolidays();
+
+        // then
+        assertThat(holidays.isEmpty()).isTrue();
+    }
+
+    @Test
+    @DisplayName("기간에 해당하는 휴일만 나오는지 조회한다.")
     void getHolidaysByDate() {
         // given
         String[] names = {"신정", "어린이날", "크리스마스"};
@@ -96,7 +120,7 @@ class HolidayRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("기간에 해당하는 휴일만 나오는지 조회 (경계값 케이스)")
+    @DisplayName("기간에 해당하는 휴일만 나오는지 조회한다. (경계값 케이스)")
     void getHolidaysByDateBoundary() {
         // given
         String[] names = {"신정", "어린이날", "크리스마스"};
@@ -128,7 +152,17 @@ class HolidayRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("타입에 해당하는 휴일만 나오는지 조회")
+    @DisplayName("기간에 해당하는 휴일이 없더라도 Null이 반환되면 안된다.")
+    void getHolidaysByDateEmpty() {
+        // given & when
+        List<Holiday> holidays = holidayRepositoryImpl.findHolidaysByStartEndDate("20250101", "20250504");
+
+        // then
+        assertThat(holidays.isEmpty()).isTrue();
+    }
+
+    @Test
+    @DisplayName("타입에 해당하는 휴일만 나오는지 조회한다.")
     void getHolidaysByType() {
         // given
         String[] names = {"신정", "권장휴가", "크리스마스"};
@@ -150,6 +184,48 @@ class HolidayRepositoryImplTest {
     }
 
     @Test
+    @DisplayName("타입에 해당하는 휴일이 없더라도 Null이 반환되면 안된다.")
+    void getHolidaysByTypeEmpty() {
+        // given & when
+        List<Holiday> holidays = holidayRepositoryImpl.findHolidaysByType(HolidayType.PUBLIC);
+
+        // then
+        assertThat(holidays.isEmpty()).isTrue();
+    }
+
+    @Test
+    @DisplayName("기간과 타입에 해당하는 휴일만 나오는지 조회한다.")
+    void findHolidaysByStartEndDateWithType() {
+        // given
+        String[] names = {"신정", "권장휴가", "크리스마스"};
+        String[] dates = {"20240101", "20250404", "20251225"};
+        HolidayType[] types = {HolidayType.PUBLIC, HolidayType.RECOMMEND, HolidayType.PUBLIC};
+
+        for (int i = 0; i < names.length; i++) {
+            Holiday holiday = Holiday.createHoliday(names[i], dates[i], types[i]);
+            holidayRepositoryImpl.save(holiday);
+        }
+
+        // when
+        List<Holiday> publics = holidayRepositoryImpl.findHolidaysByStartEndDateWithType("20250101", "20251231", HolidayType.PUBLIC);
+        List<Holiday> recommends = holidayRepositoryImpl.findHolidaysByStartEndDateWithType("20250101", "20251231", HolidayType.RECOMMEND);
+
+        // then
+        assertThat(publics.size()).isEqualTo(1);
+        assertThat(recommends.size()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("기간과 타입에 해당하는 휴일이 없더라도 Null이 반환되면 안된다.")
+    void findHolidaysByStartEndDateWithTypeEmpty() {
+        // given & when
+        List<Holiday> holidays = holidayRepositoryImpl.findHolidaysByStartEndDateWithType("20250101", "20250504", HolidayType.PUBLIC);
+
+        // then
+        assertThat(holidays.isEmpty()).isTrue();
+    }
+
+    @Test
     @DisplayName("휴일 삭제")
     void deleteHoliday() {
         // given
@@ -164,9 +240,9 @@ class HolidayRepositoryImplTest {
         holidayRepositoryImpl.delete(holiday);
         em.flush();
         em.clear();
+        Optional<Holiday> findHoliday = holidayRepositoryImpl.findById(holiday.getSeq());
 
         // then
-        Holiday findHoliday = holidayRepositoryImpl.findHoliday(holiday.getSeq());
-        assertThat(findHoliday).isNull();
+        assertThat(findHoliday.isEmpty()).isTrue();
     }
 }

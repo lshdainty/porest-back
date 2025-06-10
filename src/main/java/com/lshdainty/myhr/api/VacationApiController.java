@@ -5,7 +5,6 @@ import com.lshdainty.myhr.domain.Vacation;
 import com.lshdainty.myhr.dto.UserDto;
 import com.lshdainty.myhr.dto.VacationDto;
 import com.lshdainty.myhr.service.VacationService;
-import com.lshdainty.myhr.service.dto.ScheduleServiceDto;
 import com.lshdainty.myhr.service.dto.VacationServiceDto;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,10 +23,9 @@ public class VacationApiController {
     private final VacationService vacationService;
 
     @PostMapping("/api/v1/vacation")
-    public ApiResponse addVacation(@RequestBody VacationDto vacationDto, HttpServletRequest req) {
-        Long vacationId = vacationService.addVacation(
+    public ApiResponse registVacation(@RequestBody VacationDto vacationDto, HttpServletRequest req) {
+        Long vacationId = vacationService.registVacation(
                 vacationDto.getUserNo(),
-                vacationDto.getVacationName(),
                 vacationDto.getVacationDesc(),
                 vacationDto.getVacationType(),
                 vacationDto.getGrantTime(),
@@ -38,7 +35,23 @@ public class VacationApiController {
                 req.getRemoteAddr()
         );
 
-        return ApiResponse.success(new VacationDto(vacationId));
+        return ApiResponse.success(VacationDto.builder().vacationId(vacationId).build());
+    }
+
+    @PostMapping("/api/v1/vacation/use/{vacationId}")
+    public ApiResponse useVacation(@PathVariable("vacationId") Long vacationId, @RequestBody VacationDto vacationDto, HttpServletRequest req) {
+        Long respVacationId = vacationService.useVacation(
+                vacationDto.getUserNo(),
+                vacationId,
+                vacationDto.getVacationDesc(),
+                vacationDto.getVacationTimeType(),
+                vacationDto.getStartDate(),
+                vacationDto.getEndDate(),
+                0L, // 추후 로그인한 유저의 id를 가져와서 여기에다 넣을 것
+                req.getRemoteAddr()
+        );
+
+        return ApiResponse.success(VacationDto.builder().vacationId(respVacationId).build());
     }
 
     @GetMapping("/api/v1/vacations/user/{userNo}")
@@ -46,8 +59,16 @@ public class VacationApiController {
         List<Vacation> vacations = vacationService.findVacationsByUser(userNo);
 
         List<VacationDto> resp = vacations.stream()
-                .map(v -> new VacationDto(v))
-                .collect(Collectors.toList());
+                .map(v -> VacationDto.builder()
+                        .vacationId(v.getId())
+                        .vacationType(v.getType())
+                        .vacationTypeName(v.getType().getStrName())
+                        .remainTime(v.getRemainTime())
+                        .occurDate(v.getOccurDate())
+                        .expiryDate(v.getExpiryDate())
+                        .build()
+                )
+                .toList();
 
         return ApiResponse.success(resp);
     }
@@ -59,67 +80,76 @@ public class VacationApiController {
         List<UserDto> resp = new ArrayList<>();
         for (User user : usersVacations) {
             List<VacationDto> vacations = user.getVacations().stream()
-                    .map(VacationDto::new)
+                    .map(v -> VacationDto.builder()
+                            .vacationId(v.getId())
+                            .vacationType(v.getType())
+                            .vacationTypeName(v.getType().getStrName())
+                            .remainTime(v.getRemainTime())
+                            .occurDate(v.getOccurDate())
+                            .expiryDate(v.getExpiryDate())
+                            .build()
+                    )
                     .toList();
 
-            resp.add(new UserDto(user, vacations));
+            resp.add(UserDto.builder()
+                    .userNo(user.getId())
+                    .userName(user.getName())
+                    .vacations(vacations)
+                    .build()
+            );
         }
 
         return ApiResponse.success(resp);
     }
 
-    @PutMapping("/api/v1/vacation/{id}")
-    public ApiResponse editVacation(@PathVariable("id") Long vacationId, @RequestBody VacationDto vacationDto, HttpServletRequest req) {
-        Vacation vacation = vacationService.editVacation(
-                vacationId,
-                vacationDto.getUserNo(),
-                vacationDto.getVacationName(),
-                vacationDto.getVacationDesc(),
-                vacationDto.getVacationType(),
-                vacationDto.getGrantTime(),
-                vacationDto.getOccurDate(),
-                vacationDto.getExpiryDate(),
-                0L, // 추후 로그인한 유저의 id를 가져와서 여기에다 넣을 것
-                req.getRemoteAddr()
-        );
+    @GetMapping("/api/v1/vacation/available/{userNo}")
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    public ApiResponse getAvailableVacation(@PathVariable("userNo") Long userNo, @RequestParam("startDate") LocalDateTime startDate) {
+        List<Vacation> vacations = vacationService.getAvailableVacation(userNo, startDate);
 
-        return ApiResponse.success(new VacationDto(vacation));
+        List<VacationDto> resp = vacations.stream()
+                .map(v -> VacationDto.builder()
+                        .vacationId(v.getId())
+                        .vacationType(v.getType())
+                        .vacationTypeName(v.getType().getStrName())
+                        .remainTime(v.getRemainTime())
+                        .occurDate(v.getOccurDate())
+                        .expiryDate(v.getExpiryDate())
+                        .build()
+                )
+                .toList();
+
+        return ApiResponse.success(resp);
     }
 
-    @DeleteMapping("/api/v1/vacation/{id}")
-    public ApiResponse deleteVacation(@PathVariable("id") Long vacationId, HttpServletRequest req) {
+    @DeleteMapping("/api/v1/vacation/history/{id}")
+    public ApiResponse deleteVacationHistory(@PathVariable("id") Long vacationHistoryId, HttpServletRequest req) {
         Long delUserNo = 0L;   // 추후 로그인 한 사람의 id를 가져와서 삭제한 사람의 userNo에 세팅
-        vacationService.deleteVacation(vacationId, delUserNo, req.getRemoteAddr());
+        vacationService.deleteVacationHistory(vacationHistoryId, delUserNo, req.getRemoteAddr());
         return ApiResponse.success();
     }
 
-    @GetMapping("/api/v1/vacation/check-possible/{userNo}")
+    @GetMapping("/api/v1/vacation/histories/period")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    public ApiResponse checkPossibleVacations(
-            @PathVariable("userNo") Long userNo,
+    public ApiResponse getVacationHistoriesByPeriod(
             @RequestParam("startDate") LocalDateTime startDate,
-            HttpServletRequest req) {
+            @RequestParam("endDate") LocalDateTime endDate) {
+        List<VacationServiceDto> histories = vacationService.getVacationHistoriesByPeriod(startDate, endDate);
 
-        log.info("Check vacation by user no: {}", userNo);
-        log.info("Check vacation by startDate: {}", startDate);
-        List<VacationServiceDto> vacations = vacationService.checkPossibleVacations(userNo, startDate);
-
-        for (VacationServiceDto vacation : vacations) {
-            log.info("Vacation: {}", vacation.toString());
-
-            if (vacation.getScheduleDtos() == null) {
-                continue;
-            }
-
-            for (ScheduleServiceDto schedule : vacation.getScheduleDtos()) {
-                log.info("Schedule: {}", schedule.toString());
-            }
-            log.info("\n");
-        }
-
-        List<VacationDto> resp = vacations.stream()
-                .map(v -> new VacationDto(v)).toList();
-
+        List<VacationDto> resp = histories.stream()
+                .map(v -> VacationDto.builder()
+                        .userNo(v.getUser().getId())
+                        .userName(v.getUser().getName())
+                        .vacationId(v.getId())
+                        .vacationDesc(v.getDesc())
+                        .vacationHistoryIds(v.getHistoryIds())
+                        .vacationTimeType(v.getTimeType())
+                        .vacationTimeTypeName(v.getTimeType().getStrName())
+                        .startDate(v.getStartDate())
+                        .endDate(v.getEndDate())
+                        .build()
+                )
+                .toList();
 
         return ApiResponse.success(resp);
     }

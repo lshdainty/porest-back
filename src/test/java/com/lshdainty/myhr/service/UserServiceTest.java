@@ -22,9 +22,9 @@ import static org.mockito.BDDMockito.*;
 @ExtendWith(MockitoExtension.class)
 @DisplayName("유저 서비스 테스트")
 class UserServiceTest {
+    // 삭제하지 말 것 (NullpointException 발생)
     @Mock
     private MessageSource ms;
-
     @Mock
     private UserRepositoryImpl userRepositoryImpl;
 
@@ -34,7 +34,7 @@ class UserServiceTest {
     @Test
     @DisplayName("회원 가입 테스트 - 성공")
     void signUpSuccessTest() {
-        // given
+        // Given
         String name = "이서준";
         String birth = "19700723";
         String workTime = "9 ~ 6";
@@ -42,17 +42,17 @@ class UserServiceTest {
         String lunar = "N";
         willDoNothing().given(userRepositoryImpl).save(any(User.class));
 
-        // when
-        Long userId = userService.join(name, birth, employ, workTime, lunar);
+        // When
+        userService.join(name, birth, employ, workTime, lunar);
 
-        // then
+        // Then
         then(userRepositoryImpl).should().save(any(User.class));
     }
 
     @Test
     @DisplayName("단건 유저 조회 테스트 - 성공")
     void findUserSuccessTest() {
-        // given
+        // Given
         Long id = 1L;
         String name = "이서준";
         String birth = "19700723";
@@ -61,24 +61,14 @@ class UserServiceTest {
         String lunar = "N";
         User user = User.createUser(name, birth, employ, workTime, lunar);
 
-        // Reflection을 사용하여 seq 설정 (테스트용)
-        try {
-            java.lang.reflect.Field field = User.class.getDeclaredField("id");
-            field.setAccessible(true);
-            field.set(user, id);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        given(userRepositoryImpl.findById(id)).willReturn(Optional.of(user));
 
-        given(userRepositoryImpl.findById(id)).willReturn(user);
+        // When
+        User findUser = userService.findUser(id);
 
-        // when
-        User findUser = userRepositoryImpl.findById(id);
-
-        // then
+        // Then
         then(userRepositoryImpl).should().findById(id);
         assertThat(findUser).isNotNull();
-        assertThat(findUser.getId()).isEqualTo(id);
         assertThat(findUser.getName()).isEqualTo(name);
         assertThat(findUser.getBirth()).isEqualTo(birth);
         assertThat(findUser.getWorkTime()).isEqualTo(workTime);
@@ -89,12 +79,33 @@ class UserServiceTest {
 
     @Test
     @DisplayName("단건 유저 조회 테스트 - 실패 (유저 없음)")
-    void findUserFailTest() {
-        // given
+    void findUserFailTestNotFoundUser() {
+        // Given
         Long id = 900L;
-        given(userRepositoryImpl.findById(id)).willReturn(null);
+        given(userRepositoryImpl.findById(id)).willReturn(Optional.empty());
 
-        // when, then
+        // When, Then
+        assertThrows(IllegalArgumentException.class,
+                () -> userService.findUser(id));
+        then(userRepositoryImpl).should().findById(id);
+    }
+
+    @Test
+    @DisplayName("단건 유저 조회 테스트 - 실패 (삭제된 유저 조회)")
+    void findUserFailTestDeletedUser() {
+        // Given
+        Long id = 1L;
+        String name = "이서준";
+        String birth = "19700723";
+        String workTime = "9 ~ 6";
+        String employ = "ADMIN";
+        String lunar = "N";
+        User user = User.createUser(name, birth, employ, workTime, lunar);
+
+        user.deleteUser();
+        given(userRepositoryImpl.findById(id)).willReturn(Optional.of(user));
+
+        // When, Then
         assertThrows(IllegalArgumentException.class,
                 () -> userService.findUser(id));
         then(userRepositoryImpl).should().findById(id);
@@ -103,17 +114,17 @@ class UserServiceTest {
     @Test
     @DisplayName("전체 유저 조회 테스트 - 성공")
     void findUsersSuccessTest() {
-        // given
+        // Given
         given(userRepositoryImpl.findUsers()).willReturn(List.of(
                 User.createUser("이서준", "19700723", "ADMIN", "9 ~ 6", "N"),
                 User.createUser("김서연", "19701026", "BP", "8 ~ 5", "N"),
                 User.createUser("김지후", "19740115", "BP", "10 ~ 7", "Y")
         ));
 
-        // when
+        // When
         List<User> findUsers = userService.findUsers();
 
-        // then
+        // Then
         then(userRepositoryImpl).should().findUsers();
         assertThat(findUsers).hasSize(3);
         assertThat(findUsers)
@@ -124,7 +135,7 @@ class UserServiceTest {
     @Test
     @DisplayName("유저 수정 테스트 - 성공")
     void editUserSuccessTest() {
-        // given
+        // Given
         Long id = 1L;
         String name = "이서준";
         String birth = "19700723";
@@ -133,24 +144,15 @@ class UserServiceTest {
         String lunar = "N";
         User user = User.createUser(name, birth, employ, workTime, lunar);
 
-        try {
-            java.lang.reflect.Field field = User.class.getDeclaredField("id");
-            field.setAccessible(true);
-            field.set(user, id);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        given(userRepositoryImpl.findById(id)).willReturn(Optional.of(user));
 
-        given(userRepositoryImpl.findById(id)).willReturn(user);
-
-        // when
+        // When
         name = "이하은";
         workTime = "10 ~ 7";
         userService.editUser(id, name, null, null, workTime, null);
 
-        // then
+        // Then
         then(userRepositoryImpl).should().findById(id);
-        assertThat(user.getId()).isEqualTo(id);
         assertThat(user.getName()).isEqualTo(name);
         assertThat(user.getBirth()).isEqualTo(birth);
         assertThat(user.getWorkTime()).isEqualTo(workTime);
@@ -160,12 +162,12 @@ class UserServiceTest {
 
     @Test
     @DisplayName("유저 수정 테스트 - 실패 (유저 없음)")
-    void editUserFailTest() {
-        // given
+    void editUserFailTestNotFoundUser() {
+        // Given
         Long id = 900L;
-        given(userRepositoryImpl.findById(id)).willReturn(null);
+        given(userRepositoryImpl.findById(id)).willReturn(Optional.empty());
 
-        // when & then
+        // When & Then
         assertThrows(IllegalArgumentException.class,
                 () -> userService.editUser(id, "이하은", null, null, null, null));
         then(userRepositoryImpl).should().findById(id);
@@ -174,7 +176,7 @@ class UserServiceTest {
     @Test
     @DisplayName("유저 삭제 테스트 - 성공")
     void deleteUserSuccessTest() {
-        // given
+        // Given
         Long id = 1L;
         String name = "이서준";
         String birth = "19700723";
@@ -183,32 +185,24 @@ class UserServiceTest {
         String lunar = "N";
         User user = User.createUser(name, birth, employ, workTime, lunar);
 
-        try {
-            java.lang.reflect.Field field = User.class.getDeclaredField("id");
-            field.setAccessible(true);
-            field.set(user, id);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        given(userRepositoryImpl.findById(id)).willReturn(Optional.of(user));
 
-        given(userRepositoryImpl.findById(id)).willReturn(user);
-
-        // when
+        // When
         userService.deleteUser(id);
 
-        // then
+        // Then
         then(userRepositoryImpl).should().findById(id);
         assertThat(user.getDelYN()).isEqualTo("Y");
     }
 
     @Test
     @DisplayName("유저 삭제 테스트 - 실패 (유저 없음)")
-    void deleteUserFailTest() {
-        // given
+    void deleteUserFailTestNotFoundUser() {
+        // Given
         Long id = 900L;
-        given(userRepositoryImpl.findById(id)).willReturn(null);
+        given(userRepositoryImpl.findById(id)).willReturn(Optional.empty());
 
-        // when & then
+        // When & Then
         assertThrows(IllegalArgumentException.class,
                 () -> userService.deleteUser(id));
         then(userRepositoryImpl).should().findById(id);

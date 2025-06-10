@@ -13,7 +13,7 @@ import java.util.Objects;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)  // -> protected Order() {}와 동일한 의미 (롬복으로 생성자 막기)
-@Table(name = "deptop_user")
+@Table(name = "users")
 public class User {
     @Id @GeneratedValue
     @Column(name = "user_no")
@@ -34,9 +34,6 @@ public class User {
     @Column(name = "user_birth")
     private String birth;
 
-    @Column(name = "del_yn")
-    private String delYN;
-
     @Column(name = "user_work_time")
     private String workTime;
 
@@ -45,6 +42,9 @@ public class User {
 
     @Column(name = "lunar_yn")
     private String lunarYN;
+
+    @Column(name = "del_yn")
+    private String delYN;
 
     @OneToMany(mappedBy = "user")   // JPA에서는 mappedBy는 읽기 전용
     private List<Vacation> vacations;
@@ -84,7 +84,7 @@ public class User {
 
     /* 비즈니스 편의 메소드 */
     /**
-     * 사용자의 workTime에 맞춰
+     * 사용자의 workTime에 맞춰<br>
      * start, end가 담긴 배열을 반환하는 함수
      *
      * @return [startTime, endTime] array
@@ -109,5 +109,19 @@ public class User {
         }
 
         return List.of(start, end);
+    }
+
+    /**
+     * 날짜가 유저의 유연근무제에 맞춰<br>
+     * 정상적으로 설정되어 있는지 확인하는 함수
+     *
+     * @Param stratTime
+     * @Param endTime
+     * @return true, false 반환
+     */
+    public boolean isBetweenWorkTime(LocalTime startTime, LocalTime endTime) {
+        List<LocalTime> workTimes = convertWorkTimeToLocalTime();
+        return ((startTime.isAfter(workTimes.get(0)) || startTime.equals(workTimes.get(0))) && startTime.isBefore(workTimes.get(1))) &&
+                (endTime.isAfter(workTimes.get(0)) && (endTime.isBefore(workTimes.get(1)) || endTime.equals(workTimes.get(1))));
     }
 }

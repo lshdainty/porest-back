@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +27,7 @@ public class HolidayService {
         return holiday.getSeq();
     }
 
-    public Holiday findHoliday(Long seq) {
+    public Holiday findById(Long seq) {
         return checkHolidayExist(seq);
     }
 
@@ -56,8 +56,8 @@ public class HolidayService {
     }
 
     public Holiday checkHolidayExist(Long holidaySeq) {
-        Holiday findHoliday = holidayRepositoryImpl.findHoliday(holidaySeq);
-        if (Objects.isNull(findHoliday)) { throw new IllegalArgumentException(ms.getMessage("error.notfound.holiday", null, null)); }
-        return findHoliday;
+        Optional<Holiday> holiday = holidayRepositoryImpl.findById(holidaySeq);
+        holiday.orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.holiday", null, null)));
+        return holiday.get();
     }
 }

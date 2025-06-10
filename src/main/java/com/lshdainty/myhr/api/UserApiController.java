@@ -36,14 +36,23 @@ public class UserApiController {
                 userDto.getLunarYN()
         );
 
-        return ApiResponse.success(new UserDto(userId));
+        return ApiResponse.success(UserDto.builder().userNo(userId).build());
     }
 
     @GetMapping("/api/v1/user/{id}")
     public ApiResponse user(@PathVariable("id") Long userId) {
         User user = userService.findUser(userId);
 
-        return ApiResponse.success(new UserDto(user));
+        return ApiResponse.success(UserDto
+                .builder()
+                .userNo(userId)
+                .userName(user.getName())
+                .userBirth(user.getBirth())
+                .userEmploy(user.getEmploy())
+                .userWorkTime(user.getWorkTime())
+                .lunarYN(user.getLunarYN())
+                .build()
+        );
     }
 
     @GetMapping("/api/v1/users")
@@ -51,8 +60,17 @@ public class UserApiController {
         List<User> users = userService.findUsers();
 
         List<UserDto> resps = users.stream()
-                .map(UserDto::new)
-                .collect(Collectors.toList());
+                .map(u -> UserDto
+                        .builder()
+                        .userNo(u.getId())
+                        .userName(u.getName())
+                        .userBirth(u.getBirth())
+                        .userEmploy(u.getEmploy())
+                        .userWorkTime(u.getWorkTime())
+                        .lunarYN(u.getLunarYN())
+                        .build()
+                )
+                .toList();
 
         return ApiResponse.success(resps);
     }
@@ -70,7 +88,16 @@ public class UserApiController {
 
         User findUser = userService.findUser(userId);
 
-        return ApiResponse.success(new UserDto(findUser));
+        return ApiResponse.success(UserDto
+                .builder()
+                .userNo(userId)
+                .userName(findUser.getName())
+                .userBirth(findUser.getBirth())
+                .userEmploy(findUser.getEmploy())
+                .userWorkTime(findUser.getWorkTime())
+                .lunarYN(findUser.getLunarYN())
+                .build()
+        );
     }
 
     @DeleteMapping("/api/v1/user/{id}")

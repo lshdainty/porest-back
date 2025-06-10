@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -43,17 +44,30 @@ class DuesRepositoryImplTest {
         em.clear();
 
         // then
-        Dues findDues = duesRepositoryImpl.findById(dues.getSeq());
-        assertThat(findDues).isNotNull();
-        assertThat(findDues.getUserName()).isEqualTo(userName);
-        assertThat(findDues.getAmount()).isEqualTo(amount);
-        assertThat(findDues.getType()).isEqualTo(type);
-        assertThat(findDues.getDate()).isEqualTo(date);
-        assertThat(findDues.getDetail()).isEqualTo(detail);
+        Optional<Dues> findDues = duesRepositoryImpl.findById(dues.getSeq());
+        assertThat(findDues.isPresent()).isTrue();
+        assertThat(findDues.get().getUserName()).isEqualTo(userName);
+        assertThat(findDues.get().getAmount()).isEqualTo(amount);
+        assertThat(findDues.get().getType()).isEqualTo(type);
+        assertThat(findDues.get().getDate()).isEqualTo(date);
+        assertThat(findDues.get().getDetail()).isEqualTo(detail);
     }
 
     @Test
-    @DisplayName("전체 회비 목록 조회")
+    @DisplayName("단건 조회 시 회비가 없어도 Null이 반환되면 안된다.")
+    void findByIdEmpty() {
+        // given
+        Long duesId = 999L;
+
+        // when
+        Optional<Dues> findDues = duesRepositoryImpl.findById(duesId);
+
+        // then
+        assertThat(findDues.isEmpty()).isTrue();
+    }
+
+    @Test
+    @DisplayName("모든 회비 목록이 조회돼야 한다.")
     void getDues() {
         // given
         String[] names = {"이서준" ,"조민서" ,"이준우"};
@@ -81,9 +95,20 @@ class DuesRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("년도에 해당하는 회비 목록 조회")
+    @DisplayName("회비 목록이 없더라도 Null이 반환되면 안된다.")
+    void getDuesEmpty() {
+        // given & when
+        List<Dues> dues = duesRepositoryImpl.findDues();
+
+        // then
+        assertThat(dues.isEmpty()).isTrue();
+    }
+
+    @Test
+    @DisplayName("년도에 해당하는 회비 목록이 정렬되어 반환돼야 한다.")
     void getDuesByYear() {
         // given
+        String year = "2025";
         String[] names = {"이서준" ,"조민서" ,"이준우"};
         int[] amounts = {10000, 80000, 10000};
         DuesType[] types = {DuesType.PLUS, DuesType.MINUS, DuesType.PLUS};
@@ -96,7 +121,7 @@ class DuesRepositoryImplTest {
         }
 
         // when
-        List<Dues> dues = duesRepositoryImpl.findDuesByYear("2025");
+        List<Dues> dues = duesRepositoryImpl.findDuesByYear(year);
 
         // then
         assertThat(dues.size()).isEqualTo(2);
@@ -106,6 +131,32 @@ class DuesRepositoryImplTest {
         assertThat(dues).extracting("type").containsExactly(DuesType.MINUS, DuesType.PLUS);
         assertThat(dues).extracting("date").containsExactly("20250131", "20250204");
         assertThat(dues).extracting("detail").containsExactly("생일비 출금", "생일비");
+    }
+
+    @Test
+    @DisplayName("년도에 해당하는 회비 목록이 없더라도 Null이 반환되면 안된다.")
+    void getDuesByYearEmpty() {
+        // given
+        String year = "2025";
+
+        // given & when
+        List<Dues> dues = duesRepositoryImpl.findDuesByYear(year);
+
+        // then
+        assertThat(dues.isEmpty()).isTrue();
+    }
+
+    @Test
+    @DisplayName("년도가 null이 입력되어도 오류가 발생되면 안된다.")
+    void getDuesByYearNull() {
+        // given
+        String year = null;
+
+        // given & when
+        List<Dues> dues = duesRepositoryImpl.findDuesByYear(year);
+
+        // then
+        assertThat(dues.isEmpty()).isTrue();
     }
 
     @Test
@@ -125,9 +176,9 @@ class DuesRepositoryImplTest {
         duesRepositoryImpl.delete(dues);
         em.flush();
         em.clear();
+        Optional<Dues> findDues = duesRepositoryImpl.findById(dues.getSeq());
 
         // then
-        Dues findDues = duesRepositoryImpl.findById(dues.getSeq());
-        assertThat(findDues).isNull();
+        assertThat(findDues.isEmpty()).isTrue();
     }
 }

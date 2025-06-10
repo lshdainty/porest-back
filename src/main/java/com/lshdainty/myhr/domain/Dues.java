@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)  // -> protected Order() {}와 동일한 의미 (롬복으로 생성자 막기)
-@Table(name = "deptop_dues")
+@Table(name = "dues")
 public class Dues {
     @Id @GeneratedValue
     @Column(name = "dues_seq")

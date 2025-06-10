@@ -13,7 +13,7 @@ import java.util.List;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)  // -> protected Order() {}와 동일한 의미 (롬복으로 생성자 막기)
-@Table(name = "deptop_vacation")
+@Table(name = "vacation")
 public class Vacation extends AuditingFields {
     @Id @GeneratedValue
     @Column(name = "vacation_id")
@@ -26,20 +26,14 @@ public class Vacation extends AuditingFields {
 
     @BatchSize(size = 100)
     @OneToMany(mappedBy = "vacation", cascade = CascadeType.ALL)
-    private List<Schedule> schedules =  new ArrayList<>();
-
-    @Column(name = "vacation_name")
-    private String name;
-
-    @Column(name = "vacation_desc")
-    private String desc;
+    private List<VacationHistory> historys =  new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @Column(name = "vacation_type")
     private VacationType type;
 
-    @Column(name = "grant_time", precision = 7, scale = 4)
-    private BigDecimal grantTime;
+    @Column(name = "remain_time", precision = 7, scale = 4)
+    private BigDecimal remainTime;
 
     @Column(name = "occur_date")
     private LocalDateTime occurDate;
@@ -47,40 +41,50 @@ public class Vacation extends AuditingFields {
     @Column(name = "expiry_date")
     private LocalDateTime expiryDate;
 
-    @Column(name = "del_yn")
-    private String delYN;
-
     // user 추가 연관관계 편의 메소드
     public void addUser(User user) {
         this.user = user;
         user.getVacations().add(this);
     }
 
-    // 휴가 생성자 (setter말고 해당 메소드 사용할 것)
-    public static Vacation createVacation(User user, String name, String desc, VacationType type, BigDecimal grantTime, LocalDateTime occurDate, LocalDateTime expiryDate, Long userNo, String clientIP) {
+    /**
+     * 휴가 생성자
+     * 최초 휴가 생성시 사용하는 생성자
+     * Setter를 사용하지 말고 해당 생성자를 통해 생성 및 사용할 것
+     */
+    public static Vacation createVacation(User user, VacationType type, BigDecimal grantTime, LocalDateTime occurDate, LocalDateTime expiryDate, Long crtUserNo, String clientIP) {
         Vacation vacation = new Vacation();
         vacation.addUser(user);
-        vacation.name = name;
-        vacation.desc = desc;
         vacation.type = type;
-        vacation.grantTime = grantTime;
+        vacation.remainTime = grantTime;
         vacation.occurDate = occurDate;
         vacation.expiryDate = expiryDate;
-        vacation.delYN = "N";
-        vacation.setCreated(userNo, clientIP);
+        vacation.setCreated(crtUserNo, clientIP);
+        vacation.setModified(crtUserNo, clientIP);
         return vacation;
     }
 
-    // 휴가 삭제 (setter말고 해당 메소드 사용할 것)
-    public void deleteVacation(Long userNo, String clientIP) {
-        this.delYN = "Y";
-        this.setDeleted(LocalDateTime.now(), userNo, clientIP);
+    /* 비즈니스 편의 메소드 */
+    /**
+     * 휴가 추가 메소드<br>
+     * remainTime(잔여시간)에 grantTime(추가시간)을 더함
+     */
+    public void addVacation(BigDecimal grantTime, Long mdfUserNo, String clientIP) {
+        this.remainTime =  getRemainTime().add(grantTime);
+        this.setModified(LocalDateTime.now(), mdfUserNo, clientIP);
     }
 
-    /* 비즈니스 편의 메소드 */
+    /**
+     * 휴가 차감 메소드<br>
+     * remainTime(잔여시간)에서 deductTime을(사용시간)을 뺌
+     */
+    public void deductedVacation(BigDecimal deductTime, Long mdfUserNo, String clientIP) {
+        this.remainTime =  getRemainTime().subtract(deductTime);
+        this.setModified(LocalDateTime.now(), mdfUserNo, clientIP);
+    }
 
     /**
-     * occurDate, expireDate를 비교하여
+     * occurDate, expireDate를 비교하여<br>
      * 발생일자가 만료일자 이전인지 확인
      *
      * @return true, false

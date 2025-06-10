@@ -1,6 +1,5 @@
 package com.lshdainty.myhr.service;
 
-
 import com.lshdainty.myhr.domain.Dues;
 import com.lshdainty.myhr.domain.DuesType;
 import com.lshdainty.myhr.repository.DuesRepositoryImpl;
@@ -14,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.MessageSource;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -24,9 +24,9 @@ import static org.mockito.BDDMockito.*;
 @ExtendWith(MockitoExtension.class)
 @DisplayName("회비 서비스 테스트")
 class DuesServiceTest {
+    // 삭제하지 말 것 (NullpointException 발생)
     @Mock
     private MessageSource ms;
-
     @Mock
     private DuesRepositoryImpl duesRepositoryImpl;
 
@@ -105,16 +105,7 @@ class DuesServiceTest {
         Long seq = 1L;
         Dues dues = Dues.createDues("이서준", 50000, DuesType.PLUS, "20250101", "1월 회비");
 
-        // Reflection을 사용하여 seq 설정 (테스트용)
-        try {
-            java.lang.reflect.Field field = Dues.class.getDeclaredField("seq");
-            field.setAccessible(true);
-            field.set(dues, seq);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        given(duesRepositoryImpl.findById(seq)).willReturn(dues);
+        given(duesRepositoryImpl.findById(seq)).willReturn(Optional.of(dues));
         willDoNothing().given(duesRepositoryImpl).delete(dues);
 
         // When
@@ -127,10 +118,10 @@ class DuesServiceTest {
 
     @Test
     @DisplayName("회비 삭제 테스트 - 실패 (회비 없음)")
-    void deleteDuesFailTest() {
+    void deleteDuesFailTestNotFoundDues() {
         // Given
         Long seq = 900L;
-        given(duesRepositoryImpl.findById(seq)).willReturn(null);
+        given(duesRepositoryImpl.findById(seq)).willReturn(Optional.empty());
 
         // When & Then
         assertThrows(IllegalArgumentException.class, () -> duesService.deleteDues(seq));

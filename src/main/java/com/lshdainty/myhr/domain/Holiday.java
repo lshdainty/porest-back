@@ -11,7 +11,7 @@ import java.util.Objects;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)  // -> protected Order() {}와 동일한 의미 (롬복으로 생성자 막기)
-@Table(name = "deptop_holiday")
+@Table(name = "holiday")
 public class Holiday {
     @Id @GeneratedValue
     @Column(name = "holiday_seq")
