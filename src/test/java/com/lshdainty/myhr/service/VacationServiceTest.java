@@ -5,6 +5,7 @@ import com.lshdainty.myhr.repository.HolidayRepositoryImpl;
 import com.lshdainty.myhr.repository.UserRepositoryImpl;
 import com.lshdainty.myhr.repository.VacationHistoryRepositoryImpl;
 import com.lshdainty.myhr.repository.VacationRepositoryImpl;
+import com.lshdainty.myhr.service.dto.VacationServiceDto;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -544,7 +545,7 @@ class VacationServiceTest {
         String desc = "연차";
         VacationTimeType timeType = VacationTimeType.DAYOFF;
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime usedDateTime = (LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0, 0, 0).plusDays(1));
+        LocalDateTime usedDateTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0, 0, 0).plusDays(1);
 
         User user = User.createUser("이서준", "19700723", "ADMIN", "9 ~ 6", "N");
         Vacation vacation = Vacation.createVacation(user, VacationType.ANNUAL, new BigDecimal("4.0000"),
@@ -583,7 +584,7 @@ class VacationServiceTest {
         String desc = "연차";
         VacationTimeType timeType = VacationTimeType.DAYOFF;
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime usedDateTime = (LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0, 0, 0).plusDays(1));
+        LocalDateTime usedDateTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0, 0, 0).plusDays(1);
 
         User user = User.createUser("이서준", "19700723", "ADMIN", "9 ~ 6", "N");
         Vacation vacation = Vacation.createVacation(user, VacationType.ANNUAL, new BigDecimal("4.0000"),
@@ -638,7 +639,7 @@ class VacationServiceTest {
         String desc = "연차";
         VacationTimeType timeType = VacationTimeType.DAYOFF;
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime usedDateTime = (LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0, 0, 0).minusDays(3));
+        LocalDateTime usedDateTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0, 0, 0).minusDays(3);
 
         User user = User.createUser("이서준", "19700723", "ADMIN", "9 ~ 6", "N");
         Vacation vacation = Vacation.createVacation(user, VacationType.ANNUAL, new BigDecimal("4.0000"),
@@ -655,142 +656,146 @@ class VacationServiceTest {
         assertThrows(IllegalArgumentException.class, () ->
                 vacationService.deleteVacationHistory(historyId, 0L, "127.0.0.1"));
     }
-//
-//    @Test
-//    @DisplayName("휴가 삭제 테스트 - 실패 (휴가 없음)")
-//    void deleteVacationFailVacationNotFoundTest() {
-//        // Given
-//        Long vacationId = 900L;
-//
-//        given(vacationRepositoryImpl.findById(vacationId)).willReturn(null);
-//
-//        // When & Then
-//        assertThrows(IllegalArgumentException.class, () ->
-//                vacationService.deleteVacation(vacationId, 0L, "127.0.0.1"));
-//
-//        then(vacationRepositoryImpl).should().findById(vacationId);
-//    }
-//
-//    @Test
-//    @DisplayName("등록 가능한 휴가 조회 테스트 - 성공")
-//    void checkPossibleVacationSuccessTest() {
-//        // given
-//        LocalDateTime standardTime = LocalDateTime.now();
-//
-//        Long userNo = 1L;
-//        User user = User.createUser("이서준", "19700723", "ADMIN", "9 ~ 6", "N");
-//
-//        Vacation v1 = Vacation.createVacation(user, "정기 휴가", "25년 1분기 정기 휴가", VacationType.BASIC, new BigDecimal("4.0000"), LocalDateTime.of(standardTime.getYear(), 1, 1, 0, 0, 0), LocalDateTime.of(standardTime.getYear(), 12, 31, 23, 59, 59), 0L, "127.0.0.1");
-//        Vacation v2 = Vacation.createVacation(user, "출산 휴가", "출산 추가 휴가 부여", VacationType.ADDED, new BigDecimal("10.0000"), LocalDateTime.of(standardTime.getYear(), standardTime.getMonth(), standardTime.getDayOfMonth(), 0, 0, 0), LocalDateTime.of(standardTime.getYear(), standardTime.getMonth(), standardTime.getDayOfMonth(), 23, 59, 59).plusMonths(6), 0L, "127.0.0.1");
-//        Vacation v3 = Vacation.createVacation(user, "OT 정산", "월마감 지원", VacationType.ADDED, new BigDecimal("0.3750"), LocalDateTime.of(standardTime.getYear(), 1, 1, 0, 0, 0), LocalDateTime.of(2025, 1, 31, 23, 59, 59), 0L, "127.0.0.1");
-//        Vacation v4 = Vacation.createVacation(user, "정기 휴가", "25년 1분기 정기 휴가", VacationType.BASIC, new BigDecimal("4.0000"), LocalDateTime.of(standardTime.getYear(), 1, 1, 0, 0, 0), LocalDateTime.of(standardTime.getYear(), 12, 31, 23, 59, 59), 0L, "127.0.0.1");
-//
-//        Schedule s1 = Schedule.createSchedule(user, v1, "휴가", ScheduleType.DAYOFF, LocalDateTime.of(LocalDateTime.now().getYear(), 1, 20, 0, 0, 0), LocalDateTime.of(LocalDateTime.now().getYear(), 1, 20, 23, 59, 59), 0L, "127.0.0.1");
-//
-//        ScheduleServiceDto scheduleDto = ScheduleServiceDto.builder()
-//                .user(user)
-//                .vacation(v1)
-//                .type(ScheduleType.DAYOFF)
-//                .realUsedTime(new BigDecimal("1.0000"))
-//                .build();
-//
-//        given(userService.checkUserExist(userNo)).willReturn(user);
-//        given(vacationRepositoryImpl.findVacationsByParameterTimeWithSchedules(userNo, standardTime)).willReturn(List.of(v1, v2, v3, v4));
-//        setVacationSchedules(v1, List.of(s1));
-//        given(scheduleService.convertRealUsedTimeDto(any())).willReturn(List.of(scheduleDto));
-//
-//        // when
-//        List<VacationServiceDto> findVacation = vacationService.checkPossibleVacations(userNo, standardTime);
-//
-//        // then
-//        then(userService).should().checkUserExist(userNo);
-//        then(vacationRepositoryImpl).should().findVacationsByParameterTimeWithSchedules(userNo, standardTime);
-//        assertThat(findVacation).hasSize(4);
-//        assertThat(findVacation.get(0).getGrantTime()).isEqualTo(new BigDecimal("4.0000"));
-//        assertThat(findVacation.get(0).getUsedTime()).isEqualTo(new BigDecimal("1.0000"));
-//        assertThat(findVacation.get(0).getRemainTime()).isEqualTo(new BigDecimal("3.0000"));
-//    }
-//
-//    @Test
-//    @DisplayName("등록 가능한 휴가 조회 테스트 - 성공 (사용 가능 시간 없음)")
-//    void checkPossibleVacationsNoAvailableTest() {
-//        // given
-//        LocalDateTime standardTime = LocalDateTime.now();
-//
-//        Long userNo = 1L;
-//        User user = User.createUser("이서준", "19700723", "ADMIN", "9 ~ 6", "N");
-//
-//        Vacation v1 = Vacation.createVacation(user, "정기 휴가", "25년 1분기 정기 휴가", VacationType.BASIC, new BigDecimal("4.0000"), LocalDateTime.of(standardTime.getYear(), 1, 1, 0, 0, 0), LocalDateTime.of(standardTime.getYear(), 12, 31, 23, 59, 59), 0L, "127.0.0.1");
-//        Vacation v2 = Vacation.createVacation(user, "출산 휴가", "출산 추가 휴가 부여", VacationType.ADDED, new BigDecimal("10.0000"), LocalDateTime.of(standardTime.getYear(), standardTime.getMonth(), standardTime.getDayOfMonth(), 0, 0, 0), LocalDateTime.of(standardTime.getYear(), standardTime.getMonth(), standardTime.getDayOfMonth(), 23, 59, 59).plusMonths(6), 0L, "127.0.0.1");
-//        Vacation v3 = Vacation.createVacation(user, "OT 정산", "월마감 지원", VacationType.ADDED, new BigDecimal("0.3750"), LocalDateTime.of(standardTime.getYear(), 1, 1, 0, 0, 0), LocalDateTime.of(2025, 1, 31, 23, 59, 59), 0L, "127.0.0.1");
-//        Vacation v4 = Vacation.createVacation(user, "정기 휴가", "25년 1분기 정기 휴가", VacationType.BASIC, new BigDecimal("4.0000"), LocalDateTime.of(standardTime.getYear(), 1, 1, 0, 0, 0), LocalDateTime.of(standardTime.getYear(), 12, 31, 23, 59, 59), 0L, "127.0.0.1");
-//
-//        Schedule s1 = Schedule.createSchedule(user, v1, "휴가", ScheduleType.DAYOFF, LocalDateTime.of(LocalDateTime.now().getYear(), 1, 20, 0, 0, 0), LocalDateTime.of(LocalDateTime.now().getYear(), 1, 23, 23, 59, 59), 0L, "127.0.0.1");
-//
-//        ScheduleServiceDto scheduleDto = ScheduleServiceDto.builder()
-//                .user(user)
-//                .vacation(v1)
-//                .type(ScheduleType.DAYOFF)
-//                .realUsedTime(new BigDecimal("4.0000"))
-//                .build();
-//
-//        given(userService.checkUserExist(userNo)).willReturn(user);
-//        given(vacationRepositoryImpl.findVacationsByParameterTimeWithSchedules(userNo, standardTime)).willReturn(List.of(v1, v2, v3, v4));
-//        setVacationSchedules(v1, List.of(s1));
-//        given(scheduleService.convertRealUsedTimeDto(any())).willReturn(List.of(scheduleDto));
-//
-//        // When
-//        List<VacationServiceDto> findVacation = vacationService.checkPossibleVacations(userNo, standardTime);
-//
-//        // Then
-//        then(userService).should().checkUserExist(userNo);
-//        then(vacationRepositoryImpl).should().findVacationsByParameterTimeWithSchedules(userNo, standardTime);
-//        assertThat(findVacation).hasSize(3);
-//        assertThat(findVacation.get(0).getGrantTime()).isEqualTo(new BigDecimal("10.0000"));
-//        assertThat(findVacation.get(0).getUsedTime()).isEqualTo(new BigDecimal("0.0000"));
-//        assertThat(findVacation.get(0).getRemainTime()).isEqualTo(new BigDecimal("10.0000"));
-//    }
-//
-//    @Test
-//    @DisplayName("등록 가능한 휴가 조회 테스트 - 성공 (스케줄 없음)")
-//    void checkPossibleVacationSuccessNoSchedulesTest() {
-//        // Given
-//        LocalDateTime standardTime = LocalDateTime.now();
-//
-//        Long userNo = 1L;
-//        User user = User.createUser("이서준", "19700723", "ADMIN", "9 ~ 6", "N");
-//
-//        Vacation v1 = Vacation.createVacation(user, "정기 휴가", "25년 1분기 정기 휴가", VacationType.BASIC, new BigDecimal("4.0000"), LocalDateTime.of(standardTime.getYear(), 1, 1, 0, 0, 0), LocalDateTime.of(standardTime.getYear(), 12, 31, 23, 59, 59), 0L, "127.0.0.1");
-//        Vacation v2 = Vacation.createVacation(user, "출산 휴가", "출산 추가 휴가 부여", VacationType.ADDED, new BigDecimal("10.0000"), LocalDateTime.of(standardTime.getYear(), standardTime.getMonth(), standardTime.getDayOfMonth(), 0, 0, 0), LocalDateTime.of(standardTime.getYear(), standardTime.getMonth(), standardTime.getDayOfMonth(), 23, 59, 59).plusMonths(6), 0L, "127.0.0.1");
-//        Vacation v3 = Vacation.createVacation(user, "OT 정산", "월마감 지원", VacationType.ADDED, new BigDecimal("0.3750"), LocalDateTime.of(standardTime.getYear(), 1, 1, 0, 0, 0), LocalDateTime.of(2025, 1, 31, 23, 59, 59), 0L, "127.0.0.1");
-//        Vacation v4 = Vacation.createVacation(user, "정기 휴가", "25년 1분기 정기 휴가", VacationType.BASIC, new BigDecimal("4.0000"), LocalDateTime.of(standardTime.getYear(), 1, 1, 0, 0, 0), LocalDateTime.of(standardTime.getYear(), 12, 31, 23, 59, 59), 0L, "127.0.0.1");
-//
-//        given(userService.checkUserExist(userNo)).willReturn(user);
-//        given(vacationRepositoryImpl.findVacationsByParameterTimeWithSchedules(userNo, standardTime)).willReturn(List.of(v1, v2, v3, v4));
-//
-//        // When
-//        List<VacationServiceDto> findVacation = vacationService.checkPossibleVacations(userNo, standardTime);
-//
-//        // Then
-//        then(userService).should().checkUserExist(userNo);
-//        then(vacationRepositoryImpl).should().findVacationsByParameterTimeWithSchedules(userNo, standardTime);
-//        assertThat(findVacation).hasSize(4);
-//        assertThat(findVacation.get(0).getGrantTime()).isEqualTo(new BigDecimal("4.0000"));
-//        assertThat(findVacation.get(0).getUsedTime()).isEqualTo(new BigDecimal("0.0000"));
-//        assertThat(findVacation.get(0).getRemainTime()).isEqualTo(new BigDecimal("4.0000"));
-//    }
-//
-//    // 테스트 헬퍼 메서드
-//    private void setUserNo(User user, Long no) {
-//        try {
-//            java.lang.reflect.Field field = User.class.getDeclaredField("id");
-//            field.setAccessible(true);
-//            field.set(user, no);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
+
+    @Test
+    @DisplayName("기간별 내역 리스트 조회 테스트 - 성공")
+    void getVacationHistoriesByPeriodSuccessTest() {
+        // Given
+        User user = User.createUser("이서준", "19700723", "ADMIN", "9 ~ 6", "N");
+        Vacation vacation = Vacation.createVacation(user, VacationType.ANNUAL, new BigDecimal("10.0000"),
+                LocalDateTime.of(2025, 1, 1, 0, 0, 0),
+                LocalDateTime.of(2025, 12, 31, 23, 59, 59),
+                0L, "127.0.0.1");
+
+        VacationHistory history1 = VacationHistory.createUseVacationHistory(vacation, "연차", VacationTimeType.DAYOFF,
+                LocalDateTime.of(2025, 2, 3, 0, 0, 0),
+                0L, "127.0.0.1");
+        VacationHistory history2 = VacationHistory.createUseVacationHistory(vacation, "오전 반차", VacationTimeType.MORNINGOFF,
+                LocalDateTime.of(2025, 2, 28, 9, 0, 0),
+                0L, "127.0.0.1");
+        VacationHistory history3 = VacationHistory.createUseVacationHistory(vacation, "오후 반차", VacationTimeType.AFTERNOONOFF,
+                LocalDateTime.of(2025, 2, 28, 14, 0, 0),
+                0L, "127.0.0.1");
+
+        setVacationHistoryId(history1, 1L);
+        setVacationHistoryId(history2, 2L);
+        setVacationHistoryId(history3, 3L);
+        List<VacationHistory> histories = List.of(history1, history2, history3);
+
+        given(vacationHistoryRepositoryImpl.findVacationHistorysByPeriod(
+                LocalDateTime.of(2025, 1, 1, 0, 0, 0),
+                LocalDateTime.of(2025, 12, 31, 23, 59, 59)
+        )).willReturn(histories);
+        given(vacationRepositoryImpl.findVacationsByIdsWithUser(anyList()))
+                .willReturn(List.of(vacation));
+
+        // When
+        List<VacationServiceDto> result = vacationService.getVacationHistoriesByPeriod(
+                LocalDateTime.of(2025, 1, 1, 0, 0, 0),
+                LocalDateTime.of(2025, 12, 31, 23, 59, 59)
+        );
+
+        // Then
+        then(vacationRepositoryImpl).should().findVacationsByIdsWithUser(anyList());
+        assertThat(result.size()).isEqualTo(3);
+    }
+
+    @Test
+    @DisplayName("기간별 내역 리스트 조회 테스트 - 성공 (연차 그룹)")
+    void getVacationHistoriesByPeriodSuccessTestAnnualGroup() {
+        // Given
+        User user = User.createUser("이서준", "19700723", "ADMIN", "9 ~ 6", "N");
+        Vacation vacation1 = Vacation.createVacation(user, VacationType.ANNUAL, new BigDecimal("10.0000"),
+                LocalDateTime.of(2024, 1, 1, 0, 0, 0),
+                LocalDateTime.of(2024, 12, 31, 23, 59, 59),
+                0L, "127.0.0.1");
+        VacationHistory history1 = VacationHistory.createUseVacationHistory(vacation1, "연차", VacationTimeType.DAYOFF,
+                LocalDateTime.of(2024, 2, 5, 0, 0, 0),
+                0L, "127.0.0.1");
+        VacationHistory history2 = VacationHistory.createUseVacationHistory(vacation1, "연차", VacationTimeType.DAYOFF,
+                LocalDateTime.of(2024, 4, 11, 0, 0, 0),
+                0L, "127.0.0.1");
+        VacationHistory history3 = VacationHistory.createUseVacationHistory(vacation1, "연차", VacationTimeType.DAYOFF,
+                LocalDateTime.of(2024, 4, 12, 0, 0, 0),
+                0L, "127.0.0.1");
+
+        Vacation vacation2 = Vacation.createVacation(user, VacationType.ANNUAL, new BigDecimal("10.0000"),
+                LocalDateTime.of(2025, 1, 1, 0, 0, 0),
+                LocalDateTime.of(2025, 12, 31, 23, 59, 59),
+                0L, "127.0.0.1");
+        VacationHistory history4 = VacationHistory.createUseVacationHistory(vacation2, "연차", VacationTimeType.DAYOFF,
+                LocalDateTime.of(2025, 4, 10, 0, 0, 0),
+                0L, "127.0.0.1");
+        VacationHistory history5 = VacationHistory.createUseVacationHistory(vacation2, "연차", VacationTimeType.DAYOFF,
+                LocalDateTime.of(2025, 4, 11, 0, 0, 0),
+                0L, "127.0.0.1");
+        VacationHistory history6 = VacationHistory.createUseVacationHistory(vacation2, "연차", VacationTimeType.DAYOFF,
+                LocalDateTime.of(2025, 6, 2, 0, 0, 0),
+                0L, "127.0.0.1");
+
+        setVacationId(vacation1, 1L);
+        setVacationId(vacation2, 2L);
+        setVacationHistoryId(history1, 1L);
+        setVacationHistoryId(history2, 2L);
+        setVacationHistoryId(history3, 3L);
+        setVacationHistoryId(history4, 4L);
+        setVacationHistoryId(history5, 5L);
+        setVacationHistoryId(history6, 6L);
+        List<VacationHistory> histories = List.of(history1, history2, history3, history4, history5, history6);
+
+        given(vacationHistoryRepositoryImpl.findVacationHistorysByPeriod(
+                LocalDateTime.of(2024, 1, 1, 0, 0, 0),
+                LocalDateTime.of(2025, 12, 31, 23, 59, 59)
+        )).willReturn(histories);
+        given(vacationRepositoryImpl.findVacationsByIdsWithUser(anyList()))
+                .willReturn(List.of(vacation1, vacation2));
+
+        // When
+        List<VacationServiceDto> result = vacationService.getVacationHistoriesByPeriod(
+                LocalDateTime.of(2024, 1, 1, 0, 0, 0),
+                LocalDateTime.of(2025, 12, 31, 23, 59, 59)
+        );
+
+        // Then
+        then(vacationRepositoryImpl).should().findVacationsByIdsWithUser(anyList());
+        assertThat(result.size()).isEqualTo(4);
+    }
+
+    @Test
+    @DisplayName("기간별 내역 리스트 조회 테스트 - 성공 (연차 1건)")
+    void getVacationHistoriesByPeriodSuccessTestOneAnnual() {
+        // Given
+        User user = User.createUser("이서준", "19700723", "ADMIN", "9 ~ 6", "N");
+        Vacation vacation = Vacation.createVacation(user, VacationType.ANNUAL, new BigDecimal("10.0000"),
+                LocalDateTime.of(2025, 1, 1, 0, 0, 0),
+                LocalDateTime.of(2025, 12, 31, 23, 59, 59),
+                0L, "127.0.0.1");
+
+        VacationHistory history = VacationHistory.createUseVacationHistory(vacation, "연차", VacationTimeType.DAYOFF,
+                LocalDateTime.of(2025, 2, 3, 0, 0, 0),
+                0L, "127.0.0.1");
+
+        setVacationHistoryId(history, 1L);
+        List<VacationHistory> histories = List.of(history);
+
+        given(vacationHistoryRepositoryImpl.findVacationHistorysByPeriod(
+                LocalDateTime.of(2025, 1, 1, 0, 0, 0),
+                LocalDateTime.of(2025, 12, 31, 23, 59, 59)
+        )).willReturn(histories);
+        given(vacationRepositoryImpl.findVacationsByIdsWithUser(anyList()))
+                .willReturn(List.of(vacation));
+
+        // When
+        List<VacationServiceDto> result = vacationService.getVacationHistoriesByPeriod(
+                LocalDateTime.of(2025, 1, 1, 0, 0, 0),
+                LocalDateTime.of(2025, 12, 31, 23, 59, 59)
+        );
+
+        // Then
+        then(vacationRepositoryImpl).should().findVacationsByIdsWithUser(anyList());
+        assertThat(result.size()).isEqualTo(1);
+    }
+
     // 테스트 헬퍼 메서드
     private void setVacationId(Vacation vacation, Long id) {
         try {
@@ -811,14 +816,4 @@ class VacationServiceTest {
             e.printStackTrace();
         }
     }
-//
-//    private void setVacationSchedules(Vacation vacation, List<Schedule> schedules) {
-//        try {
-//            java.lang.reflect.Field field = Vacation.class.getDeclaredField("schedules");
-//            field.setAccessible(true);
-//            field.set(vacation, schedules);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
 }
