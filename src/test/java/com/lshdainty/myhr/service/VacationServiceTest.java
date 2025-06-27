@@ -492,7 +492,7 @@ class VacationServiceTest {
         ));
 
         // When
-        List<Vacation> vacations = vacationService.getAvailableVacation(userNo, now);
+        List<Vacation> vacations = vacationService.getAvailableVacations(userNo, now);
 
         // Then
         then(userService).should().checkUserExist(userNo);
