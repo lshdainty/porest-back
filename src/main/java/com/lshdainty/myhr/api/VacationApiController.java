@@ -104,8 +104,8 @@ public class VacationApiController {
 
     @GetMapping("/api/v1/vacation/available/{userNo}")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    public ApiResponse getAvailableVacation(@PathVariable("userNo") Long userNo, @RequestParam("startDate") LocalDateTime startDate) {
-        List<Vacation> vacations = vacationService.getAvailableVacation(userNo, startDate);
+    public ApiResponse getAvailableVacations(@PathVariable("userNo") Long userNo, @RequestParam("startDate") LocalDateTime startDate) {
+        List<Vacation> vacations = vacationService.getAvailableVacations(userNo, startDate);
 
         List<VacationDto> resp = vacations.stream()
                 .map(v -> VacationDto.builder()

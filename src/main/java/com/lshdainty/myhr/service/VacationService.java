@@ -125,7 +125,7 @@ public class VacationService {
         return userRepositoryImpl.findUsersWithVacations();
     }
 
-    public List<Vacation> getAvailableVacation(Long userNo, LocalDateTime startDate) {
+    public List<Vacation> getAvailableVacations(Long userNo, LocalDateTime startDate) {
         // 유저 조회
         userService.checkUserExist(userNo);
 
