@@ -21,14 +21,14 @@ public class UserService {
     private final UserRepositoryImpl userRepositoryImpl;
 
     @Transactional
-    public Long join(String name, String birth, String employ, String workTime, String lunar) {
-        User user = User.createUser(name, birth, employ, workTime, lunar);
+    public String join(String id, String pwd, String name, String email, String birth, String employ, String workTime, String lunar) {
+        User user = User.createUser(id, pwd, name, email, birth, employ, workTime, lunar);
         userRepositoryImpl.save(user);
         return user.getId();
     }
 
-    public User findUser(Long userNo) {
-        return checkUserExist(userNo);
+    public User findUser(String userId) {
+        return checkUserExist(userId);
     }
 
     public List<User> findUsers() {
@@ -36,19 +36,19 @@ public class UserService {
     }
 
     @Transactional
-    public void editUser(Long userId, String name, String birth, String employ, String workTime, String lunar) {
+    public void editUser(String userId, String name, String birth, String employ, String workTime, String lunar) {
         User user = checkUserExist(userId);
         user.updateUser(name, birth, employ, workTime, lunar);
     }
 
     @Transactional
-    public void deleteUser(Long userId) {
+    public void deleteUser(String userId) {
         User user = checkUserExist(userId);
         user.deleteUser();
     }
 
-    public User checkUserExist(Long userNo) {
-        Optional<User> findUser = userRepositoryImpl.findById(userNo);
+    public User checkUserExist(String userId) {
+        Optional<User> findUser = userRepositoryImpl.findById(userId);
         if ((findUser.isEmpty()) || findUser.get().getDelYN().equals("Y")) { throw new IllegalArgumentException(ms.getMessage("error.notfound.user", null, null)); }
         return findUser.get();
     }

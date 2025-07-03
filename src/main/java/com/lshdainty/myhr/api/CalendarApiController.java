@@ -34,7 +34,7 @@ public class CalendarApiController {
         resp.addAll(schedules.stream()
                 .map(s -> CalendarDto
                         .builder()
-                        .userNo(s.getUser().getId())
+                        .userId(s.getUser().getId())
                         .userName(s.getUser().getName())
                         .calendarName(s.getType().getStrName())
                         .calendarType(s.getType().name())
@@ -52,7 +52,7 @@ public class CalendarApiController {
         resp.addAll(histories.stream()
                 .map(v -> CalendarDto
                         .builder()
-                        .userNo(v.getUser().getId())
+                        .userId(v.getUser().getId())
                         .userName(v.getUser().getName())
                         .calendarType(v.getTimeType().name())
                         .calendarName(v.getTimeType().getStrName())

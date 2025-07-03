@@ -37,7 +37,7 @@ public class VacationService {
     private final UserService userService;
 
     @Transactional
-    public Long registVacation(Long userNo, String desc, VacationType type, BigDecimal grantTime, LocalDateTime occurDate, LocalDateTime expiryDate, Long addUserNo, String clientIP) {
+    public Long registVacation(String userId, String desc, VacationType type, BigDecimal grantTime, LocalDateTime occurDate, LocalDateTime expiryDate, String addUserId, String clientIP) {
         VacationService vacationService = switch (type) {
             case ANNUAL ->
                     new Annual(ms, vacationRepositoryImpl, vacationHistoryRepositoryImpl, userRepositoryImpl, holidayRepositoryImpl, userService);
@@ -51,12 +51,12 @@ public class VacationService {
                     new Overtime(ms, vacationRepositoryImpl, vacationHistoryRepositoryImpl, userRepositoryImpl, holidayRepositoryImpl, userService);
         };
 
-        return vacationService.registVacation(userNo, desc, type, grantTime, occurDate, expiryDate, addUserNo, clientIP);
+        return vacationService.registVacation(userId, desc, type, grantTime, occurDate, expiryDate, addUserId, clientIP);
     }
 
     @Transactional
-    public Long useVacation(Long userNo, Long vacatoinId, String desc, VacationTimeType type, LocalDateTime startDate, LocalDateTime endDate, Long crtUserNo, String clientIP) {
-        User user = userService.checkUserExist(userNo);
+    public Long useVacation(String userId, Long vacatoinId, String desc, VacationTimeType type, LocalDateTime startDate, LocalDateTime endDate, String crtUserId, String clientIP) {
+        User user = userService.checkUserExist(userId);
         Vacation vacation = checkVacationExist(vacatoinId);
 
         // 시작, 종료시간 시간 비교
@@ -105,36 +105,36 @@ public class VacationService {
                     desc,
                     type,
                     LocalDateTime.of(betweenDate, LocalTime.of(startDate.toLocalTime().getHour(), startDate.toLocalTime().getMinute(), 0)),
-                    crtUserNo,
+                    crtUserId,
                     clientIP
             );
             vacationHistoryRepositoryImpl.save(history);
         }
 
         // 사용한 휴가 차감
-        vacation.deductedVacation(useTime, crtUserNo, clientIP);
+        vacation.deductedVacation(useTime, crtUserId, clientIP);
 
         return vacation.getId();
     }
 
-    public List<Vacation> findVacationsByUser(Long userNo) {
-        return vacationRepositoryImpl.findVacationsByUserNo(userNo);
+    public List<Vacation> findVacationsByUser(String userId) {
+        return vacationRepositoryImpl.findVacationsByUserId(userId);
     }
 
     public List<User> findVacationsByUserGroup() {
         return userRepositoryImpl.findUsersWithVacations();
     }
 
-    public List<Vacation> getAvailableVacations(Long userNo, LocalDateTime startDate) {
+    public List<Vacation> getAvailableVacations(String userId, LocalDateTime startDate) {
         // 유저 조회
-        userService.checkUserExist(userNo);
+        userService.checkUserExist(userId);
 
         // 시작 날짜를 기준으로 등록 가능한 휴가 목록 조회
-        return vacationRepositoryImpl.findVacationsByBaseTime(userNo, startDate);
+        return vacationRepositoryImpl.findVacationsByBaseTime(userId, startDate);
     }
 
     @Transactional
-    public void deleteVacationHistory(Long vacationHistoryId, Long delUserNo, String clientIP) {
+    public void deleteVacationHistory(Long vacationHistoryId, String delUserId, String clientIP) {
         VacationHistory history = checkVacationHistoryExist(vacationHistoryId);
         Vacation vacation = checkVacationExist(history.getVacation().getId());
 
@@ -149,7 +149,7 @@ public class VacationService {
             }
 
             // 휴가 추가 내역은 삭제하고 추가된 휴가 차감
-            history.deleteRegistVacationHistory(vacation, delUserNo, clientIP);
+            history.deleteRegistVacationHistory(vacation, delUserId, clientIP);
         } else {
             // 휴가 사용 내역
             if (MyhrTime.isAfterThanEndDate(LocalDateTime.now(), history.getUsedDateTime())) {
@@ -157,7 +157,7 @@ public class VacationService {
             }
 
             // 휴가 사용 내역은 삭제하고 차감된 휴가 추가
-            history.deleteUseVacationHistory(vacation, delUserNo, clientIP);
+            history.deleteUseVacationHistory(vacation, delUserId, clientIP);
         }
     }
 

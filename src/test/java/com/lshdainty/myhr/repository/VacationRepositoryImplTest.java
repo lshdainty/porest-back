@@ -34,7 +34,7 @@ public class VacationRepositoryImplTest {
     @DisplayName("휴가 저장 및 단건 조회")
     void save() {
         // given
-        User user = User.createUser("이서준", "19700723", "9 ~ 6", "ADMIN", "N");
+        User user = User.createUser("test1");
         em.persist(user);
 
         LocalDateTime now = LocalDateTime.now();
@@ -45,7 +45,7 @@ public class VacationRepositoryImplTest {
         LocalDateTime occurDate = LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0);
         LocalDateTime expiryDate = LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59);
 
-        Vacation vacation = Vacation.createVacation(user, type, grantTime, occurDate, expiryDate, 0L, "");
+        Vacation vacation = Vacation.createVacation(user, type, grantTime, occurDate, expiryDate, "", "");
 
         // when
         vacationRepositoryImpl.save(vacation);
@@ -79,7 +79,7 @@ public class VacationRepositoryImplTest {
     @DisplayName("유저에 부여된 전체 휴가가 보여야한다.")
     void getVacationsByUserNo() {
         // given
-        User user = User.createUser("이서준", "19700723", "9 ~ 6", "ADMIN", "N");
+        User user = User.createUser("test1");
         em.persist(user);
 
         LocalDateTime now = LocalDateTime.now();
@@ -95,12 +95,12 @@ public class VacationRepositoryImplTest {
         };
 
         for (int i = 0; i < types.length; i++) {
-            Vacation vacation = Vacation.createVacation(user, types[i], grantTimes[i], occurDates[i], expiryDates[i], 0L, "");
+            Vacation vacation = Vacation.createVacation(user, types[i], grantTimes[i], occurDates[i], expiryDates[i], "", "");
             vacationRepositoryImpl.save(vacation);
         }
 
         // when
-        List<Vacation> vacations = vacationRepositoryImpl.findVacationsByUserNo(user.getId());
+        List<Vacation> vacations = vacationRepositoryImpl.findVacationsByUserId(user.getId());
 
         // then
         assertThat(vacations.size()).isEqualTo(types.length);
@@ -114,11 +114,11 @@ public class VacationRepositoryImplTest {
     @DisplayName("유저에 부여된 휴가가 없더라도 Null이 반환되면 안된다.")
     void getVacationsByUserNoEmpty() {
         // given
-        User user = User.createUser("이서준", "19700723", "9 ~ 6", "ADMIN", "N");
+        User user = User.createUser("test1");
         em.persist(user);
 
         // when
-        List<Vacation> vacations = vacationRepositoryImpl.findVacationsByUserNo(user.getId());
+        List<Vacation> vacations = vacationRepositoryImpl.findVacationsByUserId(user.getId());
 
         // then
         assertThat(vacations.isEmpty()).isTrue();
@@ -128,10 +128,10 @@ public class VacationRepositoryImplTest {
     @DisplayName("유저 id가 null이 입력되어도 오류가 발생되면 안된다.")
     void getVacationsByUserNoIsNull() {
         // given
-        Long userNo = null;
+        String userId = null;
 
         // when
-        List<Vacation> vacations = vacationRepositoryImpl.findVacationsByUserNo(userNo);
+        List<Vacation> vacations = vacationRepositoryImpl.findVacationsByUserId(userId);
 
         // then
         assertThat(vacations.isEmpty()).isTrue();
@@ -141,7 +141,7 @@ public class VacationRepositoryImplTest {
     @DisplayName("해당 년도에 같은 타입으로 등록된 휴가가 있는지 확인되어야 한다.")
     void getVacationsByTypeWithYear() {
         // given
-        User user = User.createUser("이서준", "19700723", "9 ~ 6", "ADMIN", "N");
+        User user = User.createUser("test1");
         em.persist(user);
 
         LocalDateTime now = LocalDateTime.now();
@@ -157,7 +157,7 @@ public class VacationRepositoryImplTest {
         };
 
         for (int i = 0; i < types.length; i++) {
-            Vacation vacation = Vacation.createVacation(user, types[i], grantTimes[i], occurDates[i], expiryDates[i], 0L, "");
+            Vacation vacation = Vacation.createVacation(user, types[i], grantTimes[i], occurDates[i], expiryDates[i], "", "");
             vacationRepositoryImpl.save(vacation);
         }
 
@@ -175,7 +175,7 @@ public class VacationRepositoryImplTest {
     @DisplayName("해당 년도에 같은 타입으로 등록된 휴가가 없어도 Null이 반환되면 안된다.")
     void getVacationsByTypeWithYearEmpty() {
         // given
-        User user = User.createUser("이서준", "19700723", "9 ~ 6", "ADMIN", "N");
+        User user = User.createUser("test1");
         em.persist(user);
 
         LocalDateTime now = LocalDateTime.now();
@@ -191,7 +191,7 @@ public class VacationRepositoryImplTest {
         };
 
         for (int i = 0; i < types.length; i++) {
-            Vacation vacation = Vacation.createVacation(user, types[i], grantTimes[i], occurDates[i], expiryDates[i], 0L, "");
+            Vacation vacation = Vacation.createVacation(user, types[i], grantTimes[i], occurDates[i], expiryDates[i], "", "");
             vacationRepositoryImpl.save(vacation);
         }
 
@@ -206,12 +206,12 @@ public class VacationRepositoryImplTest {
     @DisplayName("vacation type이 null이 입력되어도 오류가 발생되면 안된다.")
     void getVacationsByTypeNullWithYear() {
         // given
-        Long userNo = 1L;
+        String userId = "test1";
         VacationType type = null;
         String year = String.valueOf(LocalDateTime.now().getYear());
 
         // when
-        Optional<Vacation> vacation = vacationRepositoryImpl.findVacationByTypeWithYear(userNo, type, year);
+        Optional<Vacation> vacation = vacationRepositoryImpl.findVacationByTypeWithYear(userId, type, year);
 
         // then
         assertThat(vacation.isEmpty()).isTrue();
@@ -221,12 +221,12 @@ public class VacationRepositoryImplTest {
     @DisplayName("년도가 null이 입력되어도 오류가 발생되면 안된다.")
     void getVacationsByTypeWithYearNull() {
         // given
-        Long userNo = 1L;
+        String userId = "test1";
         VacationType type = VacationType.ANNUAL;
         String year = null;
 
         // when
-        Optional<Vacation> vacation = vacationRepositoryImpl.findVacationByTypeWithYear(userNo, type, year);
+        Optional<Vacation> vacation = vacationRepositoryImpl.findVacationByTypeWithYear(userId, type, year);
 
         // then
         assertThat(vacation.isEmpty()).isTrue();
@@ -236,7 +236,7 @@ public class VacationRepositoryImplTest {
     @DisplayName("baseTime이 발생시간 및 유효기간 안에 해당하는 휴가들만 조회돼야 한다.")
     void getVacationsByBaseTime() {
         // given
-        User user = User.createUser("이서준", "19700723", "9 ~ 6", "ADMIN", "N");
+        User user = User.createUser("test1");
         em.persist(user);
 
         LocalDateTime now = LocalDateTime.now();
@@ -252,7 +252,7 @@ public class VacationRepositoryImplTest {
         };
 
         for (int i = 0; i < types.length; i++) {
-            Vacation vacation = Vacation.createVacation(user, types[i], grantTimes[i], occurDates[i], expiryDates[i], 0L, "");
+            Vacation vacation = Vacation.createVacation(user, types[i], grantTimes[i], occurDates[i], expiryDates[i], "", "");
             vacationRepositoryImpl.save(vacation);
         }
 
@@ -269,7 +269,7 @@ public class VacationRepositoryImplTest {
     @DisplayName("baseTime이 발생시간 및 유효기간 안에 해당하는 휴가가 없어도 Null이 반환되면 안된다.")
     void getVacationsByBaseTimeEmpty() {
         // given
-        User user = User.createUser("이서준", "19700723", "9 ~ 6", "ADMIN", "N");
+        User user = User.createUser("test1");
         em.persist(user);
 
         LocalDateTime now = LocalDateTime.now();
@@ -285,7 +285,7 @@ public class VacationRepositoryImplTest {
         };
 
         for (int i = 0; i < types.length; i++) {
-            Vacation vacation = Vacation.createVacation(user, types[i], grantTimes[i], occurDates[i], expiryDates[i], 0L, "");
+            Vacation vacation = Vacation.createVacation(user, types[i], grantTimes[i], occurDates[i], expiryDates[i], "", "");
             vacationRepositoryImpl.save(vacation);
         }
 
@@ -300,11 +300,11 @@ public class VacationRepositoryImplTest {
     @DisplayName("userNo가 null이 입력되어도 오류가 발생되면 안된다.")
     void getVacationsByBaseTimeUserNoNull() {
         // given
-        Long userNo = null;
+        String userId = null;
         LocalDateTime baseTime = LocalDateTime.now();
 
         // when
-        List<Vacation> vacations = vacationRepositoryImpl.findVacationsByBaseTime(userNo, baseTime);
+        List<Vacation> vacations = vacationRepositoryImpl.findVacationsByBaseTime(userId, baseTime);
 
         // then
         assertThat(vacations.isEmpty()).isTrue();
@@ -314,11 +314,11 @@ public class VacationRepositoryImplTest {
     @DisplayName("baseTime이 null이 입력되어도 오류가 발생되면 안된다.")
     void getVacationsByBaseTimeNull() {
         // given
-        Long userNo = 1L;
+        String userId = "test1";
         LocalDateTime baseTime = null;
 
         // when
-        List<Vacation> vacations = vacationRepositoryImpl.findVacationsByBaseTime(userNo, baseTime);
+        List<Vacation> vacations = vacationRepositoryImpl.findVacationsByBaseTime(userId, baseTime);
 
         // then
         assertThat(vacations.isEmpty()).isTrue();
@@ -328,7 +328,7 @@ public class VacationRepositoryImplTest {
     @DisplayName("baseTime이 발생시간 및 유효기간 안에 해당하는 휴가가 조회돼야 한다.(history fetch join)")
     void getVacationsByBaseTimeWithHistory() {
         // given
-        User user = User.createUser("이서준", "19700723", "9 ~ 6", "ADMIN", "N");
+        User user = User.createUser("test1");
         em.persist(user);
 
         LocalDateTime now = LocalDateTime.now();
@@ -344,7 +344,7 @@ public class VacationRepositoryImplTest {
         };
 
         for (int i = 0; i < types.length; i++) {
-            Vacation vacation = Vacation.createVacation(user, types[i], grantTimes[i], occurDates[i], expiryDates[i], 0L, "");
+            Vacation vacation = Vacation.createVacation(user, types[i], grantTimes[i], occurDates[i], expiryDates[i], "", "");
             vacationRepositoryImpl.save(vacation);
         }
 
@@ -361,7 +361,7 @@ public class VacationRepositoryImplTest {
     @DisplayName("baseTime이 발생시간 및 유효기간 안에 해당하는 휴가가 없어도 Null이 반환되면 안된다.(history fetch join)")
     void getVacationsByBaseTimeWithHistoryEmpty() {
         // given
-        User user = User.createUser("이서준", "19700723", "9 ~ 6", "ADMIN", "N");
+        User user = User.createUser("test1");
         em.persist(user);
 
         LocalDateTime now = LocalDateTime.now();
@@ -377,7 +377,7 @@ public class VacationRepositoryImplTest {
         };
 
         for (int i = 0; i < types.length; i++) {
-            Vacation vacation = Vacation.createVacation(user, types[i], grantTimes[i], occurDates[i], expiryDates[i], 0L, "");
+            Vacation vacation = Vacation.createVacation(user, types[i], grantTimes[i], occurDates[i], expiryDates[i], "", "");
             vacationRepositoryImpl.save(vacation);
         }
 
@@ -392,11 +392,11 @@ public class VacationRepositoryImplTest {
     @DisplayName("userNo가 null이 입력되어도 오류가 발생되면 안된다.(history fetch join)")
     void getVacationsByBaseTimeWithHistoryUserNoNull() {
         // given
-        Long userNo = null;
+        String userId = null;
         LocalDateTime baseTime = LocalDateTime.now();
 
         // when
-        List<Vacation> vacations = vacationRepositoryImpl.findVacationsByBaseTimeWithHistory(userNo, baseTime);
+        List<Vacation> vacations = vacationRepositoryImpl.findVacationsByBaseTimeWithHistory(userId, baseTime);
 
         // then
         assertThat(vacations.isEmpty()).isTrue();
@@ -406,11 +406,11 @@ public class VacationRepositoryImplTest {
     @DisplayName("baseTime이 null이 입력되어도 오류가 발생되면 안된다.(history fetch join)")
     void getVacationsByBaseTimeWithHistoryNull() {
         // given
-        Long userNo = 1L;
+        String userId = null;
         LocalDateTime baseTime = null;
 
         // when
-        List<Vacation> vacations = vacationRepositoryImpl.findVacationsByBaseTimeWithHistory(userNo, baseTime);
+        List<Vacation> vacations = vacationRepositoryImpl.findVacationsByBaseTimeWithHistory(userId, baseTime);
 
         // then
         assertThat(vacations.isEmpty()).isTrue();
@@ -420,7 +420,7 @@ public class VacationRepositoryImplTest {
     @DisplayName("vacation id목록을 조회 조건으로 사용하여 조회한다.")
     void getVacationsByIdsWithUser() {
         // given
-        User user = User.createUser("이서준", "19700723", "9 ~ 6", "ADMIN", "N");
+        User user = User.createUser("test1");
         em.persist(user);
 
         LocalDateTime now = LocalDateTime.now();
@@ -437,7 +437,7 @@ public class VacationRepositoryImplTest {
 
         List<Long> ids = new ArrayList<>();
         for (int i = 0; i < types.length; i++) {
-            Vacation vacation = Vacation.createVacation(user, types[i], grantTimes[i], occurDates[i], expiryDates[i], 0L, "");
+            Vacation vacation = Vacation.createVacation(user, types[i], grantTimes[i], occurDates[i], expiryDates[i], "", "");
             vacationRepositoryImpl.save(vacation);
             ids.add(vacation.getId());
         }
@@ -457,7 +457,7 @@ public class VacationRepositoryImplTest {
     @DisplayName("vacation id목록을 조회 조건으로 사용하여 조회한 데이터가 없어도 Null이 반환되면 안된다.")
     void getVacationsByIdsWithUserEmpty() {
         // given
-        User user = User.createUser("이서준", "19700723", "9 ~ 6", "ADMIN", "N");
+        User user = User.createUser("test1");
         em.persist(user);
 
         LocalDateTime now = LocalDateTime.now();
@@ -474,7 +474,7 @@ public class VacationRepositoryImplTest {
 
         List<Long> ids = List.of(998L, 999L);
         for (int i = 0; i < types.length; i++) {
-            Vacation vacation = Vacation.createVacation(user, types[i], grantTimes[i], occurDates[i], expiryDates[i], 0L, "");
+            Vacation vacation = Vacation.createVacation(user, types[i], grantTimes[i], occurDates[i], expiryDates[i], "", "");
             vacationRepositoryImpl.save(vacation);
         }
 

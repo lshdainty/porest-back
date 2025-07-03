@@ -25,9 +25,9 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
     }
 
     @Override
-    public List<Schedule> findSchedulesByUserNo(Long userNo) {
-        return em.createQuery("select s from Schedule s where s.user.id = :userNo and s.delYN = :delYN", Schedule.class)
-                .setParameter("userNo", userNo)
+    public List<Schedule> findSchedulesByUserId(String userId) {
+        return em.createQuery("select s from Schedule s where s.user.id = :userId and s.delYN = :delYN", Schedule.class)
+                .setParameter("userId", userId)
                 .setParameter("delYN", "N")
                 .getResultList();
     }

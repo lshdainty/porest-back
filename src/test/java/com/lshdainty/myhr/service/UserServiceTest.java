@@ -35,6 +35,7 @@ class UserServiceTest {
     @DisplayName("회원 가입 테스트 - 성공")
     void signUpSuccessTest() {
         // Given
+        String id = "test1";
         String name = "이서준";
         String birth = "19700723";
         String workTime = "9 ~ 6";
@@ -43,7 +44,7 @@ class UserServiceTest {
         willDoNothing().given(userRepositoryImpl).save(any(User.class));
 
         // When
-        userService.join(name, birth, employ, workTime, lunar);
+        userService.join(id, "", name, "", birth, employ, workTime, lunar);
 
         // Then
         then(userRepositoryImpl).should().save(any(User.class));
@@ -53,13 +54,14 @@ class UserServiceTest {
     @DisplayName("단건 유저 조회 테스트 - 성공")
     void findUserSuccessTest() {
         // Given
-        Long id = 1L;
+        String id = "test1";
         String name = "이서준";
+        String email = "";
         String birth = "19700723";
         String workTime = "9 ~ 6";
         String employ = "ADMIN";
         String lunar = "N";
-        User user = User.createUser(name, birth, employ, workTime, lunar);
+        User user = User.createUser(id, "", name, "", birth, employ, workTime, lunar);
 
         given(userRepositoryImpl.findById(id)).willReturn(Optional.of(user));
 
@@ -81,7 +83,7 @@ class UserServiceTest {
     @DisplayName("단건 유저 조회 테스트 - 실패 (유저 없음)")
     void findUserFailTestNotFoundUser() {
         // Given
-        Long id = 900L;
+        String id = "";
         given(userRepositoryImpl.findById(id)).willReturn(Optional.empty());
 
         // When, Then
@@ -94,13 +96,13 @@ class UserServiceTest {
     @DisplayName("단건 유저 조회 테스트 - 실패 (삭제된 유저 조회)")
     void findUserFailTestDeletedUser() {
         // Given
-        Long id = 1L;
+        String id = "test1";
         String name = "이서준";
         String birth = "19700723";
         String workTime = "9 ~ 6";
         String employ = "ADMIN";
         String lunar = "N";
-        User user = User.createUser(name, birth, employ, workTime, lunar);
+        User user = User.createUser(id, "", name, "", birth, employ, workTime, lunar);
 
         user.deleteUser();
         given(userRepositoryImpl.findById(id)).willReturn(Optional.of(user));
@@ -116,9 +118,9 @@ class UserServiceTest {
     void findUsersSuccessTest() {
         // Given
         given(userRepositoryImpl.findUsers()).willReturn(List.of(
-                User.createUser("이서준", "19700723", "ADMIN", "9 ~ 6", "N"),
-                User.createUser("김서연", "19701026", "BP", "8 ~ 5", "N"),
-                User.createUser("김지후", "19740115", "BP", "10 ~ 7", "Y")
+                User.createUser("test1", "", "이서준", "", "19700723", "ADMIN", "9 ~ 6", "N"),
+                User.createUser("test2", "", "김서연", "", "19701026", "BP", "8 ~ 5", "N"),
+                User.createUser("test3", "", "김지후", "", "19740115", "BP", "10 ~ 7", "Y")
         ));
 
         // When
@@ -136,13 +138,13 @@ class UserServiceTest {
     @DisplayName("유저 수정 테스트 - 성공")
     void editUserSuccessTest() {
         // Given
-        Long id = 1L;
+        String id = "test1";
         String name = "이서준";
         String birth = "19700723";
         String workTime = "9 ~ 6";
         String employ = "ADMIN";
         String lunar = "N";
-        User user = User.createUser(name, birth, employ, workTime, lunar);
+        User user = User.createUser(id, "", name, "", birth, employ, workTime, lunar);
 
         given(userRepositoryImpl.findById(id)).willReturn(Optional.of(user));
 
@@ -164,7 +166,7 @@ class UserServiceTest {
     @DisplayName("유저 수정 테스트 - 실패 (유저 없음)")
     void editUserFailTestNotFoundUser() {
         // Given
-        Long id = 900L;
+        String id = "";
         given(userRepositoryImpl.findById(id)).willReturn(Optional.empty());
 
         // When & Then
@@ -177,13 +179,13 @@ class UserServiceTest {
     @DisplayName("유저 삭제 테스트 - 성공")
     void deleteUserSuccessTest() {
         // Given
-        Long id = 1L;
+        String id = "test1";
         String name = "이서준";
         String birth = "19700723";
         String workTime = "9 ~ 6";
         String employ = "ADMIN";
         String lunar = "N";
-        User user = User.createUser(name, birth, employ, workTime, lunar);
+        User user = User.createUser(id, "", name, "", birth, employ, workTime, lunar);
 
         given(userRepositoryImpl.findById(id)).willReturn(Optional.of(user));
 
@@ -199,7 +201,7 @@ class UserServiceTest {
     @DisplayName("유저 삭제 테스트 - 실패 (유저 없음)")
     void deleteUserFailTestNotFoundUser() {
         // Given
-        Long id = 900L;
+        String id = "";
         given(userRepositoryImpl.findById(id)).willReturn(Optional.empty());
 
         // When & Then

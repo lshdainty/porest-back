@@ -20,7 +20,7 @@ public class Schedule extends AuditingFields {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_no")
+    @JoinColumn(name = "user_id")
     private User user;
 
     @Column(name = "schedule_type")
@@ -44,7 +44,7 @@ public class Schedule extends AuditingFields {
      * 최초 스케줄 생성시 사용하는 생성자
      * Setter를 사용하지 말고 해당 생성자를 통해 생성 및 사용할 것
      */
-    public static Schedule createSchedule(User user, String desc, ScheduleType type, LocalDateTime startDate, LocalDateTime endDate, Long crtUserNo, String clientIP) {
+    public static Schedule createSchedule(User user, String desc, ScheduleType type, LocalDateTime startDate, LocalDateTime endDate, String crtUserId, String clientIP) {
         Schedule schedule = new Schedule();
         schedule.user = user;
         schedule.desc = desc;
@@ -52,7 +52,7 @@ public class Schedule extends AuditingFields {
         schedule.startDate = startDate;
         schedule.endDate = endDate;
         schedule.delYN = "N";
-        schedule.setCreated(LocalDateTime.now(), crtUserNo, clientIP);
+        schedule.setCreated(LocalDateTime.now(), crtUserId, clientIP);
         return schedule;
     }
 
@@ -60,8 +60,8 @@ public class Schedule extends AuditingFields {
      * 스케줄 삭제
      * Setter를 사용하지 말고 해당 메소드를 통해 설정할 것
      */
-    public void deleteSchedule(Long mdfUserNo, String clientIP) {
+    public void deleteSchedule(String mdfUserId, String clientIP) {
         this.delYN = "Y";
-        this.setModified(LocalDateTime.now(), mdfUserNo, clientIP);
+        this.setModified(LocalDateTime.now(), mdfUserId, clientIP);
     }
 }

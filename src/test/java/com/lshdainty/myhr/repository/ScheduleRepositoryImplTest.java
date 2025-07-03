@@ -30,7 +30,7 @@ public class ScheduleRepositoryImplTest {
     @DisplayName("스케줄 저장 및 단건 조회")
     void save() {
         // given
-        User user = User.createUser("이서준", "19700723", "9 ~ 6", "ADMIN", "N");
+        User user = User.createUser("test1");
         em.persist(user);
 
         String desc = "건강검진";
@@ -38,7 +38,7 @@ public class ScheduleRepositoryImplTest {
         LocalDateTime start = LocalDateTime.of(2025, 1, 2, 9, 0, 0);
         LocalDateTime end = LocalDateTime.of(2025, 1, 2, 14, 0, 0);
 
-        Schedule schedule = Schedule.createSchedule(user, desc, type, start, end, 0L, "");
+        Schedule schedule = Schedule.createSchedule(user, desc, type, start, end, "", "");
 
         // when
         scheduleRepositoryImpl.save(schedule);
@@ -71,7 +71,7 @@ public class ScheduleRepositoryImplTest {
     @DisplayName("유저가 가지고 있는 스케줄을 조회한다.")
     void getScheduleByUser() {
         // given
-        User user = User.createUser("이서준", "19700723", "9 ~ 6", "ADMIN", "N");
+        User user = User.createUser("test1");
         em.persist(user);
 
         String[] descs = {"건강검진", "예비군"};
@@ -86,12 +86,12 @@ public class ScheduleRepositoryImplTest {
         };
 
         for (int i = 0; i < descs.length; i++) {
-            Schedule schedule = Schedule.createSchedule(user, descs[i], types[i], starts[i], ends[i], 0L, "");
+            Schedule schedule = Schedule.createSchedule(user, descs[i], types[i], starts[i], ends[i], "", "");
             scheduleRepositoryImpl.save(schedule);
         }
 
         // when
-        List<Schedule> findSchedules = scheduleRepositoryImpl.findSchedulesByUserNo(user.getId());
+        List<Schedule> findSchedules = scheduleRepositoryImpl.findSchedulesByUserId(user.getId());
 
         // then
         assertThat(findSchedules.size()).isEqualTo(types.length);
@@ -105,11 +105,11 @@ public class ScheduleRepositoryImplTest {
     @DisplayName("유저가 가지고 있는 스케줄이 없더라도 Null이 반환되면 안된다.")
     void getScheduleByUserNoEmpty() {
         // given
-        User user = User.createUser("이서준", "19700723", "9 ~ 6", "ADMIN", "N");
+        User user = User.createUser("test1");
         em.persist(user);
 
         // when
-        List<Schedule> findSchedules = scheduleRepositoryImpl.findSchedulesByUserNo(user.getId());
+        List<Schedule> findSchedules = scheduleRepositoryImpl.findSchedulesByUserId(user.getId());
 
         // then
         assertThat(findSchedules.isEmpty()).isTrue();
@@ -119,10 +119,10 @@ public class ScheduleRepositoryImplTest {
     @DisplayName("유저 id가 null이 입력되어도 오류가 발생되면 안된다.")
     void getScheduleByUserNoIsNull() {
         // given
-        Long userNo = null;
+        String userId = null;
 
         // when
-        List<Schedule> findSchedules = scheduleRepositoryImpl.findSchedulesByUserNo(userNo);
+        List<Schedule> findSchedules = scheduleRepositoryImpl.findSchedulesByUserId(userId);
 
         // then
         assertThat(findSchedules.isEmpty()).isTrue();
@@ -132,7 +132,7 @@ public class ScheduleRepositoryImplTest {
     @DisplayName("사용자가 설정한 시작, 끝 시간에 스케줄 시작 시간이 해당하는 모든 스케줄을 조회한다.")
     void getScheduleByStartEnd() {
         // given
-        User user = User.createUser("이서준", "19700723", "9 ~ 6", "ADMIN", "N");
+        User user = User.createUser("test1");
         em.persist(user);
 
         String[] descs = {"건강검진", "예비군"};
@@ -147,7 +147,7 @@ public class ScheduleRepositoryImplTest {
         };
 
         for (int i = 0; i < descs.length; i++) {
-            Schedule schedule = Schedule.createSchedule(user, descs[i], types[i], starts[i], ends[i], 0L, "");
+            Schedule schedule = Schedule.createSchedule(user, descs[i], types[i], starts[i], ends[i], "", "");
             scheduleRepositoryImpl.save(schedule);
         }
 
@@ -169,7 +169,7 @@ public class ScheduleRepositoryImplTest {
     @DisplayName("사용자가 설정한 시작, 끝 시간에 스케줄 시작 시간이 해당하는 모든 스케줄 조회한다. (경계값 케이스)")
     void getScheduleByStartEndBoundary() {
         // given
-        User user = User.createUser("이서준", "19700723", "9 ~ 6", "ADMIN", "N");
+        User user = User.createUser("test1");
         em.persist(user);
 
         String[] descs = {"건강검진", "예비군"};
@@ -184,7 +184,7 @@ public class ScheduleRepositoryImplTest {
         };
 
         for (int i = 0; i < descs.length; i++) {
-            Schedule schedule = Schedule.createSchedule(user, descs[i], types[i], starts[i], ends[i], 0L, "");
+            Schedule schedule = Schedule.createSchedule(user, descs[i], types[i], starts[i], ends[i], "", "");
             scheduleRepositoryImpl.save(schedule);
         }
 
@@ -222,7 +222,7 @@ public class ScheduleRepositoryImplTest {
     @DisplayName("사용자가 설정한 시작, 끝 시간에 스케줄 시작 시간이 해당하는 스케줄이 없어도 Null이 반환되면 안된다.")
     void getScheduleByStartEndEmpty() {
         // given
-        User user = User.createUser("이서준", "19700723", "9 ~ 6", "ADMIN", "N");
+        User user = User.createUser("test1");
         em.persist(user);
 
         // when

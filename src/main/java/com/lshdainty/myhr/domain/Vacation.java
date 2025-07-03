@@ -20,7 +20,7 @@ public class Vacation extends AuditingFields {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_no")
+    @JoinColumn(name = "user_id")
     @Setter
     private User user;
 
@@ -52,15 +52,15 @@ public class Vacation extends AuditingFields {
      * 최초 휴가 생성시 사용하는 생성자
      * Setter를 사용하지 말고 해당 생성자를 통해 생성 및 사용할 것
      */
-    public static Vacation createVacation(User user, VacationType type, BigDecimal grantTime, LocalDateTime occurDate, LocalDateTime expiryDate, Long crtUserNo, String clientIP) {
+    public static Vacation createVacation(User user, VacationType type, BigDecimal grantTime, LocalDateTime occurDate, LocalDateTime expiryDate, String crtUserId, String clientIP) {
         Vacation vacation = new Vacation();
         vacation.addUser(user);
         vacation.type = type;
         vacation.remainTime = grantTime;
         vacation.occurDate = occurDate;
         vacation.expiryDate = expiryDate;
-        vacation.setCreated(crtUserNo, clientIP);
-        vacation.setModified(crtUserNo, clientIP);
+        vacation.setCreated(crtUserId, clientIP);
+        vacation.setModified(crtUserId, clientIP);
         return vacation;
     }
 
@@ -69,18 +69,18 @@ public class Vacation extends AuditingFields {
      * 휴가 추가 메소드<br>
      * remainTime(잔여시간)에 grantTime(추가시간)을 더함
      */
-    public void addVacation(BigDecimal grantTime, Long mdfUserNo, String clientIP) {
+    public void addVacation(BigDecimal grantTime, String mdfUserId, String clientIP) {
         this.remainTime =  getRemainTime().add(grantTime);
-        this.setModified(LocalDateTime.now(), mdfUserNo, clientIP);
+        this.setModified(LocalDateTime.now(), mdfUserId, clientIP);
     }
 
     /**
      * 휴가 차감 메소드<br>
      * remainTime(잔여시간)에서 deductTime을(사용시간)을 뺌
      */
-    public void deductedVacation(BigDecimal deductTime, Long mdfUserNo, String clientIP) {
+    public void deductedVacation(BigDecimal deductTime, String mdfUserId, String clientIP) {
         this.remainTime =  getRemainTime().subtract(deductTime);
-        this.setModified(LocalDateTime.now(), mdfUserNo, clientIP);
+        this.setModified(LocalDateTime.now(), mdfUserId, clientIP);
     }
 
     /**

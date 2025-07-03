@@ -16,40 +16,35 @@ import java.util.stream.Collectors;
 public class UserApiController {
     private final UserService userService;
 
-    @GetMapping("/api/v1/test")
-    public ApiResponse test() {
-        try {
-            Thread.sleep(10000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return ApiResponse.success();
-    }
-
     @PostMapping("/api/v1/user")
     public ApiResponse join(@RequestBody UserDto userDto) {
-        Long userId = userService.join(
+        String userId = userService.join(
+                userDto.getUserId(),
+                userDto.getUserPwd(),
                 userDto.getUserName(),
+                userDto.getUserEmail(),
                 userDto.getUserBirth(),
                 userDto.getUserEmploy(),
                 userDto.getUserWorkTime(),
                 userDto.getLunarYN()
         );
 
-        return ApiResponse.success(UserDto.builder().userNo(userId).build());
+        return ApiResponse.success(UserDto.builder().userId(userId).build());
     }
 
     @GetMapping("/api/v1/user/{id}")
-    public ApiResponse user(@PathVariable("id") Long userId) {
+    public ApiResponse user(@PathVariable("id") String userId) {
         User user = userService.findUser(userId);
 
         return ApiResponse.success(UserDto
                 .builder()
-                .userNo(userId)
+                .userId(userId)
                 .userName(user.getName())
+                .userEmail(user.getEmail())
                 .userBirth(user.getBirth())
-                .userEmploy(user.getEmploy())
                 .userWorkTime(user.getWorkTime())
+                .userRole(user.getRole().name())
+                .userEmploy(user.getEmploy())
                 .lunarYN(user.getLunarYN())
                 .build()
         );
@@ -62,11 +57,13 @@ public class UserApiController {
         List<UserDto> resps = users.stream()
                 .map(u -> UserDto
                         .builder()
-                        .userNo(u.getId())
+                        .userId(u.getId())
                         .userName(u.getName())
+                        .userEmail(u.getEmail())
                         .userBirth(u.getBirth())
-                        .userEmploy(u.getEmploy())
                         .userWorkTime(u.getWorkTime())
+                        .userRole(u.getRole().name())
+                        .userEmploy(u.getEmploy())
                         .lunarYN(u.getLunarYN())
                         .build()
                 )
@@ -76,7 +73,7 @@ public class UserApiController {
     }
 
     @PutMapping("/api/v1/user/{id}")
-    public ApiResponse editUser(@PathVariable("id") Long userId, @RequestBody UserDto userDto) {
+    public ApiResponse editUser(@PathVariable("id") String userId, @RequestBody UserDto userDto) {
         userService.editUser(
                 userId,
                 userDto.getUserName(),
@@ -90,18 +87,20 @@ public class UserApiController {
 
         return ApiResponse.success(UserDto
                 .builder()
-                .userNo(userId)
+                .userId(userId)
                 .userName(findUser.getName())
+                .userEmail(findUser.getEmail())
                 .userBirth(findUser.getBirth())
-                .userEmploy(findUser.getEmploy())
                 .userWorkTime(findUser.getWorkTime())
+                .userRole(findUser.getRole().name())
+                .userEmploy(findUser.getEmploy())
                 .lunarYN(findUser.getLunarYN())
                 .build()
         );
     }
 
     @DeleteMapping("/api/v1/user/{id}")
-    public ApiResponse deleteUser(@PathVariable("id") Long userId) {
+    public ApiResponse deleteUser(@PathVariable("id") String userId) {
         userService.deleteUser(userId);
         return ApiResponse.success();
     }

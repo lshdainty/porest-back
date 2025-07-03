@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ScheduleDto {
     private Long scheduleId;
-    private Long userNo;
+    private String userId;
     private String userName;
     private ScheduleType scheduleType;
     private String scheduleTypeName;

@@ -14,10 +14,13 @@ import java.util.List;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserDto {
-    private Long userNo;
+    private String userId;
+    private String userPwd;
     private String userName;
+    private String userEmail;
     private String userBirth;
     private String userWorkTime;
+    private String userRole;
     private String userEmploy;
     private String lunarYN;
     private String delYN;

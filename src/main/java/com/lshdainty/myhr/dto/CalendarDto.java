@@ -13,7 +13,7 @@ import java.util.List;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CalendarDto {
-    private Long userNo;
+    private String userId;
     private String userName;
     private String calendarName;    // vacation, schedule type name
     private String calendarType;    // vacation, schedule type

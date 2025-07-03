@@ -22,13 +22,13 @@ public class ScheduleService {
     private final UserService userService;
 
     @Transactional
-    public Long registSchedule(Long userNo, ScheduleType type, String desc, LocalDateTime start, LocalDateTime end, Long crtUserNo, String clientIP) {
+    public Long registSchedule(String userId, ScheduleType type, String desc, LocalDateTime start, LocalDateTime end, String crtUserId, String clientIP) {
         // 유저 조회
-        User user = userService.checkUserExist(userNo);
+        User user = userService.checkUserExist(userId);
 
         if (MyhrTime.isAfterThanEndDate(start, end)) { throw new IllegalArgumentException(ms.getMessage("error.validate.startIsAfterThanEnd", null, null)); }
 
-        Schedule schedule = Schedule.createSchedule(user, desc, type, start, end, crtUserNo, clientIP);
+        Schedule schedule = Schedule.createSchedule(user, desc, type, start, end, crtUserId, clientIP);
 
         // 휴가 등록
         scheduleRepositoryImpl.save(schedule);
@@ -36,8 +36,8 @@ public class ScheduleService {
         return schedule.getId();
     }
 
-    public List<Schedule> findSchedulesByUserNo(Long userNo) {
-        return scheduleRepositoryImpl.findSchedulesByUserNo(userNo);
+    public List<Schedule> findSchedulesByUserId(String userId) {
+        return scheduleRepositoryImpl.findSchedulesByUserId(userId);
     }
 
     public List<Schedule> findSchedulesByPeriod(LocalDateTime start, LocalDateTime end) {
@@ -46,12 +46,12 @@ public class ScheduleService {
     }
 
     @Transactional
-    public void deleteSchedule(Long scheduleId, Long delUserNo, String clientIP) {
+    public void deleteSchedule(Long scheduleId, String delUserId, String clientIP) {
         Schedule schedule = checkScheduleExist(scheduleId);
 
         if (schedule.getEndDate().isBefore(LocalDateTime.now())) { throw new IllegalArgumentException(ms.getMessage("error.validate.delete.isBeforeThanNow", null, null)); }
 
-        schedule.deleteSchedule(delUserNo, clientIP);
+        schedule.deleteSchedule(delUserId, clientIP);
     }
 
     public Schedule checkScheduleExist(Long scheduleId) {

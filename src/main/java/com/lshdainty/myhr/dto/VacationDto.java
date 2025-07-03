@@ -22,7 +22,7 @@ public class VacationDto {
     private BigDecimal remainTime;
     private LocalDateTime occurDate;
     private LocalDateTime expiryDate;
-    private Long userNo;
+    private String userId;
     private String userName;
 
     private String vacationDesc;

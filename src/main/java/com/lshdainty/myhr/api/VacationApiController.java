@@ -25,13 +25,13 @@ public class VacationApiController {
     @PostMapping("/api/v1/vacation")
     public ApiResponse registVacation(@RequestBody VacationDto vacationDto, HttpServletRequest req) {
         Long vacationId = vacationService.registVacation(
-                vacationDto.getUserNo(),
+                vacationDto.getUserId(),
                 vacationDto.getVacationDesc(),
                 vacationDto.getVacationType(),
                 vacationDto.getGrantTime(),
                 vacationDto.getOccurDate(),
                 vacationDto.getExpiryDate(),
-                0L, // 추후 로그인한 유저의 id를 가져와서 여기에다 넣을 것
+                "", // 추후 로그인한 유저의 id를 가져와서 여기에다 넣을 것
                 req.getRemoteAddr()
         );
 
@@ -41,22 +41,22 @@ public class VacationApiController {
     @PostMapping("/api/v1/vacation/use/{vacationId}")
     public ApiResponse useVacation(@PathVariable("vacationId") Long vacationId, @RequestBody VacationDto vacationDto, HttpServletRequest req) {
         Long respVacationId = vacationService.useVacation(
-                vacationDto.getUserNo(),
+                vacationDto.getUserId(),
                 vacationId,
                 vacationDto.getVacationDesc(),
                 vacationDto.getVacationTimeType(),
                 vacationDto.getStartDate(),
                 vacationDto.getEndDate(),
-                0L, // 추후 로그인한 유저의 id를 가져와서 여기에다 넣을 것
+                "", // 추후 로그인한 유저의 id를 가져와서 여기에다 넣을 것
                 req.getRemoteAddr()
         );
 
         return ApiResponse.success(VacationDto.builder().vacationId(respVacationId).build());
     }
 
-    @GetMapping("/api/v1/vacations/user/{userNo}")
-    public ApiResponse getVacationsByUser(@PathVariable("userNo") Long userNo) {
-        List<Vacation> vacations = vacationService.findVacationsByUser(userNo);
+    @GetMapping("/api/v1/vacations/user/{userId}")
+    public ApiResponse getVacationsByUser(@PathVariable("userId") String userId) {
+        List<Vacation> vacations = vacationService.findVacationsByUser(userId);
 
         List<VacationDto> resp = vacations.stream()
                 .map(v -> VacationDto.builder()
@@ -92,7 +92,7 @@ public class VacationApiController {
                     .toList();
 
             resp.add(UserDto.builder()
-                    .userNo(user.getId())
+                    .userId(user.getId())
                     .userName(user.getName())
                     .vacations(vacations)
                     .build()
@@ -102,10 +102,10 @@ public class VacationApiController {
         return ApiResponse.success(resp);
     }
 
-    @GetMapping("/api/v1/vacation/available/{userNo}")
+    @GetMapping("/api/v1/vacation/available/{userId}")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    public ApiResponse getAvailableVacations(@PathVariable("userNo") Long userNo, @RequestParam("startDate") LocalDateTime startDate) {
-        List<Vacation> vacations = vacationService.getAvailableVacations(userNo, startDate);
+    public ApiResponse getAvailableVacations(@PathVariable("userId") String userId, @RequestParam("startDate") LocalDateTime startDate) {
+        List<Vacation> vacations = vacationService.getAvailableVacations(userId, startDate);
 
         List<VacationDto> resp = vacations.stream()
                 .map(v -> VacationDto.builder()
@@ -124,8 +124,8 @@ public class VacationApiController {
 
     @DeleteMapping("/api/v1/vacation/history/{id}")
     public ApiResponse deleteVacationHistory(@PathVariable("id") Long vacationHistoryId, HttpServletRequest req) {
-        Long delUserNo = 0L;   // 추후 로그인 한 사람의 id를 가져와서 삭제한 사람의 userNo에 세팅
-        vacationService.deleteVacationHistory(vacationHistoryId, delUserNo, req.getRemoteAddr());
+        String delUserId = "";   // 추후 로그인 한 사람의 id를 가져와서 삭제한 사람의 userNo에 세팅
+        vacationService.deleteVacationHistory(vacationHistoryId, delUserId, req.getRemoteAddr());
         return ApiResponse.success();
     }
 
@@ -138,7 +138,7 @@ public class VacationApiController {
 
         List<VacationDto> resp = histories.stream()
                 .map(v -> VacationDto.builder()
-                        .userNo(v.getUser().getId())
+                        .userId(v.getUser().getId())
                         .userName(v.getUser().getName())
                         .vacationId(v.getId())
                         .vacationDesc(v.getDesc())

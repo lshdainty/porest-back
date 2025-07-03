@@ -44,22 +44,22 @@ public class Annual extends VacationService {
     }
 
     @Override
-    public Long registVacation(Long userNo, String desc, VacationType type, BigDecimal grantTime, LocalDateTime occurDate, LocalDateTime expiryDate, Long crtUserNo, String clientIP) {
-        User user = userService.checkUserExist(userNo);
+    public Long registVacation(String userId, String desc, VacationType type, BigDecimal grantTime, LocalDateTime occurDate, LocalDateTime expiryDate, String crtUserId, String clientIP) {
+        User user = userService.checkUserExist(userId);
 
-        Optional<Vacation> vacation = vacationRepositoryImpl.findVacationByTypeWithYear(userNo, type, String.valueOf(occurDate.getYear()));
+        Optional<Vacation> vacation = vacationRepositoryImpl.findVacationByTypeWithYear(userId, type, String.valueOf(occurDate.getYear()));
         if (vacation.isPresent()) {
-            vacation.get().addVacation(grantTime, crtUserNo, clientIP);
+            vacation.get().addVacation(grantTime, crtUserId, clientIP);
         } else {
             // 연차의 경우 당해년도 1월 1일부터 12월 31일로 고정 생성
             occurDate = LocalDateTime.of(occurDate.getYear(), 1, 1, 0, 0, 0);
             expiryDate = LocalDateTime.of(occurDate.getYear(), 12, 31, 23, 59, 59);
-            Vacation newVacation = Vacation.createVacation(user, type, grantTime, occurDate, expiryDate, crtUserNo, clientIP);
+            Vacation newVacation = Vacation.createVacation(user, type, grantTime, occurDate, expiryDate, crtUserId, clientIP);
             vacationRepositoryImpl.save(newVacation);
             vacation = Optional.of(newVacation);
         }
 
-        VacationHistory history = VacationHistory.createRegistVacationHistory(vacation.get(), desc, grantTime, crtUserNo, clientIP);
+        VacationHistory history = VacationHistory.createRegistVacationHistory(vacation.get(), desc, grantTime, crtUserId, clientIP);
         vacationHistoryRepositoryImpl.save(history);
 
         return vacation.get().getId();

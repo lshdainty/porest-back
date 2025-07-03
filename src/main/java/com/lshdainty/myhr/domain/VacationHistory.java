@@ -55,13 +55,13 @@ public class VacationHistory extends AuditingFields {
      * 휴가 등록에 따른 History 내역을 생성해주는 생성자
      * Setter를 사용하지 말고 해당 생성자를 통해 생성 및 사용할 것
      */
-    public static VacationHistory createRegistVacationHistory(Vacation vacation, String desc, BigDecimal grantTime, Long crtUserNo, String clientIP) {
+    public static VacationHistory createRegistVacationHistory(Vacation vacation, String desc, BigDecimal grantTime, String crtUserId, String clientIP) {
         VacationHistory vacationHistory = new VacationHistory();
         vacationHistory.vacation = vacation;
         vacationHistory.desc = desc;
         vacationHistory.grantTime = grantTime;
         vacationHistory.delYN = "N";
-        vacationHistory.setCreated(crtUserNo, clientIP);
+        vacationHistory.setCreated(crtUserId, clientIP);
         return vacationHistory;
     }
 
@@ -70,14 +70,14 @@ public class VacationHistory extends AuditingFields {
      * 휴가 사용에 따른 History 내역을 생성해주는 생성자
      * Setter를 사용하지 말고 해당 생성자를 통해 생성 및 사용할 것
      */
-    public static VacationHistory createUseVacationHistory(Vacation vacation, String desc, VacationTimeType type, LocalDateTime usedDateTime, Long crtUserNo, String clientIP) {
+    public static VacationHistory createUseVacationHistory(Vacation vacation, String desc, VacationTimeType type, LocalDateTime usedDateTime, String crtUserId, String clientIP) {
         VacationHistory vacationHistory = new VacationHistory();
         vacationHistory.vacation = vacation;
         vacationHistory.desc = desc;
         vacationHistory.type = type;
         vacationHistory.usedDateTime = usedDateTime;
         vacationHistory.delYN = "N";
-        vacationHistory.setCreated(crtUserNo, clientIP);
+        vacationHistory.setCreated(crtUserId, clientIP);
         return vacationHistory;
     }
 
@@ -85,19 +85,19 @@ public class VacationHistory extends AuditingFields {
      * 휴가 추가 내역 삭제
      * Setter를 사용하지 말고 해당 메소드를 통해 설정할 것
      */
-    public void deleteRegistVacationHistory(Vacation vacation, Long mdfUserNo, String clientIP) {
-        vacation.deductedVacation(getGrantTime(), mdfUserNo, clientIP);
+    public void deleteRegistVacationHistory(Vacation vacation, String mdfUserId, String clientIP) {
+        vacation.deductedVacation(getGrantTime(), mdfUserId, clientIP);
         this.delYN = "Y";
-        this.setModified(LocalDateTime.now(), mdfUserNo, clientIP);
+        this.setModified(LocalDateTime.now(), mdfUserId, clientIP);
     }
 
     /**
      * 휴가 사용 내역 삭제
      * Setter를 사용하지 말고 해당 메소드를 통해 설정할 것
      */
-    public void deleteUseVacationHistory(Vacation vacation,Long mdfUserNo, String clientIP) {
-        vacation.addVacation(getType().convertToValue(1), mdfUserNo, clientIP);
+    public void deleteUseVacationHistory(Vacation vacation,String mdfUserId, String clientIP) {
+        vacation.addVacation(getType().convertToValue(1), mdfUserId, clientIP);
         this.delYN = "Y";
-        this.setModified(LocalDateTime.now(), mdfUserNo, clientIP);
+        this.setModified(LocalDateTime.now(), mdfUserId, clientIP);
     }
 }

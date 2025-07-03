@@ -15,21 +15,21 @@ import java.util.Objects;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)  // -> protected Order() {}와 동일한 의미 (롬복으로 생성자 막기)
 @Table(name = "users")
 public class User {
-    @Id @GeneratedValue
-    @Column(name = "user_no")
-    private Long id;
-
-    @Column(name = "user_name")
-    private String name;
+    @Id
+    @Column(name = "user_id")
+    private String id;
 
     @Column(name = "user_pwd")
     private String pwd;
 
-    @Column(name = "user_ip")
-    private String ip;
+    @Column(name = "user_name")
+    private String name;
+
+    @Column(name = "user_email")
+    private String email;
 
     @Column(name = "user_role")
-    private int role;
+    private RoleType role;
 
     @Column(name = "user_birth")
     private String birth;
@@ -47,22 +47,25 @@ public class User {
     private String delYN;
 
     @OneToMany(mappedBy = "user")   // JPA에서는 mappedBy는 읽기 전용
-    private List<Vacation> vacations;
+    private List<Vacation> vacations  =  new ArrayList<>();
 
     // 유저 생성자 (setter말고 해당 메소드 사용할 것)
-    public static User createUser(String name, String birth, String employ, String workTime, String lunarYN) {
+    public static User createUser(String id, String pwd, String name, String email, String birth, String employ, String workTime, String lunarYN) {
         User user = new User();
+        user.id = id;
+        user.pwd = pwd;
         user.name = name;
+        user.email = email;
+        user.role = RoleType.USER;
         user.birth = birth;
         user.employ = employ;
         user.workTime = workTime;
         user.lunarYN = lunarYN;
         user.delYN = "N";
-        user.vacations = new ArrayList<>();
         return user;
     }
 
-    public static User createUser(Long id) {
+    public static User createUser(String id) {
         User user = new User();
         user.id = id;
         return user;

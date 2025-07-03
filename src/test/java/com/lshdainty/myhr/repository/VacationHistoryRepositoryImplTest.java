@@ -30,20 +30,19 @@ class VacationHistoryRepositoryImplTest {
     @Test
     @DisplayName("휴가 등록 내역 저장 및 단건 조회")
     void saveRegist() {
-        User user = User.createUser("이서준", "19700723", "9 ~ 6", "ADMIN", "N");
+        User user = User.createUser("test1");
         em.persist(user);
 
         LocalDateTime now = LocalDateTime.now();
         Vacation vacation = Vacation.createVacation(user, VacationType.ANNUAL, new BigDecimal("4.0000"),
                 LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0),
                 LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59),
-                0L, "");
+                "", "");
         em.persist(vacation);
-
 
         String desc = "1분기 휴가";
         BigDecimal grantTime = new BigDecimal("4.0000");
-        VacationHistory history = VacationHistory.createRegistVacationHistory(vacation, desc, grantTime, 0L, "");
+        VacationHistory history = VacationHistory.createRegistVacationHistory(vacation, desc, grantTime, "", "");
 
         // when
         vacationHistoryRepositoryImpl.save(history);
@@ -60,20 +59,20 @@ class VacationHistoryRepositoryImplTest {
     @Test
     @DisplayName("휴가 사용 내역 저장 및 단건 조회")
     void saveUse() {
-        User user = User.createUser("이서준", "19700723", "9 ~ 6", "ADMIN", "N");
+        User user = User.createUser("test1");
         em.persist(user);
 
         LocalDateTime now = LocalDateTime.now();
         Vacation vacation = Vacation.createVacation(user, VacationType.ANNUAL, new BigDecimal("4.0000"),
                 LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0),
                 LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59),
-                0L, "");
+                "", "");
         em.persist(vacation);
 
         String desc = "연차";
         VacationTimeType type = VacationTimeType.DAYOFF;
         LocalDateTime usedDateTime = LocalDateTime.of(2025, 2, 1, 0, 0, 0);
-        VacationHistory history = VacationHistory.createUseVacationHistory(vacation, desc, type, usedDateTime, 0L, "");
+        VacationHistory history = VacationHistory.createUseVacationHistory(vacation, desc, type, usedDateTime, "", "");
 
         // when
         vacationHistoryRepositoryImpl.save(history);
@@ -104,14 +103,14 @@ class VacationHistoryRepositoryImplTest {
     @Test
     @DisplayName("usedDateTime이 start, end 사이에 해당하는 목록을 조회한다.")
     void getVacationHistorysByPeriod() {
-        User user = User.createUser("이서준", "19700723", "9 ~ 6", "ADMIN", "N");
+        User user = User.createUser("test1");
         em.persist(user);
 
         LocalDateTime now = LocalDateTime.now();
         Vacation vacation = Vacation.createVacation(user, VacationType.ANNUAL, new BigDecimal("4.0000"),
                 LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0),
                 LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59),
-                0L, "");
+                "", "");
         em.persist(vacation);
 
         String[] descs = {"연차", "1시간"};
@@ -122,7 +121,7 @@ class VacationHistoryRepositoryImplTest {
         };
 
         for (int i = 0; i < descs.length; i++) {
-            VacationHistory history = VacationHistory.createUseVacationHistory(vacation, descs[i], types[i], usedDateTimes[i], 0L, "");
+            VacationHistory history = VacationHistory.createUseVacationHistory(vacation, descs[i], types[i], usedDateTimes[i], "", "");
             vacationHistoryRepositoryImpl.save(history);
         }
 

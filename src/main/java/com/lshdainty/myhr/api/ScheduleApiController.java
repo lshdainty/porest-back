@@ -22,12 +22,12 @@ public class ScheduleApiController {
     @PostMapping("/api/v1/schedule")
     public ApiResponse registSchedule(@RequestBody ScheduleDto scheduleDto, HttpServletRequest req) {
         Long scheduleId = scheduleService.registSchedule(
-                scheduleDto.getUserNo(),
+                scheduleDto.getUserId(),
                 scheduleDto.getScheduleType(),
                 scheduleDto.getScheduleDesc(),
                 scheduleDto.getStartDate(),
                 scheduleDto.getEndDate(),
-                0L, // 추후 로그인한 유저의 id를 가져와서 여기에다 넣을 것
+                "", // 추후 로그인한 유저의 id를 가져와서 여기에다 넣을 것
                 req.getRemoteAddr()
         );
 
@@ -35,8 +35,8 @@ public class ScheduleApiController {
     }
 
     @GetMapping("/api/v1/schedules/user/{userNo}")
-    public ApiResponse getSchedulesByUser(@PathVariable("userNo") Long userNo) {
-        List<Schedule> schedules = scheduleService.findSchedulesByUserNo(userNo);
+    public ApiResponse getSchedulesByUser(@PathVariable("userNo") String userId) {
+        List<Schedule> schedules = scheduleService.findSchedulesByUserId(userId);
 
         List<ScheduleDto> resp = schedules.stream()
                 .map(s -> ScheduleDto
@@ -65,7 +65,7 @@ public class ScheduleApiController {
                 .map(s -> ScheduleDto
                         .builder()
                         .scheduleId(s.getId())
-                        .userNo(s.getUser().getId())
+                        .userId(s.getUser().getId())
                         .userName(s.getUser().getName())
                         .scheduleType(s.getType())
                         .scheduleTypeName(s.getType().getStrName())
@@ -81,8 +81,8 @@ public class ScheduleApiController {
 
     @DeleteMapping("/api/v1/schedule/{id}")
     public ApiResponse deleteSchedule(@PathVariable("id") Long scheduleId, HttpServletRequest req) {
-        Long delUserNo = 0L;   // 추후 로그인 한 사람의 id를 가져와서 삭제한 사람의 userNo에 세팅
-        scheduleService.deleteSchedule(scheduleId, delUserNo, req.getRemoteAddr());
+        String delUserId = "";   // 추후 로그인 한 사람의 id를 가져와서 삭제한 사람의 userNo에 세팅
+        scheduleService.deleteSchedule(scheduleId, delUserId, req.getRemoteAddr());
         return ApiResponse.success();
     }
 }
