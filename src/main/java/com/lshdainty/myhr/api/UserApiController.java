@@ -1,5 +1,6 @@
 package com.lshdainty.myhr.api;
 
+import com.lshdainty.myhr.domain.RoleType;
 import com.lshdainty.myhr.domain.User;
 import com.lshdainty.myhr.dto.UserDto;
 import com.lshdainty.myhr.service.UserService;
@@ -77,10 +78,12 @@ public class UserApiController {
         userService.editUser(
                 userId,
                 userDto.getUserName(),
+                userDto.getUserEmail(),
                 userDto.getUserBirth(),
                 userDto.getUserEmploy(),
                 userDto.getUserWorkTime(),
-                userDto.getLunarYN()
+                userDto.getLunarYN(),
+                RoleType.valueOf(userDto.getUserRole())
         );
 
         User findUser = userService.findUser(userId);

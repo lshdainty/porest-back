@@ -184,7 +184,7 @@ class UserRepositoryImplTest {
         workTime = "10 ~ 7";
 
         // when
-        user.updateUser(name, birth, employ, workTime, lunarYN);
+        user.updateUser(name, null, birth, employ, workTime, lunarYN, null);
         em.flush();
         em.clear();
         Optional<User> findUser = userRepositoryImpl.findById(user.getId());

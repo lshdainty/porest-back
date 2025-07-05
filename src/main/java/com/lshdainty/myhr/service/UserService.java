@@ -1,5 +1,6 @@
 package com.lshdainty.myhr.service;
 
+import com.lshdainty.myhr.domain.RoleType;
 import com.lshdainty.myhr.domain.User;
 import com.lshdainty.myhr.repository.UserRepositoryImpl;
 import lombok.RequiredArgsConstructor;
@@ -36,9 +37,9 @@ public class UserService {
     }
 
     @Transactional
-    public void editUser(String userId, String name, String birth, String employ, String workTime, String lunar) {
+    public void editUser(String userId, String name, String email, String birth, String employ, String workTime, String lunar, RoleType role) {
         User user = checkUserExist(userId);
-        user.updateUser(name, birth, employ, workTime, lunar);
+        user.updateUser(name, email, birth, employ, workTime, lunar, role);
     }
 
     @Transactional

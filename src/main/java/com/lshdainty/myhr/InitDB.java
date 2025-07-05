@@ -33,12 +33,18 @@ public class InitDB {
         private final EntityManager em;
 
         public void initSetMember() {
-            saveMember("1", "", "이서준", "aaa@naver.com","19700723", "9 ~ 6", "skax", "N");
-            saveMember("2", "", "김서연", "bbb@naver.com","19701026", "8 ~ 5", "dtol", "N");
-            saveMember("3", "", "김지후", "ccc@naver.com","19740115", "10 ~ 7", "skax", "Y");
-            saveMember("4", "", "이준우", "ddd@naver.com","19800430", "9 ~ 6", "insighton", "N");
-            saveMember("5", "", "조민서", "eee@naver.com","19921220", "10 ~ 7", "c&thoth", "N");
-            saveMember("6", "", "이하은", "fff@naver.com","18850902", "8 ~ 5", "bigxdata", "N");
+            saveMember("user1", "", "이서준", "aaa@naver.com","19700723", "9 ~ 6", "SK AX", "N");
+            saveMember("user2", "", "김서연", "bbb@naver.com","19701026", "8 ~ 5", "DTOL", "N");
+            saveMember("user3", "", "김지후", "ccc@naver.com","19740115", "10 ~ 7", "SK AX", "Y");
+            saveMember("user4", "", "이준우", "ddd@naver.com","19800430", "9 ~ 6", "인사이트온", "N");
+            saveMember("user5", "", "조민서", "eee@naver.com","19921220", "10 ~ 7", "씨앤토트플러스", "N");
+            saveMember("user6", "", "이하은", "fff@naver.com","18850902", "8 ~ 5", "BigxData", "N");
+
+            User user1 = em.find(User.class, "user1");
+            User user3 = em.find(User.class, "user3");
+
+            user1.updateUser(user1.getName(), user1.getEmail(), user1.getBirth(), user1.getEmploy(), user1.getWorkTime(), user1.getLunarYN(), RoleType.ADMIN);
+            user3.updateUser(user3.getName(), user3.getEmail(), user3.getBirth(), user3.getEmploy(), user3.getWorkTime(), user3.getLunarYN(), RoleType.ADMIN);
         }
 
         public void initSetHoliday() {
@@ -78,12 +84,12 @@ public class InitDB {
         public void initSetVacation() {
             LocalDateTime now = LocalDateTime.now();
 
-            User user1 = em.find(User.class, 1L);
-            User user2 = em.find(User.class, 2L);
-            User user3 = em.find(User.class, 3L);
-            User user4 = em.find(User.class, 4L);
-            User user5 = em.find(User.class, 5L);
-            User user6 = em.find(User.class, 6L);
+            User user1 = em.find(User.class, "user1");
+            User user2 = em.find(User.class, "user2");
+            User user3 = em.find(User.class, "user3");
+            User user4 = em.find(User.class, "user4");
+            User user5 = em.find(User.class, "user5");
+            User user6 = em.find(User.class, "user6");
 
             Vacation user1Annual = Vacation.createVacation(user1, VacationType.ANNUAL, new BigDecimal("9.8750"),
                     LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0),
@@ -524,7 +530,7 @@ public class InitDB {
         }
 
         public void saveMember(String id, String pwd, String name, String email, String birth, String workTime, String employ, String lunar) {
-            User user = User.createUser(id, pwd,name, email, birth, employ, workTime, lunar);
+            User user = User.createUser(id, pwd, name, email, birth, employ, workTime, lunar);
             em.persist(user);
         }
 

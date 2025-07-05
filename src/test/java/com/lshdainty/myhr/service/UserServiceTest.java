@@ -151,7 +151,7 @@ class UserServiceTest {
         // When
         name = "이하은";
         workTime = "10 ~ 7";
-        userService.editUser(id, name, null, null, workTime, null);
+        userService.editUser(id, name, null, null, null, workTime, null, null);
 
         // Then
         then(userRepositoryImpl).should().findById(id);
@@ -171,7 +171,7 @@ class UserServiceTest {
 
         // When & Then
         assertThrows(IllegalArgumentException.class,
-                () -> userService.editUser(id, "이하은", null, null, null, null));
+                () -> userService.editUser(id, "이하은", null, null, null, null, null, null));
         then(userRepositoryImpl).should().findById(id);
     }
 

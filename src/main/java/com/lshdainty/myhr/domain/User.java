@@ -28,6 +28,7 @@ public class User {
     @Column(name = "user_email")
     private String email;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "user_role")
     private RoleType role;
 
@@ -72,12 +73,14 @@ public class User {
     }
 
     // 유저 수정 (setter말고 해당 메소드 사용할 것)
-    public void updateUser(String name, String birth, String employ, String workTime, String lunarYN) {
+    public void updateUser(String name, String email, String birth, String employ, String workTime, String lunarYN, RoleType role) {
         if (!Objects.isNull(name)) { this.name = name; }
+        if (!Objects.isNull(email)) { this.email = email; }
         if (!Objects.isNull(birth)) { this.birth = birth; }
         if (!Objects.isNull(employ)) { this.employ = employ; }
         if (!Objects.isNull(workTime)) { this.workTime = workTime; }
         if (!Objects.isNull(lunarYN)) { this.lunarYN = lunarYN; }
+        if (!Objects.isNull(role)) { this.role = role; }
     }
 
     // 유저 삭제 (setter말고 해당 메소드 사용할 것)
