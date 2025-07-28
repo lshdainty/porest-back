@@ -53,6 +53,16 @@ public class DuesApiController {
         return ApiResponse.success(resp);
     }
 
+    @GetMapping("/api/v1/dues/operation")
+    public ApiResponse getYearOperationDues(@RequestParam("year") String year) {
+        return ApiResponse.success(duesService.findOperatingDuesByYear(year));
+    }
+
+    @GetMapping("/api/v1/dues/birth/month")
+    public ApiResponse getMonthBirthDues(@RequestParam("year") String year, @RequestParam("month") String month) {
+        return ApiResponse.success(duesService.findBirthDuesByYearAndMonth(year, month));
+    }
+
     @DeleteMapping("/api/v1/dues/{seq}")
     public ApiResponse deleteHoliday(@PathVariable("seq") Long seq) {
         duesService.deleteDues(seq);

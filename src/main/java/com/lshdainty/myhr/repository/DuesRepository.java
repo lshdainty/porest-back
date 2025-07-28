@@ -1,9 +1,6 @@
 package com.lshdainty.myhr.repository;
 
 import com.lshdainty.myhr.domain.Dues;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -16,6 +13,10 @@ public interface DuesRepository {
     List<Dues> findDues();
     // 년도에 해당하는 회비 조회
     List<Dues> findDuesByYear(String year);
+    // 해당년도 운영비 조회
+    List<Dues> findOperatingDuesByYear(String year);
+    // 해당년도 해당월 생일비 합계 조회
+    Long findBirthDuesByYearAndMonth(String year, String month);
     // 회비 삭제
     void delete(Dues dues);
 }
