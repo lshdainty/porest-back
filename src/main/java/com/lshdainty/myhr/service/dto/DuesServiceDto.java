@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter @Setter
 @Builder
 public class DuesServiceDto {
-    private int totalPrice;
+    private int totalDues;
     private int totalDeposit;
     private int totalWithdrawal;
 }

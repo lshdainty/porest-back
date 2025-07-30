@@ -3,6 +3,7 @@ package com.lshdainty.myhr.api;
 import com.lshdainty.myhr.domain.Dues;
 import com.lshdainty.myhr.dto.DuesDto;
 import com.lshdainty.myhr.service.DuesService;
+import com.lshdainty.myhr.service.dto.DuesServiceDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -47,7 +48,7 @@ public class DuesApiController {
 
         int total = 0;
         for (DuesDto duesDto : resp) {
-            duesDto.setDuesTotal(total = duesDto.getDuesCalc().applyAsType(total, duesDto.getDuesAmount()));
+            duesDto.setTotalDues(total = duesDto.getDuesCalc().applyAsType(total, duesDto.getDuesAmount()));
         }
 
         return ApiResponse.success(resp);
@@ -55,7 +56,13 @@ public class DuesApiController {
 
     @GetMapping("/api/v1/dues/operation")
     public ApiResponse getYearOperationDues(@RequestParam("year") String year) {
-        return ApiResponse.success(duesService.findOperatingDuesByYear(year));
+        DuesServiceDto serviceDto = duesService.findOperatingDuesByYear(year);
+        return ApiResponse.success(DuesDto.builder()
+                .totalDues(serviceDto.getTotalDues())
+                .totalDeposit(serviceDto.getTotalDeposit())
+                .totalWithdrawal(serviceDto.getTotalWithdrawal())
+                .build()
+        );
     }
 
     @GetMapping("/api/v1/dues/birth/month")

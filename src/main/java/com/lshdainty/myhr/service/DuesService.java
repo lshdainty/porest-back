@@ -54,7 +54,7 @@ public class DuesService {
         }
 
         return DuesServiceDto.builder()
-                .totalPrice(total)
+                .totalDues(total)
                 .totalDeposit(deposit)
                 .totalWithdrawal(withdraw)
                 .build();

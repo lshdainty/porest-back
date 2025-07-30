@@ -21,5 +21,7 @@ public class DuesDto {
     private String duesDate;
     private String duesDetail;
 
-    private int duesTotal;
+    private int totalDues;
+    private int totalDeposit;
+    private int totalWithdrawal;
 }
