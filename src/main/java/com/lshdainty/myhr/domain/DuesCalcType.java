@@ -3,7 +3,7 @@ package com.lshdainty.myhr.domain;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import java.util.function.IntBinaryOperator;
+import java.util.function.LongBinaryOperator;
 
 @Getter
 @RequiredArgsConstructor
@@ -11,13 +11,13 @@ public enum DuesCalcType {
     PLUS((x, y) -> x + y),
     MINUS((x, y) -> x - y);
 
-    private IntBinaryOperator operator;
+    private LongBinaryOperator operator;
 
-    DuesCalcType(IntBinaryOperator operator) {
+    DuesCalcType(LongBinaryOperator operator) {
         this.operator = operator;
     }
 
-    public int applyAsType(int x, int y) {
-        return operator.applyAsInt(x, y);
+    public long applyAsType(long x, long y) {
+        return operator.applyAsLong(x, y);
     }
 }

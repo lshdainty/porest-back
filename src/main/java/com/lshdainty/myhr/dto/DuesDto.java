@@ -15,13 +15,15 @@ import lombok.*;
 public class DuesDto {
     private Long duesSeq;
     private String duesUserName;
-    private int duesAmount;
+    private Long duesAmount;
     private DuesType duesType;
     private DuesCalcType duesCalc;
     private String duesDate;
     private String duesDetail;
 
-    private int totalDues;
-    private int totalDeposit;
-    private int totalWithdrawal;
+    private Long totalDues;
+    private Long totalDeposit;
+    private Long totalWithdrawal;
+
+    private Long birthMonthDues;
 }

@@ -46,7 +46,7 @@ public class DuesApiController {
                         .build())
                 .collect(Collectors.toList());
 
-        int total = 0;
+        Long total = 0L;
         for (DuesDto duesDto : resp) {
             duesDto.setTotalDues(total = duesDto.getDuesCalc().applyAsType(total, duesDto.getDuesAmount()));
         }
@@ -67,7 +67,11 @@ public class DuesApiController {
 
     @GetMapping("/api/v1/dues/birth/month")
     public ApiResponse getMonthBirthDues(@RequestParam("year") String year, @RequestParam("month") String month) {
-        return ApiResponse.success(duesService.findBirthDuesByYearAndMonth(year, month));
+        Long birthDues = duesService.findBirthDuesByYearAndMonth(year, month);
+        return ApiResponse.success(DuesDto.builder()
+                .birthMonthDues(birthDues)
+                .build()
+        );
     }
 
     @DeleteMapping("/api/v1/dues/{seq}")

@@ -25,7 +25,7 @@ public class DuesService {
     private final StandardServletMultipartResolver standardServletMultipartResolver;
 
     @Transactional
-    public Long save(String userName, int amount, DuesType type, DuesCalcType calc, String date, String detail) {
+    public Long save(String userName, long amount, DuesType type, DuesCalcType calc, String date, String detail) {
         Dues dues = Dues.createDues(userName, amount, type, calc, date, detail);
         duesRepositoryImpl.save(dues);
         return dues.getSeq();
@@ -41,9 +41,9 @@ public class DuesService {
 
     public DuesServiceDto findOperatingDuesByYear(String year) {
         List<Dues> dues = duesRepositoryImpl.findOperatingDuesByYear(year);
-        int total = 0;
-        int deposit = 0;
-        int withdraw = 0;
+        Long total = 0L;
+        Long deposit = 0L;
+        Long withdraw = 0L;
         for (Dues due : dues) {
             total = due.getCalc().applyAsType(total, due.getAmount());
             if (due.getCalc().equals(DuesCalcType.PLUS)) {
