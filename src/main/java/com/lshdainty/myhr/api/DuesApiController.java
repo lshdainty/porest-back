@@ -83,7 +83,7 @@ public class DuesApiController {
         Map<String, List<DuesServiceDto>> duesByUserName = serviceDtos.stream()
                 .collect(Collectors.groupingBy(DuesServiceDto::getUserName, LinkedHashMap::new, Collectors.toList()));
 
-        List<Map<String, Object>> resp = duesByUserName.entrySet().stream()
+        List<DuesDto> resp = duesByUserName.entrySet().stream()
                 .map(entry -> {
                     String userName = entry.getKey();
                     List<DuesServiceDto> userDues = entry.getValue();
@@ -96,10 +96,10 @@ public class DuesApiController {
                         }
                     }
 
-                    Map<String, Object> userDuesMap = new LinkedHashMap<>();
-                    userDuesMap.put("dues_user_name", userName);
-                    userDuesMap.put("monthBirthDues", monthBirthDues);
-                    return userDuesMap;
+                    return DuesDto.builder()
+                            .duesUserName(userName)
+                            .monthBirthDues(monthBirthDues)
+                            .build();
                 })
                 .collect(Collectors.toList());
 
