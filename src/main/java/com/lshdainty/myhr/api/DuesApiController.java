@@ -8,7 +8,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -75,14 +79,31 @@ public class DuesApiController {
     @GetMapping("/api/v1/dues/users/birth/month")
     public ApiResponse usersMonthBirthDues(@RequestParam("year") String year) {
         List<DuesServiceDto> serviceDtos = duesService.findUsersMonthBirthDues(year);
-        return ApiResponse.success(serviceDtos.stream()
-                .map(d -> DuesDto.builder()
-                        .duesUserName(d.getUserName())
-                        .duesAmount(d.getAmount())
-                        .month(d.getDate())
-                        .duesDetail(d.getDetail())
-                        .build())
-                .collect(Collectors.toList()));
+
+        Map<String, List<DuesServiceDto>> duesByUserName = serviceDtos.stream()
+                .collect(Collectors.groupingBy(DuesServiceDto::getUserName, LinkedHashMap::new, Collectors.toList()));
+
+        List<Map<String, Object>> resp = duesByUserName.entrySet().stream()
+                .map(entry -> {
+                    String userName = entry.getKey();
+                    List<DuesServiceDto> userDues = entry.getValue();
+
+                    List<Long> monthBirthDues = new ArrayList<>(Collections.nCopies(12, 0L));
+                    for (DuesServiceDto due : userDues) {
+                        int month = Integer.parseInt(due.getDate()) - 1; // "01" -> 0
+                        if (month >= 0 && month < 12) {
+                            monthBirthDues.set(month, due.getAmount());
+                        }
+                    }
+
+                    Map<String, Object> userDuesMap = new LinkedHashMap<>();
+                    userDuesMap.put("dues_user_name", userName);
+                    userDuesMap.put("monthBirthDues", monthBirthDues);
+                    return userDuesMap;
+                })
+                .collect(Collectors.toList());
+
+        return ApiResponse.success(resp);
     }
 
     @DeleteMapping("/api/v1/dues/{seq}")

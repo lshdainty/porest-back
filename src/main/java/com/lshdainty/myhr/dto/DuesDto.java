@@ -3,10 +3,11 @@ package com.lshdainty.myhr.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.lshdainty.myhr.domain.Dues;
 import com.lshdainty.myhr.domain.DuesCalcType;
 import com.lshdainty.myhr.domain.DuesType;
 import lombok.*;
+
+import java.util.List;
 
 @Getter @Setter
 @Builder
@@ -27,5 +28,5 @@ public class DuesDto {
 
     private Long birthMonthDues;
 
-    private String month;
+    private List<Long> monthBirthDues;
 }
