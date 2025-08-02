@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,12 +31,50 @@ public class DuesService {
         return dues.getSeq();
     }
 
-    public List<Dues> findDues() {
-        return duesRepositoryImpl.findDues();
+    public List<DuesServiceDto> findDues() {
+        List<Dues> dues = duesRepositoryImpl.findDues();
+
+        List<DuesServiceDto> dtos = dues.stream()
+                .map(d -> DuesServiceDto.builder()
+                        .seq(d.getSeq())
+                        .userName(d.getUserName())
+                        .amount(d.getAmount())
+                        .type(d.getType())
+                        .calc(d.getCalc())
+                        .date(d.getDate())
+                        .detail(d.getDetail())
+                        .build())
+                .collect(Collectors.toList());
+
+        Long total = 0L;
+        for (DuesServiceDto dto : dtos) {
+            dto.setTotalDues(total = dto.getCalc().applyAsType(total, dto.getAmount()));
+        }
+
+        return dtos;
     }
 
-    public List<Dues> findDuesByYear(String year) {
-        return duesRepositoryImpl.findDuesByYear(year);
+    public List<DuesServiceDto> findDuesByYear(String year) {
+        List<Dues> dues = duesRepositoryImpl.findDuesByYear(year);
+
+        List<DuesServiceDto> dtos = dues.stream()
+                .map(d -> DuesServiceDto.builder()
+                        .seq(d.getSeq())
+                        .userName(d.getUserName())
+                        .amount(d.getAmount())
+                        .type(d.getType())
+                        .calc(d.getCalc())
+                        .date(d.getDate())
+                        .detail(d.getDetail())
+                        .build())
+                .collect(Collectors.toList());
+
+        Long total = 0L;
+        for (DuesServiceDto dto : dtos) {
+            dto.setTotalDues(total = dto.getCalc().applyAsType(total, dto.getAmount()));
+        }
+
+        return dtos;
     }
 
     public DuesServiceDto findOperatingDuesByYear(String year) {
@@ -48,7 +87,7 @@ public class DuesService {
             if (due.getCalc().equals(DuesCalcType.PLUS)) {
                 deposit = due.getCalc().applyAsType(deposit, due.getAmount());
             } else {
-                withdraw = due.getCalc().applyAsType(withdraw, due.getAmount());
+                withdraw = DuesCalcType.PLUS.applyAsType(withdraw, due.getAmount());
             }
         }
 

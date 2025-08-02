@@ -3,6 +3,7 @@ package com.lshdainty.myhr.repository;
 import com.lshdainty.myhr.domain.Dues;
 import com.lshdainty.myhr.domain.DuesCalcType;
 import com.lshdainty.myhr.domain.DuesType;
+import com.lshdainty.myhr.repository.dto.UsersMonthBirthDuesDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,30 +74,27 @@ class DuesRepositoryImplTest {
     @DisplayName("모든 회비 목록이 조회돼야 한다.")
     void getDues() {
         // given
-        String[] names = {"이서준" ,"조민서" ,"이준우"};
-        Long[] amounts = {10000L, 80000L, 10000L};
-        DuesType[] types = {DuesType.BIRTH, DuesType.BIRTH, DuesType.BIRTH};
-        DuesCalcType[] calcs = {DuesCalcType.PLUS, DuesCalcType.MINUS, DuesCalcType.PLUS};
-        String[] dates = {"20250104", "20250131", "20250204"};
-        String[] details = {"생일비", "생일비 출금", "생일비"};
-
-        for (int i = 0; i < names.length; i++) {
-            Dues dues = Dues.createDues(names[i], amounts[i], types[i], calcs[i], dates[i], details[i]);
-            duesRepositoryImpl.save(dues);
+        List<Dues> dues = List.of(
+                Dues.createDues("이서준", 10000L, DuesType.BIRTH, DuesCalcType.PLUS, "20250104", "생일비"),
+                Dues.createDues("조민서", 80000L, DuesType.BIRTH, DuesCalcType.MINUS, "20250131", "생일비 출금"),
+                Dues.createDues("이준우", 10000L, DuesType.BIRTH, DuesCalcType.PLUS, "20250204", "생일비")
+        );
+        for (Dues due : dues) {
+            duesRepositoryImpl.save(due);
         }
 
         // when
-        List<Dues> dues = duesRepositoryImpl.findDues();
+        List<Dues> result = duesRepositoryImpl.findDues();
 
         // then
-        assertThat(dues.size()).isEqualTo(names.length);
+        assertThat(result.size()).isEqualTo(dues.size());
         // 쿼리에서 날짜 기준으로 정렬하므로 순서까지 맞아야함
-        assertThat(dues).extracting("userName").containsExactly(names);
-        assertThat(dues).extracting("amount").containsExactly(10000L, 80000L, 10000L);
-        assertThat(dues).extracting("type").containsExactly(types);
-        assertThat(dues).extracting("calc").containsExactly(calcs);
-        assertThat(dues).extracting("date").containsExactly(dates);
-        assertThat(dues).extracting("detail").containsExactly(details);
+        assertThat(result).extracting("userName").containsExactly("이서준", "조민서", "이준우");
+        assertThat(result).extracting("amount").containsExactly(10000L, 80000L, 10000L);
+        assertThat(result).extracting("type").containsExactly(DuesType.BIRTH, DuesType.BIRTH, DuesType.BIRTH);
+        assertThat(result).extracting("calc").containsExactly(DuesCalcType.PLUS, DuesCalcType.MINUS, DuesCalcType.PLUS);
+        assertThat(result).extracting("date").containsExactly("20250104", "20250131", "20250204");
+        assertThat(result).extracting("detail").containsExactly("생일비", "생일비 출금", "생일비");
     }
 
     @Test
@@ -114,30 +112,27 @@ class DuesRepositoryImplTest {
     void getDuesByYear() {
         // given
         String year = "2025";
-        String[] names = {"이서준" ,"조민서" ,"이준우"};
-        Long[] amounts = {10000L, 80000L, 10000L};
-        DuesType[] types = {DuesType.BIRTH, DuesType.BIRTH, DuesType.BIRTH};
-        DuesCalcType[] calcs = {DuesCalcType.PLUS, DuesCalcType.MINUS, DuesCalcType.PLUS};
-        String[] dates = {"20241204", "20250131", "20250204"};
-        String[] details = {"생일비", "생일비 출금", "생일비"};
-
-        for (int i = 0; i < names.length; i++) {
-            Dues dues = Dues.createDues(names[i], amounts[i], types[i], calcs[i], dates[i], details[i]);
-            duesRepositoryImpl.save(dues);
+        List<Dues> dues = List.of(
+                Dues.createDues("이서준", 10000L, DuesType.BIRTH, DuesCalcType.PLUS, "20241204", "생일비"),
+                Dues.createDues("조민서", 80000L, DuesType.BIRTH, DuesCalcType.MINUS, "20250131", "생일비 출금"),
+                Dues.createDues("이준우", 10000L, DuesType.BIRTH, DuesCalcType.PLUS, "20250204", "생일비")
+        );
+        for (Dues due : dues) {
+            duesRepositoryImpl.save(due);
         }
 
         // when
-        List<Dues> dues = duesRepositoryImpl.findDuesByYear(year);
+        List<Dues> result = duesRepositoryImpl.findDuesByYear(year);
 
         // then
-        assertThat(dues.size()).isEqualTo(2);
+        assertThat(result.size()).isEqualTo(2);
         // 쿼리에서 날짜 기준으로 정렬하므로 순서까지 맞아야함
-        assertThat(dues).extracting("userName").containsExactly("조민서" ,"이준우");
-        assertThat(dues).extracting("amount").containsExactly(80000L, 10000L);
-        assertThat(dues).extracting("type").containsExactly(DuesType.BIRTH, DuesType.BIRTH);
-        assertThat(dues).extracting("calc").containsExactly(DuesCalcType.MINUS, DuesCalcType.PLUS);
-        assertThat(dues).extracting("date").containsExactly("20250131", "20250204");
-        assertThat(dues).extracting("detail").containsExactly("생일비 출금", "생일비");
+        assertThat(result).extracting("userName").containsExactly("조민서" ,"이준우");
+        assertThat(result).extracting("amount").containsExactly(80000L, 10000L);
+        assertThat(result).extracting("type").containsExactly(DuesType.BIRTH, DuesType.BIRTH);
+        assertThat(result).extracting("calc").containsExactly(DuesCalcType.MINUS, DuesCalcType.PLUS);
+        assertThat(result).extracting("date").containsExactly("20250131", "20250204");
+        assertThat(result).extracting("detail").containsExactly("생일비 출금", "생일비");
     }
 
     @Test
@@ -188,5 +183,71 @@ class DuesRepositoryImplTest {
 
         // then
         assertThat(findDues.isEmpty()).isTrue();
+    }
+
+    @Test
+    @DisplayName("운영 회비 조회")
+    void findOperatingDuesByYear() {
+        // given
+        String year = "2025";
+        List<Dues> dues = List.of(
+                Dues.createDues("이서준", 10000L, DuesType.OPERATION, DuesCalcType.PLUS, "20250101", "운영비"),
+                Dues.createDues("김서연", 20000L, DuesType.BIRTH, DuesCalcType.PLUS, "20250102", "생일비"),
+                Dues.createDues("박도윤", 5000L, DuesType.OPERATION, DuesCalcType.MINUS, "20250103", "운영비 사용")
+        );
+        for (Dues due : dues) {
+            duesRepositoryImpl.save(due);
+        }
+
+        // when
+        List<Dues> result = duesRepositoryImpl.findOperatingDuesByYear(year);
+
+        // then
+        assertThat(result).hasSize(2);
+        assertThat(result).extracting("type").containsOnly(DuesType.OPERATION);
+    }
+
+    @Test
+    @DisplayName("생일 회비 월별 조회")
+    void findBirthDuesByYearAndMonth() {
+        // given
+        String year = "2025";
+        String month = "01";
+        List<Dues> dues = List.of(
+                Dues.createDues("이서준", 10000L, DuesType.BIRTH, DuesCalcType.PLUS, "20250101", "생일비"),
+                Dues.createDues("김서연", 20000L, DuesType.BIRTH, DuesCalcType.PLUS, "20250102", "생일비"),
+                Dues.createDues("박도윤", 5000L, DuesType.OPERATION, DuesCalcType.PLUS, "20250103", "운영비")
+        );
+        for (Dues due : dues) {
+            duesRepositoryImpl.save(due);
+        }
+
+        // when
+        Long totalAmount = duesRepositoryImpl.findBirthDuesByYearAndMonth(year, month);
+
+        // then
+        assertThat(totalAmount).isEqualTo(30000L);
+    }
+
+    @Test
+    @DisplayName("월별 생일자 회비 조회")
+    void findUsersMonthBirthDues() {
+        // given
+        String year = "2025";
+        List<Dues> dues = List.of(
+                Dues.createDues("이서준", 10000L, DuesType.BIRTH, DuesCalcType.PLUS, "20250101", "생일비"),
+                Dues.createDues("김서연", 20000L, DuesType.BIRTH, DuesCalcType.PLUS, "20250102", "생일비"),
+                Dues.createDues("박도윤", 5000L, DuesType.OPERATION, DuesCalcType.PLUS, "20250103", "운영비")
+        );
+        for (Dues due : dues) {
+            duesRepositoryImpl.save(due);
+        }
+
+        // when
+        List<UsersMonthBirthDuesDto> result = duesRepositoryImpl.findUsersMonthBirthDues(year);
+
+        // then
+        assertThat(result).hasSize(2);
+        assertThat(result).extracting("userName").containsExactlyInAnyOrder("이서준", "김서연");
     }
 }

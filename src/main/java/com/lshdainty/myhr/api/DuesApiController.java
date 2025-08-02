@@ -1,6 +1,5 @@
 package com.lshdainty.myhr.api;
 
-import com.lshdainty.myhr.domain.Dues;
 import com.lshdainty.myhr.dto.DuesDto;
 import com.lshdainty.myhr.service.DuesService;
 import com.lshdainty.myhr.service.dto.DuesServiceDto;
@@ -36,9 +35,8 @@ public class DuesApiController {
 
     @GetMapping("/api/v1/dues")
     public ApiResponse yearDues(@RequestParam("year") String year) {
-        List<Dues> dues = duesService.findDuesByYear(year);
-
-        List<DuesDto> resp = dues.stream()
+        List<DuesServiceDto> dtos = duesService.findDuesByYear(year);
+        return ApiResponse.success(dtos.stream()
                 .map(d -> DuesDto.builder()
                         .duesSeq(d.getSeq())
                         .duesUserName(d.getUserName())
@@ -47,15 +45,9 @@ public class DuesApiController {
                         .duesCalc(d.getCalc())
                         .duesDate(d.getDate())
                         .duesDetail(d.getDetail())
+                        .totalDues(d.getTotalDues())
                         .build())
-                .collect(Collectors.toList());
-
-        Long total = 0L;
-        for (DuesDto duesDto : resp) {
-            duesDto.setTotalDues(total = duesDto.getDuesCalc().applyAsType(total, duesDto.getDuesAmount()));
-        }
-
-        return ApiResponse.success(resp);
+                .collect(Collectors.toList()));
     }
 
     @GetMapping("/api/v1/dues/operation")

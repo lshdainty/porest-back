@@ -4,6 +4,8 @@ import com.lshdainty.myhr.domain.Dues;
 import com.lshdainty.myhr.domain.DuesCalcType;
 import com.lshdainty.myhr.domain.DuesType;
 import com.lshdainty.myhr.repository.DuesRepositoryImpl;
+import com.lshdainty.myhr.repository.dto.UsersMonthBirthDuesDto;
+import com.lshdainty.myhr.service.dto.DuesServiceDto;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -64,7 +66,7 @@ class DuesServiceTest {
         ));
 
         // When
-        List<Dues> duesList = duesService.findDues();
+        List<DuesServiceDto> duesList = duesService.findDues();
 
         // Then
         then(duesRepositoryImpl).should().findDues();
@@ -90,7 +92,7 @@ class DuesServiceTest {
         ));
 
         // When
-        List<Dues> duesList = duesService.findDuesByYear(year);
+        List<DuesServiceDto> duesList = duesService.findDuesByYear(year);
 
         // Then
         then(duesRepositoryImpl).should().findDuesByYear(year);
@@ -98,6 +100,61 @@ class DuesServiceTest {
         assertThat(duesList)
                 .extracting("date")
                 .allSatisfy(date -> assertThat(String.valueOf(date)).contains("2025"));
+    }
+
+    @Test
+    @DisplayName("운영 회비 조회 테스트 - 성공")
+    void findOperatingDuesByYearSuccessTest() {
+        // Given
+        String year = "2025";
+        given(duesRepositoryImpl.findOperatingDuesByYear(year)).willReturn(List.of(
+                Dues.createDues("이서준", 50000L, DuesType.OPERATION, DuesCalcType.PLUS, "20250101", "1월 회비"),
+                Dues.createDues("김서연", 10000L, DuesType.OPERATION, DuesCalcType.MINUS, "20250101", "1월 회비")
+        ));
+
+        // When
+        DuesServiceDto result = duesService.findOperatingDuesByYear(year);
+
+        // Then
+        then(duesRepositoryImpl).should().findOperatingDuesByYear(year);
+        assertThat(result.getTotalDues()).isEqualTo(40000L);
+        assertThat(result.getTotalDeposit()).isEqualTo(50000L);
+        assertThat(result.getTotalWithdrawal()).isEqualTo(10000L);
+    }
+
+    @Test
+    @DisplayName("생일 회비 월별 조회 테스트 - 성공")
+    void findBirthDuesByYearAndMonthSuccessTest() {
+        // Given
+        String year = "2025";
+        String month = "01";
+        given(duesRepositoryImpl.findBirthDuesByYearAndMonth(year, month)).willReturn(100000L);
+
+        // When
+        Long totalAmount = duesService.findBirthDuesByYearAndMonth(year, month);
+
+        // Then
+        then(duesRepositoryImpl).should().findBirthDuesByYearAndMonth(year, month);
+        assertThat(totalAmount).isEqualTo(100000L);
+    }
+
+    @Test
+    @DisplayName("월별 생일자 회비 조회 테스트 - 성공")
+    void findUsersMonthBirthDuesSuccessTest() {
+        // Given
+        String year = "2025";
+        given(duesRepositoryImpl.findUsersMonthBirthDues(year)).willReturn(List.of(
+                new UsersMonthBirthDuesDto("이서준", "01", 50000L, "1월 생일 회비"),
+                new UsersMonthBirthDuesDto("김서연", "02", 60000L, "2월 생일 회비")
+        ));
+
+        // When
+        List<DuesServiceDto> result = duesService.findUsersMonthBirthDues(year);
+
+        // Then
+        then(duesRepositoryImpl).should().findUsersMonthBirthDues(year);
+        assertThat(result).hasSize(2);
+        assertThat(result).extracting("userName").containsExactly("이서준", "김서연");
     }
 
     @Test
