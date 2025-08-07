@@ -3,6 +3,7 @@ package com.lshdainty.myhr.service;
 import com.lshdainty.myhr.domain.Holiday;
 import com.lshdainty.myhr.domain.HolidayType;
 import com.lshdainty.myhr.repository.HolidayRepositoryImpl;
+import com.lshdainty.myhr.service.dto.HolidayServiceDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
@@ -21,8 +22,12 @@ public class HolidayService {
     private final HolidayRepositoryImpl holidayRepositoryImpl;
 
     @Transactional
-    public Long save(String name, String date, HolidayType type) {
-        Holiday holiday = Holiday.createHoliday(name, date, type);
+    public Long save(HolidayServiceDto data) {
+        Holiday holiday = Holiday.createHoliday(
+                data.getName(),
+                data.getDate(),
+                data.getType()
+        );
         holidayRepositoryImpl.save(holiday);
         return holiday.getSeq();
     }
@@ -44,9 +49,13 @@ public class HolidayService {
     }
 
     @Transactional
-    public void editHoliday(Long holidaySeq, String name, String date, HolidayType type) {
-        Holiday findHoliday = checkHolidayExist(holidaySeq);
-        findHoliday.updateHoliday(name, date, type);
+    public void editHoliday(HolidayServiceDto data) {
+        Holiday findHoliday = checkHolidayExist(data.getSeq());
+        findHoliday.updateHoliday(
+                data.getName(),
+                data.getDate(),
+                data.getType()
+        );
     }
 
     @Transactional

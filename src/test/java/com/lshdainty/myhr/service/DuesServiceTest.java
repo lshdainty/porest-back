@@ -3,7 +3,6 @@ package com.lshdainty.myhr.service;
 import com.lshdainty.myhr.domain.Dues;
 import com.lshdainty.myhr.domain.DuesCalcType;
 import com.lshdainty.myhr.domain.DuesType;
-import com.lshdainty.myhr.domain.Vacation;
 import com.lshdainty.myhr.repository.DuesRepositoryImpl;
 import com.lshdainty.myhr.repository.dto.UsersMonthBirthDuesDto;
 import com.lshdainty.myhr.service.dto.DuesServiceDto;
@@ -186,7 +185,8 @@ class DuesServiceTest {
         duesService.editDues(DuesServiceDto.builder()
                 .seq(seq)
                 .userName("이민서")
-                .build());
+                .build()
+        );
 
         // Then
         then(duesRepositoryImpl).should().findById(seq);

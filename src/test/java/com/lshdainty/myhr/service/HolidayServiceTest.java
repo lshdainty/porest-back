@@ -3,6 +3,7 @@ package com.lshdainty.myhr.service;
 import com.lshdainty.myhr.domain.Holiday;
 import com.lshdainty.myhr.domain.HolidayType;
 import com.lshdainty.myhr.repository.HolidayRepositoryImpl;
+import com.lshdainty.myhr.service.dto.HolidayServiceDto;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -42,7 +43,12 @@ class HolidayServiceTest {
         willDoNothing().given(holidayRepositoryImpl).save(any(Holiday.class));
 
         // When
-        holidayService.save(name, date, type);
+        holidayService.save(HolidayServiceDto.builder()
+                .name(name)
+                .date(date)
+                .type(type)
+                .build()
+        );
 
         // Then
         then(holidayRepositoryImpl).should().save(any(Holiday.class));
@@ -157,16 +163,19 @@ class HolidayServiceTest {
         HolidayType type = HolidayType.PUBLIC;
         Holiday holiday = Holiday.createHoliday(name, date, type);
 
+        setHolidaySeq(holiday, seq);
         given(holidayRepositoryImpl.findById(seq)).willReturn(Optional.of(holiday));
 
         // When
-        name = "임시공휴일";
-        date = "20250131";
-        holidayService.editHoliday(seq, name, date, null);
+        holidayService.editHoliday(HolidayServiceDto.builder()
+                .seq(seq)
+                .name("임시공휴일")
+                .build()
+        );
 
         // Then
         then(holidayRepositoryImpl).should().findById(seq);
-        assertThat(holiday.getName()).isEqualTo(name);
+        assertThat(holiday.getName()).isEqualTo("임시공휴일");
         assertThat(holiday.getDate()).isEqualTo(date);
         assertThat(holiday.getType()).isEqualTo(type);
     }
@@ -176,12 +185,11 @@ class HolidayServiceTest {
     void editHolidayFailTestNotFoundHoliday() {
         // Given
         Long seq = 900L;
-        String name = "신정";
+        HolidayServiceDto data = HolidayServiceDto.builder().seq(seq).build();
         given(holidayRepositoryImpl.findById(seq)).willReturn(Optional.empty());
 
         // When & Then
-        assertThrows(IllegalArgumentException.class,
-                () -> holidayService.editHoliday(seq, name, null, null));
+        assertThrows(IllegalArgumentException.class, () -> holidayService.editHoliday(data));
         then(holidayRepositoryImpl).should().findById(seq);
     }
 
@@ -218,5 +226,16 @@ class HolidayServiceTest {
                 () -> holidayService.deleteHoliday(seq));
         then(holidayRepositoryImpl).should().findById(seq);
         then(holidayRepositoryImpl).should(never()).delete(any(Holiday.class));
+    }
+
+    // 테스트 헬퍼 메서드
+    private void setHolidaySeq(Holiday holiday, Long seq) {
+        try {
+            java.lang.reflect.Field field = Holiday.class.getDeclaredField("seq");
+            field.setAccessible(true);
+            field.set(holiday, seq);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

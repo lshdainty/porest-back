@@ -4,6 +4,7 @@ import com.lshdainty.myhr.domain.Holiday;
 import com.lshdainty.myhr.domain.HolidayType;
 import com.lshdainty.myhr.dto.HolidayDto;
 import com.lshdainty.myhr.service.HolidayService;
+import com.lshdainty.myhr.service.dto.HolidayServiceDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -18,8 +19,12 @@ public class HolidayApiController {
     private final HolidayService holidayService;
 
     @PostMapping("api/v1/holiday")
-    public ApiResponse registHoliday(@RequestBody HolidayDto req) {
-        Long holidaySeq = holidayService.save(req.getHolidayName(), req.getHolidayDate(), req.getHolidayType());
+    public ApiResponse registHoliday(@RequestBody HolidayDto data) {
+        Long holidaySeq = holidayService.save(HolidayServiceDto.builder()
+                .name(data.getHolidayName())
+                .date(data.getHolidayDate())
+                .type(data.getHolidayType()).build()
+        );
         return ApiResponse.success(new HolidayDto(holidaySeq));
     }
 
@@ -46,8 +51,14 @@ public class HolidayApiController {
     }
 
     @PutMapping("/api/v1/holiday/{seq}")
-    public ApiResponse editHoliday(@PathVariable("seq") Long seq, @RequestBody HolidayDto req) {
-        holidayService.editHoliday(seq, req.getHolidayName(), req.getHolidayDate(), req.getHolidayType());
+    public ApiResponse editHoliday(@PathVariable("seq") Long seq, @RequestBody HolidayDto data) {
+        holidayService.editHoliday(HolidayServiceDto.builder()
+                .seq(seq)
+                .name(data.getHolidayName())
+                .date(data.getHolidayDate())
+                .type(data.getHolidayType())
+                .build()
+        );
 
         Holiday findHoliday = holidayService.findById(seq);
         return ApiResponse.success(new HolidayDto(findHoliday));
