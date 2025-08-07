@@ -15,13 +15,15 @@ import java.util.List;
 @Builder
 public class VacationServiceDto {
     private Long id;
-    private User user;
+    private String userId;
     private String desc;
     private VacationType type;
     private BigDecimal remainTime;
     private LocalDateTime occurDate;
     private LocalDateTime expiryDate;
     private String delYN;
+
+    private User user;
 
     private List<Long> historyIds;
 

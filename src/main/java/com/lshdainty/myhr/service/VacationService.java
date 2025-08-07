@@ -37,8 +37,8 @@ public class VacationService {
     private final UserService userService;
 
     @Transactional
-    public Long registVacation(String userId, String desc, VacationType type, BigDecimal grantTime, LocalDateTime occurDate, LocalDateTime expiryDate, String addUserId, String clientIP) {
-        VacationService vacationService = switch (type) {
+    public Long registVacation(VacationServiceDto data, String addUserId, String clientIP) {
+        VacationService vacationService = switch (data.getType()) {
             case ANNUAL ->
                     new Annual(ms, vacationRepositoryImpl, vacationHistoryRepositoryImpl, userRepositoryImpl, holidayRepositoryImpl, userService);
             case MATERNITY ->
@@ -51,33 +51,34 @@ public class VacationService {
                     new Overtime(ms, vacationRepositoryImpl, vacationHistoryRepositoryImpl, userRepositoryImpl, holidayRepositoryImpl, userService);
         };
 
-        return vacationService.registVacation(userId, desc, type, grantTime, occurDate, expiryDate, addUserId, clientIP);
+        return vacationService.registVacation(data, addUserId, clientIP);
     }
 
     @Transactional
-    public Long useVacation(String userId, Long vacatoinId, String desc, VacationTimeType type, LocalDateTime startDate, LocalDateTime endDate, String crtUserId, String clientIP) {
-        User user = userService.checkUserExist(userId);
-        Vacation vacation = checkVacationExist(vacatoinId);
+//    public Long useVacation(String userId, Long vacatoinId, String desc, VacationTimeType type, LocalDateTime startDate, LocalDateTime endDate, String crtUserId, String clientIP) {
+    public Long useVacation(VacationServiceDto data, String crtUserId, String clientIP) {
+        User user = userService.checkUserExist(data.getUserId());
+        Vacation vacation = checkVacationExist(data.getId());
 
         // 시작, 종료시간 시간 비교
-        if (MyhrTime.isAfterThanEndDate(startDate, endDate)) {
+        if (MyhrTime.isAfterThanEndDate(data.getStartDate(), data.getEndDate())) {
             throw new IllegalArgumentException(ms.getMessage("error.validate.startIsAfterThanEnd", null, null));
         }
 
         // 연차가 아닌 시간단위 휴가인 경우 유연근무제 시간 체크
-        if (!type.equals(VacationTimeType.DAYOFF)) {
-            if (!user.isBetweenWorkTime(startDate.toLocalTime(), endDate.toLocalTime())) {
+        if (!data.getTimeType().equals(VacationTimeType.DAYOFF)) {
+            if (!user.isBetweenWorkTime(data.getStartDate().toLocalTime(), data.getEndDate().toLocalTime())) {
                 throw new IllegalArgumentException(ms.getMessage("error.validate.worktime.startEndTime", null, null));
             }
         }
 
         // 주말 리스트 조회
-        List<LocalDate> weekDays = MyhrTime.getBetweenDatesByDayOfWeek(startDate, endDate, new int[]{6, 7}, ms);
+        List<LocalDate> weekDays = MyhrTime.getBetweenDatesByDayOfWeek(data.getStartDate(), data.getEndDate(), new int[]{6, 7}, ms);
 
         // 공휴일 리스트 조회
         List<LocalDate> holidays = holidayRepositoryImpl.findHolidaysByStartEndDateWithType(
-                startDate.format(DateTimeFormatter.ofPattern("yyyyMMdd")),
-                endDate.format(DateTimeFormatter.ofPattern("yyyyMMdd")),
+                data.getStartDate().format(DateTimeFormatter.ofPattern("yyyyMMdd")),
+                data.getEndDate().format(DateTimeFormatter.ofPattern("yyyyMMdd")),
                 HolidayType.PUBLIC
         ).stream()
                 .map(h -> LocalDate.parse(h.getDate(), DateTimeFormatter.BASIC_ISO_DATE))
@@ -86,14 +87,14 @@ public class VacationService {
         weekDays = MyhrTime.addAllDates(weekDays, holidays);
 
         // 두 날짜 간 모든 날짜 가져오기
-        List<LocalDate> betweenDates = MyhrTime.getBetweenDates(startDate, endDate, ms);
+        List<LocalDate> betweenDates = MyhrTime.getBetweenDates(data.getStartDate(), data.getEndDate(), ms);
         log.info("betweenDates : {}, weekDays : {}", betweenDates, weekDays);
         // 사용자가 캘린더에서 선택한 날짜 중 휴일, 공휴일 제거
         betweenDates = MyhrTime.removeAllDates(betweenDates, weekDays);
         log.info("remainDays : {}", betweenDates);
 
         // 등록하려는 총 사용시간 계산
-        BigDecimal useTime = new BigDecimal("0.0000").add(type.convertToValue(betweenDates.size()));
+        BigDecimal useTime = new BigDecimal("0.0000").add(data.getTimeType().convertToValue(betweenDates.size()));
         if (vacation.getRemainTime().compareTo(useTime) < 0) {
             throw new IllegalArgumentException(ms.getMessage("error.validate.notEnoughRemainTime", null, null));
         }
@@ -102,9 +103,9 @@ public class VacationService {
         for (LocalDate betweenDate : betweenDates) {
             VacationHistory history = VacationHistory.createUseVacationHistory(
                     vacation,
-                    desc,
-                    type,
-                    LocalDateTime.of(betweenDate, LocalTime.of(startDate.toLocalTime().getHour(), startDate.toLocalTime().getMinute(), 0)),
+                    data.getDesc(),
+                    data.getTimeType(),
+                    LocalDateTime.of(betweenDate, LocalTime.of(data.getStartDate().toLocalTime().getHour(), data.getStartDate().toLocalTime().getMinute(), 0)),
                     crtUserId,
                     clientIP
             );

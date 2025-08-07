@@ -23,14 +23,15 @@ public class VacationApiController {
     private final VacationService vacationService;
 
     @PostMapping("/api/v1/vacation")
-    public ApiResponse registVacation(@RequestBody VacationDto vacationDto, HttpServletRequest req) {
-        Long vacationId = vacationService.registVacation(
-                vacationDto.getUserId(),
-                vacationDto.getVacationDesc(),
-                vacationDto.getVacationType(),
-                vacationDto.getGrantTime(),
-                vacationDto.getOccurDate(),
-                vacationDto.getExpiryDate(),
+    public ApiResponse registVacation(@RequestBody VacationDto data, HttpServletRequest req) {
+        Long vacationId = vacationService.registVacation(VacationServiceDto.builder()
+                        .userId(data.getUserId())
+                        .desc(data.getVacationDesc())
+                        .type(data.getVacationType())
+                        .grantTime(data.getGrantTime())
+                        .occurDate(data.getOccurDate())
+                        .expiryDate(data.getExpiryDate())
+                        .build(),
                 "", // 추후 로그인한 유저의 id를 가져와서 여기에다 넣을 것
                 req.getRemoteAddr()
         );
@@ -39,14 +40,15 @@ public class VacationApiController {
     }
 
     @PostMapping("/api/v1/vacation/use/{vacationId}")
-    public ApiResponse useVacation(@PathVariable("vacationId") Long vacationId, @RequestBody VacationDto vacationDto, HttpServletRequest req) {
-        Long respVacationId = vacationService.useVacation(
-                vacationDto.getUserId(),
-                vacationId,
-                vacationDto.getVacationDesc(),
-                vacationDto.getVacationTimeType(),
-                vacationDto.getStartDate(),
-                vacationDto.getEndDate(),
+    public ApiResponse useVacation(@PathVariable("vacationId") Long vacationId, @RequestBody VacationDto data, HttpServletRequest req) {
+        Long respVacationId = vacationService.useVacation(VacationServiceDto.builder()
+                        .userId(data.getUserId())
+                        .id(vacationId)
+                        .desc(data.getVacationDesc())
+                        .timeType(data.getVacationTimeType())
+                        .startDate(data.getStartDate())
+                        .endDate(data.getEndDate())
+                        .build(),
                 "", // 추후 로그인한 유저의 id를 가져와서 여기에다 넣을 것
                 req.getRemoteAddr()
         );
