@@ -40,6 +40,6 @@ public class VacationDto {
     private LocalDateTime endDate;
 
     // 사용자 월별 휴가 통계
-    private int month;
+    private Integer month;
     private String usedDateTimeStr;
 }
