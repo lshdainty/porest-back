@@ -1,29 +1,26 @@
-package com.lshdainty.myhr.dto;
+package com.lshdainty.myhr.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.lshdainty.myhr.domain.User;
+import com.lshdainty.myhr.domain.ScheduleType;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.time.LocalDateTime;
 
 @Getter @Setter
 @Builder
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UserDto {
+public class ScheduleDto {
+    private Long scheduleId;
     private String userId;
-    private String userPwd;
     private String userName;
-    private String userEmail;
-    private String userBirth;
-    private String userWorkTime;
-    private String userRole;
-    private String userEmploy;
-    private String lunarYN;
-    private String delYN;
-
-    private List<VacationDto> vacations;
+    private ScheduleType scheduleType;
+    private String scheduleTypeName;
+    private String scheduleDesc;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
+    private BigDecimal realUsedTime;
 }

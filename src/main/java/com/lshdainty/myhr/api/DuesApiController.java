@@ -1,6 +1,6 @@
 package com.lshdainty.myhr.api;
 
-import com.lshdainty.myhr.dto.DuesDto;
+import com.lshdainty.myhr.api.dto.DuesDto;
 import com.lshdainty.myhr.service.DuesService;
 import com.lshdainty.myhr.service.dto.DuesServiceDto;
 import lombok.RequiredArgsConstructor;

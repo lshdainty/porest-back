@@ -1,7 +1,7 @@
 package com.lshdainty.myhr.api;
 
 import com.lshdainty.myhr.domain.Schedule;
-import com.lshdainty.myhr.dto.ScheduleDto;
+import com.lshdainty.myhr.api.dto.ScheduleDto;
 import com.lshdainty.myhr.service.ScheduleService;
 import com.lshdainty.myhr.service.dto.ScheduleServiceDto;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor

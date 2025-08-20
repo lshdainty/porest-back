@@ -1,7 +1,7 @@
 package com.lshdainty.myhr.api;
 
 import com.lshdainty.myhr.domain.Schedule;
-import com.lshdainty.myhr.dto.CalendarDto;
+import com.lshdainty.myhr.api.dto.CalendarDto;
 import com.lshdainty.myhr.service.ScheduleService;
 import com.lshdainty.myhr.service.VacationService;
 import com.lshdainty.myhr.service.dto.VacationServiceDto;

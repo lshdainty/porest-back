@@ -2,7 +2,7 @@ package com.lshdainty.myhr.api;
 
 import com.lshdainty.myhr.domain.RoleType;
 import com.lshdainty.myhr.domain.User;
-import com.lshdainty.myhr.dto.UserDto;
+import com.lshdainty.myhr.api.dto.UserDto;
 import com.lshdainty.myhr.service.UserService;
 import com.lshdainty.myhr.service.dto.UserServiceDto;
 import lombok.RequiredArgsConstructor;
