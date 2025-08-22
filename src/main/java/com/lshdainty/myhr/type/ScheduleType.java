@@ -1,4 +1,4 @@
-package com.lshdainty.myhr.domain;
+package com.lshdainty.myhr.type;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

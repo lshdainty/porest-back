@@ -7,6 +7,8 @@ import com.lshdainty.myhr.repository.VacationHistoryRepositoryImpl;
 import com.lshdainty.myhr.repository.VacationRepositoryImpl;
 import com.lshdainty.myhr.service.dto.VacationServiceDto;
 import com.lshdainty.myhr.service.vacation.*;
+import com.lshdainty.myhr.type.HolidayType;
+import com.lshdainty.myhr.type.VacationTimeType;
 import com.lshdainty.myhr.util.MyhrTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -28,7 +28,8 @@ public class UserService {
                 data.getName(),
                 data.getEmail(),
                 data.getBirth(),
-                data.getEmploy(),
+                data.getCompany(),
+                data.getDepartment(),
                 data.getWorkTime(),
                 data.getLunarYN()
         );
@@ -50,11 +51,12 @@ public class UserService {
         user.updateUser(
                 data.getName(),
                 data.getEmail(),
+                data.getRole(),
                 data.getBirth(),
-                data.getEmploy(),
+                data.getCompany(),
+                data.getDepartment(),
                 data.getWorkTime(),
-                data.getLunarYN(),
-                data.getRole()
+                data.getLunarYN()
         );
     }
 

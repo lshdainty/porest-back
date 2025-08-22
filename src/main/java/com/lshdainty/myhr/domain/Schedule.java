@@ -1,5 +1,6 @@
 package com.lshdainty.myhr.domain;
 
+import com.lshdainty.myhr.type.ScheduleType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

@@ -1,6 +1,7 @@
 package com.lshdainty.myhr.repository;
 
 import com.lshdainty.myhr.domain.*;
+import com.lshdainty.myhr.type.ScheduleType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

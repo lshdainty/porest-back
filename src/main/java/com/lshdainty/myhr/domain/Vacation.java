@@ -1,5 +1,6 @@
 package com.lshdainty.myhr.domain;
 
+import com.lshdainty.myhr.type.VacationType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.BatchSize;

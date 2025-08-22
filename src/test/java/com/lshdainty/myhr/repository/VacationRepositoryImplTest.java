@@ -2,7 +2,7 @@ package com.lshdainty.myhr.repository;
 
 import com.lshdainty.myhr.domain.User;
 import com.lshdainty.myhr.domain.Vacation;
-import com.lshdainty.myhr.domain.VacationType;
+import com.lshdainty.myhr.type.VacationType;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

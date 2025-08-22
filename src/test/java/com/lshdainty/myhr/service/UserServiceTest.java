@@ -3,6 +3,8 @@ package com.lshdainty.myhr.service;
 import com.lshdainty.myhr.domain.User;
 import com.lshdainty.myhr.repository.UserRepositoryImpl;
 import com.lshdainty.myhr.service.dto.UserServiceDto;
+import com.lshdainty.myhr.type.CompanyType;
+import com.lshdainty.myhr.type.DepartmentType;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -49,14 +51,9 @@ class UserServiceTest {
     @DisplayName("단건 유저 조회 테스트 - 성공")
     void findUserSuccessTest() {
         // Given
-        String id = "test1";
+        String id = "user1";
         String name = "이서준";
-        String email = "test1@gmail.com";
-        String birth = "19700723";
-        String workTime = "9 ~ 6";
-        String employ = "company";
-        String lunar = "N";
-        User user = User.createUser(id, "", name, email, birth, employ, workTime, lunar);
+        User user = User.createUser(id, "", name, "", "", CompanyType.SKAX, DepartmentType.SKC, "", "");
 
         given(userRepositoryImpl.findById(id)).willReturn(Optional.of(user));
 
@@ -67,11 +64,6 @@ class UserServiceTest {
         then(userRepositoryImpl).should().findById(id);
         assertThat(findUser).isNotNull();
         assertThat(findUser.getName()).isEqualTo(name);
-        assertThat(findUser.getEmail()).isEqualTo(email);
-        assertThat(findUser.getBirth()).isEqualTo(birth);
-        assertThat(findUser.getWorkTime()).isEqualTo(workTime);
-        assertThat(findUser.getEmploy()).isEqualTo(employ);
-        assertThat(findUser.getLunarYN()).isEqualTo(lunar);
         assertThat(findUser.getDelYN()).isEqualTo("N");
     }
 
@@ -91,14 +83,8 @@ class UserServiceTest {
     @DisplayName("단건 유저 조회 테스트 - 실패 (삭제된 유저 조회)")
     void findUserFailTestDeletedUser() {
         // Given
-        String id = "test1";
-        String name = "이서준";
-        String email = "test1@gmail.com";
-        String birth = "19700723";
-        String workTime = "9 ~ 6";
-        String employ = "company";
-        String lunar = "N";
-        User user = User.createUser(id, "", name, email, birth, employ, workTime, lunar);
+        String id = "user1";
+        User user = User.createUser(id, "", "", "", "", CompanyType.SKAX, DepartmentType.SKC, "", "");
 
         user.deleteUser();
         given(userRepositoryImpl.findById(id)).willReturn(Optional.of(user));
@@ -113,9 +99,9 @@ class UserServiceTest {
     void findUsersSuccessTest() {
         // Given
         given(userRepositoryImpl.findUsers()).willReturn(List.of(
-                User.createUser("test1", "", "이서준", "test1@gmail.com", "19700723", "company", "9 ~ 6", "N"),
-                User.createUser("test2", "", "김서연", "test2@gmail.com", "19701026", "company2", "8 ~ 5", "N"),
-                User.createUser("test3", "", "김지후", "test3@gmail.com", "19740115", "company3", "10 ~ 7", "Y")
+                User.createUser("user1", "", "이서준", "", "", CompanyType.SKAX, DepartmentType.SKC, "", ""),
+                User.createUser("user2", "", "김서연", "", "", CompanyType.SKAX, DepartmentType.SKC, "", ""),
+                User.createUser("user3", "", "김지후", "", "", CompanyType.SKAX, DepartmentType.SKC, "", "")
         ));
 
         // When
@@ -133,14 +119,8 @@ class UserServiceTest {
     @DisplayName("유저 수정 테스트 - 성공")
     void editUserSuccessTest() {
         // Given
-        String id = "test1";
-        String name = "이서준";
-        String email = "test1@gmail.com";
-        String birth = "19700723";
-        String workTime = "9 ~ 6";
-        String employ = "company";
-        String lunar = "N";
-        User user = User.createUser(id, "", name, email, birth, employ, workTime, lunar);
+        String id = "user1";
+        User user = User.createUser(id, "", "", "", "", CompanyType.SKAX, DepartmentType.SKC, "", "");
 
         setUserId(user, id);
         given(userRepositoryImpl.findById(id)).willReturn(Optional.of(user));
@@ -156,11 +136,7 @@ class UserServiceTest {
         // Then
         then(userRepositoryImpl).should().findById(id);
         assertThat(user.getName()).isEqualTo("이하은");
-        assertThat(user.getEmail()).isEqualTo(email);
-        assertThat(user.getBirth()).isEqualTo(birth);
         assertThat(user.getWorkTime()).isEqualTo("10 ~ 7");
-        assertThat(user.getEmploy()).isEqualTo(employ);
-        assertThat(user.getLunarYN()).isEqualTo(lunar);
     }
 
     @Test
@@ -179,14 +155,8 @@ class UserServiceTest {
     @DisplayName("유저 삭제 테스트 - 성공")
     void deleteUserSuccessTest() {
         // Given
-        String id = "test1";
-        String name = "이서준";
-        String email = "test1@gmail.com";
-        String birth = "19700723";
-        String workTime = "9 ~ 6";
-        String employ = "company";
-        String lunar = "N";
-        User user = User.createUser(id, "", name, email, birth, employ, workTime, lunar);
+        String id = "user1";
+        User user = User.createUser(id, "", "", "", "", CompanyType.SKAX, DepartmentType.SKC, "", "");
 
         setUserId(user, id);
         given(userRepositoryImpl.findById(id)).willReturn(Optional.of(user));

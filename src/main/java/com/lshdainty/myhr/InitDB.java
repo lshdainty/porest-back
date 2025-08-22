@@ -1,6 +1,7 @@
 package com.lshdainty.myhr;
 
 import com.lshdainty.myhr.domain.*;
+import com.lshdainty.myhr.type.*;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
@@ -33,18 +34,18 @@ public class InitDB {
         private final EntityManager em;
 
         public void initSetMember() {
-            saveMember("user1", "", "이서준", "aaa@naver.com","19700723", "9 ~ 6", "SK AX", "N");
-            saveMember("user2", "", "김서연", "bbb@naver.com","19701026", "8 ~ 5", "DTOL", "N");
-            saveMember("user3", "", "김지후", "ccc@naver.com","19740115", "10 ~ 7", "SK AX", "Y");
-            saveMember("user4", "", "이준우", "ddd@naver.com","19800430", "9 ~ 6", "인사이트온", "N");
-            saveMember("user5", "", "조민서", "eee@naver.com","19921220", "10 ~ 7", "씨앤토트플러스", "N");
-            saveMember("user6", "", "이하은", "fff@naver.com","18850902", "8 ~ 5", "BigxData", "N");
+            saveMember("user1", "이서준", "aaa@naver.com","19700723", CompanyType.SKAX, DepartmentType.SKC, "9 ~ 6", "N");
+            saveMember("user2", "김서연", "bbb@naver.com","19701026", CompanyType.DTOL, DepartmentType.MYDATA, "8 ~ 5",  "N");
+            saveMember("user3", "김지후", "ccc@naver.com","19740115", CompanyType.INSIGHTON, DepartmentType.GMES, "10 ~ 7", "Y");
+            saveMember("user4", "이준우", "ddd@naver.com","19800430", CompanyType.BIGXDATA, DepartmentType.TABLEAU, "9 ~ 6", "N");
+            saveMember("user5", "조민서", "eee@naver.com","19921220", CompanyType.CNTHOTH, DepartmentType.AOI, "10 ~ 7", "N");
+            saveMember("user6", "이하은", "fff@naver.com","18850902", CompanyType.AGS, DepartmentType.GSCM, "8 ~ 5", "N");
 
             User user1 = em.find(User.class, "user1");
             User user3 = em.find(User.class, "user3");
 
-            user1.updateUser(user1.getName(), user1.getEmail(), user1.getBirth(), user1.getEmploy(), user1.getWorkTime(), user1.getLunarYN(), RoleType.ADMIN);
-            user3.updateUser(user3.getName(), user3.getEmail(), user3.getBirth(), user3.getEmploy(), user3.getWorkTime(), user3.getLunarYN(), RoleType.ADMIN);
+            user1.updateUser(user1.getName(), user1.getEmail(), RoleType.ADMIN, user1.getBirth(), user1.getCompany(), user1.getDepartment(), user1.getWorkTime(), user1.getLunarYN());
+            user3.updateUser(user3.getName(), user3.getEmail(), RoleType.ADMIN, user3.getBirth(), user3.getCompany(), user3.getDepartment(), user3.getWorkTime(), user3.getLunarYN());
         }
 
         public void initSetHoliday() {
@@ -537,8 +538,8 @@ public class InitDB {
             saveDues("이서준", 10000L, DuesType.BIRTH, DuesCalcType.PLUS, "20250704", "생일비");
         }
 
-        public void saveMember(String id, String pwd, String name, String email, String birth, String workTime, String employ, String lunar) {
-            User user = User.createUser(id, pwd, name, email, birth, employ, workTime, lunar);
+        public void saveMember(String id, String name, String email, String birth, CompanyType company, DepartmentType department, String workTime, String lunar) {
+            User user = User.createUser(id, "", name, email, birth, company, department, workTime, lunar);
             em.persist(user);
         }
 

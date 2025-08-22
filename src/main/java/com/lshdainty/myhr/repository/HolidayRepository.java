@@ -1,7 +1,7 @@
 package com.lshdainty.myhr.repository;
 
 import com.lshdainty.myhr.domain.Holiday;
-import com.lshdainty.myhr.domain.HolidayType;
+import com.lshdainty.myhr.type.HolidayType;
 
 import java.util.List;
 import java.util.Optional;

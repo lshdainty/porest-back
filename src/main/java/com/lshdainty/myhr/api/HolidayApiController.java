@@ -1,7 +1,7 @@
 package com.lshdainty.myhr.api;
 
 import com.lshdainty.myhr.domain.Holiday;
-import com.lshdainty.myhr.domain.HolidayType;
+import com.lshdainty.myhr.type.HolidayType;
 import com.lshdainty.myhr.api.dto.HolidayDto;
 import com.lshdainty.myhr.service.HolidayService;
 import com.lshdainty.myhr.service.dto.HolidayServiceDto;

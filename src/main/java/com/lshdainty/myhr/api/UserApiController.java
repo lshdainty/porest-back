@@ -1,6 +1,5 @@
 package com.lshdainty.myhr.api;
 
-import com.lshdainty.myhr.domain.RoleType;
 import com.lshdainty.myhr.domain.User;
 import com.lshdainty.myhr.api.dto.UserDto;
 import com.lshdainty.myhr.service.UserService;
@@ -25,7 +24,8 @@ public class UserApiController {
                 .name(data.getUserName())
                 .email(data.getUserEmail())
                 .birth(data.getUserBirth())
-                .employ(data.getUserEmploy())
+                .company(data.getUserCompanyType())
+                .department(data.getUserDepartmentType())
                 .workTime(data.getUserWorkTime())
                 .lunarYN(data.getLunarYN())
                 .build()
@@ -38,15 +38,18 @@ public class UserApiController {
     public ApiResponse user(@PathVariable("id") String userId) {
         User user = userService.findUser(userId);
 
-        return ApiResponse.success(UserDto
-                .builder()
+        return ApiResponse.success(UserDto.builder()
                 .userId(userId)
                 .userName(user.getName())
                 .userEmail(user.getEmail())
                 .userBirth(user.getBirth())
                 .userWorkTime(user.getWorkTime())
-                .userRole(user.getRole().name())
-                .userEmploy(user.getEmploy())
+                .userRoleType(user.getRole())
+                .userRoleName(user.getRole().name())
+                .userCompanyType(user.getCompany())
+                .userCompanyName(user.getCompany().getCompanyName())
+                .userDepartmentType(user.getDepartment())
+                .userDepartmentName(user.getDepartment().getDepartmentName())
                 .lunarYN(user.getLunarYN())
                 .build()
         );
@@ -64,8 +67,12 @@ public class UserApiController {
                         .userEmail(u.getEmail())
                         .userBirth(u.getBirth())
                         .userWorkTime(u.getWorkTime())
-                        .userRole(u.getRole().name())
-                        .userEmploy(u.getEmploy())
+                        .userRoleType(u.getRole())
+                        .userRoleName(u.getRole().name())
+                        .userCompanyType(u.getCompany())
+                        .userCompanyName(u.getCompany().getCompanyName())
+                        .userDepartmentType(u.getDepartment())
+                        .userDepartmentName(u.getDepartment().getDepartmentName())
                         .lunarYN(u.getLunarYN())
                         .build()
                 )
@@ -81,10 +88,11 @@ public class UserApiController {
                 .name(data.getUserName())
                 .email(data.getUserEmail())
                 .birth(data.getUserBirth())
-                .employ(data.getUserEmploy())
+                .role(data.getUserRoleType())
+                .company(data.getUserCompanyType())
+                .department(data.getUserDepartmentType())
                 .workTime(data.getUserWorkTime())
                 .lunarYN(data.getLunarYN())
-                .role(RoleType.valueOf(data.getUserRole()))
                 .build()
         );
 
@@ -97,8 +105,12 @@ public class UserApiController {
                 .userEmail(findUser.getEmail())
                 .userBirth(findUser.getBirth())
                 .userWorkTime(findUser.getWorkTime())
-                .userRole(findUser.getRole().name())
-                .userEmploy(findUser.getEmploy())
+                .userRoleType(findUser.getRole())
+                .userRoleName(findUser.getRole().name())
+                .userCompanyType(findUser.getCompany())
+                .userCompanyName(findUser.getCompany().getCompanyName())
+                .userDepartmentType(findUser.getDepartment())
+                .userDepartmentName(findUser.getDepartment().getDepartmentName())
                 .lunarYN(findUser.getLunarYN())
                 .build()
         );

@@ -3,6 +3,7 @@ package com.lshdainty.myhr.service;
 import com.lshdainty.myhr.domain.*;
 import com.lshdainty.myhr.repository.ScheduleRepositoryImpl;
 import com.lshdainty.myhr.service.dto.ScheduleServiceDto;
+import com.lshdainty.myhr.type.ScheduleType;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

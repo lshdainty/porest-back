@@ -1,6 +1,8 @@
 package com.lshdainty.myhr.repository;
 
 import com.lshdainty.myhr.domain.*;
+import com.lshdainty.myhr.type.VacationTimeType;
+import com.lshdainty.myhr.type.VacationType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -149,5 +151,57 @@ class VacationHistoryRepositoryImplTest {
 
         // then
         assertThat(histories.isEmpty()).isTrue();
+    }
+
+    @Test
+    @DisplayName("사용자 ID와 기간으로 휴가 사용 내역을 조회한다.")
+    void findVacationUseHistorysByUserAndPeriod() {
+        // given
+        User user1 = User.createUser("test1");
+        em.persist(user1);
+        User user2 = User.createUser("test2");
+        em.persist(user2);
+
+        LocalDateTime now = LocalDateTime.now();
+        Vacation vacation1 = Vacation.createVacation(user1, VacationType.ANNUAL, new BigDecimal("1.0"), now.withDayOfYear(1), now.withDayOfYear(365), "", "");
+        em.persist(vacation1);
+        Vacation vacation2 = Vacation.createVacation(user2, VacationType.ANNUAL, new BigDecimal("1.0"), now.withDayOfYear(1), now.withDayOfYear(365), "", "");
+        em.persist(vacation2);
+
+        VacationHistory history1 = VacationHistory.createUseVacationHistory(vacation1, "user1 vacation", VacationTimeType.DAYOFF, now.withMonth(3), "", "");
+        em.persist(history1);
+        VacationHistory history2 = VacationHistory.createUseVacationHistory(vacation2, "user2 vacation", VacationTimeType.DAYOFF, now.withMonth(4), "", "");
+        em.persist(history2);
+
+
+        // when
+        List<VacationHistory> result = vacationHistoryRepositoryImpl.findVacationUseHistorysByUserAndPeriod(
+                user1.getId(),
+                now.withDayOfYear(1),
+                now.withDayOfYear(365)
+        );
+
+        // then
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getDesc()).isEqualTo("user1 vacation");
+    }
+
+    @Test
+    @DisplayName("사용자 ID와 기간으로 조회시 내역이 없으면 빈 리스트를 반환한다.")
+    void findVacationUseHistorysByUserAndPeriod_Empty() {
+        // given
+        User user1 = User.createUser("test1");
+        em.persist(user1);
+        LocalDateTime now = LocalDateTime.now();
+
+        // when
+        List<VacationHistory> result = vacationHistoryRepositoryImpl.findVacationUseHistorysByUserAndPeriod(
+                user1.getId(),
+                now.withDayOfYear(1),
+                now.withDayOfYear(365)
+        );
+
+        // then
+        assertThat(result).isEmpty();
     }
 }

@@ -2,8 +2,8 @@ package com.lshdainty.myhr.repository;
 
 import com.lshdainty.myhr.TestConfig;
 import com.lshdainty.myhr.domain.Dues;
-import com.lshdainty.myhr.domain.DuesCalcType;
-import com.lshdainty.myhr.domain.DuesType;
+import com.lshdainty.myhr.type.DuesCalcType;
+import com.lshdainty.myhr.type.DuesType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

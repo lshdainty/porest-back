@@ -3,8 +3,8 @@ package com.lshdainty.myhr.api.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.lshdainty.myhr.domain.VacationTimeType;
-import com.lshdainty.myhr.domain.VacationType;
+import com.lshdainty.myhr.type.VacationTimeType;
+import com.lshdainty.myhr.type.VacationType;
 import lombok.*;
 
 import java.math.BigDecimal;

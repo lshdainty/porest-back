@@ -1,6 +1,6 @@
 package com.lshdainty.myhr.service.dto;
 
-import com.lshdainty.myhr.domain.HolidayType;
+import com.lshdainty.myhr.type.HolidayType;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;

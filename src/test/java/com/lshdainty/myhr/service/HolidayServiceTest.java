@@ -1,7 +1,7 @@
 package com.lshdainty.myhr.service;
 
 import com.lshdainty.myhr.domain.Holiday;
-import com.lshdainty.myhr.domain.HolidayType;
+import com.lshdainty.myhr.type.HolidayType;
 import com.lshdainty.myhr.repository.HolidayRepositoryImpl;
 import com.lshdainty.myhr.service.dto.HolidayServiceDto;
 import lombok.extern.slf4j.Slf4j;

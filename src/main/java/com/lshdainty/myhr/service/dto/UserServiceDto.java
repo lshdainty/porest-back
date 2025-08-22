@@ -1,6 +1,8 @@
 package com.lshdainty.myhr.service.dto;
 
-import com.lshdainty.myhr.domain.RoleType;
+import com.lshdainty.myhr.type.CompanyType;
+import com.lshdainty.myhr.type.DepartmentType;
+import com.lshdainty.myhr.type.RoleType;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,6 +17,7 @@ public class UserServiceDto {
     private RoleType role;
     private String birth;
     private String workTime;
-    private String employ;
+    private CompanyType company;
+    private DepartmentType department;
     private String lunarYN;
 }

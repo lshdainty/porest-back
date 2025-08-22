@@ -1,7 +1,7 @@
 package com.lshdainty.myhr.repository;
 
 import com.lshdainty.myhr.domain.Holiday;
-import com.lshdainty.myhr.domain.HolidayType;
+import com.lshdainty.myhr.type.HolidayType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

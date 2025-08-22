@@ -2,7 +2,7 @@ package com.lshdainty.myhr.api;
 
 import com.lshdainty.myhr.domain.User;
 import com.lshdainty.myhr.domain.Vacation;
-import com.lshdainty.myhr.domain.VacationTimeType;
+import com.lshdainty.myhr.type.VacationTimeType;
 import com.lshdainty.myhr.api.dto.UserDto;
 import com.lshdainty.myhr.api.dto.VacationDto;
 import com.lshdainty.myhr.service.VacationService;

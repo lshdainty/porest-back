@@ -1,8 +1,8 @@
 package com.lshdainty.myhr.service.dto;
 
 import com.lshdainty.myhr.domain.User;
-import com.lshdainty.myhr.domain.VacationTimeType;
-import com.lshdainty.myhr.domain.VacationType;
+import com.lshdainty.myhr.type.VacationTimeType;
+import com.lshdainty.myhr.type.VacationType;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;

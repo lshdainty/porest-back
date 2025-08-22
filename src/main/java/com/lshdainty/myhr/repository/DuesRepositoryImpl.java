@@ -1,8 +1,8 @@
 package com.lshdainty.myhr.repository;
 
 import com.lshdainty.myhr.domain.Dues;
-import com.lshdainty.myhr.domain.DuesCalcType;
-import com.lshdainty.myhr.domain.DuesType;
+import com.lshdainty.myhr.type.DuesCalcType;
+import com.lshdainty.myhr.type.DuesType;
 import com.lshdainty.myhr.repository.dto.UsersMonthBirthDuesDto;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;

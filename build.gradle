@@ -70,8 +70,10 @@ def jacocoExcludes = [
     '**/Config/**',
     '**/config/**',
     '**/lib/**',
-    '**/dto/**',
+    '**/type/**',
+    '**/api/dto/**',
     '**/service/dto/**',
+    '**/repository/dto/**',
     '**/repository/*Custom*',
     '**/SessionConst*'
 ]

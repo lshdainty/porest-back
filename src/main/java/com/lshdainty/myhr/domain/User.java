@@ -1,5 +1,8 @@
 package com.lshdainty.myhr.domain;
 
+import com.lshdainty.myhr.type.CompanyType;
+import com.lshdainty.myhr.type.DepartmentType;
+import com.lshdainty.myhr.type.RoleType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -17,35 +20,40 @@ import java.util.Objects;
 public class User {
     @Id
     @Column(name = "user_id")
-    private String id;
+    private String id; // 유저 아이디
 
     @Column(name = "user_pwd")
-    private String pwd;
+    private String pwd; // 유저 비번
 
     @Column(name = "user_name")
-    private String name;
+    private String name; // 유저 이름
 
     @Column(name = "user_email")
-    private String email;
+    private String email; // 유저 이메일
 
     @Enumerated(EnumType.STRING)
     @Column(name = "user_role")
-    private RoleType role;
+    private RoleType role; //
 
     @Column(name = "user_birth")
-    private String birth;
+    private String birth; // 유저 생일
 
     @Column(name = "user_work_time")
-    private String workTime;
+    private String workTime; // 유연근무제
 
-    @Column(name = "user_employ")
-    private String employ;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_company")
+    private CompanyType company; // 유저 소속 회사
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_department")
+    private DepartmentType department; // 유저 소속 부서
 
     @Column(name = "lunar_yn")
-    private String lunarYN;
+    private String lunarYN; // 음력여부
 
     @Column(name = "del_yn")
-    private String delYN;
+    private String delYN; // 삭제여부
 
     @OneToMany(mappedBy = "user")   // JPA에서는 mappedBy는 읽기 전용
     private List<Vacation> vacations  =  new ArrayList<>();
@@ -57,7 +65,7 @@ public class User {
      *
      * @return User
      */
-    public static User createUser(String id, String pwd, String name, String email, String birth, String employ, String workTime, String lunarYN) {
+    public static User createUser(String id, String pwd, String name, String email, String birth, CompanyType company, DepartmentType department, String workTime, String lunarYN) {
         User user = new User();
         user.id = id;
         user.pwd = pwd;
@@ -65,7 +73,8 @@ public class User {
         user.email = email;
         user.role = RoleType.USER;
         user.birth = birth;
-        user.employ = employ;
+        user.company = company;
+        user.department = department;
         user.workTime = workTime;
         user.lunarYN = lunarYN;
         user.delYN = "N";
@@ -75,6 +84,7 @@ public class User {
     public static User createUser(String id) {
         User user = new User();
         user.id = id;
+        user.delYN = "N";
         return user;
     }
 
@@ -83,14 +93,15 @@ public class User {
      * Entity의 경우 Setter없이 Getter만 사용<br>
      * 해당 메소드를 통해 유저 수정할 것
      */
-    public void updateUser(String name, String email, String birth, String employ, String workTime, String lunarYN, RoleType role) {
+    public void updateUser(String name, String email, RoleType role, String birth, CompanyType company, DepartmentType department, String workTime, String lunarYN) {
         if (!Objects.isNull(name)) { this.name = name; }
         if (!Objects.isNull(email)) { this.email = email; }
+        if (!Objects.isNull(role)) { this.role = role; }
         if (!Objects.isNull(birth)) { this.birth = birth; }
-        if (!Objects.isNull(employ)) { this.employ = employ; }
+        if (!Objects.isNull(company)) { this.company = company; }
+        if (!Objects.isNull(department)) { this.department = department; }
         if (!Objects.isNull(workTime)) { this.workTime = workTime; }
         if (!Objects.isNull(lunarYN)) { this.lunarYN = lunarYN; }
-        if (!Objects.isNull(role)) { this.role = role; }
     }
 
     /**

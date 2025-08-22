@@ -1,5 +1,7 @@
 package com.lshdainty.myhr.domain;
 
+import com.lshdainty.myhr.type.DuesCalcType;
+import com.lshdainty.myhr.type.DuesType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

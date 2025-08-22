@@ -3,6 +3,9 @@ package com.lshdainty.myhr.api.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.lshdainty.myhr.type.CompanyType;
+import com.lshdainty.myhr.type.DepartmentType;
+import com.lshdainty.myhr.type.RoleType;
 import lombok.*;
 
 import java.util.List;
@@ -18,10 +21,15 @@ public class UserDto {
     private String userEmail;
     private String userBirth;
     private String userWorkTime;
-    private String userRole;
-    private String userEmploy;
+    private RoleType userRoleType;
+    private CompanyType userCompanyType;
+    private DepartmentType userDepartmentType;
     private String lunarYN;
     private String delYN;
 
     private List<VacationDto> vacations;
+
+    private String userCompanyName;
+    private String userDepartmentName;
+    private String userRoleName;
 }

@@ -1,5 +1,6 @@
 package com.lshdainty.myhr.domain;
 
+import com.lshdainty.myhr.type.VacationTimeType;
 import jakarta.persistence.*;
 import lombok.*;
 

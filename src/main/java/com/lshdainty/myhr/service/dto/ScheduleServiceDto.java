@@ -1,6 +1,6 @@
 package com.lshdainty.myhr.service.dto;
 
-import com.lshdainty.myhr.domain.ScheduleType;
+import com.lshdainty.myhr.type.ScheduleType;
 import com.lshdainty.myhr.domain.User;
 import com.lshdainty.myhr.domain.Vacation;
 import lombok.Builder;

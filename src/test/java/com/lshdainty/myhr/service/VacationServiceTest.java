@@ -6,6 +6,7 @@ import com.lshdainty.myhr.repository.UserRepositoryImpl;
 import com.lshdainty.myhr.repository.VacationHistoryRepositoryImpl;
 import com.lshdainty.myhr.repository.VacationRepositoryImpl;
 import com.lshdainty.myhr.service.dto.VacationServiceDto;
+import com.lshdainty.myhr.type.*;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -51,7 +52,7 @@ class VacationServiceTest {
     @DisplayName("연차 추가 테스트 - 성공 (기존 휴가 업데이트)")
     void registExistAnnualSuccessTest() {
         // Given
-        String userId = "test1";
+        String userId = "user1";
         String desc = "1분기 정기 휴가";
         VacationType type = VacationType.ANNUAL;
         BigDecimal grantTime = new BigDecimal("4.0000");
@@ -59,7 +60,7 @@ class VacationServiceTest {
         LocalDateTime occurDate = LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0);
         LocalDateTime expiryDate = LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59);
 
-        User user = User.createUser("test1");
+        User user = User.createUser("user1");
         Vacation vacation = Vacation.createVacation(user, type, grantTime,
                 LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0),
                 LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59),
@@ -95,7 +96,7 @@ class VacationServiceTest {
     @DisplayName("연차 추가 테스트 - 성공 (신규 휴가 등록)")
     void registNewAnnualSuccessTest() {
         // Given
-        String userId = "test1";
+        String userId = "user1";
         String desc = "1분기 정기 휴가";
         VacationType type = VacationType.ANNUAL;
         BigDecimal grantTime = new BigDecimal("4.0000");
@@ -103,7 +104,7 @@ class VacationServiceTest {
         LocalDateTime occurDate = LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0);
         LocalDateTime expiryDate = LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59);
 
-        User user = User.createUser("test1");
+        User user = User.createUser(userId, "", "", "", "", CompanyType.SKAX, DepartmentType.SKC, "9 ~ 6", "");
 
         given(userService.checkUserExist(userId)).willReturn(user);
         given(vacationRepositoryImpl.findVacationByTypeWithYear(userId, type, String.valueOf(now.getYear())))
@@ -142,7 +143,7 @@ class VacationServiceTest {
     @DisplayName("출산 추가 테스트 - 성공")
     void registNewMaternitySuccessTest() {
         // Given
-        String userId = "test1";
+        String userId = "user1";
         String desc = "출산 휴가";
         VacationType type = VacationType.MATERNITY;
         BigDecimal grantTime = new BigDecimal("10.0000");
@@ -150,7 +151,7 @@ class VacationServiceTest {
         LocalDateTime occurDate = LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0);
         LocalDateTime expiryDate = LocalDateTime.of(now.getYear(), 6, 1, 23, 59, 59);
 
-        User user = User.createUser("test1");
+        User user = User.createUser("user1");
 
         given(userService.checkUserExist(userId)).willReturn(user);
         willDoNothing().given(vacationRepositoryImpl).save(any(Vacation.class));
@@ -179,7 +180,7 @@ class VacationServiceTest {
     @DisplayName("결혼 추가 테스트 - 성공")
     void registNewWeddingSuccessTest() {
         // Given
-        String userId = "test1";
+        String userId = "user1";
         String desc = "결혼 휴가";
         VacationType type = VacationType.WEDDING;
         BigDecimal grantTime = new BigDecimal("5.0000");
@@ -187,7 +188,7 @@ class VacationServiceTest {
         LocalDateTime occurDate = LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0);
         LocalDateTime expiryDate = LocalDateTime.of(now.getYear(), 6, 1, 23, 59, 59);
 
-        User user = User.createUser("test1");
+        User user = User.createUser("user1");
 
         given(userService.checkUserExist(userId)).willReturn(user);
         willDoNothing().given(vacationRepositoryImpl).save(any(Vacation.class));
@@ -216,7 +217,7 @@ class VacationServiceTest {
     @DisplayName("상조 추가 테스트 - 성공")
     void registNewBereavementSuccessTest() {
         // Given
-        String userId = "test1";
+        String userId = "user1";
         String desc = "상조 휴가";
         VacationType type = VacationType.BEREAVEMENT;
         BigDecimal grantTime = new BigDecimal("3.0000");
@@ -224,7 +225,7 @@ class VacationServiceTest {
         LocalDateTime occurDate = LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0);
         LocalDateTime expiryDate = LocalDateTime.of(now.getYear(), 6, 1, 23, 59, 59);
 
-        User user = User.createUser("test1");
+        User user = User.createUser("user1");
 
         given(userService.checkUserExist(userId)).willReturn(user);
         willDoNothing().given(vacationRepositoryImpl).save(any(Vacation.class));
@@ -253,7 +254,7 @@ class VacationServiceTest {
     @DisplayName("OT 추가 테스트 - 성공 (기존 휴가 업데이트)")
     void registExistOvertimeSuccessTest() {
         // Given
-        String userId = "test1";
+        String userId = "user1";
         String desc = "연장근무 휴가추가";
         VacationType type = VacationType.OVERTIME;
         BigDecimal grantTime = new BigDecimal("0.1250");
@@ -261,7 +262,7 @@ class VacationServiceTest {
         LocalDateTime occurDate = LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0);
         LocalDateTime expiryDate = LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59);
 
-        User user = User.createUser("test1");
+        User user = User.createUser("user1");
         Vacation vacation = Vacation.createVacation(user, type, grantTime,
                 LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0),
                 LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59),
@@ -297,7 +298,7 @@ class VacationServiceTest {
     @DisplayName("OT 추가 테스트 - 성공 (신규 휴가 등록)")
     void registNewOvertimeSuccessTest() {
         // Given
-        String userId = "test1";
+        String userId = "user1";
         String desc = "연장근무 휴가추가";
         VacationType type = VacationType.OVERTIME;
         BigDecimal grantTime = new BigDecimal("0.1250");
@@ -305,7 +306,7 @@ class VacationServiceTest {
         LocalDateTime occurDate = LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0);
         LocalDateTime expiryDate = LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59);
 
-        User user = User.createUser("test1");
+        User user = User.createUser("user1");
 
         given(userService.checkUserExist(userId)).willReturn(user);
         given(vacationRepositoryImpl.findVacationByTypeWithYear(userId, type, String.valueOf(now.getYear())))
@@ -344,7 +345,7 @@ class VacationServiceTest {
     @DisplayName("휴가 사용 추가 테스트 - 성공")
     void useVacationSuccessTest() {
         // Given
-        String userId = "test1";
+        String userId = "user1";
         Long vacationId = 1L;
 
         String desc = "연차";
@@ -352,7 +353,7 @@ class VacationServiceTest {
         LocalDateTime startDate = LocalDateTime.of(2025, 6, 6, 0, 0, 0);
         LocalDateTime endDate = LocalDateTime.of(2025, 6, 9, 23, 59, 59);
 
-        User user = User.createUser("test1");
+        User user = User.createUser("user1");
         Vacation vacation = Vacation.createVacation(user, VacationType.ANNUAL, new BigDecimal("4.0000"),
                 LocalDateTime.of(2025, 1, 1, 0, 0, 0),
                 LocalDateTime.of(2025, 12, 31, 23, 59, 59),
@@ -396,7 +397,7 @@ class VacationServiceTest {
     @DisplayName("휴가 사용 추가 테스트 - 실패 (휴가 찾기 실패)")
     void useVacationFailTestNotFoundVacation() {
         // Given
-        String userId = "test1";
+        String userId = "user1";
         Long vacationId = 1L;
 
         String desc = "연차";
@@ -404,7 +405,7 @@ class VacationServiceTest {
         LocalDateTime startDate = LocalDateTime.of(2025, 6, 6, 0, 0, 0);
         LocalDateTime endDate = LocalDateTime.of(2025, 6, 9, 23, 59, 59);
 
-        User user = User.createUser("test1");
+        User user = User.createUser("user1");
 
         given(userService.checkUserExist(userId)).willReturn(user);
 
@@ -427,7 +428,7 @@ class VacationServiceTest {
     @DisplayName("휴가 사용 추가 테스트 - 실패 (Start, End 시간 반대)")
     void useVacationFailTestReverseStartEndDate() {
         // Given
-        String userId = "test1";
+        String userId = "user1";
         Long vacationId = 1L;
 
         String desc = "연차";
@@ -435,7 +436,7 @@ class VacationServiceTest {
         LocalDateTime startDate = LocalDateTime.of(2025, 6, 9, 23, 59, 59);
         LocalDateTime endDate = LocalDateTime.of(2025, 6, 9, 0, 0, 0);
 
-        User user = User.createUser("test1");
+        User user = User.createUser("user1");
         Vacation vacation = Vacation.createVacation(user, VacationType.ANNUAL, new BigDecimal("4.0000"),
                 LocalDateTime.of(2025, 1, 1, 0, 0, 0),
                 LocalDateTime.of(2025, 12, 31, 23, 59, 59),
@@ -463,7 +464,7 @@ class VacationServiceTest {
     @DisplayName("휴가 사용 추가 테스트 - 실패 (유연근무제)")
     void useVacationFailTestMismatchUserWorkTime() {
         // Given
-        String userId = "test1";
+        String userId = "user1";
         Long vacationId = 1L;
 
         String desc = "1시간 휴가";
@@ -471,7 +472,7 @@ class VacationServiceTest {
         LocalDateTime startDate = LocalDateTime.of(2025, 6, 9, 8, 0, 0);
         LocalDateTime endDate = LocalDateTime.of(2025, 6, 9, 9, 0, 0);
 
-        User user = User.createUser("", "", "이서준", "", "19700723", "ADMIN", "9 ~ 6", "N");
+        User user = User.createUser("user1", "", "", "", "", CompanyType.SKAX, DepartmentType.SKC, "9 ~ 6", "");
         Vacation vacation = Vacation.createVacation(user, VacationType.ANNUAL, new BigDecimal("4.0000"),
                 LocalDateTime.of(2025, 1, 1, 0, 0, 0),
                 LocalDateTime.of(2025, 12, 31, 23, 59, 59),
@@ -499,7 +500,7 @@ class VacationServiceTest {
     @DisplayName("휴가 사용 추가 테스트 - 실패 (잔여 휴가 부족)")
     void useVacationFailTestNotEnoughRemainTime() {
         // Given
-        String userId = "test1";
+        String userId = "user1";
         Long vacationId = 1L;
 
         String desc = "연차";
@@ -507,7 +508,7 @@ class VacationServiceTest {
         LocalDateTime startDate = LocalDateTime.of(2025, 6, 9, 0, 0, 0);
         LocalDateTime endDate = LocalDateTime.of(2025, 6, 9, 23, 59, 59);
 
-        User user = User.createUser("test1");
+        User user = User.createUser("user1");
         Vacation vacation = Vacation.createVacation(user, VacationType.ANNUAL, new BigDecimal("0.0000"),
                 LocalDateTime.of(2025, 1, 1, 0, 0, 0),
                 LocalDateTime.of(2025, 12, 31, 23, 59, 59),
@@ -540,8 +541,8 @@ class VacationServiceTest {
     @DisplayName("단일 유저 휴가 조회 테스트 - 성공")
     void getUserVacationsSuccessTest() {
         // Given
-        String userId = "test1";
-        User user = User.createUser("test1");
+        String userId = "user1";
+        User user = User.createUser("user1");
 
         LocalDateTime now = LocalDateTime.now();
         given(vacationRepositoryImpl.findVacationsByUserId(userId)).willReturn(List.of(
@@ -565,9 +566,9 @@ class VacationServiceTest {
     @DisplayName("유저별 휴가 조회 테스트 - 성공")
     void getUserGroupVacationsSuccessTest() {
         // Given
-        User userA = User.createUser("", "",  "이서준", "", "19700723", "ADMIN", "9 ~ 6", "N");
-        User userB = User.createUser("", "", "김서연", "", "19701026", "BP", "8 ~ 5", "N");
-        User userC = User.createUser("", "", "김지후", "", "19740115", "BP", "10 ~ 7", "Y");
+        User userA = User.createUser("user1");
+        User userB = User.createUser("user2");
+        User userC = User.createUser("user3");
 
         LocalDateTime now = LocalDateTime.now();
         Vacation.createVacation(userA, VacationType.ANNUAL, new BigDecimal("4.0000"), LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0), LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59), "", "127.0.0.1");
@@ -586,13 +587,13 @@ class VacationServiceTest {
         then(userRepositoryImpl).should().findUsersWithVacations();
         assertThat(users).hasSize(3);
         assertThat(users)
-                .filteredOn(u -> u.getName().equals("이서준"))
+                .filteredOn(u -> u.getId().equals(userA.getId()))
                 .filteredOn(v -> v.getVacations().size() == 3);
         assertThat(users)
-                .filteredOn(u -> u.getName().equals("김서연"))
+                .filteredOn(u -> u.getId().equals(userB.getId()))
                 .filteredOn(v -> v.getVacations().size() == 1);
         assertThat(users)
-                .filteredOn(u -> u.getName().equals("김지후"))
+                .filteredOn(u -> u.getId().equals(userC.getId()))
                 .filteredOn(v -> v.getVacations().isEmpty());
     }
 
@@ -600,8 +601,8 @@ class VacationServiceTest {
     @DisplayName("등록 가능 휴가 목록 조회 테스트 - 성공")
     void getAvailableVacationSuccessTest() {
         // Given
-        String userId = "test1";
-        User user = User.createUser("test1");
+        String userId = "user1";
+        User user = User.createUser("user1");
         LocalDateTime now = LocalDateTime.now();
 
         given(userService.checkUserExist(userId)).willReturn(user);
@@ -636,7 +637,7 @@ class VacationServiceTest {
         LocalDateTime occurDate = LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0);
         LocalDateTime expiryDate = LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59);
 
-        User user = User.createUser("test1");
+        User user = User.createUser("user1");
         Vacation vacation = Vacation.createVacation(user, type, grantTime, occurDate, expiryDate, "", "127.0.0.1");
         VacationHistory history = VacationHistory.createRegistVacationHistory(vacation, desc, grantTime, "", "127.0.0.1");
 
@@ -667,7 +668,7 @@ class VacationServiceTest {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime usedDateTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0, 0, 0).plusDays(1);
 
-        User user = User.createUser("test1");
+        User user = User.createUser("user1");
         Vacation vacation = Vacation.createVacation(user, VacationType.ANNUAL, new BigDecimal("4.0000"),
                 LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0),
                 LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59),
@@ -706,7 +707,7 @@ class VacationServiceTest {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime usedDateTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0, 0, 0).plusDays(1);
 
-        User user = User.createUser("test1");
+        User user = User.createUser("user1");
         Vacation vacation = Vacation.createVacation(user, VacationType.ANNUAL, new BigDecimal("4.0000"),
                 LocalDateTime.of(now.getYear()-1, 1, 1, 0, 0, 0),
                 LocalDateTime.of(now.getYear()-1, 12, 31, 23, 59, 59),
@@ -736,7 +737,7 @@ class VacationServiceTest {
         LocalDateTime occurDate = LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0);
         LocalDateTime expiryDate = LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59);
 
-        User user = User.createUser("test1");
+        User user = User.createUser("user1");
         Vacation vacation = Vacation.createVacation(user, type, new BigDecimal("2.0000"), occurDate, expiryDate, "", "127.0.0.1");
         VacationHistory history = VacationHistory.createRegistVacationHistory(vacation, desc, grantTime, "", "127.0.0.1");
 
@@ -761,7 +762,7 @@ class VacationServiceTest {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime usedDateTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0, 0, 0).minusDays(3);
 
-        User user = User.createUser("test1");
+        User user = User.createUser("user1");
         Vacation vacation = Vacation.createVacation(user, VacationType.ANNUAL, new BigDecimal("4.0000"),
                 LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0),
                 LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59),
@@ -781,7 +782,7 @@ class VacationServiceTest {
     @DisplayName("기간별 내역 리스트 조회 테스트 - 성공")
     void getPeriodVacationUseHistoriesSuccessTest() {
         // Given
-        User user = User.createUser("test1");
+        User user = User.createUser("user1");
         Vacation vacation = Vacation.createVacation(user, VacationType.ANNUAL, new BigDecimal("10.0000"),
                 LocalDateTime.of(2025, 1, 1, 0, 0, 0),
                 LocalDateTime.of(2025, 12, 31, 23, 59, 59),
@@ -824,7 +825,7 @@ class VacationServiceTest {
     @DisplayName("기간별 내역 리스트 조회 테스트 - 성공 (연차 그룹)")
     void getPeriodVacationUseHistoriesSuccessTestAnnualGroup() {
         // Given
-        User user = User.createUser("test1");
+        User user = User.createUser("user1");
         Vacation vacation1 = Vacation.createVacation(user, VacationType.ANNUAL, new BigDecimal("10.0000"),
                 LocalDateTime.of(2024, 1, 1, 0, 0, 0),
                 LocalDateTime.of(2024, 12, 31, 23, 59, 59),
@@ -885,7 +886,7 @@ class VacationServiceTest {
     @DisplayName("기간별 내역 리스트 조회 테스트 - 성공 (연차 1건)")
     void getPeriodVacationUseHistoriesSuccessTestOneAnnual() {
         // Given
-        User user = User.createUser("test1");
+        User user = User.createUser("user1");
         Vacation vacation = Vacation.createVacation(user, VacationType.ANNUAL, new BigDecimal("10.0000"),
                 LocalDateTime.of(2025, 1, 1, 0, 0, 0),
                 LocalDateTime.of(2025, 12, 31, 23, 59, 59),
