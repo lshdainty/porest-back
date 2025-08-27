@@ -15,7 +15,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -188,13 +191,26 @@ public class VacationApiController {
             @RequestParam("year") String year) {
         List<VacationServiceDto> histories = vacationService.getUserMonthStatsVacationUseHistories(userId, year);
 
-        List<VacationDto> resp = histories.stream()
-                .map(v -> VacationDto.builder()
-                        .month(v.getMonth())
-                        .usedTime(v.getUsedTime())
-                        .usedTimeStr(VacationTimeType.convertValueToDay(v.getUsedTime()))
-                        .build()
-                )
+        // Group by month
+        Map<Integer, List<VacationServiceDto>> groupedByMonth = histories.stream()
+                .collect(Collectors.groupingBy(VacationServiceDto::getMonth, LinkedHashMap::new, Collectors.toList()));
+
+        List<VacationDto> resp = groupedByMonth.entrySet().stream()
+                .map(entry -> {
+                    List<VacationDto> stats = entry.getValue().stream()
+                            .map(v -> VacationDto.builder()
+                                    .vacationType(v.getType())
+                                    .vacationTypeName(v.getType().getStrName())
+                                    .usedTime(v.getUsedTime())
+                                    .usedTimeStr(VacationTimeType.convertValueToDay(v.getUsedTime()))
+                                    .build())
+                            .toList();
+
+                    return VacationDto.builder()
+                            .month(entry.getKey())
+                            .stats(stats.toArray(new VacationDto[0]))
+                            .build();
+                })
                 .toList();
 
         return ApiResponse.success(resp);
