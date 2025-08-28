@@ -39,7 +39,7 @@ public class InitDB {
             saveMember("user3", "김지후", "ccc@naver.com","19740115", CompanyType.INSIGHTON, DepartmentType.GMES, "10 ~ 7", "Y");
             saveMember("user4", "이준우", "ddd@naver.com","19800430", CompanyType.BIGXDATA, DepartmentType.TABLEAU, "9 ~ 6", "N");
             saveMember("user5", "조민서", "eee@naver.com","19921220", CompanyType.CNTHOTH, DepartmentType.AOI, "10 ~ 7", "N");
-            saveMember("user6", "이하은", "fff@naver.com","18850902", CompanyType.AGS, DepartmentType.GSCM, "8 ~ 5", "N");
+            saveMember("user6", "이하은", "fff@naver.com","18850902", CompanyType.SKAX, DepartmentType.OLIVE, "8 ~ 5", "N");
 
             User user1 = em.find(User.class, "user1");
             User user3 = em.find(User.class, "user3");
