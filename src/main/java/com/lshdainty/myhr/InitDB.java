@@ -506,9 +506,9 @@ public class InitDB {
             saveSchedule(1L, "출장", ScheduleType.BUSINESSTRIP,
                     LocalDateTime.of(now.getYear(), 3, 30, 0, 0, 0),
                     LocalDateTime.of(now.getYear(), 3, 31, 23, 59, 59));
-            saveSchedule(1L, "건강검진", ScheduleType.HEALTHCHECK,
-                    LocalDateTime.of(now.getYear(), 5, 1, 0, 0, 0),
-                    LocalDateTime.of(now.getYear(), 5, 1, 23, 59, 59));
+            saveSchedule(1L, "건강검진(반차)", ScheduleType.HEALTHCHECKHALF,
+                    LocalDateTime.of(now.getYear(), 5, 1, 9, 0, 0),
+                    LocalDateTime.of(now.getYear(), 5, 1, 14, 0, 0));
             saveSchedule(1L, "생일", ScheduleType.BIRTHDAY,
                     LocalDateTime.of(now.getYear(), 5, 1, 0, 0, 0),
                     LocalDateTime.of(now.getYear(), 5, 1, 23, 59, 59));
