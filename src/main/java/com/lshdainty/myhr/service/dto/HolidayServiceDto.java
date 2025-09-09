@@ -1,5 +1,6 @@
 package com.lshdainty.myhr.service.dto;
 
+import com.lshdainty.myhr.type.CountryCode;
 import com.lshdainty.myhr.type.HolidayType;
 import com.lshdainty.myhr.type.YNType;
 import lombok.Builder;
@@ -13,7 +14,7 @@ public class HolidayServiceDto {
     private String name;
     private String date;
     private HolidayType type;
-    private String countryCode;
+    private CountryCode countryCode;
     private YNType lunarYN;
     private YNType isRecurring;
 }

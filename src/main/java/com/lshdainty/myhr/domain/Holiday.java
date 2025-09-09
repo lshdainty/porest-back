@@ -1,5 +1,6 @@
 package com.lshdainty.myhr.domain;
 
+import com.lshdainty.myhr.type.CountryCode;
 import com.lshdainty.myhr.type.HolidayType;
 import com.lshdainty.myhr.type.YNType;
 import jakarta.persistence.*;
@@ -31,9 +32,10 @@ public class Holiday {
     @NotNull
     private HolidayType type;   // 공휴일 타입
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "country_code")
     @NotNull
-    private String countryCode; // 국가 코드
+    private CountryCode countryCode; // 국가 코드
 
     @Enumerated(EnumType.STRING)
     @Column(name = "lunar_yn")
@@ -52,7 +54,7 @@ public class Holiday {
      *
      * @return Dues
      */
-    public static Holiday createHoliday(String name, String date, HolidayType type, String countryCode, YNType lunarYN, YNType isRecurring) {
+    public static Holiday createHoliday(String name, String date, HolidayType type, CountryCode countryCode, YNType lunarYN, YNType isRecurring) {
         Holiday holiday = new Holiday();
         holiday.name = name;
         holiday.date = date;
@@ -68,7 +70,7 @@ public class Holiday {
      * Entity의 경우 Setter없이 Getter만 사용<br>
      * 해당 메소드를 통해 공휴일 수정할 것
      */
-    public void updateHoliday(String name, String date, HolidayType type, String countryCode, YNType lunarYN, YNType isRecurring) {
+    public void updateHoliday(String name, String date, HolidayType type, CountryCode countryCode, YNType lunarYN, YNType isRecurring) {
         if (!Objects.isNull(name)) { this.name = name; }
         if (!Objects.isNull(date)) { this.date = date; }
         if (!Objects.isNull(type)) { this.type = type; }
