@@ -31,7 +31,8 @@ public class HolidayService {
                 data.getCountryCode(),
                 data.getLunarYN(),
                 data.getLunarDate(),
-                data.getIsRecurring()
+                data.getIsRecurring(),
+                data.getIcon()
         );
         holidayRepositoryImpl.save(holiday);
         return holiday.getSeq();
@@ -63,7 +64,8 @@ public class HolidayService {
                 data.getCountryCode(),
                 data.getLunarYN(),
                 data.getLunarDate(),
-                data.getIsRecurring()
+                data.getIsRecurring(),
+                data.getIcon()
         );
     }
 
