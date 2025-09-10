@@ -21,4 +21,5 @@ public class HolidayDto {
     private YNType lunarYN;
     private String lunarDate;
     private YNType isRecurring;
+    private String holidayIcon;
 }

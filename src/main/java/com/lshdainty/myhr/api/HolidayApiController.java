@@ -29,6 +29,7 @@ public class HolidayApiController {
                 .lunarYN(data.getLunarYN())
                 .lunarDate(data.getLunarDate())
                 .isRecurring(data.getIsRecurring())
+                .icon(data.getHolidayIcon())
                 .build()
         );
         return ApiResponse.success(HolidayDto.builder().holidaySeq(holidaySeq).build());
@@ -48,6 +49,7 @@ public class HolidayApiController {
                         .lunarYN(h.getLunarYN())
                         .lunarDate(h.getLunarDate())
                         .isRecurring(h.getIsRecurring())
+                        .holidayIcon(h.getIcon())
                         .build())
                 .collect(Collectors.toList());
 
@@ -68,6 +70,7 @@ public class HolidayApiController {
                         .lunarYN(h.getLunarYN())
                         .lunarDate(h.getLunarDate())
                         .isRecurring(h.getIsRecurring())
+                        .holidayIcon(h.getIcon())
                         .build())
                 .collect(Collectors.toList());
 
@@ -85,6 +88,7 @@ public class HolidayApiController {
                 .lunarYN(data.getLunarYN())
                 .lunarDate(data.getLunarDate())
                 .isRecurring(data.getIsRecurring())
+                .icon(data.getHolidayIcon())
                 .build()
         );
 
@@ -98,6 +102,7 @@ public class HolidayApiController {
                 .lunarYN(findHoliday.getLunarYN())
                 .lunarDate(findHoliday.getLunarDate())
                 .isRecurring(findHoliday.getIsRecurring())
+                .holidayIcon(findHoliday.getIcon())
                 .build());
     }
 

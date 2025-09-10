@@ -51,6 +51,9 @@ public class Holiday {
     @Column(name = "is_recurring")
     private YNType isRecurring; // 반복 여부
 
+    @Column(name = "holiday_icon")
+    private String icon;
+
     /**
      * 공휴일 생성 함수<br>
      * Entity의 경우 Setter없이 Getter만 사용<br>
@@ -58,7 +61,7 @@ public class Holiday {
      *
      * @return Dues
      */
-    public static Holiday createHoliday(String name, String date, HolidayType type, CountryCode countryCode, YNType lunarYN, String lunarDate, YNType isRecurring) {
+    public static Holiday createHoliday(String name, String date, HolidayType type, CountryCode countryCode, YNType lunarYN, String lunarDate, YNType isRecurring, String icon) {
         Holiday holiday = new Holiday();
         holiday.name = name;
         holiday.date = date;
@@ -67,6 +70,7 @@ public class Holiday {
         holiday.lunarYN = lunarYN;
         holiday.lunarDate = lunarDate;
         holiday.isRecurring = isRecurring;
+        holiday.icon = icon;
         return holiday;
     }
 
@@ -75,7 +79,7 @@ public class Holiday {
      * Entity의 경우 Setter없이 Getter만 사용<br>
      * 해당 메소드를 통해 공휴일 수정할 것
      */
-    public void updateHoliday(String name, String date, HolidayType type, CountryCode countryCode, YNType lunarYN, String lunarDate, YNType isRecurring) {
+    public void updateHoliday(String name, String date, HolidayType type, CountryCode countryCode, YNType lunarYN, String lunarDate, YNType isRecurring, String icon) {
         if (!Objects.isNull(name)) { this.name = name; }
         if (!Objects.isNull(date)) { this.date = date; }
         if (!Objects.isNull(type)) { this.type = type; }
@@ -83,5 +87,6 @@ public class Holiday {
         if (!Objects.isNull(lunarYN)) { this.lunarYN = lunarYN; }
         if (!Objects.isNull(lunarDate)) { this.lunarDate = lunarDate; }
         if (!Objects.isNull(isRecurring)) { this.isRecurring = isRecurring; }
+        if (!Objects.isNull(icon)) { this.icon = icon; }
     }
 }
