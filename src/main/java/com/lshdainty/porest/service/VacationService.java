@@ -311,7 +311,7 @@ public class VacationService {
     }
 
     public List<VacationPolicyServiceDto> getVacationPolicies() {
-
+        return List.of();
     }
 
     private List<VacationServiceDto> makeDayGroupDto(List<VacationHistory> dayHistories) {

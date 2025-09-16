@@ -10,8 +10,11 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.hibernate.annotations.BatchSize;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @ToString
 @Entity
@@ -62,6 +65,11 @@ public class VacationPolicy extends AuditingFields {
 
     @Column(name = "is_deleted")
     private YNType isDeleted;               // 삭제 여부
+
+    @BatchSize(size = 100)
+    @OneToMany(mappedBy = "vacationPolicy", cascade = CascadeType.ALL)
+    private List<UserVacationPolicy> userVacationPolicies = new ArrayList<>();
+
 
     /**
      * 휴가 정책 생성 함수<br>

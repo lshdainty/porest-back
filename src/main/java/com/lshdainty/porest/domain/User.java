@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -61,11 +62,13 @@ public class User {
     @Column(name = "del_yn")
     private String delYN; // 삭제여부
 
-    @OneToMany(mappedBy = "user")   // JPA에서는 mappedBy는 읽기 전용
-    private List<Vacation> vacations  =  new ArrayList<>();
+    @BatchSize(size = 100)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)   // JPA에서는 mappedBy는 읽기 전용
+    private List<Vacation> vacations = new ArrayList<>();
 
-    @OneToOne(mappedBy = "user_vacation_policy")
-    private UserVacationPolicy policies;
+    @BatchSize(size = 100)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<UserVacationPolicy> userVacationPolicies = new ArrayList<>();
 
     /**
      * 유저 생성 함수<br>

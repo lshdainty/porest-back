@@ -4,7 +4,6 @@ import com.lshdainty.porest.domain.VacationPolicy;
 import com.lshdainty.porest.repository.VacationPolicyCustomRepositoryImpl;
 import com.lshdainty.porest.service.VacationService;
 import com.lshdainty.porest.service.dto.VacationPolicyServiceDto;
-import com.lshdainty.porest.type.vacation.RepeatUnit;
 import org.springframework.context.MessageSource;
 
 import java.util.Objects;
