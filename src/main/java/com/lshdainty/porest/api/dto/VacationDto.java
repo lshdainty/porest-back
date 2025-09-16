@@ -3,8 +3,7 @@ package com.lshdainty.porest.api.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.lshdainty.porest.type.vacation.VacationTimeType;
-import com.lshdainty.porest.type.vacation.VacationType;
+import com.lshdainty.porest.type.vacation.*;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -91,4 +90,16 @@ public class VacationDto {
     private BigDecimal usedTimeGap;
     // 전달 - 현재 사용 차이 문자열 (1일 1시간)
     private String usedTimeGapStr;
+
+    // 휴가 정책 리스트
+    private Long vacationPolicyId;
+    private String vacationPolicyName;
+    private String vacationPolicyDesc;
+    private GrantMethod grantMethod;
+    // grantTime 위에 존재
+    private RepeatUnit repeatUnit;
+    private Integer repeatInterval;
+    private GrantTiming grantTiming;
+    private Integer specificMonths;
+    private Integer specificDays;
 }

@@ -311,7 +311,22 @@ public class VacationService {
     }
 
     public List<VacationPolicyServiceDto> getVacationPolicies() {
-        return List.of();
+        List<VacationPolicy> policies = vacationPolicyRepository.findVacationPolicies();
+        return policies.stream()
+                .map(p -> VacationPolicyServiceDto.builder()
+                        .id(p.getId())
+                        .name(p.getName())
+                        .desc(p.getDesc())
+                        .vacationType(p.getVacationType())
+                        .grantMethod(p.getGrantMethod())
+                        .grantTime(p.getGrantTime())
+                        .repeatUnit(p.getRepeatUnit())
+                        .repeatInterval(p.getRepeatInterval())
+                        .grantTiming(p.getGrantTiming())
+                        .specificMonths(p.getSpecificMonths())
+                        .specificDays(p.getSpecificDays())
+                        .build())
+                .toList();
     }
 
     private List<VacationServiceDto> makeDayGroupDto(List<VacationHistory> dayHistories) {

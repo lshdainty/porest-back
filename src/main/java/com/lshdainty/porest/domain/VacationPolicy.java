@@ -60,9 +60,11 @@ public class VacationPolicy extends AuditingFields {
     @Column(name = "specific_days")
     private Integer specificDays;           // 특정 일 지정
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "can_deleted")
     private YNType canDeleted;              // 삭제 가능 여부
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "is_deleted")
     private YNType isDeleted;               // 삭제 여부
 
@@ -70,6 +72,17 @@ public class VacationPolicy extends AuditingFields {
     @OneToMany(mappedBy = "vacationPolicy", cascade = CascadeType.ALL)
     private List<UserVacationPolicy> userVacationPolicies = new ArrayList<>();
 
+    // 개발용
+    public void updateCantDeleted() {
+        this.canDeleted = YNType.N;
+        this.isDeleted = YNType.N;
+    }
+
+    // 개발용
+    public void updateCanDeleted() {
+        this.canDeleted = YNType.Y;
+        this.isDeleted = YNType.N;
+    }
 
     /**
      * 휴가 정책 생성 함수<br>

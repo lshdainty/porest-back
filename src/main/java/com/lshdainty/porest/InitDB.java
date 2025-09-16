@@ -605,6 +605,11 @@ public class InitDB {
         public void saveVacationPolicy(String name, String desc, VacationType vacationType, GrantMethod grantMethod, BigDecimal grantTime, RepeatUnit repeatUnit, Integer repeatInterval, GrantTiming grantTiming, Integer specificMonths, Integer specificDays) {
             VacationPolicy vacationPolicy = VacationPolicy.createVacationPolicy(name, desc, vacationType, grantMethod, grantTime, repeatUnit, repeatInterval, grantTiming, specificMonths, specificDays);
             em.persist(vacationPolicy);
+            if (vacationPolicy.getGrantMethod().equals(GrantMethod.MANUAL_GRANT)) {
+                vacationPolicy.updateCantDeleted();
+            } else {
+                vacationPolicy.updateCanDeleted();
+            }
         }
     }
 }

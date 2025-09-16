@@ -2,6 +2,7 @@ package com.lshdainty.porest.api;
 
 import com.lshdainty.porest.domain.User;
 import com.lshdainty.porest.domain.Vacation;
+import com.lshdainty.porest.service.dto.VacationPolicyServiceDto;
 import com.lshdainty.porest.type.vacation.VacationTimeType;
 import com.lshdainty.porest.api.dto.UserDto;
 import com.lshdainty.porest.api.dto.VacationDto;
@@ -226,5 +227,27 @@ public class VacationApiController {
                 .usedTimeGapStr(VacationTimeType.convertValueToDay(stats.getUsedTime().subtract(stats.getPrevUsedTime()).abs()))
                 .build()
         );
+    }
+
+    @GetMapping("/api/v1/vacation/policies")
+    public ApiResponse getVacationPolicies() {
+        List<VacationPolicyServiceDto> policies = vacationService.getVacationPolicies();
+
+        List<VacationDto> resp = policies.stream()
+                .map(vp -> VacationDto.builder()
+                        .vacationPolicyId(vp.getId())
+                        .vacationPolicyName(vp.getName())
+                        .vacationPolicyDesc(vp.getDesc())
+                        .grantMethod(vp.getGrantMethod())
+                        .grantTime(vp.getGrantTime())
+                        .repeatUnit(vp.getRepeatUnit())
+                        .repeatInterval(vp.getRepeatInterval())
+                        .grantTiming(vp.getGrantTiming())
+                        .specificMonths(vp.getSpecificMonths())
+                        .specificDays(vp.getSpecificDays())
+                        .build())
+                .toList();
+
+        return ApiResponse.success(resp);
     }
 }
