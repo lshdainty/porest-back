@@ -500,22 +500,22 @@ public class InitDB {
 
         public void initSetSchedule() {
             LocalDateTime now = LocalDateTime.now();
-            saveSchedule(1L, "교육", ScheduleType.EDUCATION,
+            saveSchedule("user1", "교육", ScheduleType.EDUCATION,
                     LocalDateTime.of(now.getYear(), 5, 1, 0, 0, 0),
                     LocalDateTime.of(now.getYear(), 5, 3, 23, 59, 59));
-            saveSchedule(1L, "예비군", ScheduleType.DEFENSE,
+            saveSchedule("user1", "예비군", ScheduleType.DEFENSE,
                     LocalDateTime.of(now.getYear(), 2, 23, 0, 0, 0),
                     LocalDateTime.of(now.getYear(), 2, 28, 23, 59, 59));
-            saveSchedule(1L, "출장", ScheduleType.BUSINESSTRIP,
+            saveSchedule("user1", "출장", ScheduleType.BUSINESSTRIP,
                     LocalDateTime.of(now.getYear(), 3, 30, 0, 0, 0),
                     LocalDateTime.of(now.getYear(), 3, 31, 23, 59, 59));
-            saveSchedule(1L, "건강검진(반차)", ScheduleType.HEALTHCHECKHALF,
+            saveSchedule("user1", "건강검진(반차)", ScheduleType.HEALTHCHECKHALF,
                     LocalDateTime.of(now.getYear(), 5, 1, 9, 0, 0),
                     LocalDateTime.of(now.getYear(), 5, 1, 14, 0, 0));
-            saveSchedule(1L, "생일", ScheduleType.BIRTHDAY,
+            saveSchedule("user1", "생일", ScheduleType.BIRTHDAY,
                     LocalDateTime.of(now.getYear(), 5, 1, 0, 0, 0),
                     LocalDateTime.of(now.getYear(), 5, 1, 23, 59, 59));
-            saveSchedule(1L, "출장", ScheduleType.BUSINESSTRIP,
+            saveSchedule("user1", "출장", ScheduleType.BUSINESSTRIP,
                     LocalDateTime.of(now.getYear(), 5, 1, 0, 0, 0),
                     LocalDateTime.of(now.getYear(), 5, 1, 23, 59, 59));
         }
@@ -591,8 +591,8 @@ public class InitDB {
             em.persist(holiday);
         }
 
-        public void saveSchedule(Long userNo, String desc, ScheduleType type, LocalDateTime startDate, LocalDateTime endDate) {
-            User user = em.find(User.class, userNo);
+        public void saveSchedule(String userId, String desc, ScheduleType type, LocalDateTime startDate, LocalDateTime endDate) {
+            User user = em.find(User.class, userId);
             Schedule schedule = Schedule.createSchedule(user, desc, type, startDate, endDate, "", "127.0.0.1");
             em.persist(schedule);
         }

@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum ScheduleType {
+public enum ScheduleType implements DisplayType {
     EDUCATION("교육"),
     BIRTHDAY("생일"),
     BUSINESSTRIP("출장"),
@@ -19,4 +19,7 @@ public enum ScheduleType {
     ScheduleType(String typeName) {
         this.strName = typeName;
     }
+
+    @Override
+    public String getViewName() {return this.strName;}
 }

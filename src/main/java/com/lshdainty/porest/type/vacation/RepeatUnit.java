@@ -1,6 +1,8 @@
 package com.lshdainty.porest.type.vacation;
 
-public enum RepeatUnit {
+import com.lshdainty.porest.type.DisplayType;
+
+public enum RepeatUnit implements DisplayType {
     YEARLY("매년"),
     MONTHLY("매월"),
     DAYLY("매일"),
@@ -13,5 +15,6 @@ public enum RepeatUnit {
         this.strName = strName;
     }
 
-    public String getStrName() {return strName;}
+    @Override
+    public String getViewName() {return strName;}
 }

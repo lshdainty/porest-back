@@ -1,6 +1,8 @@
 package com.lshdainty.porest.type.vacation;
 
-public enum GrantTiming {
+import com.lshdainty.porest.type.DisplayType;
+
+public enum GrantTiming implements DisplayType {
     FIXED_DATE("고정 날짜"),
     SPECIFIC_MONTH("특정 월"),
     SPECIFIC_DAY("특정 일"),
@@ -14,5 +16,6 @@ public enum GrantTiming {
         this.strName = strName;
     }
 
-    public String getStrName() {return strName;}
+    @Override
+    public String getViewName() {return strName;}
 }

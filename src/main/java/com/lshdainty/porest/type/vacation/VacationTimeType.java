@@ -1,5 +1,6 @@
 package com.lshdainty.porest.type.vacation;
 
+import com.lshdainty.porest.type.DisplayType;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -8,7 +9,7 @@ import java.util.function.Function;
 
 @Getter
 @RequiredArgsConstructor
-public enum VacationTimeType {
+public enum VacationTimeType implements DisplayType {
     DAYOFF("연차", 24*60*60L-1L, dayDiff -> dayDiff.multiply(BigDecimal.valueOf(1.0000))),
     MORNINGOFF("오전반차", 4*60*60L, dayDiff -> dayDiff.multiply(BigDecimal.valueOf(0.5000))),
     AFTERNOONOFF("오후반차", 4*60*60L, dayDiff -> dayDiff.multiply(BigDecimal.valueOf(0.5000))),
@@ -30,6 +31,9 @@ public enum VacationTimeType {
         this.expression = expression;
 
     }
+
+    @Override
+    public String getViewName() {return strName;}
 
     public Long getSeconds() {
         return seconds;

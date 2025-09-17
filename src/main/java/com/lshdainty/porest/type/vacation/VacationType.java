@@ -1,6 +1,8 @@
 package com.lshdainty.porest.type.vacation;
 
-public enum VacationType {
+import com.lshdainty.porest.type.DisplayType;
+
+public enum VacationType implements DisplayType {
     ANNUAL("연차"),
     MATERNITY("출산"),
     WEDDING("결혼"),
@@ -15,5 +17,6 @@ public enum VacationType {
         this.strName = strName;
     }
 
-    public String getStrName() {return strName;}
+    @Override
+    public String getViewName() {return strName;}
 }
