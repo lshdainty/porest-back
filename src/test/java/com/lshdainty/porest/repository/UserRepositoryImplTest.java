@@ -2,8 +2,9 @@ package com.lshdainty.porest.repository;
 
 import com.lshdainty.porest.domain.User;
 import com.lshdainty.porest.domain.Vacation;
-import com.lshdainty.porest.type.CompanyType;
+import com.lshdainty.porest.type.OriginCompanyType;
 import com.lshdainty.porest.type.DepartmentType;
+import com.lshdainty.porest.type.YNType;
 import com.lshdainty.porest.type.vacation.VacationType;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
@@ -42,12 +43,11 @@ class UserRepositoryImplTest {
         String pwd = "";
         String email = "";
         String birth = "19700204";
-        CompanyType company = CompanyType.SKAX;
-        DepartmentType department = DepartmentType.SKC;
+        OriginCompanyType company = OriginCompanyType.SKAX;
         String workTime = "9 ~ 6";
-        String lunarYN = "N";
+        YNType lunarYN = YNType.N;
 
-        User user = User.createUser(id, pwd, name, email, birth, company, department, workTime, lunarYN);
+        User user = User.createUser(id, pwd, name, email, birth, company, workTime, lunarYN, null, null);
 
         // when
         userRepositoryImpl.save(user);
@@ -63,7 +63,6 @@ class UserRepositoryImplTest {
         assertThat(findUser.get().getEmail()).isEqualTo(email);
         assertThat(findUser.get().getBirth()).isEqualTo(birth);
         assertThat(findUser.get().getCompany()).isEqualTo(company);
-        assertThat(findUser.get().getDepartment()).isEqualTo(department);
         assertThat(findUser.get().getWorkTime()).isEqualTo(workTime);
         assertThat(findUser.get().getLunarYN()).isEqualTo(lunarYN);
     }
@@ -85,10 +84,10 @@ class UserRepositoryImplTest {
     @DisplayName("delYN이 N인 모든 유저가 보여야한다.")
     void getUsers() {
         // given
-        User user1 = User.createUser("user1", "", "", "", "", CompanyType.SKAX, DepartmentType.SKC, "", "");
-        User user2 = User.createUser("user2", "", "", "", "", CompanyType.SKAX, DepartmentType.SKC, "", "");
-        User user3 = User.createUser("user3", "", "", "", "", CompanyType.SKAX, DepartmentType.SKC, "", "");
-        User user4 = User.createUser("user4", "", "", "", "", CompanyType.SKAX, DepartmentType.SKC, "", "");
+        User user1 = User.createUser("user1", "", "", "", "", OriginCompanyType.SKAX, "", YNType.N, null, null);
+        User user2 = User.createUser("user2", "", "", "", "", OriginCompanyType.SKAX, "", YNType.N, null, null);
+        User user3 = User.createUser("user3", "", "", "", "", OriginCompanyType.SKAX, "", YNType.N, null, null);
+        User user4 = User.createUser("user4", "", "", "", "", OriginCompanyType.SKAX, "", YNType.N, null, null);
         List<User> users = List.of(user1, user2, user3, user4);
 
         for (User user : users) {
@@ -118,10 +117,10 @@ class UserRepositoryImplTest {
     @Test
     @DisplayName("delYN이 N인 모든 유저가 보여야한다. (vacation fetch join)")
     void getUsersWithVacations() {
-        User user1 = User.createUser("user1", "", "", "", "", CompanyType.SKAX, DepartmentType.SKC, "", "");
-        User user2 = User.createUser("user2", "", "", "", "", CompanyType.SKAX, DepartmentType.SKC, "", "");
-        User user3 = User.createUser("user3", "", "", "", "", CompanyType.SKAX, DepartmentType.SKC, "", "");
-        User user4 = User.createUser("user4", "", "", "", "", CompanyType.SKAX, DepartmentType.SKC, "", "");
+        User user1 = User.createUser("user1", "", "", "", "", OriginCompanyType.SKAX, "", YNType.N, null, null);
+        User user2 = User.createUser("user2", "", "", "", "", OriginCompanyType.SKAX, "", YNType.N, null, null);
+        User user3 = User.createUser("user3", "", "", "", "", OriginCompanyType.SKAX, "", YNType.N, null, null);
+        User user4 = User.createUser("user4", "", "", "", "", OriginCompanyType.SKAX, "", YNType.N, null, null);
         List<User> users = List.of(user1, user2, user3, user4);
 
         for (User user : users) {
@@ -142,7 +141,7 @@ class UserRepositoryImplTest {
     @DisplayName("삭제된 유저는 delYN 상태값이 Y여야 한다.")
     void deleteUser() {
         // given
-        User user = User.createUser("user1", "", "", "", "", CompanyType.SKAX, DepartmentType.SKC, "", "");
+        User user = User.createUser("user1", "", "", "", "", OriginCompanyType.SKAX, "", YNType.N, null, null);
         userRepositoryImpl.save(user);
 
         // when
@@ -153,7 +152,7 @@ class UserRepositoryImplTest {
 
         // then
         assertThat(findUser.isPresent()).isTrue();
-        assertThat(findUser.get().getDelYN()).isEqualTo("Y");
+        assertThat(findUser.get().getDelYN()).isEqualTo(YNType.Y);
     }
 
     @Test
@@ -165,19 +164,18 @@ class UserRepositoryImplTest {
         String pwd = "";
         String email = "";
         String birth = "19700204";
-        CompanyType company = CompanyType.SKAX;
-        DepartmentType department = DepartmentType.SKC;
+        OriginCompanyType company = OriginCompanyType.SKAX;
         String workTime = "9 ~ 6";
-        String lunarYN = "N";
+        YNType lunarYN = YNType.N;
 
-        User user = User.createUser(id, pwd, name, email, birth, company, department, workTime, lunarYN);
+        User user = User.createUser(id, pwd, name, email, birth, company, workTime, lunarYN, null, null);
         userRepositoryImpl.save(user);
 
         name = "이서준";
         workTime = "10 ~ 7";
 
         // when
-        user.updateUser(name, null, null, null, null, null, workTime, null);
+        user.updateUser(name, null, null, null, null, workTime, null, null, null);
         em.flush();
         em.clear();
         Optional<User> findUser = userRepositoryImpl.findById(user.getId());
@@ -190,7 +188,6 @@ class UserRepositoryImplTest {
         assertThat(findUser.get().getEmail()).isEqualTo(email);
         assertThat(findUser.get().getBirth()).isEqualTo(birth);
         assertThat(findUser.get().getCompany()).isEqualTo(company);
-        assertThat(findUser.get().getDepartment()).isEqualTo(department);
         assertThat(findUser.get().getWorkTime()).isEqualTo(workTime);
         assertThat(findUser.get().getLunarYN()).isEqualTo(lunarYN);
     }
@@ -252,9 +249,9 @@ class UserRepositoryImplTest {
     @DisplayName("유저를 조회할 때 휴가가 없어도 에러가 발생하면 안된다. (vacation fetch join)")
     void getUserWithVacationsEmpty() {
         // given
-        User userA = User.createUser("user1", "", "", "", "", CompanyType.SKAX, DepartmentType.SKC, "", "");
-        User userB = User.createUser("user2", "", "", "", "", CompanyType.SKAX, DepartmentType.SKC, "", "");
-        User userC = User.createUser("user3", "", "", "", "", CompanyType.SKAX, DepartmentType.SKC, "", "");
+        User userA = User.createUser("user1", "", "", "", "", OriginCompanyType.SKAX, "", YNType.N, null, null);
+        User userB = User.createUser("user2", "", "", "", "", OriginCompanyType.SKAX, "", YNType.N, null, null);
+        User userC = User.createUser("user3", "", "", "", "", OriginCompanyType.SKAX, "", YNType.N, null, null);
         userRepositoryImpl.save(userA);
         userRepositoryImpl.save(userB);
         userRepositoryImpl.save(userC);

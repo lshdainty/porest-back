@@ -3,7 +3,7 @@ package com.lshdainty.porest.service;
 import com.lshdainty.porest.domain.User;
 import com.lshdainty.porest.repository.UserRepositoryImpl;
 import com.lshdainty.porest.service.dto.UserServiceDto;
-import com.lshdainty.porest.type.CompanyType;
+import com.lshdainty.porest.type.OriginCompanyType;
 import com.lshdainty.porest.type.DepartmentType;
 import com.lshdainty.porest.util.PorestFile;
 import lombok.extern.slf4j.Slf4j;
@@ -169,7 +169,7 @@ class UserServiceTest {
         // Given
         String id = "user1";
         String name = "이서준";
-        User user = User.createUser(id, "", name, "", "", CompanyType.SKAX, DepartmentType.SKC, "", "");
+        User user = User.createUser(id, "", name, "", "", OriginCompanyType.SKAX, DepartmentType.SKC, "", "");
 
         given(userRepositoryImpl.findById(id)).willReturn(Optional.of(user));
 
@@ -191,7 +191,7 @@ class UserServiceTest {
         String name = "이서준";
         String profileName = "profile.png";
         String profileUUID = "some-uuid-1234";
-        User user = User.createUser(id, "", name, "", "", CompanyType.SKAX, DepartmentType.SKC, "", "", profileName, profileUUID);
+        User user = User.createUser(id, "", name, "", "", OriginCompanyType.SKAX, DepartmentType.SKC, "", "", profileName, profileUUID);
 
         given(userRepositoryImpl.findById(id)).willReturn(Optional.of(user));
 
@@ -234,7 +234,7 @@ class UserServiceTest {
     void findUserFailTestDeletedUser() {
         // Given
         String id = "user1";
-        User user = User.createUser(id, "", "", "", "", CompanyType.SKAX, DepartmentType.SKC, "", "");
+        User user = User.createUser(id, "", "", "", "", OriginCompanyType.SKAX, DepartmentType.SKC, "", "");
         user.deleteUser();
 
         given(userRepositoryImpl.findById(id)).willReturn(Optional.of(user));
@@ -253,9 +253,9 @@ class UserServiceTest {
     void findUsersSuccessTest() {
         // Given
         given(userRepositoryImpl.findUsers()).willReturn(List.of(
-                User.createUser("user1", "", "이서준", "", "", CompanyType.SKAX, DepartmentType.SKC, "", ""),
-                User.createUser("user2", "", "김서연", "", "", CompanyType.SKAX, DepartmentType.SKC, "", ""),
-                User.createUser("user3", "", "김지후", "", "", CompanyType.SKAX, DepartmentType.SKC, "", "")
+                User.createUser("user1", "", "이서준", "", "", OriginCompanyType.SKAX, DepartmentType.SKC, "", ""),
+                User.createUser("user2", "", "김서연", "", "", OriginCompanyType.SKAX, DepartmentType.SKC, "", ""),
+                User.createUser("user3", "", "김지후", "", "", OriginCompanyType.SKAX, DepartmentType.SKC, "", "")
         ));
 
         // When
@@ -288,7 +288,7 @@ class UserServiceTest {
     void editUserSuccessTest() {
         // Given
         String id = "user1";
-        User user = User.createUser(id, "", "", "", "", CompanyType.SKAX, DepartmentType.SKC, "", "");
+        User user = User.createUser(id, "", "", "", "", OriginCompanyType.SKAX, DepartmentType.SKC, "", "");
 
         setUserId(user, id);
         given(userRepositoryImpl.findById(id)).willReturn(Optional.of(user));
@@ -313,7 +313,7 @@ class UserServiceTest {
     void editUserWithProfileSuccessTest() {
         // Given
         String id = "user1";
-        User user = User.createUser(id, "", "", "", "", CompanyType.SKAX, DepartmentType.SKC, "", "", "old.jpg", "old-uuid");
+        User user = User.createUser(id, "", "", "", "", OriginCompanyType.SKAX, DepartmentType.SKC, "", "", "old.jpg", "old-uuid");
         given(userRepositoryImpl.findById(id)).willReturn(Optional.of(user));
 
         UserServiceDto dto = UserServiceDto.builder()
@@ -348,7 +348,7 @@ class UserServiceTest {
         // Given
         String id = "user1";
         String existingUUID = "existing-uuid";
-        User user = User.createUser(id, "", "", "", "", CompanyType.SKAX, DepartmentType.SKC, "", "", "old.jpg", existingUUID);
+        User user = User.createUser(id, "", "", "", "", OriginCompanyType.SKAX, DepartmentType.SKC, "", "", "old.jpg", existingUUID);
         given(userRepositoryImpl.findById(id)).willReturn(Optional.of(user));
 
         UserServiceDto dto = UserServiceDto.builder()
@@ -391,7 +391,7 @@ class UserServiceTest {
     void deleteUserSuccessTest() {
         // Given
         String id = "user1";
-        User user = User.createUser(id, "", "", "", "", CompanyType.SKAX, DepartmentType.SKC, "", "");
+        User user = User.createUser(id, "", "", "", "", OriginCompanyType.SKAX, DepartmentType.SKC, "", "");
 
         setUserId(user, id);
         given(userRepositoryImpl.findById(id)).willReturn(Optional.of(user));
@@ -522,7 +522,7 @@ class UserServiceTest {
     void checkUserExistSuccessTest() {
         // Given
         String id = "user1";
-        User user = User.createUser(id, "", "테스트유저", "", "", CompanyType.SKAX, DepartmentType.SKC, "", "");
+        User user = User.createUser(id, "", "테스트유저", "", "", OriginCompanyType.SKAX, DepartmentType.SKC, "", "");
         given(userRepositoryImpl.findById(id)).willReturn(Optional.of(user));
 
         // When
@@ -539,7 +539,7 @@ class UserServiceTest {
     void checkUserExistFailDeletedUserTest() {
         // Given
         String id = "user1";
-        User user = User.createUser(id, "", "테스트유저", "", "", CompanyType.SKAX, DepartmentType.SKC, "", "");
+        User user = User.createUser(id, "", "테스트유저", "", "", OriginCompanyType.SKAX, DepartmentType.SKC, "", "");
         user.deleteUser(); // 유저 삭제
 
         given(userRepositoryImpl.findById(id)).willReturn(Optional.of(user));

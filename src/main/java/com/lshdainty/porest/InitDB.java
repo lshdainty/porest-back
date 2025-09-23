@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -22,6 +23,7 @@ public class InitDB {
     @PostConstruct
     public void init() {
         initService.initSetMember();
+        initService.initSetDepartment();
         initService.initSetHoliday();
         initService.initSetVacation();
         initService.initSetSchedule();
@@ -36,18 +38,35 @@ public class InitDB {
         private final EntityManager em;
 
         public void initSetMember() {
-            saveMember("user1", "이서준", "aaa@naver.com","19700723", CompanyType.SKAX, DepartmentType.SKC, "9 ~ 6", "N");
-            saveMember("user2", "김서연", "bbb@naver.com","19701026", CompanyType.DTOL, DepartmentType.MYDATA, "8 ~ 5",  "N");
-            saveMember("user3", "김지후", "ccc@naver.com","19740115", CompanyType.INSIGHTON, DepartmentType.GMES, "10 ~ 7", "Y");
-            saveMember("user4", "이준우", "ddd@naver.com","19800430", CompanyType.BIGXDATA, DepartmentType.TABLEAU, "9 ~ 6", "N");
-            saveMember("user5", "조민서", "eee@naver.com","19921220", CompanyType.CNTHOTH, DepartmentType.AOI, "10 ~ 7", "N");
-            saveMember("user6", "이하은", "fff@naver.com","18850902", CompanyType.SKAX, DepartmentType.OLIVE, "8 ~ 5", "N");
+            saveMember("user1", "이서준", "aaa@naver.com","19700723", OriginCompanyType.SKAX, "9 ~ 6", YNType.N);
+            saveMember("user2", "김서연", "bbb@naver.com","19701026", OriginCompanyType.DTOL, "8 ~ 5",  YNType.N);
+            saveMember("user3", "김지후", "ccc@naver.com","19740115", OriginCompanyType.INSIGHTON, "10 ~ 7", YNType.Y);
+            saveMember("user4", "이준우", "ddd@naver.com","19800430", OriginCompanyType.BIGXDATA, "9 ~ 6", YNType.N);
+            saveMember("user5", "조민서", "eee@naver.com","19921220", OriginCompanyType.CNTHOTH, "10 ~ 7", YNType.N);
+            saveMember("user6", "이하은", "fff@naver.com","18850902", OriginCompanyType.SKAX, "8 ~ 5", YNType.N);
 
             User user1 = em.find(User.class, "user1");
             User user3 = em.find(User.class, "user3");
 
-            user1.updateUser(user1.getName(), user1.getEmail(), RoleType.ADMIN, user1.getBirth(), user1.getCompany(), user1.getDepartment(), user1.getWorkTime(), user1.getLunarYN());
-            user3.updateUser(user3.getName(), user3.getEmail(), RoleType.ADMIN, user3.getBirth(), user3.getCompany(), user3.getDepartment(), user3.getWorkTime(), user3.getLunarYN());
+            user1.updateUser(user1.getName(), user1.getEmail(), RoleType.ADMIN, user1.getBirth(), user1.getCompany(), user1.getWorkTime(), user1.getLunarYN(), null, null);
+            user3.updateUser(user3.getName(), user3.getEmail(), RoleType.ADMIN, user3.getBirth(), user3.getCompany(), user3.getWorkTime(), user3.getLunarYN(), null, null);
+        }
+
+        public void initSetDepartment() {
+            Company company = Company.createCompany("SKC", "SKC", "SKC입니다.");
+            em.persist(company);
+
+            Department parent = saveDepartment("생산운영", "생산운영", null, 0L, "mes 생산운영 파트입니다.", company);
+            saveDepartment("Olive", "Olive", parent, 1L, "울산 운영 부서입니다.", company);
+            Department mes = saveDepartment("G-MES", "G-MES", parent, 1L, "G-MES 부서입니다.", company);
+            saveDepartment("G-MESJ", "G-MESJ", mes, 1L, "정읍 G-MES 파트입니다.", company);
+            saveDepartment("G-MESM", "G-MESM", mes, 1L, "말련 G-MES 파트입니다.", company);
+            saveDepartment("G-SCM", "G-SCM", parent, 1L, "G-SCM 부서입니다.", company);
+            Department dt = saveDepartment("DT", "DT", parent, 1L, "SKC DT 부서입니다.", company);
+            saveDepartment("myDATA", "myDATA", dt, 1L, "myDATA 파트입니다.", company);
+            saveDepartment("Tableau", "Tableau", dt, 1L, "Tableau 파트입니다.", company);
+            saveDepartment("AOI", "AOI", dt, 1L, "AOI 파트입니다.", company);
+            saveDepartment("CMP", "CMP", parent, 1L, "CMP 부서입니다.", company);
         }
 
         public void initSetHoliday() {
@@ -581,9 +600,15 @@ public class InitDB {
             saveVacationPolicy("조사", "빙부상, 빙모상, 시부상, 시모상에 대한 휴가 정책입니다.", VacationType.BEREAVEMENT, GrantMethod.ON_REQUEST, new BigDecimal("3.0000"), null, null, null, null, null);
         }
 
-        public void saveMember(String id, String name, String email, String birth, CompanyType company, DepartmentType department, String workTime, String lunar) {
-            User user = User.createUser(id, "", name, email, birth, company, department, workTime, lunar);
+        public void saveMember(String id, String name, String email, String birth, OriginCompanyType company, String workTime, YNType lunar) {
+            User user = User.createUser(id, "", name, email, birth, company, workTime, lunar, null, null);
             em.persist(user);
+        }
+
+        public Department saveDepartment(String name, String nameKR, Department parent, Long level, String desc, Company company) {
+            Department department = Department.createDepartment(name, nameKR, parent, null, level, desc, company);
+            em.persist(department);
+            return department;
         }
 
         public void saveHoliday(String name, String date, HolidayType type, CountryCode countryCode, YNType lunarYN, String lunarDate, YNType isRecurring, String icon) {

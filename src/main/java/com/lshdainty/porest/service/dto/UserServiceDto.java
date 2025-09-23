@@ -1,8 +1,9 @@
 package com.lshdainty.porest.service.dto;
 
-import com.lshdainty.porest.type.CompanyType;
+import com.lshdainty.porest.type.OriginCompanyType;
 import com.lshdainty.porest.type.DepartmentType;
 import com.lshdainty.porest.type.RoleType;
+import com.lshdainty.porest.type.YNType;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,9 +18,8 @@ public class UserServiceDto {
     private RoleType role;
     private String birth;
     private String workTime;
-    private CompanyType company;
-    private DepartmentType department;
-    private String lunarYN;
+    private OriginCompanyType company;
+    private YNType lunarYN;
 
     private String profileName;
     private String profileUrl;

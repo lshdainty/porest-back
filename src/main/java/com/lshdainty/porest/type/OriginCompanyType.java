@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum CompanyType {
+public enum OriginCompanyType {
     SKAX("SK AX"),
     DTOL("디투엘"),
     INSIGHTON("인사이트온"),
@@ -15,5 +15,5 @@ public enum CompanyType {
 
     private String companyName;
 
-    CompanyType(String companyName) { this.companyName = companyName; }
+    OriginCompanyType(String companyName) { this.companyName = companyName; }
 }

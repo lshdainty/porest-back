@@ -3,9 +3,10 @@ package com.lshdainty.porest.api.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.lshdainty.porest.type.CompanyType;
+import com.lshdainty.porest.type.OriginCompanyType;
 import com.lshdainty.porest.type.DepartmentType;
 import com.lshdainty.porest.type.RoleType;
+import com.lshdainty.porest.type.YNType;
 import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,10 +24,9 @@ public class UserDto {
     private String userBirth;
     private String userWorkTime;
     private RoleType userRoleType;
-    private CompanyType userCompanyType;
-    private DepartmentType userDepartmentType;
-    private String lunarYN;
-    private String delYN;
+    private OriginCompanyType userOriginCompanyType;
+    private YNType lunarYN;
+    private YNType delYN;
 
     private List<VacationDto> vacations;
 

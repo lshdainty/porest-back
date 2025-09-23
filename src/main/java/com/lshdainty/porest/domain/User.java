@@ -1,8 +1,8 @@
 package com.lshdainty.porest.domain;
 
-import com.lshdainty.porest.type.CompanyType;
-import com.lshdainty.porest.type.DepartmentType;
+import com.lshdainty.porest.type.OriginCompanyType;
 import com.lshdainty.porest.type.RoleType;
+import com.lshdainty.porest.type.YNType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -43,12 +43,8 @@ public class User {
     private String workTime; // 유연근무제
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "user_company")
-    private CompanyType company; // 유저 소속 회사
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "user_department")
-    private DepartmentType department; // 유저 소속 부서
+    @Column(name = "user_origin_company")
+    private OriginCompanyType company; // 유저 원소속 회사
 
     @Column(name = "profile_name")
     private String profileName;
@@ -56,11 +52,13 @@ public class User {
     @Column(name = "profile_uuid")
     private String profileUUID;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "lunar_yn")
-    private String lunarYN; // 음력여부
+    private YNType lunarYN; // 음력여부
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "del_yn")
-    private String delYN; // 삭제여부
+    private YNType delYN; // 삭제여부
 
     @BatchSize(size = 100)
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)   // JPA에서는 mappedBy는 읽기 전용
@@ -70,6 +68,10 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<UserVacationPolicy> userVacationPolicies = new ArrayList<>();
 
+    @BatchSize(size = 100)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<UserDepartment> userDepartments = new ArrayList<>();
+
     /**
      * 유저 생성 함수<br>
      * Entity의 경우 Setter없이 Getter만 사용<br>
@@ -78,8 +80,8 @@ public class User {
      * @return User
      */
     public static User createUser(String id, String pwd, String name, String email, String birth,
-                                  CompanyType company, DepartmentType department, String workTime,
-                                  String lunarYN, String profileName, String profileUUID) {
+                                  OriginCompanyType company, String workTime,
+                                  YNType lunarYN, String profileName, String profileUUID) {
         User user = new User();
         user.id = id;
         user.pwd = pwd;
@@ -88,24 +90,18 @@ public class User {
         user.role = RoleType.USER;
         user.birth = birth;
         user.company = company;
-        user.department = department;
         user.workTime = workTime;
         user.lunarYN = lunarYN;
         user.profileName = profileName;
         user.profileUUID = profileUUID;
-        user.delYN = "N";
+        user.delYN = YNType.N;
         return user;
-    }
-
-    public static User createUser(String id, String pwd, String name, String email, String birth,
-                                  CompanyType company, DepartmentType department, String workTime, String lunarYN) {
-        return createUser(id, pwd, name, email, birth, company, department, workTime, lunarYN, null, null);
     }
 
     public static User createUser(String id) {
         User user = new User();
         user.id = id;
-        user.delYN = "N";
+        user.delYN = YNType.N;
         return user;
     }
 
@@ -115,23 +111,17 @@ public class User {
      * 해당 메소드를 통해 유저 수정할 것
      */
     public void updateUser(String name, String email, RoleType role, String birth,
-                           CompanyType company, DepartmentType department, String workTime,
-                           String lunarYN, String profileName, String profileUUID) {
+                           OriginCompanyType company, String workTime,
+                           YNType lunarYN, String profileName, String profileUUID) {
         if (!Objects.isNull(name)) { this.name = name; }
         if (!Objects.isNull(email)) { this.email = email; }
         if (!Objects.isNull(role)) { this.role = role; }
         if (!Objects.isNull(birth)) { this.birth = birth; }
         if (!Objects.isNull(company)) { this.company = company; }
-        if (!Objects.isNull(department)) { this.department = department; }
         if (!Objects.isNull(workTime)) { this.workTime = workTime; }
         if (!Objects.isNull(lunarYN)) { this.lunarYN = lunarYN; }
         if (!Objects.isNull(profileName)) { this.profileName = profileName; }
         if (!Objects.isNull(profileUUID)) { this.profileUUID = profileUUID; }
-    }
-
-    public void updateUser(String name, String email, RoleType role, String birth,
-                           CompanyType company, DepartmentType department, String workTime, String lunarYN) {
-        updateUser(name, email, role, birth, company, department, workTime, lunarYN, null, null);
     }
 
     /**
@@ -140,7 +130,7 @@ public class User {
      * 해당 메소드를 통해 유저 삭제할 것
      */
     public void deleteUser() {
-        this.delYN = "Y";
+        this.delYN = YNType.Y;
     }
 
     /* 비즈니스 편의 메소드 */

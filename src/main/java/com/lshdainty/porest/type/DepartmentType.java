@@ -15,6 +15,7 @@ public enum DepartmentType {
     TABLEAU("Tableau"),
     AOI("AOI");
 
+
     private String departmentName;
 
     DepartmentType(String departmentName) { this.departmentName = departmentName; }

@@ -3,6 +3,7 @@ package com.lshdainty.porest.service;
 import com.lshdainty.porest.domain.User;
 import com.lshdainty.porest.repository.UserRepositoryImpl;
 import com.lshdainty.porest.service.dto.UserServiceDto;
+import com.lshdainty.porest.type.YNType;
 import com.lshdainty.porest.util.PorestFile;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -54,7 +55,6 @@ public class UserService {
                 data.getEmail(),
                 data.getBirth(),
                 data.getCompany(),
-                data.getDepartment(),
                 data.getWorkTime(),
                 data.getLunarYN(),
                 profileDto.getProfileName(),
@@ -77,7 +77,6 @@ public class UserService {
                 .birth(user.getBirth())
                 .workTime(user.getWorkTime())
                 .company(user.getCompany())
-                .department(user.getDepartment())
                 .lunarYN(user.getLunarYN())
                 .profileName(user.getProfileName())
                 .profileUrl(StringUtils.hasText(user.getProfileName()) && StringUtils.hasText(user.getProfileUUID()) ?
@@ -99,7 +98,6 @@ public class UserService {
                         .birth(user.getBirth())
                         .workTime(user.getWorkTime())
                         .company(user.getCompany())
-                        .department(user.getDepartment())
                         .lunarYN(user.getLunarYN())
                         .profileName(user.getProfileName())
                         .profileUrl(StringUtils.hasText(user.getProfileName()) && StringUtils.hasText(user.getProfileUUID()) ?
@@ -124,7 +122,6 @@ public class UserService {
                 data.getRole(),
                 data.getBirth(),
                 data.getCompany(),
-                data.getDepartment(),
                 data.getWorkTime(),
                 data.getLunarYN(),
                 profileDto.getProfileName(),
@@ -161,7 +158,7 @@ public class UserService {
 
     public User checkUserExist(String userId) {
         Optional<User> findUser = userRepositoryImpl.findById(userId);
-        if ((findUser.isEmpty()) || findUser.get().getDelYN().equals("Y")) {
+        if ((findUser.isEmpty()) || findUser.get().getDelYN().equals(YNType.Y)) {
             throw new IllegalArgumentException(ms.getMessage("error.notfound.user", null, null));
         }
         return findUser.get();
