@@ -1,8 +1,11 @@
 package com.lshdainty.porest.repository;
 
-import com.lshdainty.porest.domain.*;
-import com.lshdainty.porest.type.vacation.VacationTimeType;
-import com.lshdainty.porest.type.vacation.VacationType;
+import com.lshdainty.porest.user.domain.User;
+import com.lshdainty.porest.vacation.domain.Vacation;
+import com.lshdainty.porest.vacation.domain.VacationHistory;
+import com.lshdainty.porest.vacation.repository.VacationHistoryRepositoryImpl;
+import com.lshdainty.porest.vacation.type.VacationTimeType;
+import com.lshdainty.porest.vacation.type.VacationType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,9 +1,11 @@
 package com.lshdainty.porest.repository;
 
 import com.lshdainty.porest.TestConfig;
-import com.lshdainty.porest.domain.Dues;
-import com.lshdainty.porest.type.DuesCalcType;
-import com.lshdainty.porest.type.DuesType;
+import com.lshdainty.porest.dues.domain.Dues;
+import com.lshdainty.porest.dues.repository.DuesCustomRepositoryImpl;
+import com.lshdainty.porest.dues.repository.DuesRepositoryImpl;
+import com.lshdainty.porest.dues.type.DuesCalcType;
+import com.lshdainty.porest.dues.type.DuesType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

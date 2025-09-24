@@ -1,12 +1,12 @@
 package com.lshdainty.porest.service;
 
-import com.lshdainty.porest.domain.User;
-import com.lshdainty.porest.repository.UserRepositoryImpl;
-import com.lshdainty.porest.service.dto.UserServiceDto;
-import com.lshdainty.porest.type.OriginCompanyType;
-import com.lshdainty.porest.type.DepartmentType;
-import com.lshdainty.porest.type.YNType;
-import com.lshdainty.porest.util.PorestFile;
+import com.lshdainty.porest.user.domain.User;
+import com.lshdainty.porest.user.repository.UserRepositoryImpl;
+import com.lshdainty.porest.user.service.UserService;
+import com.lshdainty.porest.user.service.dto.UserServiceDto;
+import com.lshdainty.porest.company.type.OriginCompanyType;
+import com.lshdainty.porest.common.type.YNType;
+import com.lshdainty.porest.common.util.PorestFile;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

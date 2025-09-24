@@ -1,7 +1,9 @@
 package com.lshdainty.porest.repository;
 
-import com.lshdainty.porest.domain.*;
-import com.lshdainty.porest.type.ScheduleType;
+import com.lshdainty.porest.schedule.domain.Schedule;
+import com.lshdainty.porest.schedule.repository.ScheduleRepositoryImpl;
+import com.lshdainty.porest.schedule.type.ScheduleType;
+import com.lshdainty.porest.user.domain.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,11 +1,11 @@
 package com.lshdainty.porest.repository;
 
-import com.lshdainty.porest.domain.User;
-import com.lshdainty.porest.domain.Vacation;
-import com.lshdainty.porest.type.OriginCompanyType;
-import com.lshdainty.porest.type.DepartmentType;
-import com.lshdainty.porest.type.YNType;
-import com.lshdainty.porest.type.vacation.VacationType;
+import com.lshdainty.porest.user.domain.User;
+import com.lshdainty.porest.user.repository.UserRepositoryImpl;
+import com.lshdainty.porest.vacation.domain.Vacation;
+import com.lshdainty.porest.company.type.OriginCompanyType;
+import com.lshdainty.porest.common.type.YNType;
+import com.lshdainty.porest.vacation.type.VacationType;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

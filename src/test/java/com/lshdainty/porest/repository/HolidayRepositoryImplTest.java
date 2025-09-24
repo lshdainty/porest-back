@@ -1,9 +1,10 @@
 package com.lshdainty.porest.repository;
 
-import com.lshdainty.porest.domain.Holiday;
-import com.lshdainty.porest.type.CountryCode;
-import com.lshdainty.porest.type.HolidayType;
-import com.lshdainty.porest.type.YNType;
+import com.lshdainty.porest.holiday.domain.Holiday;
+import com.lshdainty.porest.common.type.CountryCode;
+import com.lshdainty.porest.holiday.repository.HolidayRepositoryImpl;
+import com.lshdainty.porest.holiday.type.HolidayType;
+import com.lshdainty.porest.common.type.YNType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

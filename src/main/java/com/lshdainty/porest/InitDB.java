@@ -1,8 +1,23 @@
 package com.lshdainty.porest;
 
-import com.lshdainty.porest.domain.*;
-import com.lshdainty.porest.type.*;
-import com.lshdainty.porest.type.vacation.*;
+import com.lshdainty.porest.common.type.CountryCode;
+import com.lshdainty.porest.common.type.YNType;
+import com.lshdainty.porest.company.type.OriginCompanyType;
+import com.lshdainty.porest.company.domain.Company;
+import com.lshdainty.porest.department.domain.Department;
+import com.lshdainty.porest.dues.domain.Dues;
+import com.lshdainty.porest.dues.type.DuesCalcType;
+import com.lshdainty.porest.dues.type.DuesType;
+import com.lshdainty.porest.holiday.domain.Holiday;
+import com.lshdainty.porest.holiday.type.HolidayType;
+import com.lshdainty.porest.schedule.domain.Schedule;
+import com.lshdainty.porest.schedule.type.ScheduleType;
+import com.lshdainty.porest.user.domain.User;
+import com.lshdainty.porest.user.type.RoleType;
+import com.lshdainty.porest.vacation.domain.Vacation;
+import com.lshdainty.porest.vacation.domain.VacationHistory;
+import com.lshdainty.porest.vacation.domain.VacationPolicy;
+import com.lshdainty.porest.vacation.type.*;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor

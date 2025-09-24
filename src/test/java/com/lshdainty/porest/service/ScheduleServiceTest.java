@@ -1,9 +1,12 @@
 package com.lshdainty.porest.service;
 
-import com.lshdainty.porest.domain.*;
-import com.lshdainty.porest.repository.ScheduleRepositoryImpl;
-import com.lshdainty.porest.service.dto.ScheduleServiceDto;
-import com.lshdainty.porest.type.ScheduleType;
+import com.lshdainty.porest.schedule.domain.Schedule;
+import com.lshdainty.porest.schedule.repository.ScheduleRepositoryImpl;
+import com.lshdainty.porest.schedule.service.ScheduleService;
+import com.lshdainty.porest.schedule.service.dto.ScheduleServiceDto;
+import com.lshdainty.porest.schedule.type.ScheduleType;
+import com.lshdainty.porest.user.domain.User;
+import com.lshdainty.porest.user.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

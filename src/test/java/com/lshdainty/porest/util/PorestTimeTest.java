@@ -1,5 +1,6 @@
 package com.lshdainty.porest.util;
 
+import com.lshdainty.porest.common.util.PorestTime;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
