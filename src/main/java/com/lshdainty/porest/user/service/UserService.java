@@ -85,6 +85,7 @@ public class UserService {
                 .build();
     }
 
+
     public List<UserServiceDto> findUsers() {
         List<User> users = userRepositoryImpl.findUsers();
 

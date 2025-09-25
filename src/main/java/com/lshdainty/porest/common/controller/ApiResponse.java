@@ -26,6 +26,14 @@ public class ApiResponse<T> {
         return new ApiResponse<>(HttpStatus.OK.value(), "success", 0, null);
     }
 
+    public static <T> ApiResponse<T> fail(String message) {
+        return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), message, 0, null);
+    }
+
+    public static <T> ApiResponse<T> fail(int code, String message) {
+        return new ApiResponse<>(code, message, 0, null);
+    }
+
     private static <T> int getCount(T data) {
         if (data instanceof Object[]) { // array
             return ((Object[]) data).length;

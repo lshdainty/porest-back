@@ -10,6 +10,6 @@ import lombok.*;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class LoginDto {
-    private Long id;
+    private String id;
     private String pw;
 }
