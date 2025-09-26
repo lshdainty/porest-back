@@ -1,33 +1,28 @@
 package com.lshdainty.porest.Config;
 
-import com.lshdainty.porest.lib.jwt.JwtFilter;
-import com.lshdainty.porest.lib.jwt.JwtUtil;
-import com.lshdainty.porest.lib.jwt.LoginFilter;
-import lombok.AllArgsConstructor;
+import com.lshdainty.porest.login.service.CustomOAuth2UserService;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
+
+@RequiredArgsConstructor
 @Configuration
 @EnableWebSecurity
-@AllArgsConstructor
 public class SecurityConfig {
-    private final AuthenticationConfiguration authConfig;
-    private final JwtUtil jwtUtil;
-
-    // LoginFilter에 필요한 인증 매니저 주입
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
-        return authConfig.getAuthenticationManager();
-    }
+    private final CustomOAuth2UserService customOAuth2UserService;
 
     // password 암호화를 위한 bean 등록
     @Bean
@@ -36,9 +31,12 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource) throws Exception {
         // CSRF 비활성화
         http.csrf(AbstractHttpConfigurer::disable);
+
+        // CORS 설정
+        http.cors(cors -> cors.configurationSource(corsConfigurationSource));
 
         // Form 로그인 방식 비활성화
         http.formLogin(AbstractHttpConfigurer::disable);
@@ -51,32 +49,67 @@ public class SecurityConfig {
                 // 인증 없이 접근 가능한 경로들
                 .requestMatchers(
                         "/",
-                        "/api/login",                    // 기존 로그인 (LoginFilter)
-                        "/api/logout",                   // 로그아웃
-                        "/api/refresh-token",            // 토큰 재발급
-                        "/api/encode-password",          // 비밀번호 인코딩 (개발용)
-                        "/api/v2/auth/**",              // 새로운 통합 인증 API
-                        "/api/oauth/**",                // OAuth 관련
-                        "/swagger-ui/**",               // Swagger UI
-                        "/v3/api-docs/**"               // Swagger API 문서
-                ).permitAll()
+                        "/login",                    // 로그인
+                        "/logout",                   // 로그아웃
+                        "/encode-password",          // 비밀번호 인코딩 (개발용)
+                        "/check-session",
+                        "/swagger-ui/**",                // Swagger UI
+                        "/v3/api-docs/**",               // Swagger API 문서
+                        "/css/**",                       // css
+                        "/images/**",                    // images
+                        "/js/**"                         // js
+                ).permitAll() // 해당 URL 패턴들은 모든 사용자가 접근 가능
+
+                // "/api/v1/**" 패턴의 URL은 USER 권한을 가진 사용자만 접근 가능
+//                .requestMatchers("/api/v1/**").hasRole(Role.USER.name())
+
                 // 그 외 모든 요청은 인증 필요
                 .anyRequest().authenticated()
         );
 
-        // JWT 검증 필터를 LoginFilter 앞에 추가
-        http.addFilterBefore(new JwtFilter(jwtUtil), LoginFilter.class);
-
-        // LoginFilter를 UsernamePasswordAuthenticationFilter 위치에 추가
-        http.addFilterAt(
-                new LoginFilter(authenticationManager(authConfig), jwtUtil),
-                UsernamePasswordAuthenticationFilter.class
+        http.oauth2Login(oauth2Login -> oauth2Login
+                .defaultSuccessUrl("/test")// OAuth 2 로그인 설정 진입점
+                .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint
+                        .userService(customOAuth2UserService) // OAuth 2 로그인 성공 이후 사용자 정보를 가져올 때의 설정
+                )
         );
 
-        // 세션 정책: Stateless (JWT 사용)
+        //로그아웃 시 리다이렉트될 URL을 설정
+        http.logout(logout -> logout
+                .logoutUrl("/logout")
+                .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "POST"))
+                .invalidateHttpSession(true)
+                .clearAuthentication(true)
+                .logoutSuccessHandler((request, response, authentication) -> {
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"message\":\"로그아웃 성공\"}");
+                })
+        );
+
+        // 세션 정책: 세션 사용
         http.sessionManagement((session) -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
 
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.addAllowedOriginPattern("http://localhost:*");
+        configuration.addAllowedMethod("GET");
+        configuration.addAllowedMethod("POST");
+        configuration.addAllowedMethod("PUT");
+        configuration.addAllowedMethod("PATCH");
+        configuration.addAllowedMethod("DELETE");
+        configuration.addAllowedMethod("OPTIONS");
+        configuration.addAllowedHeader("*");
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+
+        return source;
     }
 }

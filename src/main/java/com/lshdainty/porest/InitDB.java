@@ -21,6 +21,7 @@ import com.lshdainty.porest.vacation.type.*;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,7 +38,7 @@ public class InitDB {
     @PostConstruct
     public void init() {
         initService.initSetMember();
-//        initService.initSetDepartment();
+        initService.initSetDepartment();
         initService.initSetHoliday();
         initService.initSetVacation();
         initService.initSetSchedule();
@@ -50,6 +51,7 @@ public class InitDB {
     @RequiredArgsConstructor
     static class InitService {
         private final EntityManager em;
+        private final BCryptPasswordEncoder passwordEncoder;
 
         public void initSetMember() {
             saveMember("user1", "이서준", "aaa@naver.com","19700723", OriginCompanyType.SKAX, "9 ~ 6", YNType.N);
@@ -615,7 +617,8 @@ public class InitDB {
         }
 
         public void saveMember(String id, String name, String email, String birth, OriginCompanyType company, String workTime, YNType lunar) {
-            User user = User.createUser(id, "", name, email, birth, company, workTime, lunar, null, null);
+            String encodedPassword = passwordEncoder.encode("1234");
+            User user = User.createUser(id, encodedPassword, name, email, birth, company, workTime, lunar, null, null);
             em.persist(user);
         }
 

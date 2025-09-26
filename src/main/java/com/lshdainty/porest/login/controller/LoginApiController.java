@@ -3,9 +3,9 @@ package com.lshdainty.porest.login.controller;
 import com.lshdainty.porest.common.controller.ApiResponse;
 import com.lshdainty.porest.user.domain.User;
 import com.lshdainty.porest.user.repository.UserRepositoryImpl;
-import com.lshdainty.porest.lib.jwt.JwtUtil;
-import com.lshdainty.porest.login.controller.dto.LoginDto;
+import com.lshdainty.porest.login.service.dto.LoginDto;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -17,68 +17,50 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@RequestMapping("/api")
 public class LoginApiController {
     private final UserRepositoryImpl userRepository;
-    private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder;
 
     /**
-     * 토큰 재발급 API
-     * Refresh Token을 이용해 새로운 Access Token 발급
+     * 로그인 API
      */
-    @PostMapping("/refresh-token")
-    public ResponseEntity<ApiResponse> refreshToken(HttpServletRequest request) {
-        String refreshTokenHeader = request.getHeader("Refresh-Token");
-
-        if (refreshTokenHeader == null) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.fail("Refresh token not provided"));
-        }
-
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse> login(@RequestBody LoginDto loginDto, HttpServletRequest request) {
         try {
-            // Refresh Token 검증
-            if (jwtUtil.isExpired(refreshTokenHeader)) {
-                return ResponseEntity.status(401)
-                        .body(ApiResponse.fail("Refresh token expired"));
-            }
+            Optional<User> userOptional = userRepository.findById(loginDto.getId());
 
-            String tokenType = jwtUtil.getTokenType(refreshTokenHeader);
-            if (!"refresh".equals(tokenType)) {
-                return ResponseEntity.badRequest()
-                        .body(ApiResponse.fail("Invalid token type"));
-            }
-
-            String userId = jwtUtil.getUserId(refreshTokenHeader);
-
-            // 사용자 정보 조회
-            Optional<User> userOptional = userRepository.findById(userId);
             if (userOptional.isEmpty()) {
                 return ResponseEntity.status(401)
-                        .body(ApiResponse.fail("User not found"));
+                        .body(ApiResponse.fail("사용자를 찾을 수 없습니다."));
             }
 
             User user = userOptional.get();
 
-            // 새로운 Access Token 생성
-            String newAccessToken = jwtUtil.generateAccessToken(userId, user.getRole().name());
+            if (!passwordEncoder.matches(loginDto.getPw(), user.getPwd())) {
+                return ResponseEntity.status(401)
+                        .body(ApiResponse.fail("비밀번호가 일치하지 않습니다."));
+            }
 
-            Map<String, String> tokens = new HashMap<>();
-            tokens.put("accessToken", newAccessToken);
-            tokens.put("message", "Token refreshed successfully");
+            HttpSession session = request.getSession();
+            session.setAttribute("userId", user.getId());
+            session.setAttribute("userRole", user.getRole().name());
 
-            return ResponseEntity.ok(ApiResponse.success(tokens));
+            Map<String, String> result = new HashMap<>();
+            result.put("message", "로그인 성공");
+            result.put("userId", user.getId());
+            result.put("role", user.getRole().name());
+
+            return ResponseEntity.ok(ApiResponse.success(result));
 
         } catch (Exception e) {
-            log.error("Token refresh failed", e);
+            log.error("Login failed", e);
             return ResponseEntity.status(500)
-                    .body(ApiResponse.fail("Token refresh failed"));
+                    .body(ApiResponse.fail("로그인 처리 중 오류가 발생했습니다."));
         }
     }
 
@@ -86,11 +68,14 @@ public class LoginApiController {
      * 로그아웃 API
      */
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse> logout() {
-        // JWT는 stateless이므로 서버에서 토큰을 무효화할 수 없음
-        // 클라이언트에서 토큰을 삭제하도록 안내
+    public ResponseEntity<ApiResponse> logout(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+
         Map<String, String> result = new HashMap<>();
-        result.put("message", "로그아웃 성공. 클라이언트에서 토큰을 삭제해주세요.");
+        result.put("message", "로그아웃 성공");
 
         return ResponseEntity.ok(ApiResponse.success(result));
     }
@@ -107,6 +92,26 @@ public class LoginApiController {
         Map<String, String> result = new HashMap<>();
         result.put("originalPassword", loginDto.getPw());
         result.put("encodedPassword", encodedPassword);
+
+        return ResponseEntity.ok(ApiResponse.success(result));
+    }
+
+    @PostMapping("/check-session")
+    public ResponseEntity<ApiResponse> checkSession(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+
+        if (session == null || session.getAttribute("userId") == null) {
+            Map<String, Object> result = new HashMap<>();
+            result.put("isLoggedIn", false);
+            result.put("message", "로그인이 필요합니다.");
+            return ResponseEntity.ok(ApiResponse.success(result));
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("isLoggedIn", true);
+        result.put("userId", session.getAttribute("userId"));
+        result.put("userRole", session.getAttribute("userRole"));
+        result.put("message", "로그인 상태입니다.");
 
         return ResponseEntity.ok(ApiResponse.success(result));
     }

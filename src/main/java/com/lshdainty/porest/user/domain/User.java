@@ -63,6 +63,10 @@ public class User {
 
     @BatchSize(size = 100)
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)   // JPA에서는 mappedBy는 읽기 전용
+    private List<UserProvider> providers = new ArrayList<>();
+
+    @BatchSize(size = 100)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Vacation> vacations = new ArrayList<>();
 
     @BatchSize(size = 100)
