@@ -7,7 +7,7 @@ build/
 /src/main/generated/
 
 ### Security
-!**/src/main/resources/application-oauth.yml
+**/src/main/resources/application-oauth.yml
 
 ### STS ###
 .apt_generated
