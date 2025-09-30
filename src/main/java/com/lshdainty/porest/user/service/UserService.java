@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 public class UserService {
     private final MessageSource ms;
     private final UserRepositoryImpl userRepositoryImpl;
+    private final EmailService emailService;
 
     @Value("${file.root-path}")
     private String fileRootPath;
@@ -222,15 +223,25 @@ public class UserService {
      */
     @Transactional
     public UserServiceDto inviteUser(UserServiceDto data) {
+        // 아이디 중복 체크
+        Optional<User> existingUser = userRepositoryImpl.findById(data.getId());
+        if (existingUser.isPresent() && existingUser.get().getDelYN().equals(YNType.N)) {
+            throw new IllegalArgumentException(ms.getMessage("error.duplicate.userId", null, null));
+        }
+
         User user = User.createInvitedUser(
                 data.getId(),
                 data.getName(),
                 data.getEmail(),
                 data.getCompany(),
-                data.getRole()
+                data.getRole(),
+                data.getWorkTime()
         );
 
         userRepositoryImpl.save(user);
+
+        // 초대 이메일 발송
+        emailService.sendInvitationEmail(user.getEmail(), user.getName(), user.getInvitationToken());
 
         return UserServiceDto.builder()
                 .id(user.getId())
@@ -272,6 +283,9 @@ public class UserService {
     public UserServiceDto resendInvitation(String userId) {
         User user = checkUserExist(userId);
         user.renewInvitationToken();
+
+        // 초대 이메일 재발송
+        emailService.sendInvitationEmail(user.getEmail(), user.getName(), user.getInvitationToken());
 
         return UserServiceDto.builder()
                 .id(user.getId())

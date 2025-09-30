@@ -137,13 +137,14 @@ public class User {
      * @return User
      */
     public static User createInvitedUser(String id, String name, String email,
-                                       OriginCompanyType company, RoleType role) {
+                                       OriginCompanyType company, RoleType role, String workTime) {
         User user = new User();
         user.id = id;
         user.name = name;
         user.email = email;
         user.company = company;
         user.role = role;
+        user.workTime = workTime;
         user.status = StatusType.PENDING; // 초대 상태로 설정
         user.delYN = YNType.N;
 

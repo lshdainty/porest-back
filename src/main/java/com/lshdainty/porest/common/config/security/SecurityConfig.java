@@ -2,7 +2,7 @@ package com.lshdainty.porest.common.config.security;
 
 import com.lshdainty.porest.security.handler.CustomAuthenticationFailureHandler;
 import com.lshdainty.porest.security.handler.CustomAuthenticationSuccessHandler;
-import com.lshdainty.porest.security.handler.CustomLogoutSuccessHandler;
+//import com.lshdainty.porest.security.handler.CustomLogoutSuccessHandler;
 import com.lshdainty.porest.security.service.CustomOAuth2UserService;
 import com.lshdainty.porest.security.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +27,7 @@ public class SecurityConfig {
     private final CustomUserDetailsService formLogin;
     private final CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
     private final CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
-    private final CustomLogoutSuccessHandler customLogoutSuccessHandler;
+//    private final CustomLogoutSuccessHandler customLogoutSuccessHandler;
 
     // password 암호화를 위한 bean 등록
     @Bean
@@ -94,7 +94,7 @@ public class SecurityConfig {
                 .invalidateHttpSession(true)
                 .clearAuthentication(true)
                 .deleteCookies("JSESSIONID")
-                .logoutSuccessHandler(customLogoutSuccessHandler)
+//                .logoutSuccessHandler(customLogoutSuccessHandler)
         );
 
         // 세션 정책: 세션 사용
