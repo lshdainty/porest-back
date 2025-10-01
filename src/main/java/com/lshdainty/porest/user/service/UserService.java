@@ -284,7 +284,11 @@ public class UserService {
                 .name(user.getName())
                 .email(user.getEmail())
                 .company(user.getCompany())
+                .workTime(user.getWorkTime())
                 .role(user.getRole())
+                .invitationSentAt(user.getInvitationSentAt())
+                .invitationExpiresAt(user.getInvitationExpiresAt())
+                .invitationStatus(user.getInvitationStatus())
                 .build();
     }
 

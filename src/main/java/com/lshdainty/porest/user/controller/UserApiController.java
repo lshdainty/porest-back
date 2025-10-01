@@ -220,6 +220,7 @@ public class UserApiController {
 
     /**
      * 초대 토큰 유효성 검증
+     * TODO: Spring Security에서 해당 api 주소 제외시켜야함 (회원가입인데 인증을 진행할 수 없음)
      */
     @GetMapping("/api/v1/user/invitation/validate/{token}")
     public ApiResponse validateInvitationToken(@PathVariable("token") String token) {
@@ -230,9 +231,11 @@ public class UserApiController {
                 .userName(result.getName())
                 .userEmail(result.getEmail())
                 .userOriginCompanyType(result.getCompany())
-                .userCompanyName(result.getCompany().getCompanyName())
+                .userWorkTime(result.getWorkTime())
                 .userRoleType(result.getRole())
-                .userRoleName(result.getRole().name())
+                .invitationSentAt(result.getInvitationSentAt())
+                .invitationExpiresAt(result.getInvitationExpiresAt())
+                .invitationStatus(result.getInvitationStatus())
                 .build());
     }
 
@@ -258,6 +261,7 @@ public class UserApiController {
 
     /**
      * 초대받은 사용자의 회원가입 완료
+     * TODO: Spring Security에서 해당 api 주소 제외시켜야함 (회원가입인데 인증을 진행할 수 없음)
      */
     @PostMapping("/api/v1/user/invitation/complete")
     public ApiResponse completeInvitedUserRegistration(@RequestBody UserDto data) {
