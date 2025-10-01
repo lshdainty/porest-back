@@ -60,12 +60,12 @@ public class User {
     @Column(name = "lunar_yn")
     private YNType lunarYN; // 음력여부
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "user_status")
-    private StatusType status; // 사용자 상태
-
     @Column(name = "invitation_token")
     private String invitationToken; // 초대 토큰
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "invitation_status")
+    private StatusType invitationStatus; // 초대 상태
 
     @Column(name = "invitation_sent_at")
     private LocalDateTime invitationSentAt; // 초대 발송 시간
@@ -137,15 +137,15 @@ public class User {
      * @return User
      */
     public static User createInvitedUser(String id, String name, String email,
-                                       OriginCompanyType company, RoleType role, String workTime) {
+                                       OriginCompanyType company, String workTime) {
         User user = new User();
         user.id = id;
         user.name = name;
         user.email = email;
         user.company = company;
-        user.role = role;
+        user.role = RoleType.USER;
         user.workTime = workTime;
-        user.status = StatusType.PENDING; // 초대 상태로 설정
+        user.invitationStatus = StatusType.PENDING; // 초대 상태로 설정
         user.delYN = YNType.N;
 
         // 초대 토큰 생성 (48시간 유효)
@@ -163,14 +163,14 @@ public class User {
         this.invitationToken = UUID.randomUUID().toString();
         this.invitationSentAt = LocalDateTime.now();
         this.invitationExpiresAt = LocalDateTime.now().plusHours(48);
-        this.status = StatusType.PENDING;
+        this.invitationStatus = StatusType.PENDING;
     }
 
     /**
      * 초대 유효성 검사
      */
     public boolean isInvitationValid() {
-        return this.status == StatusType.PENDING &&
+        return this.invitationStatus == StatusType.PENDING &&
                this.invitationExpiresAt != null &&
                this.invitationExpiresAt.isAfter(LocalDateTime.now()) &&
                this.invitationToken != null;
@@ -187,7 +187,7 @@ public class User {
         this.lunarYN = lunarYN;
         this.profileName = profileName;
         this.profileUUID = profileUUID;
-        this.status = StatusType.ACTIVE;
+        this.invitationStatus = StatusType.ACTIVE;
         this.registeredAt = LocalDateTime.now();
         this.invitationToken = null; // 토큰 제거
     }

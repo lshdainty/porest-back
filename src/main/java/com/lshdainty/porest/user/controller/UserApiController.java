@@ -61,6 +61,11 @@ public class UserApiController {
                 .userCompanyName(user.getCompany().getCompanyName())
                 .lunarYN(user.getLunarYN())
                 .profileUrl(user.getProfileUrl())
+                .invitationToken(user.getInvitationToken())
+                .invitationSentAt(user.getInvitationSentAt())
+                .invitationExpiresAt(user.getInvitationExpiresAt())
+                .invitationStatus(user.getInvitationStatus())
+                .registeredAt(user.getRegisteredAt())
                 .build()
         );
     }
@@ -82,6 +87,11 @@ public class UserApiController {
                         .userCompanyName(u.getCompany().getCompanyName())
                         .lunarYN(u.getLunarYN())
                         .profileUrl(u.getProfileUrl())
+                        .invitationToken(u.getInvitationToken())
+                        .invitationSentAt(u.getInvitationSentAt())
+                        .invitationExpiresAt(u.getInvitationExpiresAt())
+                        .invitationStatus(u.getInvitationStatus())
+                        .registeredAt(u.getRegisteredAt())
                         .build()
                 )
                 .collect(Collectors.toList());
@@ -191,7 +201,7 @@ public class UserApiController {
                 .name(data.getUserName())
                 .email(data.getUserEmail())
                 .company(data.getUserOriginCompanyType())
-                .role(data.getUserRoleType())
+                .workTime(data.getUserWorkTime())
                 .build()
         );
 
@@ -199,9 +209,12 @@ public class UserApiController {
                 .userId(result.getId())
                 .userName(result.getName())
                 .userEmail(result.getEmail())
-                .userCompanyName(result.getCompany().getCompanyName())
-                .userRoleName(result.getRole().name())
-                .invitationToken(result.getInvitationToken())
+                .userOriginCompanyType(result.getCompany())
+                .userWorkTime(result.getWorkTime())
+                .userRoleType(result.getRole())
+                .invitationSentAt(result.getInvitationSentAt())
+                .invitationExpiresAt(result.getInvitationExpiresAt())
+                .invitationStatus(result.getInvitationStatus())
                 .build());
     }
 
@@ -234,7 +247,12 @@ public class UserApiController {
                 .userId(result.getId())
                 .userName(result.getName())
                 .userEmail(result.getEmail())
-                .invitationToken(result.getInvitationToken())
+                .userOriginCompanyType(result.getCompany())
+                .userWorkTime(result.getWorkTime())
+                .userRoleType(result.getRole())
+                .invitationSentAt(result.getInvitationSentAt())
+                .invitationExpiresAt(result.getInvitationExpiresAt())
+                .invitationStatus(result.getInvitationStatus())
                 .build());
     }
 

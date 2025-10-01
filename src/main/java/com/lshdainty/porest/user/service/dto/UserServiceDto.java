@@ -2,10 +2,13 @@ package com.lshdainty.porest.user.service.dto;
 
 import com.lshdainty.porest.company.type.OriginCompanyType;
 import com.lshdainty.porest.user.type.RoleType;
+import com.lshdainty.porest.user.type.StatusType;
 import com.lshdainty.porest.common.type.YNType;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.time.LocalDateTime;
 
 @Getter @Setter
 @Builder
@@ -26,4 +29,8 @@ public class UserServiceDto {
 
     // 초대 관련 필드
     private String invitationToken;
+    private LocalDateTime invitationSentAt; // 초대 토큰 생성 시간
+    private LocalDateTime invitationExpiresAt; // 초대 토큰 만료 시간
+    private StatusType invitationStatus; // 초대 상태
+    private LocalDateTime registeredAt; // 회원가입 완료 시간
 }

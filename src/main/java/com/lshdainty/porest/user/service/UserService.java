@@ -83,6 +83,11 @@ public class UserService {
                 .profileUrl(StringUtils.hasText(user.getProfileName()) && StringUtils.hasText(user.getProfileUUID()) ?
                         generateProfileUrl(user.getProfileName(), user.getProfileUUID()) : null)
                 // profileUUID는 프론트엔드에 노출하지 않음
+                .invitationToken(user.getInvitationToken())
+                .invitationSentAt(user.getInvitationSentAt())
+                .invitationExpiresAt(user.getInvitationExpiresAt())
+                .invitationStatus(user.getInvitationStatus())
+                .registeredAt(user.getRegisteredAt())
                 .build();
     }
 
@@ -105,6 +110,11 @@ public class UserService {
                         .profileUrl(StringUtils.hasText(user.getProfileName()) && StringUtils.hasText(user.getProfileUUID()) ?
                                 generateProfileUrl(user.getProfileName(), user.getProfileUUID()) : null)
                         // profileUUID는 프론트엔드에 노출하지 않음
+                        .invitationToken(user.getInvitationToken())
+                        .invitationSentAt(user.getInvitationSentAt())
+                        .invitationExpiresAt(user.getInvitationExpiresAt())
+                        .invitationStatus(user.getInvitationStatus())
+                        .registeredAt(user.getRegisteredAt())
                         .build())
                 .collect(Collectors.toList());
     }
@@ -234,7 +244,6 @@ public class UserService {
                 data.getName(),
                 data.getEmail(),
                 data.getCompany(),
-                data.getRole(),
                 data.getWorkTime()
         );
 
@@ -248,8 +257,11 @@ public class UserService {
                 .name(user.getName())
                 .email(user.getEmail())
                 .company(user.getCompany())
+                .workTime(user.getWorkTime())
                 .role(user.getRole())
-                .invitationToken(user.getInvitationToken())
+                .invitationSentAt(user.getInvitationSentAt())
+                .invitationExpiresAt(user.getInvitationExpiresAt())
+                .invitationStatus(user.getInvitationStatus())
                 .build();
     }
 
@@ -291,7 +303,12 @@ public class UserService {
                 .id(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
-                .invitationToken(user.getInvitationToken())
+                .company(user.getCompany())
+                .workTime(user.getWorkTime())
+                .role(user.getRole())
+                .invitationSentAt(user.getInvitationSentAt())
+                .invitationExpiresAt(user.getInvitationExpiresAt())
+                .invitationStatus(user.getInvitationStatus())
                 .build();
     }
 
