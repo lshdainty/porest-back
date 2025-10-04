@@ -86,10 +86,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
             );
             userProviderRepository.save(userProvider);
 
-            // 2-4. 회원가입 완료 처리 (birth, lunarYN은 추후 추가 정보 입력 단계에서 처리)
-            user.completeRegistration(null, null);
-
-            log.info("OAuth2 회원가입 완료: userId={}, provider={}", user.getId(), attributes.getProvider());
+            log.info("OAuth2 신규 연결 완료: userId={}, provider={}", user.getId(), attributes.getProvider());
             return user;
         } else {
             // 로그인 부분

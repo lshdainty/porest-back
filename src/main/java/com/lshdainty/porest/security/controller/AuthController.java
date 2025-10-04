@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 public class AuthController {
     private final SecurityService securityService;
+    private final UserService userService;
 
     /**
      * 초대 토큰 유효성 검증
@@ -49,14 +50,14 @@ public class AuthController {
      */
     @PostMapping("/api/v1/user/invitation/complete")
     public ApiResponse completeInvitedUserRegistration(@RequestBody UserDto data) {
-//        String userId = userService.completeInvitedUserRegistration(UserServiceDto.builder()
-//                .invitationToken(data.getInvitationToken())
-//                .birth(data.getUserBirth())
-//                .lunarYN(data.getLunarYN())
-//                .build()
-//        );
-//
-//        return ApiResponse.success(UserDto.builder().userId(userId).build());
-        return ApiResponse.success();
+        String userId = userService.completeInvitedUserRegistration(UserServiceDto.builder()
+                .invitationToken(data.getInvitationToken())
+                .birth(data.getUserBirth())
+                .lunarYN(data.getLunarYN())
+                .build()
+        );
+
+        return ApiResponse.success(UserDto.builder().userId(userId).build());
+//        return ApiResponse.success();
     }
 }
