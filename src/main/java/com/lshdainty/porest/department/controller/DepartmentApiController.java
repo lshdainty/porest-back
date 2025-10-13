@@ -35,14 +35,14 @@ public class DepartmentApiController {
     }
 
     @GetMapping("/api/v1/department/{id}")
-    public ApiResponse<DepartmentDto> getDepartment(@PathVariable("id") Long departmentId) {
+    public ApiResponse<DepartmentDto> searchDepartmentById(@PathVariable("id") Long departmentId) {
         DepartmentServiceDto serviceDto = departmentService.searchDepartmentById(departmentId);
         DepartmentDto responseDto = convertToResponseDto(serviceDto);
         return ApiResponse.success(responseDto);
     }
 
     @GetMapping("/api/v1/department/{id}/children")
-    public ApiResponse<DepartmentDto> getDepartmentWithChildren(@PathVariable("id") Long departmentId) {
+    public ApiResponse<DepartmentDto> searchDepartmentByIdWithChildren(@PathVariable("id") Long departmentId) {
         DepartmentServiceDto serviceDto = departmentService.searchDepartmentByIdWithChildren(departmentId);
         DepartmentDto responseDto = convertToResponseDtoWithChildren(serviceDto);
         return ApiResponse.success(responseDto);
