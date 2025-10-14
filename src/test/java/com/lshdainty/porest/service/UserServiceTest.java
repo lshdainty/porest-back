@@ -64,7 +64,7 @@ class UserServiceTest {
         willDoNothing().given(userRepositoryImpl).save(any(User.class));
 
         // When
-        String result = userService.join(dto);
+        String result = userService.joinUser(dto);
 
         // Then
         then(userRepositoryImpl).should().save(any(User.class));
@@ -91,7 +91,7 @@ class UserServiceTest {
                     .thenReturn("test.jpg");
 
             // When
-            String result = userService.join(dto);
+            String result = userService.joinUser(dto);
 
             // Then
             then(userRepositoryImpl).should().save(argThat(user -> {
@@ -126,7 +126,7 @@ class UserServiceTest {
                     .thenReturn(false); // 복사 실패
 
             // When
-            String result = userService.join(dto);
+            String result = userService.joinUser(dto);
 
             // Then
             then(userRepositoryImpl).should().save(argThat(user -> {
@@ -152,7 +152,7 @@ class UserServiceTest {
         willDoNothing().given(userRepositoryImpl).save(any(User.class));
 
         // When
-        String result = userService.join(dto);
+        String result = userService.joinUser(dto);
 
         // Then
         then(userRepositoryImpl).should().save(argThat(user -> {
@@ -166,7 +166,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("단건 유저 조회 테스트 - 성공")
-    void findUserSuccessTest() {
+    void searchUserSuccessTest() {
         // Given
         String id = "user1";
         String name = "이서준";
@@ -175,7 +175,7 @@ class UserServiceTest {
         given(userRepositoryImpl.findById(id)).willReturn(Optional.of(user));
 
         // When
-        UserServiceDto findUser = userService.findUser(id);
+        UserServiceDto findUser = userService.searchUser(id);
 
         // Then
         then(userRepositoryImpl).should().findById(id);
@@ -186,7 +186,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("단건 유저 조회 테스트 - 성공 (프로필 포함)")
-    void findUserWithProfileSuccessTest() {
+    void searchUserWithProfileSuccessTest() {
         // Given
         String id = "user1";
         String name = "이서준";
@@ -202,7 +202,7 @@ class UserServiceTest {
                     .thenReturn(physicalName);
 
             // When
-            UserServiceDto findUser = userService.findUser(id);
+            UserServiceDto findUser = userService.searchUser(id);
 
             // Then
             then(userRepositoryImpl).should().findById(id);
@@ -216,7 +216,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("단건 유저 조회 테스트 - 실패 (유저 없음)")
-    void findUserFailTestNotFoundUser() {
+    void searchUserFailTestNotFoundUser() {
         // Given
         String id = "nonexistent";
         given(userRepositoryImpl.findById(id)).willReturn(Optional.empty());
@@ -224,7 +224,7 @@ class UserServiceTest {
 
         // When & Then
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> userService.findUser(id));
+                () -> userService.searchUser(id));
 
         assertThat(exception.getMessage()).isEqualTo("User not found");
         then(userRepositoryImpl).should().findById(id);
@@ -232,7 +232,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("단건 유저 조회 테스트 - 실패 (삭제된 유저 조회)")
-    void findUserFailTestDeletedUser() {
+    void searchUserFailTestDeletedUser() {
         // Given
         String id = "user1";
         User user = User.createUser(id, "", "", "", "", OriginCompanyType.SKAX, "", YNType.N, null, null);
@@ -243,7 +243,7 @@ class UserServiceTest {
 
         // When & Then
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> userService.findUser(id));
+                () -> userService.searchUser(id));
 
         assertThat(exception.getMessage()).isEqualTo("User not found");
         then(userRepositoryImpl).should().findById(id);
@@ -251,7 +251,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("전체 유저 조회 테스트 - 성공")
-    void findUsersSuccessTest() {
+    void searchUsersSuccessTest() {
         // Given
         given(userRepositoryImpl.findUsers()).willReturn(List.of(
                 User.createUser("user1", "", "이서준", "", "", OriginCompanyType.SKAX, "", YNType.N, null, null),
@@ -260,7 +260,7 @@ class UserServiceTest {
         ));
 
         // When
-        List<UserServiceDto> findUsers = userService.findUsers();
+        List<UserServiceDto> findUsers = userService.searchUsers();
 
         // Then
         then(userRepositoryImpl).should().findUsers();
@@ -272,12 +272,12 @@ class UserServiceTest {
 
     @Test
     @DisplayName("전체 유저 조회 테스트 - 빈 결과")
-    void findUsersEmptyTest() {
+    void searchUsersEmptyTest() {
         // Given
         given(userRepositoryImpl.findUsers()).willReturn(Collections.emptyList());
 
         // When
-        List<UserServiceDto> findUsers = userService.findUsers();
+        List<UserServiceDto> findUsers = userService.searchUsers();
 
         // Then
         then(userRepositoryImpl).should().findUsers();

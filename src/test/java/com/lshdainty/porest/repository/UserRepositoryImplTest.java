@@ -115,7 +115,7 @@ class UserRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("delYN이 N인 모든 유저가 보여야한다. (vacation fetch join)")
+    @DisplayName("delYN이 N인 모든 유저가 보여야한다. (vacation fetch joinUser)")
     void getUsersWithVacations() {
         User user1 = User.createUser("user1", "", "", "", "", OriginCompanyType.SKAX, "", YNType.N, null, null);
         User user2 = User.createUser("user2", "", "", "", "", OriginCompanyType.SKAX, "", YNType.N, null, null);
@@ -193,7 +193,7 @@ class UserRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("유저를 조회할 때 각각이 가지고 있는 휴가 리스트도 같이 조회돼야 한다. (vacation fetch join)")
+    @DisplayName("유저를 조회할 때 각각이 가지고 있는 휴가 리스트도 같이 조회돼야 한다. (vacation fetch joinUser)")
     void getUserWithVacations() {
         // given
         User userA = User.createUser("user1");
@@ -236,7 +236,7 @@ class UserRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("유저가 없어도 Null이 반환되면 안된다. (vacation fetch join)")
+    @DisplayName("유저가 없어도 Null이 반환되면 안된다. (vacation fetch joinUser)")
     void getUsersWithVacationsEmpty() {
         // given & when
         List<User> users = userRepositoryImpl.findUsers();
@@ -246,7 +246,7 @@ class UserRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("유저를 조회할 때 휴가가 없어도 에러가 발생하면 안된다. (vacation fetch join)")
+    @DisplayName("유저를 조회할 때 휴가가 없어도 에러가 발생하면 안된다. (vacation fetch joinUser)")
     void getUserWithVacationsEmpty() {
         // given
         User userA = User.createUser("user1", "", "", "", "", OriginCompanyType.SKAX, "", YNType.N, null, null);

@@ -1,6 +1,6 @@
 package com.lshdainty.porest.user.controller;
 
-import com.lshdainty.porest.user.controller.dto.UserDto;
+import com.lshdainty.porest.user.controller.dto.UserApiDto;
 import com.lshdainty.porest.common.controller.ApiResponse;
 import com.lshdainty.porest.user.service.UserService;
 import com.lshdainty.porest.user.service.dto.UserServiceDto;
@@ -19,8 +19,8 @@ public class UserApiController {
     private final UserService userService;
 
     @PostMapping("/api/v1/user")
-    public ApiResponse join(@RequestBody UserDto data) {
-        String userId = userService.join(UserServiceDto.builder()
+    public ApiResponse joinUser(@RequestBody UserApiDto.JoinUserReq data) {
+        String userId = userService.joinUser(UserServiceDto.builder()
                 .id(data.getUserId())
                 .pwd(data.getUserPwd())
                 .name(data.getUserName())
@@ -28,71 +28,69 @@ public class UserApiController {
                 .birth(data.getUserBirth())
                 .company(data.getUserOriginCompanyType())
                 .workTime(data.getUserWorkTime())
-                .lunarYN(data.getLunarYN())
+                .lunarYN(data.getLunarYn())
                 .profileUrl(data.getProfileUrl())
-                .profileUUID(data.getProfileUUID())
+                .profileUUID(data.getProfileUuid())
                 .build()
         );
 
-        return ApiResponse.success(UserDto.builder().userId(userId).build());
+        return ApiResponse.success(new UserApiDto.JoinUserResp(userId));
     }
 
     @GetMapping("/api/v1/user/{id}")
-    public ApiResponse user(@PathVariable("id") String userId) {
-        UserServiceDto user = userService.findUser(userId);
+    public ApiResponse searchUser(@PathVariable("id") String userId) {
+        UserServiceDto user = userService.searchUser(userId);
 
-        return ApiResponse.success(UserDto.builder()
-                .userId(user.getId())
-                .userName(user.getName())
-                .userEmail(user.getEmail())
-                .userBirth(user.getBirth())
-                .userWorkTime(user.getWorkTime())
-                .userRoleType(user.getRole())
-                .userRoleName(user.getRole().name())
-                .userOriginCompanyType(user.getCompany())
-                .userOriginCompanyName(user.getCompany().getCompanyName())
-                .lunarYN(user.getLunarYN())
-                .profileUrl(user.getProfileUrl())
-                .invitationToken(user.getInvitationToken())
-                .invitationSentAt(user.getInvitationSentAt())
-                .invitationExpiresAt(user.getInvitationExpiresAt())
-                .invitationStatus(user.getInvitationStatus())
-                .registeredAt(user.getRegisteredAt())
-                .build()
-        );
+        return ApiResponse.success(new UserApiDto.SearchUserResp(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getBirth(),
+                user.getWorkTime(),
+                user.getRole(),
+                user.getRole().name(),
+                user.getCompany(),
+                user.getCompany().getCompanyName(),
+                user.getLunarYN(),
+                user.getProfileUrl(),
+                user.getInvitationToken(),
+                user.getInvitationSentAt(),
+                user.getInvitationExpiresAt(),
+                user.getInvitationStatus(),
+                user.getRegisteredAt()
+        ));
     }
 
     @GetMapping("/api/v1/users")
-    public ApiResponse users() {
-        List<UserServiceDto> users = userService.findUsers();
+    public ApiResponse searchUsers() {
+        List<UserServiceDto> users = userService.searchUsers();
 
-        List<UserDto> resps = users.stream()
-                .map(u -> UserDto.builder()
-                        .userId(u.getId())
-                        .userName(u.getName())
-                        .userEmail(u.getEmail())
-                        .userBirth(u.getBirth())
-                        .userWorkTime(u.getWorkTime())
-                        .userRoleType(u.getRole())
-                        .userRoleName(u.getRole().name())
-                        .userOriginCompanyType(u.getCompany())
-                        .userOriginCompanyName(u.getCompany().getCompanyName())
-                        .lunarYN(u.getLunarYN())
-                        .profileUrl(u.getProfileUrl())
-                        .invitationToken(u.getInvitationToken())
-                        .invitationSentAt(u.getInvitationSentAt())
-                        .invitationExpiresAt(u.getInvitationExpiresAt())
-                        .invitationStatus(u.getInvitationStatus())
-                        .registeredAt(u.getRegisteredAt())
-                        .build()
-                )
+        List<UserApiDto.SearchUserResp> resps = users.stream()
+                .map(u -> new UserApiDto.SearchUserResp(
+                        u.getId(),
+                        u.getName(),
+                        u.getEmail(),
+                        u.getBirth(),
+                        u.getWorkTime(),
+                        u.getRole(),
+                        u.getRole().name(),
+                        u.getCompany(),
+                        u.getCompany().getCompanyName(),
+                        u.getLunarYN(),
+                        u.getProfileUrl(),
+                        u.getInvitationToken(),
+                        u.getInvitationSentAt(),
+                        u.getInvitationExpiresAt(),
+                        u.getInvitationStatus(),
+                        u.getRegisteredAt()
+                ))
                 .collect(Collectors.toList());
 
         return ApiResponse.success(resps);
     }
 
     @PutMapping("/api/v1/user/{id}")
-    public ApiResponse editUser(@PathVariable("id") String userId, @RequestBody UserDto data) {
+    public ApiResponse editUser(@PathVariable("id") String userId, @RequestBody UserApiDto.EditUserReq data) {
         userService.editUser(UserServiceDto.builder()
                 .id(userId)
                 .name(data.getUserName())
@@ -101,28 +99,27 @@ public class UserApiController {
                 .role(data.getUserRoleType())
                 .company(data.getUserOriginCompanyType())
                 .workTime(data.getUserWorkTime())
-                .lunarYN(data.getLunarYN())
+                .lunarYN(data.getLunarYn())
                 .profileUrl(data.getProfileUrl())
-                .profileUUID(data.getProfileUUID())
+                .profileUUID(data.getProfileUuid())
                 .build()
         );
 
-        UserServiceDto findUser = userService.findUser(userId);
+        UserServiceDto findUser = userService.searchUser(userId);
 
-        return ApiResponse.success(UserDto.builder()
-                .userId(findUser.getId())
-                .userName(findUser.getName())
-                .userEmail(findUser.getEmail())
-                .userBirth(findUser.getBirth())
-                .userWorkTime(findUser.getWorkTime())
-                .userRoleType(findUser.getRole())
-                .userRoleName(findUser.getRole().name())
-                .userOriginCompanyType(findUser.getCompany())
-                .userOriginCompanyName(findUser.getCompany().getCompanyName())
-                .lunarYN(findUser.getLunarYN())
-                .profileUrl(findUser.getProfileUrl())
-                .build()
-        );
+        return ApiResponse.success(new UserApiDto.EditUserResp(
+                findUser.getId(),
+                findUser.getName(),
+                findUser.getEmail(),
+                findUser.getBirth(),
+                findUser.getWorkTime(),
+                findUser.getRole(),
+                findUser.getRole().name(),
+                findUser.getCompany(),
+                findUser.getCompany().getCompanyName(),
+                findUser.getLunarYN(),
+                findUser.getProfileUrl()
+        ));
     }
 
     @DeleteMapping("/api/v1/user/{id}")
@@ -132,19 +129,19 @@ public class UserApiController {
     }
 
     @PostMapping(value = "/api/v1/user/upload/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ApiResponse uploadProfile(@ModelAttribute UserDto data) {
+    public ApiResponse uploadProfile(@ModelAttribute UserApiDto.UploadProfileReq data) {
         UserServiceDto dto = userService.saveProfileImgInTempFolder(data.getProfile());
-        return ApiResponse.success(UserDto.builder()
-                .profileUrl(dto.getProfileUrl())
-                .profileUUID(dto.getProfileUUID())
-                .build());
+        return ApiResponse.success(new UserApiDto.UploadProfileResp(
+                dto.getProfileUrl(),
+                dto.getProfileUUID()
+        ));
     }
 
     /**
      * 관리자가 사용자 초대
      */
     @PostMapping("/api/v1/user/invite")
-    public ApiResponse inviteUser(@RequestBody UserDto data) {
+    public ApiResponse inviteUser(@RequestBody UserApiDto.InviteUserReq data) {
         UserServiceDto result = userService.inviteUser(UserServiceDto.builder()
                 .id(data.getUserId())
                 .name(data.getUserName())
@@ -154,17 +151,17 @@ public class UserApiController {
                 .build()
         );
 
-        return ApiResponse.success(UserDto.builder()
-                .userId(result.getId())
-                .userName(result.getName())
-                .userEmail(result.getEmail())
-                .userOriginCompanyType(result.getCompany())
-                .userWorkTime(result.getWorkTime())
-                .userRoleType(result.getRole())
-                .invitationSentAt(result.getInvitationSentAt())
-                .invitationExpiresAt(result.getInvitationExpiresAt())
-                .invitationStatus(result.getInvitationStatus())
-                .build());
+        return ApiResponse.success(new UserApiDto.InviteUserResp(
+                result.getId(),
+                result.getName(),
+                result.getEmail(),
+                result.getCompany(),
+                result.getWorkTime(),
+                result.getRole(),
+                result.getInvitationSentAt(),
+                result.getInvitationExpiresAt(),
+                result.getInvitationStatus()
+        ));
     }
 
     /**
@@ -174,16 +171,16 @@ public class UserApiController {
     public ApiResponse resendInvitation(@PathVariable("id") String userId) {
         UserServiceDto result = userService.resendInvitation(userId);
 
-        return ApiResponse.success(UserDto.builder()
-                .userId(result.getId())
-                .userName(result.getName())
-                .userEmail(result.getEmail())
-                .userOriginCompanyType(result.getCompany())
-                .userWorkTime(result.getWorkTime())
-                .userRoleType(result.getRole())
-                .invitationSentAt(result.getInvitationSentAt())
-                .invitationExpiresAt(result.getInvitationExpiresAt())
-                .invitationStatus(result.getInvitationStatus())
-                .build());
+        return ApiResponse.success(new UserApiDto.ResendInvitationResp(
+                result.getId(),
+                result.getName(),
+                result.getEmail(),
+                result.getCompany(),
+                result.getWorkTime(),
+                result.getRole(),
+                result.getInvitationSentAt(),
+                result.getInvitationExpiresAt(),
+                result.getInvitationStatus()
+        ));
     }
 }

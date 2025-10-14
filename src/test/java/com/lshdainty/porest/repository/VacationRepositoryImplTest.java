@@ -326,7 +326,7 @@ public class VacationRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("baseTime이 발생시간 및 유효기간 안에 해당하는 휴가가 조회돼야 한다.(history fetch join)")
+    @DisplayName("baseTime이 발생시간 및 유효기간 안에 해당하는 휴가가 조회돼야 한다.(history fetch joinUser)")
     void getVacationsByBaseTimeWithHistory() {
         // given
         User user = User.createUser("test1");
@@ -359,7 +359,7 @@ public class VacationRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("baseTime이 발생시간 및 유효기간 안에 해당하는 휴가가 없어도 Null이 반환되면 안된다.(history fetch join)")
+    @DisplayName("baseTime이 발생시간 및 유효기간 안에 해당하는 휴가가 없어도 Null이 반환되면 안된다.(history fetch joinUser)")
     void getVacationsByBaseTimeWithHistoryEmpty() {
         // given
         User user = User.createUser("test1");
@@ -390,7 +390,7 @@ public class VacationRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("userNo가 null이 입력되어도 오류가 발생되면 안된다.(history fetch join)")
+    @DisplayName("userNo가 null이 입력되어도 오류가 발생되면 안된다.(history fetch joinUser)")
     void getVacationsByBaseTimeWithHistoryUserNoNull() {
         // given
         String userId = null;
@@ -404,7 +404,7 @@ public class VacationRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("baseTime이 null이 입력되어도 오류가 발생되면 안된다.(history fetch join)")
+    @DisplayName("baseTime이 null이 입력되어도 오류가 발생되면 안된다.(history fetch joinUser)")
     void getVacationsByBaseTimeWithHistoryNull() {
         // given
         String userId = null;

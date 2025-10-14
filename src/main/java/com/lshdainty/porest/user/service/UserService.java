@@ -43,7 +43,7 @@ public class UserService {
     private String originPath;
 
     @Transactional
-    public String join(UserServiceDto data) {
+    public String joinUser(UserServiceDto data) {
         UserServiceDto profileDto = UserServiceDto.builder().build();
         if (StringUtils.hasText(data.getProfileUUID()) && StringUtils.hasText(data.getProfileUrl())) {
             profileDto = copyTempProfileToOrigin(data);
@@ -66,7 +66,7 @@ public class UserService {
         return user.getId();
     }
 
-    public UserServiceDto findUser(String userId) {
+    public UserServiceDto searchUser(String userId) {
         User user = checkUserExist(userId);
 
         return UserServiceDto.builder()
@@ -92,7 +92,7 @@ public class UserService {
     }
 
 
-    public List<UserServiceDto> findUsers() {
+    public List<UserServiceDto> searchUsers() {
         List<User> users = userRepositoryImpl.findUsers();
 
         return users.stream()
