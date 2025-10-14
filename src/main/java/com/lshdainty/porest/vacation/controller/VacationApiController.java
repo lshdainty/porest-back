@@ -2,13 +2,12 @@ package com.lshdainty.porest.vacation.controller;
 
 import com.lshdainty.porest.common.controller.ApiResponse;
 import com.lshdainty.porest.user.domain.User;
+import com.lshdainty.porest.vacation.controller.dto.VacationApiDto;
 import com.lshdainty.porest.vacation.domain.Vacation;
-import com.lshdainty.porest.vacation.service.dto.VacationPolicyServiceDto;
-import com.lshdainty.porest.vacation.type.VacationTimeType;
-import com.lshdainty.porest.user.controller.dto.UserDto;
-import com.lshdainty.porest.vacation.controller.dto.VacationDto;
 import com.lshdainty.porest.vacation.service.VacationService;
+import com.lshdainty.porest.vacation.service.dto.VacationPolicyServiceDto;
 import com.lshdainty.porest.vacation.service.dto.VacationServiceDto;
+import com.lshdainty.porest.vacation.type.VacationTimeType;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +15,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -26,7 +24,7 @@ public class VacationApiController {
     private final VacationService vacationService;
 
     @PostMapping("/api/v1/vacation")
-    public ApiResponse registVacation(@RequestBody VacationDto data, HttpServletRequest req) {
+    public ApiResponse registVacation(@RequestBody VacationApiDto.RegistVacationReq data, HttpServletRequest req) {
         Long vacationId = vacationService.registVacation(VacationServiceDto.builder()
                         .userId(data.getUserId())
                         .desc(data.getVacationDesc())
@@ -39,11 +37,13 @@ public class VacationApiController {
                 req.getRemoteAddr()
         );
 
-        return ApiResponse.success(VacationDto.builder().vacationId(vacationId).build());
+        return ApiResponse.success(new VacationApiDto.RegistVacationResp(vacationId));
     }
 
     @PostMapping("/api/v1/vacation/use/{vacationId}")
-    public ApiResponse useVacation(@PathVariable("vacationId") Long vacationId, @RequestBody VacationDto data, HttpServletRequest req) {
+    public ApiResponse useVacation(@PathVariable("vacationId") Long vacationId,
+                                   @RequestBody VacationApiDto.UseVacationReq data,
+                                   HttpServletRequest req) {
         Long respVacationId = vacationService.useVacation(VacationServiceDto.builder()
                         .userId(data.getUserId())
                         .id(vacationId)
@@ -56,73 +56,72 @@ public class VacationApiController {
                 req.getRemoteAddr()
         );
 
-        return ApiResponse.success(VacationDto.builder().vacationId(respVacationId).build());
+        return ApiResponse.success(new VacationApiDto.UseVacationResp(respVacationId));
     }
 
     @GetMapping("/api/v1/vacations/user/{userId}")
-    public ApiResponse getUserVacations(@PathVariable("userId") String userId) {
-        List<Vacation> vacations = vacationService.getUserVacations(userId);
+    public ApiResponse searchUserVacations(@PathVariable("userId") String userId) {
+        List<Vacation> vacations = vacationService.searchUserVacations(userId);
 
-        List<VacationDto> resp = vacations.stream()
-                .map(v -> VacationDto.builder()
-                        .vacationId(v.getId())
-                        .vacationType(v.getType())
-                        .vacationTypeName(v.getType().getViewName())
-                        .remainTime(v.getRemainTime())
-                        .occurDate(v.getOccurDate())
-                        .expiryDate(v.getExpiryDate())
-                        .build()
-                )
+        List<VacationApiDto.SearchUserVacationsResp> resp = vacations.stream()
+                .map(v -> new VacationApiDto.SearchUserVacationsResp(
+                        v.getId(),
+                        v.getType(),
+                        v.getType().getViewName(),
+                        v.getRemainTime(),
+                        v.getOccurDate(),
+                        v.getExpiryDate()
+                ))
                 .toList();
 
         return ApiResponse.success(resp);
     }
 
     @GetMapping("/api/v1/vacations/usergroup")
-    public ApiResponse getUserGroupVacations() {
-        List<User> usersVacations = vacationService.getUserGroupVacations();
+    public ApiResponse searchUserGroupVacations() {
+        List<User> usersVacations = vacationService.searchUserGroupVacations();
 
-        List<UserDto> resp = new ArrayList<>();
-        for (User user : usersVacations) {
-            List<VacationDto> vacations = user.getVacations().stream()
-                    .map(v -> VacationDto.builder()
-                            .vacationId(v.getId())
-                            .vacationType(v.getType())
-                            .vacationTypeName(v.getType().getViewName())
-                            .remainTime(v.getRemainTime())
-                            .occurDate(v.getOccurDate())
-                            .expiryDate(v.getExpiryDate())
-                            .build()
-                    )
-                    .toList();
+        List<VacationApiDto.SearchUserGroupVacationsResp> resp = usersVacations.stream()
+                .map(user -> {
+                    List<VacationApiDto.SearchUserGroupVacationsResp.VacationInfo> vacations =
+                            user.getVacations().stream()
+                                    .map(v -> new VacationApiDto.SearchUserGroupVacationsResp.VacationInfo(
+                                            v.getId(),
+                                            v.getType(),
+                                            v.getType().getViewName(),
+                                            v.getRemainTime(),
+                                            v.getOccurDate(),
+                                            v.getExpiryDate()
+                                    ))
+                                    .toList();
 
-            resp.add(UserDto.builder()
-                    .userId(user.getId())
-                    .userName(user.getName())
-                    .vacations(vacations)
-                    .build()
-            );
-        }
+                    return new VacationApiDto.SearchUserGroupVacationsResp(
+                            user.getId(),
+                            user.getName(),
+                            vacations
+                    );
+                })
+                .toList();
 
         return ApiResponse.success(resp);
     }
 
     @GetMapping("/api/v1/vacation/available/{userId}")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    public ApiResponse getAvailableVacations(@PathVariable("userId") String userId, @RequestParam("startDate") LocalDateTime startDate) {
-        List<Vacation> vacations = vacationService.getAvailableVacations(userId, startDate);
+    public ApiResponse searcgAvailableVacations(@PathVariable("userId") String userId,
+                                                @RequestParam("startDate") LocalDateTime startDate) {
+        List<Vacation> vacations = vacationService.searcgAvailableVacations(userId, startDate);
 
-        List<VacationDto> resp = vacations.stream()
-                .map(v -> VacationDto.builder()
-                        .vacationId(v.getId())
-                        .vacationType(v.getType())
-                        .vacationTypeName(v.getType().getViewName())
-                        .remainTime(v.getRemainTime())
-                        .occurDate(v.getOccurDate())
-                        .expiryDate(v.getExpiryDate())
-                        .remainTimeStr(VacationTimeType.convertValueToDay(v.getRemainTime()))
-                        .build()
-                )
+        List<VacationApiDto.SearchAvailableVacationsResp> resp = vacations.stream()
+                .map(v -> new VacationApiDto.SearchAvailableVacationsResp(
+                        v.getId(),
+                        v.getType(),
+                        v.getType().getViewName(),
+                        v.getRemainTime(),
+                        v.getOccurDate(),
+                        v.getExpiryDate(),
+                        VacationTimeType.convertValueToDay(v.getRemainTime())
+                ))
                 .toList();
 
         return ApiResponse.success(resp);
@@ -137,24 +136,23 @@ public class VacationApiController {
 
     @GetMapping("/api/v1/vacation/use/histories/period")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    public ApiResponse getPeriodVacationUseHistories(
+    public ApiResponse searchPeriodVacationUseHistories(
             @RequestParam("startDate") LocalDateTime startDate,
             @RequestParam("endDate") LocalDateTime endDate) {
-        List<VacationServiceDto> histories = vacationService.getPeriodVacationUseHistories(startDate, endDate);
+        List<VacationServiceDto> histories = vacationService.searchPeriodVacationUseHistories(startDate, endDate);
 
-        List<VacationDto> resp = histories.stream()
-                .map(v -> VacationDto.builder()
-                        .userId(v.getUser().getId())
-                        .userName(v.getUser().getName())
-                        .vacationId(v.getId())
-                        .vacationDesc(v.getDesc())
-                        .vacationHistoryIds(v.getHistoryIds())
-                        .vacationTimeType(v.getTimeType())
-                        .vacationTimeTypeName(v.getTimeType().getStrName())
-                        .startDate(v.getStartDate())
-                        .endDate(v.getEndDate())
-                        .build()
-                )
+        List<VacationApiDto.SearchPeriodVacationUseHistoriesResp> resp = histories.stream()
+                .map(v -> new VacationApiDto.SearchPeriodVacationUseHistoriesResp(
+                        v.getUser().getId(),
+                        v.getUser().getName(),
+                        v.getId(),
+                        v.getDesc(),
+                        v.getHistoryIds(),
+                        v.getTimeType(),
+                        v.getTimeType().getStrName(),
+                        v.getStartDate(),
+                        v.getEndDate()
+                ))
                 .toList();
 
         return ApiResponse.success(resp);
@@ -162,41 +160,39 @@ public class VacationApiController {
 
     @GetMapping("/api/v1/vacation/use/histories/user/period")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    public ApiResponse getUserPeriodVacationUseHistories(
+    public ApiResponse searchUserPeriodVacationUseHistories(
             @RequestParam("userId") String userId,
             @RequestParam("startDate") LocalDateTime startDate,
             @RequestParam("endDate") LocalDateTime endDate) {
-        List<VacationServiceDto> histories = vacationService.getUserPeriodVacationUseHistories(userId, startDate, endDate);
+        List<VacationServiceDto> histories = vacationService.searchUserPeriodVacationUseHistories(userId, startDate, endDate);
 
-        List<VacationDto> resp = histories.stream()
-                .map(v -> VacationDto.builder()
-                        .vacationId(v.getId())
-                        .vacationDesc(v.getDesc())
-                        .vacationHistoryId(v.getHistoryId())
-                        .vacationTimeType(v.getTimeType())
-                        .vacationTimeTypeName(v.getTimeType().getStrName())
-                        .startDate(v.getStartDate())
-                        .endDate(v.getEndDate())
-                        .build()
-                )
+        List<VacationApiDto.SearchUserPeriodVacationUseHistoriesResp> resp = histories.stream()
+                .map(v -> new VacationApiDto.SearchUserPeriodVacationUseHistoriesResp(
+                        v.getId(),
+                        v.getDesc(),
+                        v.getHistoryId(),
+                        v.getTimeType(),
+                        v.getTimeType().getStrName(),
+                        v.getStartDate(),
+                        v.getEndDate()
+                ))
                 .toList();
 
         return ApiResponse.success(resp);
     }
 
     @GetMapping("/api/v1/vacation/use/histories/user/month/stats")
-    public ApiResponse getUserMonthStatsVacationUseHistories(
+    public ApiResponse searchUserMonthStatsVacationUseHistories(
             @RequestParam("userId") String userId,
             @RequestParam("year") String year) {
-        List<VacationServiceDto> histories = vacationService.getUserMonthStatsVacationUseHistories(userId, year);
+        List<VacationServiceDto> histories = vacationService.searchUserMonthStatsVacationUseHistories(userId, year);
 
-        List<VacationDto> resp = histories.stream()
-                .map(v -> VacationDto.builder()
-                        .month(v.getMonth())
-                        .usedTime(v.getUsedTime())
-                        .usedTimeStr(VacationTimeType.convertValueToDay(v.getUsedTime()))
-                        .build()
-                )
+        List<VacationApiDto.SearchUserMonthStatsVacationUseHistoriesResp> resp = histories.stream()
+                .map(v -> new VacationApiDto.SearchUserMonthStatsVacationUseHistoriesResp(
+                        v.getMonth(),
+                        v.getUsedTime(),
+                        VacationTimeType.convertValueToDay(v.getUsedTime())
+                ))
                 .toList();
 
         return ApiResponse.success(resp);
@@ -204,49 +200,48 @@ public class VacationApiController {
 
     @GetMapping("/api/v1/vacation/use/stats/user")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    public ApiResponse getUserVacationUseStats(
+    public ApiResponse searchUserVacationUseStats(
             @RequestParam("userId") String userId,
             @RequestParam("baseDate") LocalDateTime baseDate) {
-        VacationServiceDto stats = vacationService.getUserVacationUseStats(userId, baseDate);
+        VacationServiceDto stats = vacationService.searchUserVacationUseStats(userId, baseDate);
 
-        return ApiResponse.success(VacationDto.builder()
-                .remainTime(stats.getRemainTime())
-                .remainTimeStr(VacationTimeType.convertValueToDay(stats.getRemainTime()))
-                .usedTime(stats.getUsedTime())
-                .usedTimeStr(VacationTimeType.convertValueToDay(stats.getUsedTime()))
-                .expectUsedTime(stats.getExpectUsedTime())
-                .expectUsedTimeStr(VacationTimeType.convertValueToDay(stats.getExpectUsedTime()))
-                .prevRemainTime(stats.getPrevRemainTime())
-                .prevRemainTimeStr(VacationTimeType.convertValueToDay(stats.getPrevRemainTime()))
-                .prevUsedTime(stats.getPrevUsedTime())
-                .prevUsedTimeStr(VacationTimeType.convertValueToDay(stats.getPrevUsedTime()))
-                .prevExpectUsedTime(stats.getPrevExpectUsedTime())
-                .prevExpectUsedTimeStr(VacationTimeType.convertValueToDay(stats.getPrevExpectUsedTime()))
-                .remainTimeGap(stats.getRemainTime().subtract(stats.getPrevRemainTime()))
-                .remainTimeGapStr(VacationTimeType.convertValueToDay(stats.getRemainTime().subtract(stats.getPrevRemainTime()).abs()))
-                .usedTimeGap(stats.getUsedTime().subtract(stats.getPrevUsedTime()))
-                .usedTimeGapStr(VacationTimeType.convertValueToDay(stats.getUsedTime().subtract(stats.getPrevUsedTime()).abs()))
-                .build()
-        );
+        return ApiResponse.success(new VacationApiDto.SearchUserVacationUseStatsResp(
+                stats.getRemainTime(),
+                VacationTimeType.convertValueToDay(stats.getRemainTime()),
+                stats.getUsedTime(),
+                VacationTimeType.convertValueToDay(stats.getUsedTime()),
+                stats.getExpectUsedTime(),
+                VacationTimeType.convertValueToDay(stats.getExpectUsedTime()),
+                stats.getPrevRemainTime(),
+                VacationTimeType.convertValueToDay(stats.getPrevRemainTime()),
+                stats.getPrevUsedTime(),
+                VacationTimeType.convertValueToDay(stats.getPrevUsedTime()),
+                stats.getPrevExpectUsedTime(),
+                VacationTimeType.convertValueToDay(stats.getPrevExpectUsedTime()),
+                stats.getRemainTime().subtract(stats.getPrevRemainTime()),
+                VacationTimeType.convertValueToDay(stats.getRemainTime().subtract(stats.getPrevRemainTime()).abs()),
+                stats.getUsedTime().subtract(stats.getPrevUsedTime()),
+                VacationTimeType.convertValueToDay(stats.getUsedTime().subtract(stats.getPrevUsedTime()).abs())
+        ));
     }
 
     @GetMapping("/api/v1/vacation/policies")
-    public ApiResponse getVacationPolicies() {
-        List<VacationPolicyServiceDto> policies = vacationService.getVacationPolicies();
+    public ApiResponse searchVacationPolicies() {
+        List<VacationPolicyServiceDto> policies = vacationService.searchVacationPolicies();
 
-        List<VacationDto> resp = policies.stream()
-                .map(vp -> VacationDto.builder()
-                        .vacationPolicyId(vp.getId())
-                        .vacationPolicyName(vp.getName())
-                        .vacationPolicyDesc(vp.getDesc())
-                        .grantMethod(vp.getGrantMethod())
-                        .grantTime(vp.getGrantTime())
-                        .repeatUnit(vp.getRepeatUnit())
-                        .repeatInterval(vp.getRepeatInterval())
-                        .grantTiming(vp.getGrantTiming())
-                        .specificMonths(vp.getSpecificMonths())
-                        .specificDays(vp.getSpecificDays())
-                        .build())
+        List<VacationApiDto.SearchVacationPoliciesResp> resp = policies.stream()
+                .map(vp -> new VacationApiDto.SearchVacationPoliciesResp(
+                        vp.getId(),
+                        vp.getName(),
+                        vp.getDesc(),
+                        vp.getGrantMethod(),
+                        vp.getGrantTime(),
+                        vp.getRepeatUnit(),
+                        vp.getRepeatInterval(),
+                        vp.getGrantTiming(),
+                        vp.getSpecificMonths(),
+                        vp.getSpecificDays()
+                ))
                 .toList();
 
         return ApiResponse.success(resp);

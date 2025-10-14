@@ -132,15 +132,15 @@ public class VacationService {
         return vacation.getId();
     }
 
-    public List<Vacation> getUserVacations(String userId) {
+    public List<Vacation> searchUserVacations(String userId) {
         return vacationRepository.findVacationsByUserId(userId);
     }
 
-    public List<User> getUserGroupVacations() {
+    public List<User> searchUserGroupVacations() {
         return userRepository.findUsersWithVacations();
     }
 
-    public List<Vacation> getAvailableVacations(String userId, LocalDateTime startDate) {
+    public List<Vacation> searcgAvailableVacations(String userId, LocalDateTime startDate) {
         // 유저 조회
         userService.checkUserExist(userId);
 
@@ -176,7 +176,7 @@ public class VacationService {
         }
     }
 
-    public List<VacationServiceDto> getPeriodVacationUseHistories(LocalDateTime startDate, LocalDateTime endDate) {
+    public List<VacationServiceDto> searchPeriodVacationUseHistories(LocalDateTime startDate, LocalDateTime endDate) {
         // 기간에 맞는 history 내역 가져오기
         List<VacationHistory> histories = vacationHistoryRepository.findVacationHistorysByPeriod(startDate, endDate);
 
@@ -216,7 +216,7 @@ public class VacationService {
         return result;
     }
 
-    public List<VacationServiceDto> getUserPeriodVacationUseHistories(String userId, LocalDateTime startDate, LocalDateTime endDate) {
+    public List<VacationServiceDto> searchUserPeriodVacationUseHistories(String userId, LocalDateTime startDate, LocalDateTime endDate) {
         // 기간에 맞는 유저 history 내역 가져오기
         List<VacationHistory> histories = vacationHistoryRepository.findVacationUseHistorysByUserAndPeriod(userId, startDate, endDate);
 
@@ -233,7 +233,7 @@ public class VacationService {
                 .toList();
     }
 
-    public List<VacationServiceDto> getUserMonthStatsVacationUseHistories(String userId, String year) {
+    public List<VacationServiceDto> searchUserMonthStatsVacationUseHistories(String userId, String year) {
         // 기간에 맞는 유저 history 내역 가져오기
         List<VacationHistory> histories = vacationHistoryRepository.findVacationUseHistorysByUserAndPeriod(
                 userId,
@@ -264,7 +264,7 @@ public class VacationService {
                 .toList();
     }
 
-    public VacationServiceDto getUserVacationUseStats(String userId, LocalDateTime baseTime) {
+    public VacationServiceDto searchUserVacationUseStats(String userId, LocalDateTime baseTime) {
         // 기준 시점에 유효한 모든 휴가 & 전체 이력
         List<Vacation> curVacations = vacationRepository.findVacationsByBaseTimeWithHistory(userId, baseTime);
         List<Vacation> prevVacations = vacationRepository.findVacationsByBaseTimeWithHistory(userId, baseTime.minusMonths(1));
@@ -318,7 +318,7 @@ public class VacationService {
         return vacationService.registVacationPolicy(data);
     }
 
-    public List<VacationPolicyServiceDto> getVacationPolicies() {
+    public List<VacationPolicyServiceDto> searchVacationPolicies() {
         List<VacationPolicy> policies = vacationPolicyRepository.findVacationPolicies();
         return policies.stream()
                 .map(p -> VacationPolicyServiceDto.builder()

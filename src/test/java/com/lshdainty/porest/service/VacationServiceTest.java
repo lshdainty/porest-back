@@ -472,7 +472,7 @@ class VacationServiceTest {
 
     @Test
     @DisplayName("사용자 휴가 목록 조회 테스트 - 성공")
-    void getUserVacationsSuccessTest() {
+    void searchUserVacationsSuccessTest() {
         // Given
         String userId = "user1";
         User user = createTestUser(userId, "9 ~ 6");
@@ -484,7 +484,7 @@ class VacationServiceTest {
         given(vacationRepositoryImpl.findVacationsByUserId(userId)).willReturn(vacations);
 
         // When
-        List<Vacation> result = vacationService.getUserVacations(userId);
+        List<Vacation> result = vacationService.searchUserVacations(userId);
 
         // Then
         assertThat(result).hasSize(2);
@@ -494,7 +494,7 @@ class VacationServiceTest {
 
     @Test
     @DisplayName("그룹 휴가 조회 테스트 - 성공")
-    void getUserGroupVacationsSuccessTest() {
+    void searchUserGroupVacationsSuccessTest() {
         // Given
         List<User> users = List.of(
                 createTestUser("user1", "9 ~ 6"),
@@ -504,7 +504,7 @@ class VacationServiceTest {
         given(userRepositoryImpl.findUsersWithVacations()).willReturn(users);
 
         // When
-        List<User> result = vacationService.getUserGroupVacations();
+        List<User> result = vacationService.searchUserGroupVacations();
 
         // Then
         assertThat(result).hasSize(2);
@@ -513,7 +513,7 @@ class VacationServiceTest {
 
     @Test
     @DisplayName("사용 가능한 휴가 조회 테스트 - 성공")
-    void getAvailableVacationsSuccessTest() {
+    void searcgAvailableVacationsSuccessTest() {
         // Given
         String userId = "user1";
         LocalDateTime startDate = LocalDateTime.of(2025, 1, 1, 0, 0);
@@ -526,7 +526,7 @@ class VacationServiceTest {
         given(vacationRepositoryImpl.findVacationsByBaseTime(userId, startDate)).willReturn(vacations);
 
         // When
-        List<Vacation> result = vacationService.getAvailableVacations(userId, startDate);
+        List<Vacation> result = vacationService.searcgAvailableVacations(userId, startDate);
 
         // Then
         assertThat(result).hasSize(1);
@@ -777,7 +777,7 @@ class VacationServiceTest {
                 .willReturn(histories);
 
         // When
-        List<VacationServiceDto> result = vacationService.getUserPeriodVacationUseHistories(userId, startDate, endDate);
+        List<VacationServiceDto> result = vacationService.searchUserPeriodVacationUseHistories(userId, startDate, endDate);
 
         // Then
         assertThat(result).hasSize(1);
@@ -787,7 +787,7 @@ class VacationServiceTest {
 
     @Test
     @DisplayName("사용자 월별 휴가 통계 조회 테스트 - 성공")
-    void getUserMonthStatsVacationUseHistoriesSuccessTest() {
+    void searchUserMonthStatsVacationUseHistoriesSuccessTest() {
         // Given
         String userId = "user1";
         String year = "2025";
@@ -807,7 +807,7 @@ class VacationServiceTest {
                 .willReturn(histories);
 
         // When
-        List<VacationServiceDto> result = vacationService.getUserMonthStatsVacationUseHistories(userId, year);
+        List<VacationServiceDto> result = vacationService.searchUserMonthStatsVacationUseHistories(userId, year);
 
         // Then
         assertThat(result).hasSize(12); // 12개월
@@ -819,7 +819,7 @@ class VacationServiceTest {
 
     @Test
     @DisplayName("사용자 휴가 사용 통계 조회 테스트 - 성공")
-    void getUserVacationUseStatsSuccessTest() {
+    void searchUserVacationUseStatsSuccessTest() {
         // Given
         String userId = "user1";
         LocalDateTime baseTime = LocalDateTime.of(2025, 6, 15, 0, 0);
@@ -835,7 +835,7 @@ class VacationServiceTest {
                 .willReturn(vacations);
 
         // When
-        VacationServiceDto result = vacationService.getUserVacationUseStats(userId, baseTime);
+        VacationServiceDto result = vacationService.searchUserVacationUseStats(userId, baseTime);
 
         // Then
         assertThat(result).isNotNull();
@@ -845,7 +845,7 @@ class VacationServiceTest {
 
     @Test
     @DisplayName("기간별 휴가 사용 이력 조회 테스트 - 성공")
-    void getPeriodVacationUseHistoriesSuccessTest() {
+    void searchPeriodVacationUseHistoriesSuccessTest() {
         // Given
         LocalDateTime startDate = LocalDateTime.of(2025, 1, 1, 0, 0);
         LocalDateTime endDate = LocalDateTime.of(2025, 1, 31, 23, 59);
@@ -873,7 +873,7 @@ class VacationServiceTest {
                 .willReturn(vacations);
 
         // When
-        List<VacationServiceDto> result = vacationService.getPeriodVacationUseHistories(startDate, endDate);
+        List<VacationServiceDto> result = vacationService.searchPeriodVacationUseHistories(startDate, endDate);
 
         // Then
         assertThat(result).isNotEmpty();
@@ -883,7 +883,7 @@ class VacationServiceTest {
 
     @Test
     @DisplayName("기간별 휴가 사용 이력 조회 테스트 - 연속된 연차 (makeDayGroupDto 연속 분기 테스트)")
-    void getPeriodVacationUseHistoriesConsecutiveDaysTest() {
+    void searchPeriodVacationUseHistoriesConsecutiveDaysTest() {
         // Given
         LocalDateTime startDate = LocalDateTime.of(2025, 1, 1, 0, 0);
         LocalDateTime endDate = LocalDateTime.of(2025, 1, 31, 23, 59);
@@ -913,7 +913,7 @@ class VacationServiceTest {
                 .willReturn(vacations);
 
         // When
-        List<VacationServiceDto> result = vacationService.getPeriodVacationUseHistories(startDate, endDate);
+        List<VacationServiceDto> result = vacationService.searchPeriodVacationUseHistories(startDate, endDate);
 
         // Then
         assertThat(result).hasSize(1); // 연속된 3일이 하나의 그룹으로 묶임
@@ -926,7 +926,7 @@ class VacationServiceTest {
 
     @Test
     @DisplayName("기간별 휴가 사용 이력 조회 테스트 - 연속되지 않은 연차 (makeDayGroupDto 비연속 분기 테스트)")
-    void getPeriodVacationUseHistoriesNonConsecutiveDaysTest() {
+    void searchPeriodVacationUseHistoriesNonConsecutiveDaysTest() {
         // Given
         LocalDateTime startDate = LocalDateTime.of(2025, 1, 1, 0, 0);
         LocalDateTime endDate = LocalDateTime.of(2025, 1, 31, 23, 59);
@@ -956,7 +956,7 @@ class VacationServiceTest {
                 .willReturn(vacations);
 
         // When
-        List<VacationServiceDto> result = vacationService.getPeriodVacationUseHistories(startDate, endDate);
+        List<VacationServiceDto> result = vacationService.searchPeriodVacationUseHistories(startDate, endDate);
 
         // Then
         assertThat(result).hasSize(2); // 연속된 2일 + 비연속된 1일 = 2개 그룹
@@ -975,7 +975,7 @@ class VacationServiceTest {
 
     @Test
     @DisplayName("기간별 휴가 사용 이력 조회 테스트 - 복합 케이스 (연차 + 시간단위)")
-    void getPeriodVacationUseHistoriesComplexTest() {
+    void searchPeriodVacationUseHistoriesComplexTest() {
         // Given
         LocalDateTime startDate = LocalDateTime.of(2025, 1, 1, 0, 0);
         LocalDateTime endDate = LocalDateTime.of(2025, 1, 31, 23, 59);
@@ -1008,7 +1008,7 @@ class VacationServiceTest {
                 .willReturn(vacations);
 
         // When
-        List<VacationServiceDto> result = vacationService.getPeriodVacationUseHistories(startDate, endDate);
+        List<VacationServiceDto> result = vacationService.searchPeriodVacationUseHistories(startDate, endDate);
 
         // Then
         assertThat(result).hasSize(3); // 연속 연차 1그룹 + 시간단위 2개 = 3개
@@ -1018,7 +1018,7 @@ class VacationServiceTest {
 
     @Test
     @DisplayName("기간별 휴가 사용 이력 조회 테스트 - 빈 결과")
-    void getPeriodVacationUseHistoriesEmptyTest() {
+    void searchPeriodVacationUseHistoriesEmptyTest() {
         // Given
         LocalDateTime startDate = LocalDateTime.of(2025, 1, 1, 0, 0);
         LocalDateTime endDate = LocalDateTime.of(2025, 1, 31, 23, 59);
@@ -1029,7 +1029,7 @@ class VacationServiceTest {
                 .willReturn(Collections.emptyList());
 
         // When
-        List<VacationServiceDto> result = vacationService.getPeriodVacationUseHistories(startDate, endDate);
+        List<VacationServiceDto> result = vacationService.searchPeriodVacationUseHistories(startDate, endDate);
 
         // Then
         assertThat(result).isEmpty();
