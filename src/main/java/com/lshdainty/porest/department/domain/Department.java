@@ -45,6 +45,9 @@ public class Department extends AuditingFields {
     @Column(name = "department_desc")
     private String desc;    // 부서 설명
 
+    @Column(name = "color_code")
+    private String color;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id")
     private Company company;
@@ -82,7 +85,7 @@ public class Department extends AuditingFields {
      *
      * @return Department
      */
-    public static Department createDepartment(String name, String nameKR, Department parent, String headUserId, Long level, String desc, Company company) {
+    public static Department createDepartment(String name, String nameKR, Department parent, String headUserId, Long level, String desc, String color, Company company) {
         Department department = new Department();
         department.name = name;
         department.nameKR = nameKR;
@@ -90,6 +93,7 @@ public class Department extends AuditingFields {
         department.headUserId = headUserId;
         department.level = level;
         department.desc = desc;
+        department.color = color;
         department.addCompany(company);
         department.delYN = YNType.N;
         return department;
@@ -100,7 +104,7 @@ public class Department extends AuditingFields {
      * Entity의 경우 Setter없이 Getter만 사용<br>
      * 해당 메소드를 통해 유저 생성할 것
      */
-    public void updateDepartment(String name, String nameKR, Department parent, String headUserId, Long level, String desc) {
+    public void updateDepartment(String name, String nameKR, Department parent, String headUserId, Long level, String desc, String color) {
         if (!Objects.isNull(name)) { this.name = name; }
         if (!Objects.isNull(nameKR)) { this.nameKR = nameKR; }
         if (!Objects.isNull(parent)) { this.changeParent(parent); }
@@ -108,6 +112,8 @@ public class Department extends AuditingFields {
         this.headUserId = headUserId;
         if (!Objects.isNull(level)) { this.level = level; }
         if (!Objects.isNull(desc)) { this.desc = desc; }
+        // 색상 코드의 경우 잘못 선택한 경우 공란으로 설정가능
+        this.color = color;
     }
 
     /**

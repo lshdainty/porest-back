@@ -1,10 +1,10 @@
 package com.lshdainty.porest.company.controller;
 
 import com.lshdainty.porest.common.controller.ApiResponse;
-import com.lshdainty.porest.company.controller.dto.CompanyDto;
+import com.lshdainty.porest.company.controller.dto.CompanyApiDto;
 import com.lshdainty.porest.company.service.CompanyService;
 import com.lshdainty.porest.company.service.dto.CompanyServiceDto;
-import com.lshdainty.porest.department.controller.dto.DepartmentDto;
+import com.lshdainty.porest.department.controller.dto.DepartmentApiDto;
 import com.lshdainty.porest.department.service.dto.DepartmentServiceDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +17,7 @@ public class CompanyApiController {
     private final CompanyService companyService;
 
     @PostMapping("/api/v1/company")
-    public ApiResponse registCompany(@RequestBody CompanyDto data) {
+    public ApiResponse registCompany(@RequestBody CompanyApiDto.RegistCompanyReq data) {
         String companyId = companyService.regist(CompanyServiceDto.builder()
                 .id(data.getCompanyId())
                 .name(data.getCompanyName())
@@ -25,7 +25,7 @@ public class CompanyApiController {
                 .build()
         );
 
-        return ApiResponse.success(CompanyDto.builder().companyId(companyId).build());
+        return ApiResponse.success(new CompanyApiDto.RegistCompanyResp(companyId));
     }
 
     @GetMapping("/api/v1/company")
@@ -36,16 +36,15 @@ public class CompanyApiController {
             return ApiResponse.success();
         }
 
-        return ApiResponse.success(CompanyDto.builder()
-                .companyId(company.getId())
-                .companyName(company.getName())
-                .companyDesc(company.getDesc())
-                .build()
-        );
+        return ApiResponse.success(new CompanyApiDto.SearchCompanyResp(
+                company.getId(),
+                company.getName(),
+                company.getDesc()
+        ));
     }
 
     @PutMapping("/api/v1/company/{id}")
-    public ApiResponse editCompany(@PathVariable("id") String companyId, @RequestBody CompanyDto data) {
+    public ApiResponse editCompany(@PathVariable("id") String companyId, @RequestBody CompanyApiDto.EditCompanyReq data) {
         companyService.edit(CompanyServiceDto.builder()
                 .id(companyId)
                 .name(data.getCompanyName())
@@ -65,38 +64,39 @@ public class CompanyApiController {
     public ApiResponse searchCompanyWithDepartments(@PathVariable("id") String companyId) {
         CompanyServiceDto company = companyService.searchCompanyWithDepartments(companyId);
 
-        return ApiResponse.success(CompanyDto.builder()
-                .companyId(company.getId())
-                .companyName(company.getName())
-                .companyDesc(company.getDesc())
-                .departments(company.getDepartments() != null
+        return ApiResponse.success(new CompanyApiDto.SearchCompanyWithDepartmentsResp(
+                company.getId(),
+                company.getName(),
+                company.getDesc(),
+                company.getDepartments() != null
                         ? company.getDepartments().stream()
-                        .map(this::convertToDepartmentDto)
+                        .map(this::convertToDepartmentApiDto)
                         .toList()
-                        : null)
-                .build()
-        );
+                        : null
+        ));
     }
 
     /**
-     * DepartmentServiceDto -> DepartmentDto 변환 (재귀적)
+     * DepartmentServiceDto -> DepartmentApiDto.SearchDepartmentWithChildrenResp 변환 (재귀적)
      */
-    private DepartmentDto convertToDepartmentDto(DepartmentServiceDto serviceDto) {
+    private DepartmentApiDto.SearchDepartmentWithChildrenResp convertToDepartmentApiDto(DepartmentServiceDto serviceDto) {
         if (serviceDto == null) return null;
 
-        return DepartmentDto.builder()
-                .departmentId(serviceDto.getId())
-                .departmentName(serviceDto.getName())
-                .departmentNameKR(serviceDto.getNameKR())
-                .parentId(serviceDto.getParentId())
-                .headUserId(serviceDto.getHeadUserId())
-                .treeLevel(serviceDto.getLevel())
-                .departmentDesc(serviceDto.getDesc())
-                .children(serviceDto.getChildren() != null
+        return new DepartmentApiDto.SearchDepartmentWithChildrenResp(
+                serviceDto.getId(),
+                serviceDto.getName(),
+                serviceDto.getNameKR(),
+                serviceDto.getParentId(),
+                serviceDto.getHeadUserId(),
+                serviceDto.getLevel(),
+                serviceDto.getDesc(),
+                serviceDto.getColor(),
+                serviceDto.getCompanyId(),
+                serviceDto.getChildren() != null
                         ? serviceDto.getChildren().stream()
-                        .map(this::convertToDepartmentDto)
+                        .map(this::convertToDepartmentApiDto)
                         .toList()
-                        : null)
-                .build();
+                        : null
+        );
     }
 }

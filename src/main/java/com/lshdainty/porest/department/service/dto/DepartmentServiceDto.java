@@ -18,6 +18,7 @@ public class DepartmentServiceDto {
     private String headUserId;
     private Long level;
     private String desc;
+    private String color;
     private Company company;
     private String companyId;
     private List<DepartmentServiceDto> children;

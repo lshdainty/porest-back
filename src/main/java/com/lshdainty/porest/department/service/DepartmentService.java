@@ -46,6 +46,7 @@ public class DepartmentService {
                 data.getHeadUserId(),
                 data.getLevel(),
                 data.getDesc(),
+                data.getColor(),
                 company
         );
         departmentRepository.save(department);
@@ -83,7 +84,8 @@ public class DepartmentService {
                 newParent,
                 data.getHeadUserId(),
                 data.getLevel(),
-                data.getDesc()
+                data.getDesc(),
+                data.getColor()
         );
     }
 
@@ -113,6 +115,7 @@ public class DepartmentService {
                 .headUserId(department.getHeadUserId())
                 .level(department.getLevel())
                 .desc(department.getDesc())
+                .color(department.getColor())
                 .companyId(department.getCompany().getId())
                 .build();
     }
@@ -162,6 +165,7 @@ public class DepartmentService {
                 .headUserId(department.getHeadUserId())
                 .level(department.getLevel())
                 .desc(department.getDesc())
+                .color(department.getColor())
                 .company(department.getCompany())
                 .companyId(department.getCompany() != null ? department.getCompany().getId() : null)
                 .children(department.getChildren() != null
