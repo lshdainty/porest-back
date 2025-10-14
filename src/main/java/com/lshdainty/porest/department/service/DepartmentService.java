@@ -122,7 +122,7 @@ public class DepartmentService {
 
     public DepartmentServiceDto searchDepartmentByIdWithChildren(Long id) {
         Department department = checkDepartmentExists(id);
-        return convertToDtoWithChildren(department);
+        return DepartmentServiceDto.fromEntityWithChildren(department);
     }
 
     public Department checkDepartmentExists(Long departmentId) {
@@ -152,28 +152,5 @@ public class DepartmentService {
             }
         }
         return false;
-    }
-
-    protected DepartmentServiceDto convertToDtoWithChildren(Department department) {
-        if (department == null) return null;
-
-        return DepartmentServiceDto.builder()
-                .id(department.getId())
-                .name(department.getName())
-                .nameKR(department.getNameKR())
-                .parentId(department.getParentId())
-                .headUserId(department.getHeadUserId())
-                .level(department.getLevel())
-                .desc(department.getDesc())
-                .color(department.getColor())
-                .company(department.getCompany())
-                .companyId(department.getCompany() != null ? department.getCompany().getId() : null)
-                .children(department.getChildren() != null
-                        ? department.getChildren().stream()
-                        .filter(child -> child.getDelYN() == YNType.N)
-                        .map(child -> convertToDtoWithChildren(child))
-                        .toList()
-                        : null)
-                .build();
     }
 }

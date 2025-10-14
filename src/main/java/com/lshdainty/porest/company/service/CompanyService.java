@@ -4,7 +4,6 @@ import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.company.domain.Company;
 import com.lshdainty.porest.company.repository.CompanyCustomRepositoryImpl;
 import com.lshdainty.porest.company.service.dto.CompanyServiceDto;
-import com.lshdainty.porest.department.domain.Department;
 import com.lshdainty.porest.department.service.dto.DepartmentServiceDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -83,7 +82,7 @@ public class CompanyService {
         // 최상위(parent가 null) 부서만 필터링, 각 부서 트리를 재귀로 DTO 변환
         List<DepartmentServiceDto> departmentDtos = company.getDepartments().stream()
                 .filter(department -> department.getParent() == null && department.getDelYN() == YNType.N)
-                .map(this::convertToDtoWithChildren)
+                .map(DepartmentServiceDto::fromEntityWithChildren)
                 .toList();
 
         return CompanyServiceDto.builder()
@@ -107,27 +106,5 @@ public class CompanyService {
             throw new IllegalArgumentException(ms.getMessage("error.notfound.company", null, null));
         }
         return company.get();
-    }
-
-    protected DepartmentServiceDto convertToDtoWithChildren(Department department) {
-        if (department == null) return null;
-
-        return DepartmentServiceDto.builder()
-                .id(department.getId())
-                .name(department.getName())
-                .nameKR(department.getNameKR())
-                .parentId(department.getParentId())
-                .headUserId(department.getHeadUserId())
-                .level(department.getLevel())
-                .desc(department.getDesc())
-                .company(department.getCompany())
-                .companyId(department.getCompany() != null ? department.getCompany().getId() : null)
-                .children(department.getChildren() != null
-                        ? department.getChildren().stream()
-                        .filter(child -> child.getDelYN() == YNType.N)
-                        .map(child -> convertToDtoWithChildren(child))
-                        .toList()
-                        : null)
-                .build();
     }
 }

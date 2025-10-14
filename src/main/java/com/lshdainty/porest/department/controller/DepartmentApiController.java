@@ -72,31 +72,8 @@ public class DepartmentApiController {
     @GetMapping("/api/v1/department/{id}/children")
     public ApiResponse searchDepartmentByIdWithChildren(@PathVariable("id") Long departmentId) {
         DepartmentServiceDto serviceDto = departmentService.searchDepartmentByIdWithChildren(departmentId);
-        DepartmentApiDto.SearchDepartmentWithChildrenResp responseDto = convertToResponseDtoWithChildren(serviceDto);
+        DepartmentApiDto.SearchDepartmentWithChildrenResp responseDto =
+                DepartmentApiDto.SearchDepartmentWithChildrenResp.fromServiceDto(serviceDto);
         return ApiResponse.success(responseDto);
-    }
-
-    /**
-     * Service DTO -> Controller DTO 변환 (자식 포함, 재귀적)
-     */
-    private DepartmentApiDto.SearchDepartmentWithChildrenResp convertToResponseDtoWithChildren(DepartmentServiceDto serviceDto) {
-        if (serviceDto == null) return null;
-
-        return new DepartmentApiDto.SearchDepartmentWithChildrenResp(
-                serviceDto.getId(),
-                serviceDto.getName(),
-                serviceDto.getNameKR(),
-                serviceDto.getParentId(),
-                serviceDto.getHeadUserId(),
-                serviceDto.getLevel(),
-                serviceDto.getDesc(),
-                serviceDto.getColor(),
-                serviceDto.getCompanyId(),
-                serviceDto.getChildren() != null
-                        ? serviceDto.getChildren().stream()
-                        .map(this::convertToResponseDtoWithChildren)
-                        .toList()
-                        : null
-        );
     }
 }

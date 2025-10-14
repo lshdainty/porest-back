@@ -5,7 +5,6 @@ import com.lshdainty.porest.company.controller.dto.CompanyApiDto;
 import com.lshdainty.porest.company.service.CompanyService;
 import com.lshdainty.porest.company.service.dto.CompanyServiceDto;
 import com.lshdainty.porest.department.controller.dto.DepartmentApiDto;
-import com.lshdainty.porest.department.service.dto.DepartmentServiceDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -70,33 +69,9 @@ public class CompanyApiController {
                 company.getDesc(),
                 company.getDepartments() != null
                         ? company.getDepartments().stream()
-                        .map(this::convertToDepartmentApiDto)
+                        .map(DepartmentApiDto.SearchDepartmentWithChildrenResp::fromServiceDto)
                         .toList()
                         : null
         ));
-    }
-
-    /**
-     * DepartmentServiceDto -> DepartmentApiDto.SearchDepartmentWithChildrenResp 변환 (재귀적)
-     */
-    private DepartmentApiDto.SearchDepartmentWithChildrenResp convertToDepartmentApiDto(DepartmentServiceDto serviceDto) {
-        if (serviceDto == null) return null;
-
-        return new DepartmentApiDto.SearchDepartmentWithChildrenResp(
-                serviceDto.getId(),
-                serviceDto.getName(),
-                serviceDto.getNameKR(),
-                serviceDto.getParentId(),
-                serviceDto.getHeadUserId(),
-                serviceDto.getLevel(),
-                serviceDto.getDesc(),
-                serviceDto.getColor(),
-                serviceDto.getCompanyId(),
-                serviceDto.getChildren() != null
-                        ? serviceDto.getChildren().stream()
-                        .map(this::convertToDepartmentApiDto)
-                        .toList()
-                        : null
-        );
     }
 }
