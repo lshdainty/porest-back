@@ -41,7 +41,7 @@ class HolidayServiceTest {
 
     @Test
     @DisplayName("공휴일 저장 테스트 - 성공")
-    void saveHolidaySuccessTest() {
+    void registHolidayHolidaySuccessTest() {
         // Given
         HolidayServiceDto serviceDto = HolidayServiceDto.builder()
                 .name("신정")
@@ -57,7 +57,7 @@ class HolidayServiceTest {
         willDoNothing().given(holidayRepositoryImpl).save(any(Holiday.class));
 
         // When
-        Long result = holidayService.save(serviceDto);
+        Long result = holidayService.registHoliday(serviceDto);
 
         // Then
         then(holidayRepositoryImpl).should().save(any(Holiday.class));
@@ -164,7 +164,7 @@ class HolidayServiceTest {
 
     @Test
     @DisplayName("공휴일 기간별 조회 테스트 - 성공")
-    void findHolidaysByStartEndDateSuccessTest() {
+    void searchHolidaysByStartEndDateSuccessTest() {
         // Given
         String start = "20250101";
         String end = "20251231";
@@ -180,7 +180,7 @@ class HolidayServiceTest {
         given(holidayRepositoryImpl.findHolidaysByStartEndDate(start, end, countryCode)).willReturn(expectedHolidays);
 
         // When
-        List<Holiday> holidays = holidayService.findHolidaysByStartEndDate(start, end, countryCode);
+        List<Holiday> holidays = holidayService.searchHolidaysByStartEndDate(start, end, countryCode);
 
         // Then
         then(holidayRepositoryImpl).should().findHolidaysByStartEndDate(start, end, countryCode);
@@ -191,7 +191,7 @@ class HolidayServiceTest {
 
     @Test
     @DisplayName("공휴일 기간별 조회 테스트 - 빈 결과")
-    void findHolidaysByStartEndDateEmptyTest() {
+    void searchHolidaysByStartEndDateEmptyTest() {
         // Given
         String start = "20220101";
         String end = "20221231";
@@ -200,7 +200,7 @@ class HolidayServiceTest {
         given(holidayRepositoryImpl.findHolidaysByStartEndDate(start, end, countryCode)).willReturn(Collections.emptyList());
 
         // When
-        List<Holiday> holidays = holidayService.findHolidaysByStartEndDate(start, end, countryCode);
+        List<Holiday> holidays = holidayService.searchHolidaysByStartEndDate(start, end, countryCode);
 
         // Then
         then(holidayRepositoryImpl).should().findHolidaysByStartEndDate(start, end, countryCode);
@@ -209,7 +209,7 @@ class HolidayServiceTest {
 
     @Test
     @DisplayName("공휴일 타입별 조회 테스트 - 성공")
-    void findHolidaysByTypeSuccessTest() {
+    void searchHolidaysByTypeSuccessTest() {
         // Given
         HolidayType type = HolidayType.ETC;
         List<Holiday> expectedHolidays = List.of(
@@ -219,7 +219,7 @@ class HolidayServiceTest {
         given(holidayRepositoryImpl.findHolidaysByType(type)).willReturn(expectedHolidays);
 
         // When
-        List<Holiday> holidays = holidayService.findHolidaysByType(type);
+        List<Holiday> holidays = holidayService.searchHolidaysByType(type);
 
         // Then
         then(holidayRepositoryImpl).should().findHolidaysByType(type);
@@ -230,13 +230,13 @@ class HolidayServiceTest {
 
     @Test
     @DisplayName("공휴일 타입별 조회 테스트 - 빈 결과")
-    void findHolidaysByTypeEmptyTest() {
+    void searchHolidaysByTypeEmptyTest() {
         // Given
         HolidayType type = HolidayType.SUBSTITUTE;
         given(holidayRepositoryImpl.findHolidaysByType(type)).willReturn(Collections.emptyList());
 
         // When
-        List<Holiday> holidays = holidayService.findHolidaysByType(type);
+        List<Holiday> holidays = holidayService.searchHolidaysByType(type);
 
         // Then
         then(holidayRepositoryImpl).should().findHolidaysByType(type);
@@ -384,7 +384,7 @@ class HolidayServiceTest {
 
     @Test
     @DisplayName("기간과 타입별 공휴일 조회 테스트")
-    void findHolidaysByStartEndDateWithTypeTest() {
+    void searchHolidaysByStartEndDateWithTypeTest() {
         // Given
         String start = "20250101";
         String end = "20251231";

@@ -23,7 +23,7 @@ public class HolidayService {
     private final HolidayRepositoryImpl holidayRepositoryImpl;
 
     @Transactional
-    public Long save(HolidayServiceDto data) {
+    public Long registHoliday(HolidayServiceDto data) {
         Holiday holiday = Holiday.createHoliday(
                 data.getName(),
                 data.getDate(),
@@ -46,11 +46,11 @@ public class HolidayService {
         return holidayRepositoryImpl.findHolidays(countryCode);
     }
 
-    public List<Holiday> findHolidaysByStartEndDate(String startDate, String endDate, CountryCode countryCode) {
+    public List<Holiday> searchHolidaysByStartEndDate(String startDate, String endDate, CountryCode countryCode) {
         return holidayRepositoryImpl.findHolidaysByStartEndDate(startDate, endDate, countryCode);
     }
 
-    public List<Holiday> findHolidaysByType(HolidayType type) {
+    public List<Holiday> searchHolidaysByType(HolidayType type) {
         return holidayRepositoryImpl.findHolidaysByType(type);
     }
 

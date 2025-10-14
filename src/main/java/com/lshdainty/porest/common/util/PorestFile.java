@@ -39,7 +39,7 @@ public class PorestFile {
         }
 
         if (fileName.isEmpty()) {
-            log.warn("Could not save file with empty name.");
+            log.warn("Could not registHoliday file with empty name.");
             return false;
         }
 
@@ -55,8 +55,8 @@ public class PorestFile {
             multipartFile.transferTo(filePath.toFile());
             return true;
         } catch (IOException e) {
-            log.error("File save failed. path: {}, fileName: {}", path, fileName, e);
-            throw new RuntimeException(ms.getMessage("error.file.save", new String[]{fileName}, null), e);
+            log.error("File registHoliday failed. path: {}, fileName: {}", path, fileName, e);
+            throw new RuntimeException(ms.getMessage("error.file.registHoliday", new String[]{fileName}, null), e);
         }
     }
 

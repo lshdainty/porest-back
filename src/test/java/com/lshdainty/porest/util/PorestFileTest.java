@@ -131,14 +131,14 @@ class PorestFileTest {
         // transferTo 메서드가 호출될 때 IOException을 던지도록 설정
         doThrow(new IOException("Transfer failed")).when(mockFile).transferTo(any(File.class));
 
-        given(ms.getMessage("error.file.save", new String[]{"test.txt"}, null))
-                .willReturn("File save failed");
+        given(ms.getMessage("error.file.registHoliday", new String[]{"test.txt"}, null))
+                .willReturn("File registHoliday failed");
 
         // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> PorestFile.save(mockFile, tempDir.toString(), "test.txt", ms));
 
-        assertThat(exception.getMessage()).isEqualTo("File save failed");
+        assertThat(exception.getMessage()).isEqualTo("File registHoliday failed");
         assertThat(exception.getCause()).isInstanceOf(IOException.class);
     }
 
