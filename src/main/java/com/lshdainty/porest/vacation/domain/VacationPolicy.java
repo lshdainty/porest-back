@@ -2,7 +2,6 @@ package com.lshdainty.porest.vacation.domain;
 
 import com.lshdainty.porest.common.domain.AuditingFields;
 import com.lshdainty.porest.common.type.YNType;
-import com.lshdainty.porest.user.domain.UserVacationPolicy;
 import com.lshdainty.porest.vacation.type.GrantMethod;
 import com.lshdainty.porest.vacation.type.GrantTiming;
 import com.lshdainty.porest.vacation.type.RepeatUnit;

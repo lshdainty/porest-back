@@ -1,9 +1,12 @@
 package com.lshdainty.porest.user.domain;
 
+import com.lshdainty.porest.common.domain.AuditingFields;
 import com.lshdainty.porest.company.type.OriginCompanyType;
+import com.lshdainty.porest.department.domain.UserDepartment;
 import com.lshdainty.porest.user.type.RoleType;
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.user.type.StatusType;
+import com.lshdainty.porest.vacation.domain.UserVacationPolicy;
 import com.lshdainty.porest.vacation.domain.Vacation;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -22,7 +25,7 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)  // -> protected Order() {}와 동일한 의미 (롬복으로 생성자 막기)
 @Table(name = "users")
-public class User {
+public class User extends AuditingFields {
     @Id
     @Column(name = "user_id")
     private String id; // 유저 아이디

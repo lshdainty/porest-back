@@ -50,7 +50,7 @@ public class VacationService {
     private final UserService userService;
 
     @Transactional
-    public Long registVacation(VacationServiceDto data, String addUserId, String clientIP) {
+    public Long registVacation(VacationServiceDto data) {
         VacationService vacationService = switch (data.getType()) {
             case ANNUAL ->
                     new Annual(vacationRepository, vacationHistoryRepository, userService);
@@ -66,11 +66,11 @@ public class VacationService {
                     throw new IllegalArgumentException(ms.getMessage("error.notfound.vacationtype", null, null));
         };
 
-        return vacationService.registVacation(data, addUserId, clientIP);
+        return vacationService.registVacation(data);
     }
 
     @Transactional
-    public Long useVacation(VacationServiceDto data, String crtUserId, String clientIP) {
+    public Long useVacation(VacationServiceDto data) {
         User user = userService.checkUserExist(data.getUserId());
         Vacation vacation = checkVacationExist(data.getId());
 
@@ -119,15 +119,13 @@ public class VacationService {
                     vacation,
                     data.getDesc(),
                     data.getTimeType(),
-                    LocalDateTime.of(betweenDate, LocalTime.of(data.getStartDate().toLocalTime().getHour(), data.getStartDate().toLocalTime().getMinute(), 0)),
-                    crtUserId,
-                    clientIP
+                    LocalDateTime.of(betweenDate, LocalTime.of(data.getStartDate().toLocalTime().getHour(), data.getStartDate().toLocalTime().getMinute(), 0))
             );
             vacationHistoryRepository.save(history);
         }
 
         // 사용한 휴가 차감
-        vacation.deductedVacation(useTime, crtUserId, clientIP);
+        vacation.deductedVacation(useTime);
 
         return vacation.getId();
     }
@@ -149,7 +147,7 @@ public class VacationService {
     }
 
     @Transactional
-    public void deleteVacationHistory(Long vacationHistoryId, String delUserId, String clientIP) {
+    public void deleteVacationHistory(Long vacationHistoryId) {
         VacationHistory history = checkVacationHistoryExist(vacationHistoryId);
         Vacation vacation = checkVacationExist(history.getVacation().getId());
 
@@ -164,7 +162,7 @@ public class VacationService {
             }
 
             // 휴가 추가 내역은 삭제하고 추가된 휴가 차감
-            history.deleteRegistVacationHistory(vacation, delUserId, clientIP);
+            history.deleteRegistVacationHistory(vacation);
         } else {
             // 휴가 사용 내역
             if (PorestTime.isAfterThanEndDate(LocalDateTime.now(), history.getUsedDateTime())) {
@@ -172,7 +170,7 @@ public class VacationService {
             }
 
             // 휴가 사용 내역은 삭제하고 차감된 휴가 추가
-            history.deleteUseVacationHistory(vacation, delUserId, clientIP);
+            history.deleteUseVacationHistory(vacation);
         }
     }
 

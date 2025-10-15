@@ -1,7 +1,7 @@
-package com.lshdainty.porest.user.domain;
+package com.lshdainty.porest.vacation.domain;
 
 import com.lshdainty.porest.common.domain.AuditingFields;
-import com.lshdainty.porest.vacation.domain.VacationPolicy;
+import com.lshdainty.porest.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
 

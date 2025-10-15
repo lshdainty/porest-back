@@ -8,7 +8,6 @@ import com.lshdainty.porest.vacation.service.VacationService;
 import com.lshdainty.porest.vacation.service.dto.VacationPolicyServiceDto;
 import com.lshdainty.porest.vacation.service.dto.VacationServiceDto;
 import com.lshdainty.porest.vacation.type.VacationTimeType;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -24,7 +23,7 @@ public class VacationApiController {
     private final VacationService vacationService;
 
     @PostMapping("/api/v1/vacation")
-    public ApiResponse registVacation(@RequestBody VacationApiDto.RegistVacationReq data, HttpServletRequest req) {
+    public ApiResponse registVacation(@RequestBody VacationApiDto.RegistVacationReq data) {
         Long vacationId = vacationService.registVacation(VacationServiceDto.builder()
                         .userId(data.getUserId())
                         .desc(data.getVacationDesc())
@@ -32,9 +31,7 @@ public class VacationApiController {
                         .grantTime(data.getGrantTime())
                         .occurDate(data.getOccurDate())
                         .expiryDate(data.getExpiryDate())
-                        .build(),
-                "", // 추후 로그인한 유저의 id를 가져와서 여기에다 넣을 것
-                req.getRemoteAddr()
+                        .build()
         );
 
         return ApiResponse.success(new VacationApiDto.RegistVacationResp(vacationId));
@@ -42,8 +39,7 @@ public class VacationApiController {
 
     @PostMapping("/api/v1/vacation/use/{vacationId}")
     public ApiResponse useVacation(@PathVariable("vacationId") Long vacationId,
-                                   @RequestBody VacationApiDto.UseVacationReq data,
-                                   HttpServletRequest req) {
+                                   @RequestBody VacationApiDto.UseVacationReq data) {
         Long respVacationId = vacationService.useVacation(VacationServiceDto.builder()
                         .userId(data.getUserId())
                         .id(vacationId)
@@ -51,9 +47,7 @@ public class VacationApiController {
                         .timeType(data.getVacationTimeType())
                         .startDate(data.getStartDate())
                         .endDate(data.getEndDate())
-                        .build(),
-                "", // 추후 로그인한 유저의 id를 가져와서 여기에다 넣을 것
-                req.getRemoteAddr()
+                        .build()
         );
 
         return ApiResponse.success(new VacationApiDto.UseVacationResp(respVacationId));
@@ -128,9 +122,9 @@ public class VacationApiController {
     }
 
     @DeleteMapping("/api/v1/vacation/history/{id}")
-    public ApiResponse deleteVacationHistory(@PathVariable("id") Long vacationHistoryId, HttpServletRequest req) {
+    public ApiResponse deleteVacationHistory(@PathVariable("id") Long vacationHistoryId) {
         String delUserId = "";   // 추후 로그인 한 사람의 id를 가져와서 삭제한 사람의 userNo에 세팅
-        vacationService.deleteVacationHistory(vacationHistoryId, delUserId, req.getRemoteAddr());
+        vacationService.deleteVacationHistory(vacationHistoryId);
         return ApiResponse.success();
     }
 

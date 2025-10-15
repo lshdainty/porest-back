@@ -26,7 +26,7 @@ public class Maternity extends VacationService {
     }
 
     @Override
-    public Long registVacation(VacationServiceDto data, String crtUserId, String clientIP) {
+    public Long registVacation(VacationServiceDto data) {
         User user = userService.checkUserExist(data.getUserId());
 
         Vacation vacation = Vacation.createVacation(
@@ -34,13 +34,11 @@ public class Maternity extends VacationService {
                 data.getType(),
                 data.getGrantTime(),
                 data.getOccurDate(),
-                data.getExpiryDate(),
-                crtUserId,
-                clientIP
+                data.getExpiryDate()
         );
         vacationRepository.save(vacation);
 
-        VacationHistory history = VacationHistory.createRegistVacationHistory(vacation, data.getDesc(), data.getGrantTime(), crtUserId, clientIP);
+        VacationHistory history = VacationHistory.createRegistVacationHistory(vacation, data.getDesc(), data.getGrantTime());
         vacationHistoryRepository.save(history);
 
         return vacation.getId();

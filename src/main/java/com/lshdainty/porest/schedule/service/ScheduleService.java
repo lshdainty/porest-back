@@ -25,7 +25,7 @@ public class ScheduleService {
     private final UserService userService;
 
     @Transactional
-    public Long registSchedule(ScheduleServiceDto data, String crtUserId, String clientIP) {
+    public Long registSchedule(ScheduleServiceDto data) {
         // 유저 조회
         User user = userService.checkUserExist(data.getUserId());
 
@@ -36,9 +36,7 @@ public class ScheduleService {
                 data.getDesc(),
                 data.getType(),
                 data.getStartDate(),
-                data.getEndDate(),
-                crtUserId,
-                clientIP
+                data.getEndDate()
         );
 
         // 휴가 등록
@@ -57,12 +55,12 @@ public class ScheduleService {
     }
 
     @Transactional
-    public void deleteSchedule(Long scheduleId, String delUserId, String clientIP) {
+    public void deleteSchedule(Long scheduleId) {
         Schedule schedule = checkScheduleExist(scheduleId);
 
         if (schedule.getEndDate().isBefore(LocalDateTime.now())) { throw new IllegalArgumentException(ms.getMessage("error.validate.delete.isBeforeThanNow", null, null)); }
 
-        schedule.deleteSchedule(delUserId, clientIP);
+        schedule.deleteSchedule();
     }
 
     public Schedule checkScheduleExist(Long scheduleId) {

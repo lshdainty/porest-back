@@ -1,5 +1,6 @@
 package com.lshdainty.porest.dues.domain;
 
+import com.lshdainty.porest.common.domain.AuditingFields;
 import com.lshdainty.porest.dues.type.DuesCalcType;
 import com.lshdainty.porest.dues.type.DuesType;
 import jakarta.persistence.*;
@@ -13,7 +14,7 @@ import java.util.Objects;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)  // -> protected Order() {}와 동일한 의미 (롬복으로 생성자 막기)
 @Table(name = "dues")
-public class Dues {
+public class Dues extends AuditingFields {
     @Id @GeneratedValue
     @Column(name = "dues_seq")
     private Long seq;

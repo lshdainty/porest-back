@@ -132,36 +132,28 @@ public class InitDB {
 
             Vacation user1Annual = Vacation.createVacation(user1, VacationType.ANNUAL, new BigDecimal("9.8750"),
                     LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0),
-                    LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59),
-                    "", "127.0.0.1");
+                    LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59));
             em.persist(user1Annual);
             em.flush();
             List<VacationHistory> user1Annuals = List.of(
-                    VacationHistory.createRegistVacationHistory(user1Annual, "1분기 휴가", new BigDecimal("4.0000"), "", "127.0.0.1"),
-                    VacationHistory.createRegistVacationHistory(user1Annual, "2분기 휴가", new BigDecimal("4.0000"), "", "127.0.0.1"),
-                    VacationHistory.createRegistVacationHistory(user1Annual, "3분기 휴가", new BigDecimal("4.0000"), "", "127.0.0.1"),
-                    VacationHistory.createRegistVacationHistory(user1Annual, "4분기 휴가", new BigDecimal("3.0000"), "", "127.0.0.1"),
+                    VacationHistory.createRegistVacationHistory(user1Annual, "1분기 휴가", new BigDecimal("4.0000")),
+                    VacationHistory.createRegistVacationHistory(user1Annual, "2분기 휴가", new BigDecimal("4.0000")),
+                    VacationHistory.createRegistVacationHistory(user1Annual, "3분기 휴가", new BigDecimal("4.0000")),
+                    VacationHistory.createRegistVacationHistory(user1Annual, "4분기 휴가", new BigDecimal("3.0000")),
                     VacationHistory.createUseVacationHistory(user1Annual, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 1, 2, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 1, 2, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user1Annual, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 1, 3, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 1, 3, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user1Annual, "1시간", VacationTimeType.ONETIMEOFF,
-                            LocalDateTime.of(now.getYear(), 2, 3, 9, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 2, 3, 9, 0, 0)),
                     VacationHistory.createUseVacationHistory(user1Annual, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 3, 17, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 3, 17, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user1Annual, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 10, 10, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 10, 10, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user1Annual, "오전반차", VacationTimeType.MORNINGOFF,
-                            LocalDateTime.of(now.getYear(), 10, 15, 9, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 10, 15, 9, 0, 0)),
                     VacationHistory.createUseVacationHistory(user1Annual, "오후반차", VacationTimeType.AFTERNOONOFF,
-                            LocalDateTime.of(now.getYear(), 12, 19, 14, 0, 0),
-                            "", "127.0.0.1")
+                            LocalDateTime.of(now.getYear(), 12, 19, 14, 0, 0))
             );
             for (VacationHistory annual : user1Annuals) {
                 em.persist(annual);
@@ -170,33 +162,26 @@ public class InitDB {
 
             Vacation user2Annual = Vacation.createVacation(user2, VacationType.ANNUAL, new BigDecimal("11.0000"),
                     LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0),
-                    LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59),
-                    "", "127.0.0.1");
+                    LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59));
             em.persist(user2Annual);
             em.flush();
             List<VacationHistory> user2Annuals = List.of(
-                    VacationHistory.createRegistVacationHistory(user2Annual, "1분기 휴가", new BigDecimal("4.0000"), "", "127.0.0.1"),
-                    VacationHistory.createRegistVacationHistory(user2Annual, "2분기 휴가", new BigDecimal("4.0000"), "", "127.0.0.1"),
-                    VacationHistory.createRegistVacationHistory(user2Annual, "3분기 휴가", new BigDecimal("4.0000"), "", "127.0.0.1"),
-                    VacationHistory.createRegistVacationHistory(user2Annual, "4분기 휴가", new BigDecimal("3.0000"), "", "127.0.0.1"),
+                    VacationHistory.createRegistVacationHistory(user2Annual, "1분기 휴가", new BigDecimal("4.0000")),
+                    VacationHistory.createRegistVacationHistory(user2Annual, "2분기 휴가", new BigDecimal("4.0000")),
+                    VacationHistory.createRegistVacationHistory(user2Annual, "3분기 휴가", new BigDecimal("4.0000")),
+                    VacationHistory.createRegistVacationHistory(user2Annual, "4분기 휴가", new BigDecimal("3.0000")),
                     VacationHistory.createUseVacationHistory(user2Annual, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 4, 8, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 4, 8, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user2Annual, "1시간", VacationTimeType.ONETIMEOFF,
-                            LocalDateTime.of(now.getYear(), 4, 9, 9, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 4, 9, 9, 0, 0)),
                     VacationHistory.createUseVacationHistory(user2Annual, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 7, 25, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 7, 25, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user2Annual, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 8, 14, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 8, 14, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user2Annual, "3시간", VacationTimeType.THREETIMEOFF,
-                            LocalDateTime.of(now.getYear(), 9, 8, 9, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 9, 8, 9, 0, 0)),
                     VacationHistory.createUseVacationHistory(user2Annual, "오후반차", VacationTimeType.AFTERNOONOFF,
-                            LocalDateTime.of(now.getYear(), 10, 10, 14, 0, 0),
-                            "", "127.0.0.1")
+                            LocalDateTime.of(now.getYear(), 10, 10, 14, 0, 0))
             );
             for (VacationHistory annual : user2Annuals) {
                 em.persist(annual);
@@ -204,36 +189,28 @@ public class InitDB {
 
             Vacation user3Annual = Vacation.createVacation(user3, VacationType.ANNUAL, new BigDecimal("9.2500"),
                     LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0),
-                    LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59),
-                    "", "127.0.0.1");
+                    LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59));
             em.persist(user3Annual);
             em.flush();
             List<VacationHistory> user3Annuals = List.of(
-                    VacationHistory.createRegistVacationHistory(user3Annual, "1분기 휴가", new BigDecimal("4.0000"), "", "127.0.0.1"),
-                    VacationHistory.createRegistVacationHistory(user3Annual, "2분기 휴가", new BigDecimal("4.0000"), "", "127.0.0.1"),
-                    VacationHistory.createRegistVacationHistory(user3Annual, "3분기 휴가", new BigDecimal("4.0000"), "", "127.0.0.1"),
-                    VacationHistory.createRegistVacationHistory(user3Annual, "4분기 휴가", new BigDecimal("3.0000"), "", "127.0.0.1"),
+                    VacationHistory.createRegistVacationHistory(user3Annual, "1분기 휴가", new BigDecimal("4.0000")),
+                    VacationHistory.createRegistVacationHistory(user3Annual, "2분기 휴가", new BigDecimal("4.0000")),
+                    VacationHistory.createRegistVacationHistory(user3Annual, "3분기 휴가", new BigDecimal("4.0000")),
+                    VacationHistory.createRegistVacationHistory(user3Annual, "4분기 휴가", new BigDecimal("3.0000")),
                     VacationHistory.createUseVacationHistory(user3Annual, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 1, 2, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 1, 2, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user3Annual, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 1, 3, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 1, 3, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user3Annual, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 3, 17, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 3, 17, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user3Annual, "2시간", VacationTimeType.TWOTIMEOFF,
-                            LocalDateTime.of(now.getYear(), 4, 9, 9, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 4, 9, 9, 0, 0)),
                     VacationHistory.createUseVacationHistory(user3Annual, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 6, 2, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 6, 2, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user3Annual, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 8, 14, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 8, 14, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user3Annual, "오후반차", VacationTimeType.AFTERNOONOFF,
-                            LocalDateTime.of(now.getYear(), 10, 10, 14, 0, 0),
-                            "", "127.0.0.1")
+                            LocalDateTime.of(now.getYear(), 10, 10, 14, 0, 0))
             );
             for (VacationHistory annual : user3Annuals) {
                 em.persist(annual);
@@ -242,33 +219,26 @@ public class InitDB {
 
             Vacation user4Annual = Vacation.createVacation(user4, VacationType.ANNUAL, new BigDecimal("9.0000"),
                     LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0),
-                    LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59),
-                    "", "127.0.0.1");
+                    LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59));
             em.persist(user4Annual);
             em.flush();
             List<VacationHistory> user4Annuals = List.of(
-                    VacationHistory.createRegistVacationHistory(user4Annual, "1분기 휴가", new BigDecimal("4.0000"), "", "127.0.0.1"),
-                    VacationHistory.createRegistVacationHistory(user4Annual, "2분기 휴가", new BigDecimal("4.0000"), "", "127.0.0.1"),
-                    VacationHistory.createRegistVacationHistory(user4Annual, "3분기 휴가", new BigDecimal("4.0000"), "", "127.0.0.1"),
-                    VacationHistory.createRegistVacationHistory(user4Annual, "4분기 휴가", new BigDecimal("3.0000"), "", "127.0.0.1"),
+                    VacationHistory.createRegistVacationHistory(user4Annual, "1분기 휴가", new BigDecimal("4.0000")),
+                    VacationHistory.createRegistVacationHistory(user4Annual, "2분기 휴가", new BigDecimal("4.0000")),
+                    VacationHistory.createRegistVacationHistory(user4Annual, "3분기 휴가", new BigDecimal("4.0000")),
+                    VacationHistory.createRegistVacationHistory(user4Annual, "4분기 휴가", new BigDecimal("3.0000")),
                     VacationHistory.createUseVacationHistory(user4Annual, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 1, 2, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 1, 2, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user4Annual, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 1, 3, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 1, 3, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user4Annual, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 1, 31, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 1, 31, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user4Annual, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 5, 7, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 5, 7, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user4Annual, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 5, 8, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 5, 8, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user4Annual, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 5, 9, 0, 0, 0),
-                            "", "127.0.0.1")
+                            LocalDateTime.of(now.getYear(), 5, 9, 0, 0, 0))
             );
             for (VacationHistory annual : user4Annuals) {
                 em.persist(annual);
@@ -277,45 +247,34 @@ public class InitDB {
 
             Vacation user5Annual = Vacation.createVacation(user5, VacationType.ANNUAL, new BigDecimal("5.0000"),
                     LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0),
-                    LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59),
-                    "", "127.0.0.1");
+                    LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59));
             em.persist(user5Annual);
             em.flush();
             List<VacationHistory> user5Annuals = List.of(
-                    VacationHistory.createRegistVacationHistory(user5Annual, "1분기 휴가", new BigDecimal("4.0000"), "", "127.0.0.1"),
-                    VacationHistory.createRegistVacationHistory(user5Annual, "2분기 휴가", new BigDecimal("4.0000"), "", "127.0.0.1"),
-                    VacationHistory.createRegistVacationHistory(user5Annual, "3분기 휴가", new BigDecimal("4.0000"), "", "127.0.0.1"),
-                    VacationHistory.createRegistVacationHistory(user5Annual, "4분기 휴가", new BigDecimal("3.0000"), "", "127.0.0.1"),
+                    VacationHistory.createRegistVacationHistory(user5Annual, "1분기 휴가", new BigDecimal("4.0000")),
+                    VacationHistory.createRegistVacationHistory(user5Annual, "2분기 휴가", new BigDecimal("4.0000")),
+                    VacationHistory.createRegistVacationHistory(user5Annual, "3분기 휴가", new BigDecimal("4.0000")),
+                    VacationHistory.createRegistVacationHistory(user5Annual, "4분기 휴가", new BigDecimal("3.0000")),
                     VacationHistory.createUseVacationHistory(user5Annual, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 1, 2, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 1, 2, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user5Annual, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 1, 3, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 1, 3, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user5Annual, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 5, 7, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 5, 7, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user5Annual, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 5, 8, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 5, 8, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user5Annual, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 5, 9, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 5, 9, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user5Annual, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 6, 2, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 6, 2, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user5Annual, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 6, 4, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 6, 4, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user5Annual, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 6, 5, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 6, 5, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user5Annual, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 10, 10, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 10, 10, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user5Annual, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 12, 26, 0, 0, 0),
-                            "", "127.0.0.1")
+                            LocalDateTime.of(now.getYear(), 12, 26, 0, 0, 0))
             );
             for (VacationHistory annual : user5Annuals) {
                 em.persist(annual);
@@ -324,33 +283,26 @@ public class InitDB {
 
             Vacation user6Annual = Vacation.createVacation(user6, VacationType.ANNUAL, new BigDecimal("11.0000"),
                     LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0),
-                    LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59),
-                    "", "127.0.0.1");
+                    LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59));
             em.persist(user6Annual);
             em.flush();
             List<VacationHistory> user6Annuals = List.of(
-                    VacationHistory.createRegistVacationHistory(user6Annual, "1분기 휴가", new BigDecimal("4.0000"), "", "127.0.0.1"),
-                    VacationHistory.createRegistVacationHistory(user6Annual, "2분기 휴가", new BigDecimal("4.0000"), "", "127.0.0.1"),
-                    VacationHistory.createRegistVacationHistory(user6Annual, "3분기 휴가", new BigDecimal("4.0000"), "", "127.0.0.1"),
-                    VacationHistory.createRegistVacationHistory(user6Annual, "4분기 휴가", new BigDecimal("3.0000"), "", "127.0.0.1"),
+                    VacationHistory.createRegistVacationHistory(user6Annual, "1분기 휴가", new BigDecimal("4.0000")),
+                    VacationHistory.createRegistVacationHistory(user6Annual, "2분기 휴가", new BigDecimal("4.0000")),
+                    VacationHistory.createRegistVacationHistory(user6Annual, "3분기 휴가", new BigDecimal("4.0000")),
+                    VacationHistory.createRegistVacationHistory(user6Annual, "4분기 휴가", new BigDecimal("3.0000")),
                     VacationHistory.createUseVacationHistory(user6Annual, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 4, 8, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 4, 8, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user6Annual, "1시간", VacationTimeType.ONETIMEOFF,
-                            LocalDateTime.of(now.getYear(), 4, 9, 9, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 4, 9, 9, 0, 0)),
                     VacationHistory.createUseVacationHistory(user6Annual, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 7, 25, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 7, 25, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user6Annual, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 8, 14, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 8, 14, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user6Annual, "3시간", VacationTimeType.THREETIMEOFF,
-                            LocalDateTime.of(now.getYear(), 9, 8, 9, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 9, 8, 9, 0, 0)),
                     VacationHistory.createUseVacationHistory(user6Annual, "오후반차", VacationTimeType.AFTERNOONOFF,
-                            LocalDateTime.of(now.getYear(), 10, 10, 14, 0, 0),
-                            "", "127.0.0.1")
+                            LocalDateTime.of(now.getYear(), 10, 10, 14, 0, 0))
             );
             for (VacationHistory annual : user6Annuals) {
                 em.persist(annual);
@@ -359,33 +311,25 @@ public class InitDB {
 
             Vacation user1Maternity = Vacation.createVacation(user1, VacationType.MATERNITY, new BigDecimal("3.0000"),
                     LocalDateTime.of(now.getYear(), 3, 1, 0, 0, 0),
-                    LocalDateTime.of(now.getYear(), 9, 1, 23, 59, 59),
-                    "", "127.0.0.1");
+                    LocalDateTime.of(now.getYear(), 9, 1, 23, 59, 59));
             em.persist(user1Maternity);
             em.flush();
             List<VacationHistory> user1Maternitys = List.of(
-                    VacationHistory.createRegistVacationHistory(user1Maternity, "출산 휴가", new BigDecimal("10.0000"), "", "127.0.0.1"),
+                    VacationHistory.createRegistVacationHistory(user1Maternity, "출산 휴가", new BigDecimal("10.0000")),
                     VacationHistory.createUseVacationHistory(user1Maternity, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 6, 2, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 6, 2, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user1Maternity, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 6, 4, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 6, 4, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user1Maternity, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 6, 5, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 6, 5, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user1Maternity, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 8, 11, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 8, 11, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user1Maternity, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 8, 12, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 8, 12, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user1Maternity, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 8, 13, 0, 0, 0),
-                            "", "127.0.0.1"),
+                            LocalDateTime.of(now.getYear(), 8, 13, 0, 0, 0)),
                     VacationHistory.createUseVacationHistory(user1Maternity, "연차", VacationTimeType.DAYOFF,
-                            LocalDateTime.of(now.getYear(), 8, 14, 0, 0, 0),
-                            "", "127.0.0.1")
+                            LocalDateTime.of(now.getYear(), 8, 14, 0, 0, 0))
             );
             for (VacationHistory maternity : user1Maternitys) {
                 em.persist(maternity);
@@ -394,13 +338,12 @@ public class InitDB {
 
             Vacation user1Overtime = Vacation.createVacation(user1, VacationType.OVERTIME, new BigDecimal("0.5000"),
                     LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0),
-                    LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59),
-                    "", "127.0.0.1");
+                    LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59));
             em.persist(user1Overtime);
             List<VacationHistory> user1Overtimes = List.of(
-                    VacationHistory.createRegistVacationHistory(user1Overtime, "OT", new BigDecimal("0.1250"), "", "127.0.0.1"),
-                    VacationHistory.createRegistVacationHistory(user1Overtime, "OT", new BigDecimal("0.2500"), "", "127.0.0.1"),
-                    VacationHistory.createRegistVacationHistory(user1Overtime, "OT", new BigDecimal("0.1250"), "", "127.0.0.1")
+                    VacationHistory.createRegistVacationHistory(user1Overtime, "OT", new BigDecimal("0.1250")),
+                    VacationHistory.createRegistVacationHistory(user1Overtime, "OT", new BigDecimal("0.2500")),
+                    VacationHistory.createRegistVacationHistory(user1Overtime, "OT", new BigDecimal("0.1250"))
             );
             for (VacationHistory overtime : user1Overtimes) {
                 em.persist(overtime);
@@ -409,11 +352,10 @@ public class InitDB {
 
             Vacation user2Wedding = Vacation.createVacation(user2, VacationType.WEDDING, new BigDecimal("5.0000"),
                     LocalDateTime.of(now.getYear(), 2, 17, 0, 0, 0),
-                    LocalDateTime.of(now.getYear(), 8, 17, 23, 59, 59),
-                    "", "127.0.0.1");
+                    LocalDateTime.of(now.getYear(), 8, 17, 23, 59, 59));
             em.persist(user2Wedding);
             List<VacationHistory> user2Weddings = List.of(
-                    VacationHistory.createRegistVacationHistory(user2Wedding, "결혼 휴가", new BigDecimal("5.0000"), "", "127.0.0.1")
+                    VacationHistory.createRegistVacationHistory(user2Wedding, "결혼 휴가", new BigDecimal("5.0000"))
             );
             for (VacationHistory wedding : user2Weddings) {
                 em.persist(wedding);
@@ -422,11 +364,10 @@ public class InitDB {
 
             Vacation user3Bereavement = Vacation.createVacation(user3, VacationType.BEREAVEMENT, new BigDecimal("3.0000"),
                     LocalDateTime.of(now.getYear(), 4, 4, 0, 0, 0),
-                    LocalDateTime.of(now.getYear(), 10, 4, 23, 59, 59),
-                    "", "127.0.0.1");
+                    LocalDateTime.of(now.getYear(), 10, 4, 23, 59, 59));
             em.persist(user3Bereavement);
             List<VacationHistory> user3Bereavements = List.of(
-                    VacationHistory.createRegistVacationHistory(user3Bereavement, "상조 휴가", new BigDecimal("3.0000"), "", "127.0.0.1")
+                    VacationHistory.createRegistVacationHistory(user3Bereavement, "상조 휴가", new BigDecimal("3.0000"))
             );
             for (VacationHistory bereavement : user3Bereavements) {
                 em.persist(bereavement);
@@ -435,11 +376,10 @@ public class InitDB {
 
             Vacation user4Wedding = Vacation.createVacation(user4, VacationType.WEDDING, new BigDecimal("5.0000"),
                     LocalDateTime.of(now.getYear(), 8, 1, 0, 0, 0),
-                    LocalDateTime.of(now.getYear()+1, 2, 1, 23, 59, 59),
-                    "", "127.0.0.1");
+                    LocalDateTime.of(now.getYear()+1, 2, 1, 23, 59, 59));
             em.persist(user4Wedding);
             List<VacationHistory> user4Weddings = List.of(
-                    VacationHistory.createRegistVacationHistory(user4Wedding, "결혼 휴가", new BigDecimal("5.0000"), "", "127.0.0.1")
+                    VacationHistory.createRegistVacationHistory(user4Wedding, "결혼 휴가", new BigDecimal("5.0000"))
             );
             for (VacationHistory wedding : user4Weddings) {
                 em.persist(wedding);
@@ -448,13 +388,12 @@ public class InitDB {
 
             Vacation user5Overtime = Vacation.createVacation(user5, VacationType.OVERTIME, new BigDecimal("0.3750"),
                     LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0),
-                    LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59),
-                    "", "127.0.0.1");
+                    LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59));
             em.persist(user5Overtime);
             List<VacationHistory> user5Overtimes = List.of(
-                    VacationHistory.createRegistVacationHistory(user5Overtime, "OT", new BigDecimal("0.1250"), "", "127.0.0.1"),
-                    VacationHistory.createRegistVacationHistory(user5Overtime, "OT", new BigDecimal("0.1250"), "", "127.0.0.1"),
-                    VacationHistory.createRegistVacationHistory(user5Overtime, "OT", new BigDecimal("0.1250"), "", "127.0.0.1")
+                    VacationHistory.createRegistVacationHistory(user5Overtime, "OT", new BigDecimal("0.1250")),
+                    VacationHistory.createRegistVacationHistory(user5Overtime, "OT", new BigDecimal("0.1250")),
+                    VacationHistory.createRegistVacationHistory(user5Overtime, "OT", new BigDecimal("0.1250"))
             );
             for (VacationHistory overtime : user5Overtimes) {
                 em.persist(overtime);
@@ -463,11 +402,10 @@ public class InitDB {
 
             Vacation user6Overtime = Vacation.createVacation(user6, VacationType.OVERTIME, new BigDecimal("0.1250"),
                     LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0),
-                    LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59),
-                    "", "127.0.0.1");
+                    LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59));
             em.persist(user6Overtime);
             List<VacationHistory> user6Overtimes = List.of(
-                    VacationHistory.createRegistVacationHistory(user6Overtime, "OT", new BigDecimal("0.1250"), "", "127.0.0.1")
+                    VacationHistory.createRegistVacationHistory(user6Overtime, "OT", new BigDecimal("0.1250"))
             );
             for (VacationHistory overtime : user6Overtimes) {
                 em.persist(overtime);
@@ -476,15 +414,14 @@ public class InitDB {
 
             Vacation user1Annual26 = Vacation.createVacation(user1, VacationType.ANNUAL, new BigDecimal("15.0000"),
                     LocalDateTime.of(now.getYear()+1, 1, 1, 0, 0, 0),
-                    LocalDateTime.of(now.getYear()+1, 12, 31, 23, 59, 59),
-                    "", "127.0.0.1");
+                    LocalDateTime.of(now.getYear()+1, 12, 31, 23, 59, 59));
             em.persist(user1Annual26);
             em.flush();
             List<VacationHistory> user1Annuals26 = List.of(
-                    VacationHistory.createRegistVacationHistory(user1Annual26, "1분기 휴가", new BigDecimal("4.0000"), "", "127.0.0.1"),
-                    VacationHistory.createRegistVacationHistory(user1Annual26, "2분기 휴가", new BigDecimal("4.0000"), "", "127.0.0.1"),
-                    VacationHistory.createRegistVacationHistory(user1Annual26, "3분기 휴가", new BigDecimal("4.0000"), "", "127.0.0.1"),
-                    VacationHistory.createRegistVacationHistory(user1Annual26, "4분기 휴가", new BigDecimal("3.0000"), "", "127.0.0.1")
+                    VacationHistory.createRegistVacationHistory(user1Annual26, "1분기 휴가", new BigDecimal("4.0000")),
+                    VacationHistory.createRegistVacationHistory(user1Annual26, "2분기 휴가", new BigDecimal("4.0000")),
+                    VacationHistory.createRegistVacationHistory(user1Annual26, "3분기 휴가", new BigDecimal("4.0000")),
+                    VacationHistory.createRegistVacationHistory(user1Annual26, "4분기 휴가", new BigDecimal("3.0000"))
             );
             for (VacationHistory annual : user1Annuals26) {
                 em.persist(annual);
@@ -493,12 +430,11 @@ public class InitDB {
 
             Vacation user1Maternity26 = Vacation.createVacation(user1, VacationType.MATERNITY, new BigDecimal("10.0000"),
                     LocalDateTime.of(now.getYear()+1, 10, 1, 0, 0, 0),
-                    LocalDateTime.of(now.getYear()+2, 4, 1, 23, 59, 59),
-                    "", "127.0.0.1");
+                    LocalDateTime.of(now.getYear()+2, 4, 1, 23, 59, 59));
             em.persist(user1Maternity26);
             em.flush();
             List<VacationHistory> user1Maternitys26 = List.of(
-                    VacationHistory.createRegistVacationHistory(user1Maternity26, "출산 휴가", new BigDecimal("10.0000"), "", "127.0.0.1")
+                    VacationHistory.createRegistVacationHistory(user1Maternity26, "출산 휴가", new BigDecimal("10.0000"))
             );
             for (VacationHistory maternity : user1Maternitys26) {
                 em.persist(maternity);
@@ -507,12 +443,11 @@ public class InitDB {
 
             Vacation user1Overtime26 = Vacation.createVacation(user1, VacationType.OVERTIME, new BigDecimal("0.5000"),
                     LocalDateTime.of(now.getYear()+1, 1, 1, 0, 0, 0),
-                    LocalDateTime.of(now.getYear()+1, 12, 31, 23, 59, 59),
-                    "", "127.0.0.1");
+                    LocalDateTime.of(now.getYear()+1, 12, 31, 23, 59, 59));
             em.persist(user1Overtime26);
             List<VacationHistory> user1Overtimes26 = List.of(
-                    VacationHistory.createRegistVacationHistory(user1Overtime26, "OT", new BigDecimal("0.1250"), "", "127.0.0.1"),
-                    VacationHistory.createRegistVacationHistory(user1Overtime26, "OT", new BigDecimal("0.3750"), "", "127.0.0.1")
+                    VacationHistory.createRegistVacationHistory(user1Overtime26, "OT", new BigDecimal("0.1250")),
+                    VacationHistory.createRegistVacationHistory(user1Overtime26, "OT", new BigDecimal("0.3750"))
             );
             for (VacationHistory overtime : user1Overtimes26) {
                 em.persist(overtime);
@@ -521,11 +456,10 @@ public class InitDB {
 
             Vacation user1Wedding26 = Vacation.createVacation(user1, VacationType.WEDDING, new BigDecimal("5.0000"),
                     LocalDateTime.of(now.getYear()+1, 2, 17, 0, 0, 0),
-                    LocalDateTime.of(now.getYear()+1, 8, 17, 23, 59, 59),
-                    "", "127.0.0.1");
+                    LocalDateTime.of(now.getYear()+1, 8, 17, 23, 59, 59));
             em.persist(user1Wedding26);
             List<VacationHistory> user1Weddings26 = List.of(
-                    VacationHistory.createRegistVacationHistory(user1Wedding26, "결혼 휴가", new BigDecimal("5.0000"), "", "127.0.0.1")
+                    VacationHistory.createRegistVacationHistory(user1Wedding26, "결혼 휴가", new BigDecimal("5.0000"))
             );
             for (VacationHistory wedding : user1Weddings26) {
                 em.persist(wedding);
@@ -635,7 +569,7 @@ public class InitDB {
 
         public void saveSchedule(String userId, String desc, ScheduleType type, LocalDateTime startDate, LocalDateTime endDate) {
             User user = em.find(User.class, userId);
-            Schedule schedule = Schedule.createSchedule(user, desc, type, startDate, endDate, "", "127.0.0.1");
+            Schedule schedule = Schedule.createSchedule(user, desc, type, startDate, endDate);
             em.persist(schedule);
         }
 

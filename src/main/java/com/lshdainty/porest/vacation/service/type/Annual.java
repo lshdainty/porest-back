@@ -31,12 +31,12 @@ public class Annual extends VacationService {
     }
 
     @Override
-    public Long registVacation(VacationServiceDto data, String crtUserId, String clientIP) {
+    public Long registVacation(VacationServiceDto data) {
         User user = userService.checkUserExist(data.getUserId());
 
         Optional<Vacation> vacation = vacationRepository.findVacationByTypeWithYear(data.getUserId(), data.getType(), String.valueOf(data.getOccurDate().getYear()));
         if (vacation.isPresent()) {
-            vacation.get().addVacation(data.getGrantTime(), crtUserId, clientIP);
+            vacation.get().addVacation(data.getGrantTime());
         } else {
             // 연차의 경우 당해년도 1월 1일부터 12월 31일로 고정 생성
             Vacation newVacation = Vacation.createVacation(
@@ -44,15 +44,13 @@ public class Annual extends VacationService {
                     data.getType(),
                     data.getGrantTime(),
                     LocalDateTime.of(data.getOccurDate().getYear(), 1, 1, 0, 0, 0),
-                    LocalDateTime.of(data.getOccurDate().getYear(), 12, 31, 23, 59, 59),
-                    crtUserId,
-                    clientIP
+                    LocalDateTime.of(data.getOccurDate().getYear(), 12, 31, 23, 59, 59)
             );
             vacationRepository.save(newVacation);
             vacation = Optional.of(newVacation);
         }
 
-        VacationHistory history = VacationHistory.createRegistVacationHistory(vacation.get(), data.getDesc(), data.getGrantTime(), crtUserId, clientIP);
+        VacationHistory history = VacationHistory.createRegistVacationHistory(vacation.get(), data.getDesc(), data.getGrantTime());
         vacationHistoryRepository.save(history);
 
         return vacation.get().getId();

@@ -41,7 +41,7 @@ public class ScheduleRepositoryImplTest {
         LocalDateTime start = LocalDateTime.of(2025, 1, 2, 9, 0, 0);
         LocalDateTime end = LocalDateTime.of(2025, 1, 2, 14, 0, 0);
 
-        Schedule schedule = Schedule.createSchedule(user, desc, type, start, end, "", "");
+        Schedule schedule = Schedule.createSchedule(user, desc, type, start, end);
 
         // when
         scheduleRepositoryImpl.save(schedule);
@@ -89,7 +89,7 @@ public class ScheduleRepositoryImplTest {
         };
 
         for (int i = 0; i < descs.length; i++) {
-            Schedule schedule = Schedule.createSchedule(user, descs[i], types[i], starts[i], ends[i], "", "");
+            Schedule schedule = Schedule.createSchedule(user, descs[i], types[i], starts[i], ends[i]);
             scheduleRepositoryImpl.save(schedule);
         }
 
@@ -150,7 +150,7 @@ public class ScheduleRepositoryImplTest {
         };
 
         for (int i = 0; i < descs.length; i++) {
-            Schedule schedule = Schedule.createSchedule(user, descs[i], types[i], starts[i], ends[i], "", "");
+            Schedule schedule = Schedule.createSchedule(user, descs[i], types[i], starts[i], ends[i]);
             scheduleRepositoryImpl.save(schedule);
         }
 
@@ -187,7 +187,7 @@ public class ScheduleRepositoryImplTest {
         };
 
         for (int i = 0; i < descs.length; i++) {
-            Schedule schedule = Schedule.createSchedule(user, descs[i], types[i], starts[i], ends[i], "", "");
+            Schedule schedule = Schedule.createSchedule(user, descs[i], types[i], starts[i], ends[i]);
             scheduleRepositoryImpl.save(schedule);
         }
 

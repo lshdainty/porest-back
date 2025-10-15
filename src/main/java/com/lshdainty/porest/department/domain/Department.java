@@ -3,7 +3,6 @@ package com.lshdainty.porest.department.domain;
 import com.lshdainty.porest.common.domain.AuditingFields;
 import com.lshdainty.porest.company.domain.Company;
 import com.lshdainty.porest.common.type.YNType;
-import com.lshdainty.porest.user.domain.UserDepartment;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

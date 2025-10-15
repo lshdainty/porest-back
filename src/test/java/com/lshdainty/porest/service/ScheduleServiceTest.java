@@ -82,7 +82,7 @@ class ScheduleServiceTest {
 
         // When & Then
         assertThrows(IllegalArgumentException.class, () -> scheduleService.registSchedule(
-                ScheduleServiceDto.builder().userId(userId).build(), "", "127.0.0.1")
+                ScheduleServiceDto.builder().userId(userId).build())
         );
         then(userService).should().checkUserExist(userId);
     }
@@ -124,9 +124,9 @@ class ScheduleServiceTest {
         User user = User.createUser(userId);
 
         given(scheduleRepositoryImpl.findSchedulesByUserId(userId)).willReturn(List.of(
-                Schedule.createSchedule(user, "교육", ScheduleType.EDUCATION, LocalDateTime.of(LocalDateTime.now().getYear(), 4, 20, 0, 0, 0), LocalDateTime.of(LocalDateTime.now().getYear(), 4, 20, 23, 59, 59), "", "127.0.0.1"),
-                Schedule.createSchedule(user, "예비군", ScheduleType.DEFENSE, LocalDateTime.of(LocalDateTime.now().getYear(), 7, 20, 0, 0, 0), LocalDateTime.of(LocalDateTime.now().getYear(), 7, 20, 23, 59, 59), "", "127.0.0.1"),
-                Schedule.createSchedule(user, "건강검진(반차)", ScheduleType.HEALTHCHECKHALF, LocalDateTime.of(LocalDateTime.now().getYear(), 12, 20, 9, 0, 0), LocalDateTime.of(LocalDateTime.now().getYear(), 12, 20, 14, 0, 0), "", "127.0.0.1")
+                Schedule.createSchedule(user, "교육", ScheduleType.EDUCATION, LocalDateTime.of(LocalDateTime.now().getYear(), 4, 20, 0, 0, 0), LocalDateTime.of(LocalDateTime.now().getYear(), 4, 20, 23, 59, 59)),
+                Schedule.createSchedule(user, "예비군", ScheduleType.DEFENSE, LocalDateTime.of(LocalDateTime.now().getYear(), 7, 20, 0, 0, 0), LocalDateTime.of(LocalDateTime.now().getYear(), 7, 20, 23, 59, 59)),
+                Schedule.createSchedule(user, "건강검진(반차)", ScheduleType.HEALTHCHECKHALF, LocalDateTime.of(LocalDateTime.now().getYear(), 12, 20, 9, 0, 0), LocalDateTime.of(LocalDateTime.now().getYear(), 12, 20, 14, 0, 0))
         ));
 
         // When
@@ -150,9 +150,9 @@ class ScheduleServiceTest {
         LocalDateTime end = LocalDateTime.of(LocalDateTime.now().getYear(), 12, 31, 23, 59, 59);
 
         given(scheduleRepositoryImpl.findSchedulesByPeriod(start, end)).willReturn(List.of(
-                Schedule.createSchedule(user, "교육", ScheduleType.EDUCATION, LocalDateTime.of(LocalDateTime.now().getYear(), 4, 20, 0, 0, 0), LocalDateTime.of(LocalDateTime.now().getYear(), 4, 20, 23, 59, 59), "", "127.0.0.1"),
-                Schedule.createSchedule(user, "예비군", ScheduleType.DEFENSE, LocalDateTime.of(LocalDateTime.now().getYear(), 7, 20, 0, 0, 0), LocalDateTime.of(LocalDateTime.now().getYear(), 7, 20, 23, 59, 59), "", "127.0.0.1"),
-                Schedule.createSchedule(user, "건강검진(반차)", ScheduleType.HEALTHCHECKHALF, LocalDateTime.of(LocalDateTime.now().getYear(), 12, 20, 9, 0, 0), LocalDateTime.of(LocalDateTime.now().getYear(), 12, 20, 14, 0, 0), "", "127.0.0.1")
+                Schedule.createSchedule(user, "교육", ScheduleType.EDUCATION, LocalDateTime.of(LocalDateTime.now().getYear(), 4, 20, 0, 0, 0), LocalDateTime.of(LocalDateTime.now().getYear(), 4, 20, 23, 59, 59)),
+                Schedule.createSchedule(user, "예비군", ScheduleType.DEFENSE, LocalDateTime.of(LocalDateTime.now().getYear(), 7, 20, 0, 0, 0), LocalDateTime.of(LocalDateTime.now().getYear(), 7, 20, 23, 59, 59)),
+                Schedule.createSchedule(user, "건강검진(반차)", ScheduleType.HEALTHCHECKHALF, LocalDateTime.of(LocalDateTime.now().getYear(), 12, 20, 9, 0, 0), LocalDateTime.of(LocalDateTime.now().getYear(), 12, 20, 14, 0, 0))
         ));
 
         // When
@@ -189,12 +189,12 @@ class ScheduleServiceTest {
         LocalDateTime end = start.plusDays(1);
 
         User user = User.createUser("test1");
-        Schedule schedule = Schedule.createSchedule(user, desc, type, start, end, "", "127.0.0.1");
+        Schedule schedule = Schedule.createSchedule(user, desc, type, start, end);
 
         given(scheduleRepositoryImpl.findById(scheduleId)).willReturn(Optional.of(schedule));
 
         // When
-        scheduleService.deleteSchedule(scheduleId, "", "127.0.0.1");
+        scheduleService.deleteSchedule(scheduleId);
 
         // Then
         assertThat(schedule.getDelYN()).isEqualTo("Y");
@@ -210,7 +210,7 @@ class ScheduleServiceTest {
 
         // When & Then
         assertThrows(IllegalArgumentException.class, () ->
-                scheduleService.deleteSchedule(scheduleId, "", "127.0.0.1"));
+                scheduleService.deleteSchedule(scheduleId));
         then(scheduleRepositoryImpl).should().findById(scheduleId);
     }
 
@@ -225,14 +225,14 @@ class ScheduleServiceTest {
         LocalDateTime end = start.plusDays(1);
 
         User user = User.createUser("test1");
-        Schedule schedule = Schedule.createSchedule(user, desc, type, start, end, "", "127.0.0.1");
+        Schedule schedule = Schedule.createSchedule(user, desc, type, start, end);
 
-        schedule.deleteSchedule("", "127.0.0.1");
+        schedule.deleteSchedule();
         given(scheduleRepositoryImpl.findById(scheduleId)).willReturn(Optional.of(schedule));
 
         // When & Then
         assertThrows(IllegalArgumentException.class, () ->
-                scheduleService.deleteSchedule(scheduleId, "", "127.0.0.1"));
+                scheduleService.deleteSchedule(scheduleId));
         then(scheduleRepositoryImpl).should().findById(scheduleId);
     }
 
@@ -247,13 +247,13 @@ class ScheduleServiceTest {
         LocalDateTime end = start.plusDays(1);
 
         User user = User.createUser("test1");
-        Schedule schedule = Schedule.createSchedule(user, desc, type, start, end, "", "127.0.0.1");
+        Schedule schedule = Schedule.createSchedule(user, desc, type, start, end);
 
         given(scheduleRepositoryImpl.findById(scheduleId)).willReturn(Optional.of(schedule));
 
         // When & Then
         assertThrows(IllegalArgumentException.class, () ->
-                scheduleService.deleteSchedule(scheduleId, "", "127.0.0.1"));
+                scheduleService.deleteSchedule(scheduleId));
         then(scheduleRepositoryImpl).should().findById(scheduleId);
     }
 }

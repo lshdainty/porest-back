@@ -49,7 +49,7 @@ public class Schedule extends AuditingFields {
      *
      * @return Schedule
      */
-    public static Schedule createSchedule(User user, String desc, ScheduleType type, LocalDateTime startDate, LocalDateTime endDate, String crtUserId, String clientIP) {
+    public static Schedule createSchedule(User user, String desc, ScheduleType type, LocalDateTime startDate, LocalDateTime endDate) {
         Schedule schedule = new Schedule();
         schedule.user = user;
         schedule.desc = desc;
@@ -57,7 +57,6 @@ public class Schedule extends AuditingFields {
         schedule.startDate = startDate;
         schedule.endDate = endDate;
         schedule.delYN = "N";
-        schedule.setCreated(LocalDateTime.now(), crtUserId, clientIP);
         return schedule;
     }
 
@@ -66,8 +65,7 @@ public class Schedule extends AuditingFields {
      * Entity의 경우 Setter없이 Getter만 사용<br>
      * 해당 메소드를 통해 스케줄 삭제할 것
      */
-    public void deleteSchedule(String mdfUserId, String clientIP) {
+    public void deleteSchedule() {
         this.delYN = "Y";
-        this.setModified(LocalDateTime.now(), mdfUserId, clientIP);
     }
 }

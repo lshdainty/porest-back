@@ -1,16 +1,16 @@
 package com.lshdainty.porest.user.domain;
 
+import com.lshdainty.porest.common.domain.AuditingFields;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)  // -> protected Order() {}와 동일한 의미 (롬복으로 생성자 막기)
-@Table(name = "users_provider")
-public class UserProvider {
+@Table(name = "user_provider")
+public class UserProvider extends AuditingFields {
     @Id @GeneratedValue
     @Column(name = "provider_seq")
     private Long seq;

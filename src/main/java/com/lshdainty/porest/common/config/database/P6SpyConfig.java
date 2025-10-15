@@ -6,11 +6,8 @@ import com.p6spy.engine.spy.appender.MessageFormattingStrategy;
 import jakarta.annotation.PostConstruct;
 import org.hibernate.engine.jdbc.internal.FormatStyle;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.util.ClassUtils;
 
 import java.util.Locale;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Configuration
 public class P6SpyConfig implements MessageFormattingStrategy {

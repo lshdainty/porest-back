@@ -9,6 +9,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class PorestTime {
+
+    // 유틸리티 클래스는 인스턴스화 방지
+    private PorestTime() {}
+
     /**
      * startDate와 endDate 순서 체크 함수<br>
      * startDate > endDate : true<br>

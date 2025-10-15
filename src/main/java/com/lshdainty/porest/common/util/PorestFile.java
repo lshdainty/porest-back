@@ -16,6 +16,9 @@ public class PorestFile {
 
     private static final Logger log = LoggerFactory.getLogger(PorestFile.class);
 
+    // 유틸리티 클래스는 인스턴스화 방지
+    private PorestFile() {}
+
     /**
      * 파일을 저장하는 함수</br>
      * fileName을 넘겨주면 해당 파일명으로 저장</br>

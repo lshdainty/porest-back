@@ -28,9 +28,7 @@ public class ScheduleApiController {
                 .desc(data.getScheduleDesc())
                 .startDate(data.getStartDate())
                 .endDate(data.getEndDate())
-                .build(),
-                "", // 추후 로그인한 유저의 id를 가져와서 여기에다 넣을 것
-                req.getRemoteAddr()
+                .build()
         );
 
         return ApiResponse.success(new ScheduleApiDto.RegistScheduleResp(scheduleId));
@@ -80,7 +78,7 @@ public class ScheduleApiController {
     @DeleteMapping("/api/v1/schedule/{id}")
     public ApiResponse deleteSchedule(@PathVariable("id") Long scheduleId, HttpServletRequest req) {
         String delUserId = "";   // 추후 로그인 한 사람의 id를 가져와서 삭제한 사람의 userNo에 세팅
-        scheduleService.deleteSchedule(scheduleId, delUserId, req.getRemoteAddr());
+        scheduleService.deleteSchedule(scheduleId);
         return ApiResponse.success();
     }
 }
