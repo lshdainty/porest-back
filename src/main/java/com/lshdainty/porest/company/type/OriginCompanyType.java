@@ -1,11 +1,8 @@
 package com.lshdainty.porest.company.type;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import com.lshdainty.porest.common.type.DisplayType;
 
-@Getter
-@RequiredArgsConstructor
-public enum OriginCompanyType {
+public enum OriginCompanyType implements DisplayType {
     SKAX("SK AX"),
     DTOL("디투엘"),
     INSIGHTON("인사이트온"),
@@ -15,5 +12,16 @@ public enum OriginCompanyType {
 
     private String companyName;
 
-    OriginCompanyType(String companyName) { this.companyName = companyName; }
+    OriginCompanyType(String companyName) {
+        this.companyName = companyName;
+    }
+
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    @Override
+    public String getViewName() {
+        return companyName;
+    }
 }

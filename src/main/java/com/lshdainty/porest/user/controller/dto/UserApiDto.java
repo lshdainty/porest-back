@@ -145,4 +145,36 @@ public class UserApiDto {
         private LocalDateTime invitationExpiresAt;
         private StatusType invitationStatus;
     }
+
+    @Getter
+    @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class EditInvitedUserReq {
+        private String userName;
+        private String userEmail;
+        private OriginCompanyType userOriginCompanyType;
+        private String userWorkTime;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class EditInvitedUserResp {
+        private String userId;
+        private String userName;
+        private String userEmail;
+        private OriginCompanyType userOriginCompanyType;
+        private String userWorkTime;
+        private RoleType userRoleType;
+        private LocalDateTime invitationSentAt;
+        private LocalDateTime invitationExpiresAt;
+        private StatusType invitationStatus;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class CheckUserIdDuplicateResp {
+        private boolean duplicate;
+    }
 }

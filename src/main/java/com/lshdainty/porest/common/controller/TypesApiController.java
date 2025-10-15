@@ -2,11 +2,13 @@ package com.lshdainty.porest.common.controller;
 
 import com.lshdainty.porest.common.controller.dto.TypesDto;
 import com.lshdainty.porest.common.type.DisplayType;
+import com.lshdainty.porest.company.type.OriginCompanyType;
 import com.lshdainty.porest.holiday.type.HolidayType;
 import com.lshdainty.porest.schedule.type.ScheduleType;
 import com.lshdainty.porest.vacation.type.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSource;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,6 +21,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Slf4j
 public class TypesApiController {
+    private final MessageSource ms;
+
     private final Map<String, Class<? extends DisplayType>> enumMap = Map.of(
             "grant-method", GrantMethod.class,
             "grant-timing", GrantTiming.class,
@@ -26,7 +30,8 @@ public class TypesApiController {
             "vacation-time", VacationTimeType.class,
             "vacation-type", VacationType.class,
             "schedule-type", ScheduleType.class,
-            "holiday-type", HolidayType.class
+            "holiday-type", HolidayType.class,
+            "origin-company-type", OriginCompanyType.class
 
     );
 
@@ -35,8 +40,7 @@ public class TypesApiController {
         Class<? extends DisplayType> enumClass = enumMap.get(enumName.toLowerCase());
 
         if (enumClass == null) {
-            // 요청된 Enum이 없을 경우 404 Not Found 반환
-            throw new IllegalArgumentException("");
+            throw new IllegalArgumentException(ms.getMessage("error.notfound.type", null, null));
         }
 
         List<TypesDto> enumValues = Arrays.stream(enumClass.getEnumConstants())

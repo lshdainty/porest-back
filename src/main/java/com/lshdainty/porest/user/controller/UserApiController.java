@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class UserApiController {
     private final UserService userService;
 
-    @PostMapping("/api/v1/user")
+    @PostMapping("/api/v1/users")
     public ApiResponse joinUser(@RequestBody UserApiDto.JoinUserReq data) {
         String userId = userService.joinUser(UserServiceDto.builder()
                 .id(data.getUserId())
@@ -37,7 +37,7 @@ public class UserApiController {
         return ApiResponse.success(new UserApiDto.JoinUserResp(userId));
     }
 
-    @GetMapping("/api/v1/user/{id}")
+    @GetMapping("/api/v1/users/{id}")
     public ApiResponse searchUser(@PathVariable("id") String userId) {
         UserServiceDto user = userService.searchUser(userId);
 
@@ -59,6 +59,12 @@ public class UserApiController {
                 user.getInvitationStatus(),
                 user.getRegisteredAt()
         ));
+    }
+
+    @GetMapping("/api/v1/users/check-duplicate")
+    public ApiResponse checkUserIdDuplicate(@RequestParam("user_id") String userId) {
+        boolean isDuplicate = userService.checkUserIdDuplicate(userId);
+        return ApiResponse.success(new UserApiDto.CheckUserIdDuplicateResp(isDuplicate));
     }
 
     @GetMapping("/api/v1/users")
@@ -89,7 +95,7 @@ public class UserApiController {
         return ApiResponse.success(resps);
     }
 
-    @PutMapping("/api/v1/user/{id}")
+    @PutMapping("/api/v1/users/{id}")
     public ApiResponse editUser(@PathVariable("id") String userId, @RequestBody UserApiDto.EditUserReq data) {
         userService.editUser(UserServiceDto.builder()
                 .id(userId)
@@ -122,13 +128,13 @@ public class UserApiController {
         ));
     }
 
-    @DeleteMapping("/api/v1/user/{id}")
+    @DeleteMapping("/api/v1/users/{id}")
     public ApiResponse deleteUser(@PathVariable("id") String userId) {
         userService.deleteUser(userId);
         return ApiResponse.success();
     }
 
-    @PostMapping(value = "/api/v1/user/upload/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/api/v1/users/profiles", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse uploadProfile(@ModelAttribute UserApiDto.UploadProfileReq data) {
         UserServiceDto dto = userService.saveProfileImgInTempFolder(data.getProfile());
         return ApiResponse.success(new UserApiDto.UploadProfileResp(
@@ -140,7 +146,7 @@ public class UserApiController {
     /**
      * 관리자가 사용자 초대
      */
-    @PostMapping("/api/v1/user/invite")
+    @PostMapping("/api/v1/users/invitations")
     public ApiResponse inviteUser(@RequestBody UserApiDto.InviteUserReq data) {
         UserServiceDto result = userService.inviteUser(UserServiceDto.builder()
                 .id(data.getUserId())
@@ -165,9 +171,35 @@ public class UserApiController {
     }
 
     /**
+     * 초대된 사용자 정보 수정
+     */
+    @PutMapping("/api/v1/users/{id}/invitations")
+    public ApiResponse editInvitedUser(@PathVariable("id") String userId, @RequestBody UserApiDto.EditInvitedUserReq data) {
+        UserServiceDto result = userService.editInvitedUser(userId, UserServiceDto.builder()
+                .name(data.getUserName())
+                .email(data.getUserEmail())
+                .company(data.getUserOriginCompanyType())
+                .workTime(data.getUserWorkTime())
+                .build()
+        );
+
+        return ApiResponse.success(new UserApiDto.EditInvitedUserResp(
+                result.getId(),
+                result.getName(),
+                result.getEmail(),
+                result.getCompany(),
+                result.getWorkTime(),
+                result.getRole(),
+                result.getInvitationSentAt(),
+                result.getInvitationExpiresAt(),
+                result.getInvitationStatus()
+        ));
+    }
+
+    /**
      * 초대 이메일 재전송
      */
-    @PostMapping("/api/v1/user/invitation/resend/{id}")
+    @PostMapping("/api/v1/users/{id}/invitations/resend")
     public ApiResponse resendInvitation(@PathVariable("id") String userId) {
         UserServiceDto result = userService.resendInvitation(userId);
 

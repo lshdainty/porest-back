@@ -5,6 +5,7 @@ import com.lshdainty.porest.user.repository.UserRepositoryImpl;
 import com.lshdainty.porest.user.service.dto.UserServiceDto;
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.common.util.PorestFile;
+import com.lshdainty.porest.user.type.StatusType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -234,8 +235,7 @@ public class UserService {
     @Transactional
     public UserServiceDto inviteUser(UserServiceDto data) {
         // 아이디 중복 체크
-        Optional<User> existingUser = userRepositoryImpl.findById(data.getId());
-        if (existingUser.isPresent() && existingUser.get().getDelYN().equals(YNType.N)) {
+        if (checkUserIdDuplicate(data.getId())) {
             throw new IllegalArgumentException(ms.getMessage("error.duplicate.userId", null, null));
         }
 
@@ -290,6 +290,47 @@ public class UserService {
     }
 
     /**
+     * 초대된 사용자 정보 수정
+     */
+    @Transactional
+    public UserServiceDto editInvitedUser(String userId, UserServiceDto data) {
+        User user = checkUserExist(userId);
+
+        // PENDING 상태인지 확인
+        if (user.getInvitationStatus() != StatusType.PENDING) {
+            throw new IllegalArgumentException(ms.getMessage("error.validate.not.pending.user", null, null));
+        }
+
+        // 이메일 변경 여부 확인
+        String oldEmail = user.getEmail();
+        boolean emailChanged = data.getEmail() != null && !data.getEmail().equals(oldEmail);
+
+        user.updateInvitedUser(
+                data.getName(),
+                data.getEmail(),
+                data.getCompany(),
+                data.getWorkTime()
+        );
+
+        // 이메일이 변경된 경우 초대 이메일 재전송
+        if (emailChanged) {
+            emailService.sendInvitationEmail(user.getEmail(), user.getName(), user.getInvitationToken());
+        }
+
+        return UserServiceDto.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .company(user.getCompany())
+                .workTime(user.getWorkTime())
+                .role(user.getRole())
+                .invitationSentAt(user.getInvitationSentAt())
+                .invitationExpiresAt(user.getInvitationExpiresAt())
+                .invitationStatus(user.getInvitationStatus())
+                .build();
+    }
+
+    /**
      * 사용자가 초대를 수락하고 회원가입 완료
      */
     @Transactional
@@ -310,5 +351,14 @@ public class UserService {
         );
 
         return user.getId();
+    }
+
+    /**
+     * 아이디 중복 체크
+     */
+    public boolean checkUserIdDuplicate(String userId) {
+        Optional<User> existingUser = userRepositoryImpl.findById(userId);
+        // userId가 PK이므로 삭제 여부와 관계없이 존재하면 중복으로 판단
+        return existingUser.isPresent();
     }
 }

@@ -170,6 +170,17 @@ public class User extends AuditingFields {
     }
 
     /**
+     * 초대된 사용자 정보 수정<br>
+     * PENDING 상태인 사용자만 수정 가능
+     */
+    public void updateInvitedUser(String name, String email, OriginCompanyType company, String workTime) {
+        if (!Objects.isNull(name)) { this.name = name; }
+        if (!Objects.isNull(email)) { this.email = email; }
+        if (!Objects.isNull(company)) { this.company = company; }
+        if (!Objects.isNull(workTime)) { this.workTime = workTime; }
+    }
+
+    /**
      * 초대 유효성 검사
      */
     public boolean isInvitationValid() {
