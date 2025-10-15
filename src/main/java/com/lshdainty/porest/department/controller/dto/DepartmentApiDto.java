@@ -2,6 +2,7 @@ package com.lshdainty.porest.department.controller.dto;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.department.service.dto.DepartmentServiceDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -96,5 +97,20 @@ public class DepartmentApiDto {
                             : null
             );
         }
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class RegistDepartmentUserReq {
+        private String userId;
+        private YNType mainYn;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class RegistDepartmentUserResp {
+        private Long userDepartmentId;
     }
 }

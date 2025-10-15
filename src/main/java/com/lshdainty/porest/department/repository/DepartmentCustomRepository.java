@@ -1,6 +1,7 @@
 package com.lshdainty.porest.department.repository;
 
 import com.lshdainty.porest.department.domain.Department;
+import com.lshdainty.porest.department.domain.UserDepartment;
 
 import java.util.Optional;
 
@@ -13,4 +14,10 @@ public interface DepartmentCustomRepository {
     Optional<Department> findByIdWithChildren(Long id);
     // 자식 부서가 존재하는지 체크
     boolean hasActiveChildren(Long departmentId); // 추가
+    // 유저-부서 연결 저장
+    void saveUserDepartment(UserDepartment userDepartment);
+    // 특정 유저의 메인 부서 여부 확인
+    Optional<UserDepartment> findMainDepartmentByUserId(String userId);
+    // 특정 유저와 부서의 연결 조회
+    Optional<UserDepartment> findUserDepartment(String userId, Long departmentId);
 }

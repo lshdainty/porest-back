@@ -4,8 +4,12 @@ import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.company.domain.Company;
 import com.lshdainty.porest.company.service.CompanyService;
 import com.lshdainty.porest.department.domain.Department;
+import com.lshdainty.porest.department.domain.UserDepartment;
 import com.lshdainty.porest.department.repository.DepartmentCustomRepositoryImpl;
 import com.lshdainty.porest.department.service.dto.DepartmentServiceDto;
+import com.lshdainty.porest.department.service.dto.UserDepartmentServiceDto;
+import com.lshdainty.porest.user.domain.User;
+import com.lshdainty.porest.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
@@ -22,6 +26,7 @@ public class DepartmentService {
     private final MessageSource ms;
     private final DepartmentCustomRepositoryImpl departmentRepository;
     private final CompanyService companyService;
+    private final UserService userService;
 
     @Transactional
     public Long regist(DepartmentServiceDto data) {
@@ -124,6 +129,53 @@ public class DepartmentService {
         Department department = checkDepartmentExists(id);
         return DepartmentServiceDto.fromEntityWithChildren(department);
     }
+
+    @Transactional
+    public Long registUserDepartment(UserDepartmentServiceDto data) {
+        // userId와 departmentId로 User와 Department 조회
+        User user = userService.checkUserExist(data.getUserId());
+        Department department = checkDepartmentExists(data.getDepartmentId());
+
+        // mainYN이 Y인 경우, 해당 유저의 기존 메인 부서가 있는지 확인
+        if (data.getMainYN() == YNType.Y) {
+            Optional<UserDepartment> existingMainDepartment =
+                    departmentRepository.findMainDepartmentByUserId(user.getId());
+
+            if (existingMainDepartment.isPresent()) {
+                throw new IllegalArgumentException(
+                        ms.getMessage("error.validate.main.department.already.exists", null, null)
+                );
+            }
+        }
+
+        // UserDepartment 생성 및 저장
+        UserDepartment userDepartment = UserDepartment.createUserDepartment(
+                user,
+                department,
+                data.getMainYN()
+        );
+        departmentRepository.saveUserDepartment(userDepartment);
+        return userDepartment.getId();
+    }
+
+    @Transactional
+    public void deleteUserDepartment(String userId, Long departmentId) {
+        // UserDepartment 조회
+        Optional<UserDepartment> userDepartmentOpt =
+                departmentRepository.findUserDepartment(userId, departmentId);
+
+        if (userDepartmentOpt.isEmpty()) {
+            throw new IllegalArgumentException(
+                    ms.getMessage("error.notfound.user.department", null, null)
+            );
+        }
+
+        // 논리 삭제 실행
+        UserDepartment userDepartment = userDepartmentOpt.get();
+        userDepartment.deleteUserDepartment();
+    }
+
+
 
     public Department checkDepartmentExists(Long departmentId) {
         Optional<Department> department = departmentRepository.findById(departmentId);

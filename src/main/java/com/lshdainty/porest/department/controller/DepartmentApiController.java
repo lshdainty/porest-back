@@ -4,6 +4,7 @@ import com.lshdainty.porest.common.controller.ApiResponse;
 import com.lshdainty.porest.department.controller.dto.DepartmentApiDto;
 import com.lshdainty.porest.department.service.DepartmentService;
 import com.lshdainty.porest.department.service.dto.DepartmentServiceDto;
+import com.lshdainty.porest.department.service.dto.UserDepartmentServiceDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 public class DepartmentApiController {
     private final DepartmentService departmentService;
 
-    @PostMapping("/api/v1/department")
+    @PostMapping("/api/v1/departments")
     public ApiResponse registDepartment(@RequestBody DepartmentApiDto.RegistDepartmentReq data) {
         Long departmentId = departmentService.regist(DepartmentServiceDto.builder()
                 .name(data.getDepartmentName())
@@ -30,7 +31,7 @@ public class DepartmentApiController {
         return ApiResponse.success(new DepartmentApiDto.RegistDepartmentResp(departmentId));
     }
 
-    @PutMapping("/api/v1/department/{id}")
+    @PutMapping("/api/v1/departments/{id}")
     public ApiResponse editDepartment(@PathVariable("id") Long departmentId, @RequestBody DepartmentApiDto.EditDepartmentReq data) {
         departmentService.edit(DepartmentServiceDto.builder()
                 .id(departmentId)
@@ -46,13 +47,13 @@ public class DepartmentApiController {
         return ApiResponse.success();
     }
 
-    @DeleteMapping("/api/v1/department/{id}")
-    public ApiResponse deleteCompany(@PathVariable("id") Long departmentId) {
+    @DeleteMapping("/api/v1/departments/{id}")
+    public ApiResponse deleteDepartment(@PathVariable("id") Long departmentId) {
         departmentService.delete(departmentId);
         return ApiResponse.success();
     }
 
-    @GetMapping("/api/v1/department/{id}")
+    @GetMapping("/api/v1/departments/{id}")
     public ApiResponse searchDepartmentById(@PathVariable("id") Long departmentId) {
         DepartmentServiceDto serviceDto = departmentService.searchDepartmentById(departmentId);
 
@@ -69,11 +70,32 @@ public class DepartmentApiController {
         ));
     }
 
-    @GetMapping("/api/v1/department/{id}/children")
+    @GetMapping("/api/v1/departments/{id}/children")
     public ApiResponse searchDepartmentByIdWithChildren(@PathVariable("id") Long departmentId) {
         DepartmentServiceDto serviceDto = departmentService.searchDepartmentByIdWithChildren(departmentId);
         DepartmentApiDto.SearchDepartmentWithChildrenResp responseDto =
                 DepartmentApiDto.SearchDepartmentWithChildrenResp.fromServiceDto(serviceDto);
         return ApiResponse.success(responseDto);
+    }
+
+    @PostMapping("/api/v1/departments/{departmentId}/users")
+    public ApiResponse registDepartmentUser(
+            @PathVariable("departmentId") Long departmentId,
+            @RequestBody DepartmentApiDto.RegistDepartmentUserReq data) {
+        Long userDepartmentId = departmentService.registUserDepartment(UserDepartmentServiceDto.builder()
+                .userId(data.getUserId())
+                .departmentId(departmentId)
+                .mainYN(data.getMainYn())
+                .build()
+        );
+        return ApiResponse.success(new DepartmentApiDto.RegistDepartmentUserResp(userDepartmentId));
+    }
+
+    @DeleteMapping("/api/v1/departments/{departmentId}/users/{userId}")
+    public ApiResponse deleteDepartmentUser(
+            @PathVariable("departmentId") Long departmentId,
+            @PathVariable("userId") String userId) {
+        departmentService.deleteUserDepartment(userId, departmentId);
+        return ApiResponse.success();
     }
 }
