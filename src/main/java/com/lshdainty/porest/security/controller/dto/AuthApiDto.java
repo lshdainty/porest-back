@@ -9,6 +9,7 @@ import com.lshdainty.porest.user.type.StatusType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class AuthApiDto {
@@ -49,6 +50,7 @@ public class AuthApiDto {
         private String userEmail;
         private OriginCompanyType userOriginCompanyType;
         private String userWorkTime;
+        private LocalDate joinDate;
         private RoleType userRoleType;
         private LocalDateTime invitationSentAt;
         private LocalDateTime invitationExpiresAt;
@@ -60,7 +62,7 @@ public class AuthApiDto {
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class CompleteInvitationReq {
         private String invitationToken;
-        private String userBirth;
+        private LocalDate userBirth;
         private YNType lunarYn;
     }
 

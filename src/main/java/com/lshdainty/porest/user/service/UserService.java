@@ -78,6 +78,7 @@ public class UserService {
                 .role(user.getRole())
                 .birth(user.getBirth())
                 .workTime(user.getWorkTime())
+                .joinDate(user.getJoinDate())
                 .company(user.getCompany())
                 .lunarYN(user.getLunarYN())
                 .profileName(user.getProfileName())
@@ -105,6 +106,7 @@ public class UserService {
                         .role(user.getRole())
                         .birth(user.getBirth())
                         .workTime(user.getWorkTime())
+                        .joinDate(user.getJoinDate())
                         .company(user.getCompany())
                         .lunarYN(user.getLunarYN())
                         .profileName(user.getProfileName())
@@ -244,7 +246,8 @@ public class UserService {
                 data.getName(),
                 data.getEmail(),
                 data.getCompany(),
-                data.getWorkTime()
+                data.getWorkTime(),
+                data.getJoinDate()
         );
 
         userRepositoryImpl.save(user);
@@ -258,6 +261,7 @@ public class UserService {
                 .email(user.getEmail())
                 .company(user.getCompany())
                 .workTime(user.getWorkTime())
+                .joinDate(user.getJoinDate())
                 .role(user.getRole())
                 .invitationSentAt(user.getInvitationSentAt())
                 .invitationExpiresAt(user.getInvitationExpiresAt())
@@ -309,7 +313,8 @@ public class UserService {
                 data.getName(),
                 data.getEmail(),
                 data.getCompany(),
-                data.getWorkTime()
+                data.getWorkTime(),
+                data.getJoinDate()
         );
 
         // 이메일이 변경된 경우 초대 이메일 재전송
@@ -323,6 +328,7 @@ public class UserService {
                 .email(user.getEmail())
                 .company(user.getCompany())
                 .workTime(user.getWorkTime())
+                .joinDate(user.getJoinDate())
                 .role(user.getRole())
                 .invitationSentAt(user.getInvitationSentAt())
                 .invitationExpiresAt(user.getInvitationExpiresAt())

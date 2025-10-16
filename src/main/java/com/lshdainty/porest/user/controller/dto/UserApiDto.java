@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class UserApiDto {
@@ -21,7 +22,7 @@ public class UserApiDto {
         private String userPwd;
         private String userName;
         private String userEmail;
-        private String userBirth;
+        private LocalDate userBirth;
         private OriginCompanyType userOriginCompanyType;
         private String userWorkTime;
         private YNType lunarYn;
@@ -43,8 +44,9 @@ public class UserApiDto {
         private String userId;
         private String userName;
         private String userEmail;
-        private String userBirth;
+        private LocalDate userBirth;
         private String userWorkTime;
+        private LocalDate joinDate;
         private RoleType userRoleType;
         private String userRoleName;
         private OriginCompanyType userOriginCompanyType;
@@ -64,7 +66,7 @@ public class UserApiDto {
     public static class EditUserReq {
         private String userName;
         private String userEmail;
-        private String userBirth;
+        private LocalDate userBirth;
         private RoleType userRoleType;
         private OriginCompanyType userOriginCompanyType;
         private String userWorkTime;
@@ -80,7 +82,7 @@ public class UserApiDto {
         private String userId;
         private String userName;
         private String userEmail;
-        private String userBirth;
+        private LocalDate userBirth;
         private String userWorkTime;
         private RoleType userRoleType;
         private String userRoleName;
@@ -114,6 +116,7 @@ public class UserApiDto {
         private String userEmail;
         private OriginCompanyType userOriginCompanyType;
         private String userWorkTime;
+        private LocalDate joinDate;
     }
 
     @Getter
@@ -125,6 +128,7 @@ public class UserApiDto {
         private String userEmail;
         private OriginCompanyType userOriginCompanyType;
         private String userWorkTime;
+        private LocalDate joinDate;
         private RoleType userRoleType;
         private LocalDateTime invitationSentAt;
         private LocalDateTime invitationExpiresAt;
@@ -140,6 +144,7 @@ public class UserApiDto {
         private String userEmail;
         private OriginCompanyType userOriginCompanyType;
         private String userWorkTime;
+        private LocalDate joinDate;
         private RoleType userRoleType;
         private LocalDateTime invitationSentAt;
         private LocalDateTime invitationExpiresAt;
@@ -154,6 +159,7 @@ public class UserApiDto {
         private String userEmail;
         private OriginCompanyType userOriginCompanyType;
         private String userWorkTime;
+        private LocalDate joinDate;
     }
 
     @Getter
@@ -165,6 +171,7 @@ public class UserApiDto {
         private String userEmail;
         private OriginCompanyType userOriginCompanyType;
         private String userWorkTime;
+        private LocalDate joinDate;
         private RoleType userRoleType;
         private LocalDateTime invitationSentAt;
         private LocalDateTime invitationExpiresAt;

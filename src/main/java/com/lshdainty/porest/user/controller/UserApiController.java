@@ -47,6 +47,7 @@ public class UserApiController {
                 user.getEmail(),
                 user.getBirth(),
                 user.getWorkTime(),
+                user.getJoinDate(),
                 user.getRole(),
                 user.getRole().name(),
                 user.getCompany(),
@@ -78,6 +79,7 @@ public class UserApiController {
                         u.getEmail(),
                         u.getBirth(),
                         u.getWorkTime(),
+                        u.getJoinDate(),
                         u.getRole(),
                         u.getRole().name(),
                         u.getCompany(),
@@ -154,6 +156,7 @@ public class UserApiController {
                 .email(data.getUserEmail())
                 .company(data.getUserOriginCompanyType())
                 .workTime(data.getUserWorkTime())
+                .joinDate(data.getJoinDate())
                 .build()
         );
 
@@ -163,6 +166,7 @@ public class UserApiController {
                 result.getEmail(),
                 result.getCompany(),
                 result.getWorkTime(),
+                result.getJoinDate(),
                 result.getRole(),
                 result.getInvitationSentAt(),
                 result.getInvitationExpiresAt(),
@@ -180,6 +184,7 @@ public class UserApiController {
                 .email(data.getUserEmail())
                 .company(data.getUserOriginCompanyType())
                 .workTime(data.getUserWorkTime())
+                .joinDate(data.getJoinDate())
                 .build()
         );
 
@@ -189,6 +194,7 @@ public class UserApiController {
                 result.getEmail(),
                 result.getCompany(),
                 result.getWorkTime(),
+                result.getJoinDate(),
                 result.getRole(),
                 result.getInvitationSentAt(),
                 result.getInvitationExpiresAt(),
@@ -209,6 +215,7 @@ public class UserApiController {
                 result.getEmail(),
                 result.getCompany(),
                 result.getWorkTime(),
+                result.getJoinDate(),
                 result.getRole(),
                 result.getInvitationSentAt(),
                 result.getInvitationExpiresAt(),

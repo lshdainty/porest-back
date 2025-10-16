@@ -26,6 +26,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -54,12 +55,12 @@ public class InitDB {
         private final BCryptPasswordEncoder passwordEncoder;
 
         public void initSetMember() {
-            saveMember("user1", "이서준", "aaa@naver.com","19700723", OriginCompanyType.SKAX, "9 ~ 6", YNType.N);
-            saveMember("user2", "김서연", "bbb@naver.com","19701026", OriginCompanyType.DTOL, "8 ~ 5",  YNType.N);
-            saveMember("user3", "김지후", "ccc@naver.com","19740115", OriginCompanyType.INSIGHTON, "10 ~ 7", YNType.Y);
-            saveMember("user4", "이준우", "ddd@naver.com","19800430", OriginCompanyType.BIGXDATA, "9 ~ 6", YNType.N);
-            saveMember("user5", "조민서", "eee@naver.com","19921220", OriginCompanyType.CNTHOTH, "10 ~ 7", YNType.N);
-            saveMember("user6", "이하은", "fff@naver.com","18850902", OriginCompanyType.SKAX, "8 ~ 5", YNType.N);
+            saveMember("user1", "이서준", "aaa@naver.com", LocalDate.of(1970, 7, 23), OriginCompanyType.SKAX, "9 ~ 6", YNType.N);
+            saveMember("user2", "김서연", "bbb@naver.com", LocalDate.of(1970, 10, 26), OriginCompanyType.DTOL, "8 ~ 5",  YNType.N);
+            saveMember("user3", "김지후", "ccc@naver.com", LocalDate.of(1974, 1, 15), OriginCompanyType.INSIGHTON, "10 ~ 7", YNType.Y);
+            saveMember("user4", "이준우", "ddd@naver.com", LocalDate.of(1980, 4, 30), OriginCompanyType.BIGXDATA, "9 ~ 6", YNType.N);
+            saveMember("user5", "조민서", "eee@naver.com", LocalDate.of(1992, 12, 20), OriginCompanyType.CNTHOTH, "10 ~ 7", YNType.N);
+            saveMember("user6", "이하은", "fff@naver.com", LocalDate.of(1885, 9, 2), OriginCompanyType.SKAX, "8 ~ 5", YNType.N);
 
             User user1 = em.find(User.class, "user1");
             User user3 = em.find(User.class, "user3");
@@ -550,7 +551,7 @@ public class InitDB {
             saveVacationPolicy("조사", "빙부상, 빙모상, 시부상, 시모상에 대한 휴가 정책입니다.", VacationType.BEREAVEMENT, GrantMethod.ON_REQUEST, new BigDecimal("3.0000"), null, null, null, null, null);
         }
 
-        public void saveMember(String id, String name, String email, String birth, OriginCompanyType company, String workTime, YNType lunar) {
+        public void saveMember(String id, String name, String email, LocalDate birth, OriginCompanyType company, String workTime, YNType lunar) {
             String encodedPassword = passwordEncoder.encode("1234");
             User user = User.createUser(id, encodedPassword, name, email, birth, company, workTime, lunar, null, null);
             em.persist(user);

@@ -14,6 +14,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.BatchSize;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -44,10 +45,13 @@ public class User extends AuditingFields {
     private RoleType role; //
 
     @Column(name = "user_birth")
-    private String birth; // 유저 생일
+    private LocalDate birth; // 유저 생일
 
     @Column(name = "user_work_time")
     private String workTime; // 유연근무제
+
+    @Column(name = "join_date")
+    private LocalDate joinDate; // 입사일
 
     @Enumerated(EnumType.STRING)
     @Column(name = "user_origin_company")
@@ -107,7 +111,7 @@ public class User extends AuditingFields {
      *
      * @return User
      */
-    public static User createUser(String id, String pwd, String name, String email, String birth,
+    public static User createUser(String id, String pwd, String name, String email, LocalDate birth,
                                   OriginCompanyType company, String workTime,
                                   YNType lunarYN, String profileName, String profileUUID) {
         User user = new User();
@@ -140,7 +144,7 @@ public class User extends AuditingFields {
      * @return User
      */
     public static User createInvitedUser(String id, String name, String email,
-                                       OriginCompanyType company, String workTime) {
+                                       OriginCompanyType company, String workTime, LocalDate joinDate) {
         User user = new User();
         user.id = id;
         user.name = name;
@@ -148,6 +152,7 @@ public class User extends AuditingFields {
         user.company = company;
         user.role = RoleType.USER;
         user.workTime = workTime;
+        user.joinDate = joinDate;
         user.invitationStatus = StatusType.PENDING; // 초대 상태로 설정
         user.delYN = YNType.N;
 
@@ -173,11 +178,12 @@ public class User extends AuditingFields {
      * 초대된 사용자 정보 수정<br>
      * PENDING 상태인 사용자만 수정 가능
      */
-    public void updateInvitedUser(String name, String email, OriginCompanyType company, String workTime) {
+    public void updateInvitedUser(String name, String email, OriginCompanyType company, String workTime, LocalDate joinDate) {
         if (!Objects.isNull(name)) { this.name = name; }
         if (!Objects.isNull(email)) { this.email = email; }
         if (!Objects.isNull(company)) { this.company = company; }
         if (!Objects.isNull(workTime)) { this.workTime = workTime; }
+        if (!Objects.isNull(joinDate)) { this.joinDate = joinDate; }
     }
 
     /**
@@ -193,7 +199,7 @@ public class User extends AuditingFields {
     /**
      * 회원가입 완료 처리
      */
-    public void completeRegistration(String birth, YNType lunarYN) {
+    public void completeRegistration(LocalDate birth, YNType lunarYN) {
         this.birth = birth;
         this.lunarYN = lunarYN;
         this.invitationStatus = StatusType.ACTIVE;
@@ -208,7 +214,7 @@ public class User extends AuditingFields {
      * Entity의 경우 Setter없이 Getter만 사용<br>
      * 해당 메소드를 통해 유저 수정할 것
      */
-    public void updateUser(String name, String email, RoleType role, String birth,
+    public void updateUser(String name, String email, RoleType role, LocalDate birth,
                            OriginCompanyType company, String workTime,
                            YNType lunarYN, String profileName, String profileUUID) {
         if (!Objects.isNull(name)) { this.name = name; }

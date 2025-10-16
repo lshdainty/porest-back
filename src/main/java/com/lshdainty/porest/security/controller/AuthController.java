@@ -101,6 +101,7 @@ public class AuthController {
                 user.getEmail(),
                 user.getCompany(),
                 user.getWorkTime(),
+                user.getJoinDate(),
                 user.getRole(),
                 user.getInvitationSentAt(),
                 user.getInvitationExpiresAt(),

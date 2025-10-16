@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter @Setter
@@ -18,8 +19,9 @@ public class UserServiceDto {
     private String name;
     private String email;
     private RoleType role;
-    private String birth;
+    private LocalDate birth;
     private String workTime;
+    private LocalDate joinDate; // 입사일
     private OriginCompanyType company;
     private YNType lunarYN;
 
