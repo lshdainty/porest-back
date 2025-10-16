@@ -60,3 +60,9 @@ file:
   origin:
     path:
       profile: ${file.root-path}/origin/profile
+
+app:
+  frontend:
+    base-url: ${FRONTEND_BASE_URL:http://localhost:3000/web}
+  company:
+    name: ${COMPANY_NAME:porest}
