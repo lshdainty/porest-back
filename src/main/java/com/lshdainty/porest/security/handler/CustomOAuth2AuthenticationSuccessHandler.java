@@ -70,11 +70,6 @@ public class CustomOAuth2AuthenticationSuccessHandler implements AuthenticationS
 
         log.info("회원가입 OAuth2 연동 성공 - Provider: {}, Token: {}", provider, invitationToken);
 
-        // 세션 정리 (보안)
-        session.removeAttribute("invitationToken");
-        session.removeAttribute("oauthStep");
-        session.removeAttribute("invitedUserId");
-
         // React 회원가입 페이지로 리다이렉트 (연동 성공 상태)
         String redirectUrl = String.format("%s/signup?token=%s&oauth=%s&status=connected",
                 frontendBaseUrl, invitationToken, provider);

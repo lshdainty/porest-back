@@ -112,13 +112,20 @@ public class AuthController {
      * 초대받은 사용자의 회원가입 완료
      */
     @PostMapping("/oauth2/signup/invitation/complete")
-    public ApiResponse<AuthApiDto.CompleteInvitationResp> completeInvitedUserRegistration(@RequestBody AuthApiDto.CompleteInvitationReq data) {
+    public ApiResponse<AuthApiDto.CompleteInvitationResp> completeInvitedUserRegistration(@RequestBody AuthApiDto.CompleteInvitationReq data, HttpSession session) {
         String userId = userService.completeInvitedUserRegistration(UserServiceDto.builder()
                 .invitationToken(data.getInvitationToken())
                 .birth(data.getUserBirth())
                 .lunarYN(data.getLunarYn())
                 .build()
         );
+
+        // 회원가입 완료 후 세션 정리
+        if (userId != null) {
+            session.removeAttribute("invitationToken");
+            session.removeAttribute("oauthStep");
+            session.removeAttribute("invitedUserId");
+        }
 
         return ApiResponse.success(new AuthApiDto.CompleteInvitationResp(userId));
     }

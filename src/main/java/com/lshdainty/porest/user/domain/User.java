@@ -198,6 +198,8 @@ public class User extends AuditingFields {
         this.lunarYN = lunarYN;
         this.invitationStatus = StatusType.ACTIVE;
         this.registeredAt = LocalDateTime.now();
+        this.invitationSentAt = null;
+        this.invitationExpiresAt = null;
         this.invitationToken = null; // 토큰 제거
     }
 
