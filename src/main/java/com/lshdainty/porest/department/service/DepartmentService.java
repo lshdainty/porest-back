@@ -10,12 +10,14 @@ import com.lshdainty.porest.department.service.dto.DepartmentServiceDto;
 import com.lshdainty.porest.department.service.dto.UserDepartmentServiceDto;
 import com.lshdainty.porest.user.domain.User;
 import com.lshdainty.porest.user.service.UserService;
+import com.lshdainty.porest.user.service.dto.UserServiceDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -173,6 +175,48 @@ public class DepartmentService {
         // 논리 삭제 실행
         UserDepartment userDepartment = userDepartmentOpt.get();
         userDepartment.deleteUserDepartment();
+    }
+
+    public DepartmentServiceDto getUsersInAndNotInDepartment(Long departmentId) {
+        // 부서 존재 여부 확인 및 부서 정보 조회
+        Department department = checkDepartmentExists(departmentId);
+
+        // Repository에서 부서에 속한 유저 조회
+        List<User> usersIn = departmentRepository.findUsersInDepartment(departmentId);
+
+        // Repository에서 부서에 속하지 않은 유저 조회
+        List<User> usersNotIn = departmentRepository.findUsersNotInDepartment(departmentId);
+
+        // User Entity -> UserServiceDto 변환
+        List<UserServiceDto> usersInDepartmentDto = usersIn.stream()
+                .map(user -> UserServiceDto.builder()
+                        .id(user.getId())
+                        .name(user.getName())
+                        .build())
+                .toList();
+
+        List<UserServiceDto> usersNotInDepartmentDto = usersNotIn.stream()
+                .map(user -> UserServiceDto.builder()
+                        .id(user.getId())
+                        .name(user.getName())
+                        .build())
+                .toList();
+
+        // Department 정보 포함하여 반환
+        return DepartmentServiceDto.builder()
+                .id(department.getId())
+                .name(department.getName())
+                .nameKR(department.getNameKR())
+                .parentId(department.getParentId())
+                .headUserId(department.getHeadUserId())
+                .level(department.getLevel())
+                .desc(department.getDesc())
+                .color(department.getColor())
+                .company(department.getCompany())
+                .companyId(department.getCompany() != null ? department.getCompany().getId() : null)
+                .usersInDepartment(usersInDepartmentDto)
+                .usersNotInDepartment(usersNotInDepartmentDto)
+                .build();
     }
 
 

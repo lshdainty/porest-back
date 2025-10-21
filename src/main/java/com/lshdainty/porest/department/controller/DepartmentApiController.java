@@ -98,4 +98,35 @@ public class DepartmentApiController {
         departmentService.deleteUserDepartment(userId, departmentId);
         return ApiResponse.success();
     }
+
+    @GetMapping("/api/v1/departments/{departmentId}/users")
+    public ApiResponse getDepartmentUsers(@PathVariable("departmentId") Long departmentId) {
+        DepartmentServiceDto serviceDto = departmentService.getUsersInAndNotInDepartment(departmentId);
+
+        DepartmentApiDto.GetDepartmentUsersResp responseDto = new DepartmentApiDto.GetDepartmentUsersResp(
+                serviceDto.getId(),
+                serviceDto.getName(),
+                serviceDto.getNameKR(),
+                serviceDto.getParentId(),
+                serviceDto.getHeadUserId(),
+                serviceDto.getLevel(),
+                serviceDto.getDesc(),
+                serviceDto.getColor(),
+                serviceDto.getCompanyId(),
+                serviceDto.getUsersInDepartment().stream()
+                        .map(user -> new DepartmentApiDto.UserInfo(
+                                user.getId(),
+                                user.getName()
+                        ))
+                        .toList(),
+                serviceDto.getUsersNotInDepartment().stream()
+                        .map(user -> new DepartmentApiDto.UserInfo(
+                                user.getId(),
+                                user.getName()
+                        ))
+                        .toList()
+        );
+
+        return ApiResponse.success(responseDto);
+    }
 }

@@ -3,6 +3,7 @@ package com.lshdainty.porest.department.service.dto;
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.company.domain.Company;
 import com.lshdainty.porest.department.domain.Department;
+import com.lshdainty.porest.user.service.dto.UserServiceDto;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,6 +25,9 @@ public class DepartmentServiceDto {
     private Company company;
     private String companyId;
     private List<DepartmentServiceDto> children;
+
+    private List<UserServiceDto> usersInDepartment;
+    private List<UserServiceDto> usersNotInDepartment;
 
     /**
      * Department Entity -> DepartmentServiceDto 변환 (자식 포함, 재귀적)

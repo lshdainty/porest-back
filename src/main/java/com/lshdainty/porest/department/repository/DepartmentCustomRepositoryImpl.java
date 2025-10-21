@@ -3,15 +3,19 @@ package com.lshdainty.porest.department.repository;
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.department.domain.Department;
 import com.lshdainty.porest.department.domain.UserDepartment;
+import com.lshdainty.porest.user.domain.User;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import static com.lshdainty.porest.department.domain.QDepartment.department;
 import static com.lshdainty.porest.department.domain.QUserDepartment.userDepartment;
+import static com.lshdainty.porest.user.domain.QUser.user;
 
 @Repository
 @RequiredArgsConstructor
@@ -93,5 +97,41 @@ public class DepartmentCustomRepositoryImpl implements DepartmentCustomRepositor
                 )
                 .fetchOne()
         );
+    }
+
+    @Override
+    public List<User> findUsersInDepartment(Long departmentId) {
+        return query
+                .select(userDepartment.user)
+                .from(userDepartment)
+                .join(userDepartment.user, user)
+                .join(userDepartment.department, department)
+                .where(
+                        userDepartment.department.id.eq(departmentId),
+                        userDepartment.delYN.eq(YNType.N),
+                        department.delYN.eq(YNType.N),
+                        user.delYN.eq(YNType.N)
+                )
+                .fetch();
+    }
+
+    @Override
+    public List<User> findUsersNotInDepartment(Long departmentId) {
+        return query
+                .selectFrom(user)
+                .where(
+                        user.delYN.eq(YNType.N),
+                        JPAExpressions
+                                .selectFrom(userDepartment)
+                                .join(userDepartment.department, department)
+                                .where(
+                                        userDepartment.user.id.eq(user.id),
+                                        userDepartment.department.id.eq(departmentId),
+                                        userDepartment.delYN.eq(YNType.N),
+                                        department.delYN.eq(YNType.N)
+                                )
+                                .notExists()
+                )
+                .fetch();
     }
 }

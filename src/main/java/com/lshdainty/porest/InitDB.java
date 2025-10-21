@@ -5,6 +5,7 @@ import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.company.type.OriginCompanyType;
 import com.lshdainty.porest.company.domain.Company;
 import com.lshdainty.porest.department.domain.Department;
+import com.lshdainty.porest.department.domain.UserDepartment;
 import com.lshdainty.porest.dues.domain.Dues;
 import com.lshdainty.porest.dues.type.DuesCalcType;
 import com.lshdainty.porest.dues.type.DuesType;
@@ -40,6 +41,7 @@ public class InitDB {
     public void init() {
         initService.initSetMember();
         initService.initSetDepartment();
+        initService.initSetUserDepartment();
         initService.initSetHoliday();
         initService.initSetVacation();
         initService.initSetSchedule();
@@ -63,17 +65,28 @@ public class InitDB {
             saveMember("user6", "이하은", "fff@naver.com", LocalDate.of(1885, 9, 2), OriginCompanyType.SKAX, "8 ~ 5", YNType.N);
 
             User user1 = em.find(User.class, "user1");
+            User user2 = em.find(User.class, "user2");
             User user3 = em.find(User.class, "user3");
+            User user4 = em.find(User.class, "user4");
+            User user5 = em.find(User.class, "user5");
+            User user6 = em.find(User.class, "user6");
 
             user1.updateUser(user1.getName(), user1.getEmail(), RoleType.ADMIN, user1.getBirth(), user1.getCompany(), user1.getWorkTime(), user1.getLunarYN(), null, null);
             user3.updateUser(user3.getName(), user3.getEmail(), RoleType.ADMIN, user3.getBirth(), user3.getCompany(), user3.getWorkTime(), user3.getLunarYN(), null, null);
+
+            user1.completeRegistration(user1.getBirth(), user1.getLunarYN());
+            user2.completeRegistration(user2.getBirth(), user2.getLunarYN());
+            user3.completeRegistration(user3.getBirth(), user3.getLunarYN());
+            user4.completeRegistration(user4.getBirth(), user4.getLunarYN());
+            user5.completeRegistration(user5.getBirth(), user5.getLunarYN());
+            user6.completeRegistration(user6.getBirth(), user6.getLunarYN());
         }
 
         public void initSetDepartment() {
             Company company = Company.createCompany("SKC", "SKC", "SKC입니다.");
             em.persist(company);
 
-            Department parent = saveDepartment("생산운영", "생산운영", null, 0L, "mes 생산운영 파트입니다.", null, company);
+            Department parent = saveDepartment("dept", "생산운영", null, 0L, "mes 생산운영 파트입니다.", null, company);
             saveDepartment("Olive", "Olive", parent, 1L, "울산 운영 부서입니다.", null, company);
             Department mes = saveDepartment("G-MES", "G-MES", parent, 1L, "G-MES 부서입니다.", null, company);
             saveDepartment("G-MESJ", "G-MESJ", mes, 2L, "정읍 G-MES 파트입니다.", null, company);
@@ -84,6 +97,46 @@ public class InitDB {
             saveDepartment("Tableau", "Tableau", dt, 2L, "Tableau 파트입니다.", null, company);
             saveDepartment("AOI", "AOI", dt, 2L, "AOI 파트입니다.", null, company);
             saveDepartment("CMP", "CMP", parent, 1L, "CMP 부서입니다.", null, company);
+        }
+
+        public void initSetUserDepartment() {
+            User user1 = em.find(User.class, "user1");
+            User user2 = em.find(User.class, "user2");
+            User user3 = em.find(User.class, "user3");
+            User user4 = em.find(User.class, "user4");
+            User user5 = em.find(User.class, "user5");
+            User user6 = em.find(User.class, "user6");
+
+            Department dept = findDepartmentByName("dept");
+            Department GMESJ = findDepartmentByName("G-MESJ");
+            Department GMESM = findDepartmentByName("G-MESM");
+            Department DT = findDepartmentByName("DT");
+            Department myDATA = findDepartmentByName("myDATA");
+            Department tableau = findDepartmentByName("Tableau");
+
+            UserDepartment ud1 = UserDepartment.createUserDepartment(user1, myDATA, YNType.Y);
+            UserDepartment ud2 = UserDepartment.createUserDepartment(user2, tableau, YNType.Y);
+            UserDepartment ud3 = UserDepartment.createUserDepartment(user3, DT, YNType.Y);
+            UserDepartment ud4 = UserDepartment.createUserDepartment(user4, GMESJ, YNType.Y);
+            UserDepartment ud5 = UserDepartment.createUserDepartment(user5, GMESM, YNType.Y);
+            UserDepartment ud6 = UserDepartment.createUserDepartment(user6, dept, YNType.Y);
+            UserDepartment ud7 = UserDepartment.createUserDepartment(user1, GMESJ, YNType.N);
+
+            em.persist(ud1);
+            em.persist(ud2);
+            em.persist(ud3);
+            em.persist(ud4);
+            em.persist(ud5);
+            em.persist(ud6);
+            em.persist(ud7);
+        }
+
+        private Department findDepartmentByName(String name) {
+            return em.createQuery(
+                    "SELECT d FROM Department d WHERE d.name = :name AND d.delYN = :delYN", Department.class)
+                    .setParameter("name", name)
+                    .setParameter("delYN", YNType.N)
+                    .getSingleResult();
         }
 
         public void initSetHoliday() {

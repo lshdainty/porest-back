@@ -113,4 +113,29 @@ public class DepartmentApiDto {
     public static class RegistDepartmentUserResp {
         private Long userDepartmentId;
     }
+
+    @Getter
+    @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class UserInfo {
+        private String userId;
+        private String userName;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class GetDepartmentUsersResp {
+        private Long departmentId;
+        private String departmentName;
+        private String departmentNameKr;
+        private Long parentId;
+        private String headUserId;
+        private Long treeLevel;
+        private String departmentDesc;
+        private String colorCode;
+        private String companyId;
+        private List<UserInfo> usersInDepartment;
+        private List<UserInfo> usersNotInDepartment;
+    }
 }

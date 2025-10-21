@@ -2,7 +2,9 @@ package com.lshdainty.porest.department.repository;
 
 import com.lshdainty.porest.department.domain.Department;
 import com.lshdainty.porest.department.domain.UserDepartment;
+import com.lshdainty.porest.user.domain.User;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface DepartmentCustomRepository {
@@ -20,4 +22,8 @@ public interface DepartmentCustomRepository {
     Optional<UserDepartment> findMainDepartmentByUserId(String userId);
     // 특정 유저와 부서의 연결 조회
     Optional<UserDepartment> findUserDepartment(String userId, Long departmentId);
+    // 특정 부서에 속한 유저 조회
+    List<User> findUsersInDepartment(Long departmentId);
+    // 특정 부서에 속하지 않은 유저 조회
+    List<User> findUsersNotInDepartment(Long departmentId);
 }
