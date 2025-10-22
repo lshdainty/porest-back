@@ -120,6 +120,7 @@ public class DepartmentApiDto {
     public static class UserInfo {
         private String userId;
         private String userName;
+        private YNType mainYn;
     }
 
     @Getter

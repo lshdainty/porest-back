@@ -134,4 +134,19 @@ public class DepartmentCustomRepositoryImpl implements DepartmentCustomRepositor
                 )
                 .fetch();
     }
+
+    @Override
+    public List<UserDepartment> findUserDepartmentsInDepartment(Long departmentId) {
+        return query
+                .selectFrom(userDepartment)
+                .join(userDepartment.user, user).fetchJoin()
+                .join(userDepartment.department, department)
+                .where(
+                        userDepartment.department.id.eq(departmentId),
+                        userDepartment.delYN.eq(YNType.N),
+                        department.delYN.eq(YNType.N),
+                        user.delYN.eq(YNType.N)
+                )
+                .fetch();
+    }
 }

@@ -26,4 +26,6 @@ public interface DepartmentCustomRepository {
     List<User> findUsersInDepartment(Long departmentId);
     // 특정 부서에 속하지 않은 유저 조회
     List<User> findUsersNotInDepartment(Long departmentId);
+    // 특정 부서에 속한 UserDepartment 조회 (mainYN 포함)
+    List<UserDepartment> findUserDepartmentsInDepartment(Long departmentId);
 }

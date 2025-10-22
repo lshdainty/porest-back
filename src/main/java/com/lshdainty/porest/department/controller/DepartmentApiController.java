@@ -114,15 +114,17 @@ public class DepartmentApiController {
                 serviceDto.getColor(),
                 serviceDto.getCompanyId(),
                 serviceDto.getUsersInDepartment().stream()
-                        .map(user -> new DepartmentApiDto.UserInfo(
-                                user.getId(),
-                                user.getName()
+                        .map(userDepartment -> new DepartmentApiDto.UserInfo(
+                                userDepartment.getUser().getId(),
+                                userDepartment.getUser().getName(),
+                                userDepartment.getMainYN()
                         ))
                         .toList(),
                 serviceDto.getUsersNotInDepartment().stream()
-                        .map(user -> new DepartmentApiDto.UserInfo(
-                                user.getId(),
-                                user.getName()
+                        .map(userDepartment -> new DepartmentApiDto.UserInfo(
+                                userDepartment.getUser().getId(),
+                                userDepartment.getUser().getName(),
+                                userDepartment.getMainYN()
                         ))
                         .toList()
         );

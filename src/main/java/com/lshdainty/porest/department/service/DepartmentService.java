@@ -10,7 +10,6 @@ import com.lshdainty.porest.department.service.dto.DepartmentServiceDto;
 import com.lshdainty.porest.department.service.dto.UserDepartmentServiceDto;
 import com.lshdainty.porest.user.domain.User;
 import com.lshdainty.porest.user.service.UserService;
-import com.lshdainty.porest.user.service.dto.UserServiceDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
@@ -181,24 +180,25 @@ public class DepartmentService {
         // 부서 존재 여부 확인 및 부서 정보 조회
         Department department = checkDepartmentExists(departmentId);
 
-        // Repository에서 부서에 속한 유저 조회
-        List<User> usersIn = departmentRepository.findUsersInDepartment(departmentId);
+        // Repository에서 부서에 속한 UserDepartment 조회 (mainYN 포함)
+        List<UserDepartment> userDepartmentsIn = departmentRepository.findUserDepartmentsInDepartment(departmentId);
 
         // Repository에서 부서에 속하지 않은 유저 조회
         List<User> usersNotIn = departmentRepository.findUsersNotInDepartment(departmentId);
 
-        // User Entity -> UserServiceDto 변환
-        List<UserServiceDto> usersInDepartmentDto = usersIn.stream()
-                .map(user -> UserServiceDto.builder()
-                        .id(user.getId())
-                        .name(user.getName())
+        // UserDepartment Entity -> UserDepartmentServiceDto 변환
+        List<UserDepartmentServiceDto> usersInDepartmentDto = userDepartmentsIn.stream()
+                .map(userDepartment -> UserDepartmentServiceDto.builder()
+                        .user(userDepartment.getUser())
+                        .mainYN(userDepartment.getMainYN())
                         .build())
                 .toList();
 
-        List<UserServiceDto> usersNotInDepartmentDto = usersNotIn.stream()
-                .map(user -> UserServiceDto.builder()
-                        .id(user.getId())
-                        .name(user.getName())
+        // User Entity -> UserDepartmentServiceDto 변환 (부서에 속하지 않은 유저는 mainYN이 null)
+        List<UserDepartmentServiceDto> usersNotInDepartmentDto = usersNotIn.stream()
+                .map(user -> UserDepartmentServiceDto.builder()
+                        .user(user)
+                        .mainYN(null)
                         .build())
                 .toList();
 
