@@ -102,7 +102,7 @@ public class DepartmentApiDto {
     @Getter
     @AllArgsConstructor
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    public static class RegistDepartmentUserReq {
+    public static class UserDepartmentInfo {
         private String userId;
         private YNType mainYn;
     }
@@ -110,8 +110,22 @@ public class DepartmentApiDto {
     @Getter
     @AllArgsConstructor
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class RegistDepartmentUserReq {
+        private List<UserDepartmentInfo> users;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class RegistDepartmentUserResp {
-        private Long userDepartmentId;
+        private List<Long> userDepartmentIds;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class DeleteDepartmentUserReq {
+        private List<String> userIds;
     }
 
     @Getter

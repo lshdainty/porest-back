@@ -1,5 +1,6 @@
 package com.lshdainty.porest.user.service;
 
+import com.lshdainty.porest.department.repository.DepartmentCustomRepositoryImpl;
 import com.lshdainty.porest.user.domain.User;
 import com.lshdainty.porest.user.repository.UserRepositoryImpl;
 import com.lshdainty.porest.user.service.dto.UserServiceDto;
@@ -30,6 +31,7 @@ public class UserService {
     private final MessageSource ms;
     private final UserRepositoryImpl userRepositoryImpl;
     private final EmailService emailService;
+    private final DepartmentCustomRepositoryImpl departmentRepository;
 
     @Value("${file.root-path}")
     private String fileRootPath;
@@ -366,5 +368,18 @@ public class UserService {
         Optional<User> existingUser = userRepositoryImpl.findById(userId);
         // userId가 PK이므로 삭제 여부와 관계없이 존재하면 중복으로 판단
         return existingUser.isPresent();
+    }
+
+    /**
+     * 사용자의 메인 부서 존재 여부 확인
+     */
+    public YNType checkUserHasMainDepartment(String userId) {
+        // 유저 존재 여부 확인
+        checkUserExist(userId);
+
+        // 메인 부서 존재 여부 확인
+        boolean hasMainDepartment = departmentRepository.hasMainDepartment(userId);
+
+        return hasMainDepartment ? YNType.Y : YNType.N;
     }
 }

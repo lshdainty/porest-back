@@ -132,48 +132,58 @@ public class DepartmentService {
     }
 
     @Transactional
-    public Long registUserDepartment(UserDepartmentServiceDto data) {
-        // userId와 departmentId로 User와 Department 조회
-        User user = userService.checkUserExist(data.getUserId());
-        Department department = checkDepartmentExists(data.getDepartmentId());
+    public List<Long> registUserDepartments(List<UserDepartmentServiceDto> userDataList, Long departmentId) {
+        // 부서 존재 여부 확인
+        Department department = checkDepartmentExists(departmentId);
 
-        // mainYN이 Y인 경우, 해당 유저의 기존 메인 부서가 있는지 확인
-        if (data.getMainYN() == YNType.Y) {
-            Optional<UserDepartment> existingMainDepartment =
-                    departmentRepository.findMainDepartmentByUserId(user.getId());
+        List<Long> userDepartmentIds = new java.util.ArrayList<>();
 
-            if (existingMainDepartment.isPresent()) {
-                throw new IllegalArgumentException(
-                        ms.getMessage("error.validate.main.department.already.exists", null, null)
-                );
+        for (UserDepartmentServiceDto data : userDataList) {
+            // userId로 User 조회
+            User user = userService.checkUserExist(data.getUserId());
+
+            // mainYN이 Y인 경우, 해당 유저의 기존 메인 부서가 있는지 확인
+            if (data.getMainYN() == YNType.Y) {
+                Optional<UserDepartment> existingMainDepartment =
+                        departmentRepository.findMainDepartmentByUserId(user.getId());
+
+                if (existingMainDepartment.isPresent()) {
+                    throw new IllegalArgumentException(
+                            ms.getMessage("error.validate.main.department.already.exists", null, null)
+                    );
+                }
             }
+
+            // UserDepartment 생성 및 저장
+            UserDepartment userDepartment = UserDepartment.createUserDepartment(
+                    user,
+                    department,
+                    data.getMainYN()
+            );
+            departmentRepository.saveUserDepartment(userDepartment);
+            userDepartmentIds.add(userDepartment.getId());
         }
 
-        // UserDepartment 생성 및 저장
-        UserDepartment userDepartment = UserDepartment.createUserDepartment(
-                user,
-                department,
-                data.getMainYN()
-        );
-        departmentRepository.saveUserDepartment(userDepartment);
-        return userDepartment.getId();
+        return userDepartmentIds;
     }
 
     @Transactional
-    public void deleteUserDepartment(String userId, Long departmentId) {
-        // UserDepartment 조회
-        Optional<UserDepartment> userDepartmentOpt =
-                departmentRepository.findUserDepartment(userId, departmentId);
+    public void deleteUserDepartments(List<String> userIds, Long departmentId) {
+        for (String userId : userIds) {
+            // UserDepartment 조회
+            Optional<UserDepartment> userDepartmentOpt =
+                    departmentRepository.findUserDepartment(userId, departmentId);
 
-        if (userDepartmentOpt.isEmpty()) {
-            throw new IllegalArgumentException(
-                    ms.getMessage("error.notfound.user.department", null, null)
-            );
+            if (userDepartmentOpt.isEmpty()) {
+                throw new IllegalArgumentException(
+                        ms.getMessage("error.notfound.user.department", null, null)
+                );
+            }
+
+            // 논리 삭제 실행
+            UserDepartment userDepartment = userDepartmentOpt.get();
+            userDepartment.deleteUserDepartment();
         }
-
-        // 논리 삭제 실행
-        UserDepartment userDepartment = userDepartmentOpt.get();
-        userDepartment.deleteUserDepartment();
     }
 
     public DepartmentServiceDto getUsersInAndNotInDepartment(Long departmentId) {
@@ -218,8 +228,6 @@ public class DepartmentService {
                 .usersNotInDepartment(usersNotInDepartmentDto)
                 .build();
     }
-
-
 
     public Department checkDepartmentExists(Long departmentId) {
         Optional<Department> department = departmentRepository.findById(departmentId);

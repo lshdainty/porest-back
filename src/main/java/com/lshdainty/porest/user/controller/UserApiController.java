@@ -1,5 +1,6 @@
 package com.lshdainty.porest.user.controller;
 
+import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.user.controller.dto.UserApiDto;
 import com.lshdainty.porest.common.controller.ApiResponse;
 import com.lshdainty.porest.user.service.UserService;
@@ -221,5 +222,14 @@ public class UserApiController {
                 result.getInvitationExpiresAt(),
                 result.getInvitationStatus()
         ));
+    }
+
+    /**
+     * 사용자의 메인 부서 존재 여부 확인
+     */
+    @GetMapping("/api/v1/users/{userId}/main-department/existence")
+    public ApiResponse checkUserMainDepartmentExistence(@PathVariable("userId") String userId) {
+        YNType hasMainDepartment = userService.checkUserHasMainDepartment(userId);
+        return ApiResponse.success(new UserApiDto.CheckMainDepartmentExistenceResp(hasMainDepartment));
     }
 }

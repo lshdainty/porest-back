@@ -28,4 +28,6 @@ public interface DepartmentCustomRepository {
     List<User> findUsersNotInDepartment(Long departmentId);
     // 특정 부서에 속한 UserDepartment 조회 (mainYN 포함)
     List<UserDepartment> findUserDepartmentsInDepartment(Long departmentId);
+    // 특정 유저의 메인 부서 존재 여부 확인
+    boolean hasMainDepartment(String userId);
 }

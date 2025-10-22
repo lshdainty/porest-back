@@ -149,4 +149,19 @@ public class DepartmentCustomRepositoryImpl implements DepartmentCustomRepositor
                 )
                 .fetch();
     }
+
+    @Override
+    public boolean hasMainDepartment(String userId) {
+        Long count = query
+                .select(userDepartment.count())
+                .from(userDepartment)
+                .where(
+                        userDepartment.user.id.eq(userId),
+                        userDepartment.mainYN.eq(YNType.Y),
+                        userDepartment.delYN.eq(YNType.N)
+                )
+                .fetchOne();
+
+        return count != null && count > 0;
+    }
 }

@@ -184,4 +184,11 @@ public class UserApiDto {
     public static class CheckUserIdDuplicateResp {
         private boolean duplicate;
     }
+
+    @Getter
+    @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class CheckMainDepartmentExistenceResp {
+        private YNType hasMainDepartment;
+    }
 }

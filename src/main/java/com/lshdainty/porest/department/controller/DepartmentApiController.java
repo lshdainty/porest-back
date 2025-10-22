@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -79,23 +81,26 @@ public class DepartmentApiController {
     }
 
     @PostMapping("/api/v1/departments/{departmentId}/users")
-    public ApiResponse registDepartmentUser(
+    public ApiResponse registDepartmentUsers(
             @PathVariable("departmentId") Long departmentId,
             @RequestBody DepartmentApiDto.RegistDepartmentUserReq data) {
-        Long userDepartmentId = departmentService.registUserDepartment(UserDepartmentServiceDto.builder()
-                .userId(data.getUserId())
-                .departmentId(departmentId)
-                .mainYN(data.getMainYn())
-                .build()
-        );
-        return ApiResponse.success(new DepartmentApiDto.RegistDepartmentUserResp(userDepartmentId));
+        // DTO 변환
+        List<UserDepartmentServiceDto> userDepartmentServiceDtos = data.getUsers().stream()
+                .map(userInfo -> UserDepartmentServiceDto.builder()
+                        .userId(userInfo.getUserId())
+                        .mainYN(userInfo.getMainYn())
+                        .build())
+                .toList();
+
+        List<Long> userDepartmentIds = departmentService.registUserDepartments(userDepartmentServiceDtos, departmentId);
+        return ApiResponse.success(new DepartmentApiDto.RegistDepartmentUserResp(userDepartmentIds));
     }
 
-    @DeleteMapping("/api/v1/departments/{departmentId}/users/{userId}")
-    public ApiResponse deleteDepartmentUser(
+    @DeleteMapping("/api/v1/departments/{departmentId}/users")
+    public ApiResponse deleteDepartmentUsers(
             @PathVariable("departmentId") Long departmentId,
-            @PathVariable("userId") String userId) {
-        departmentService.deleteUserDepartment(userId, departmentId);
+            @RequestBody DepartmentApiDto.DeleteDepartmentUserReq data) {
+        departmentService.deleteUserDepartments(data.getUserIds(), departmentId);
         return ApiResponse.success();
     }
 

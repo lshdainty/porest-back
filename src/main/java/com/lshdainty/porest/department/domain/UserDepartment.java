@@ -67,6 +67,7 @@ public class UserDepartment extends AuditingFields {
      * 해당 메소드를 통해 유저 부서 삭제할 것
      */
     public void deleteUserDepartment() {
+        this.mainYN = YNType.N;
         this.delYN = YNType.Y;
     }
 }
