@@ -164,6 +164,7 @@ public class VacationApiDto {
         private VacationType vacationType;
         private GrantMethod grantMethod;
         private BigDecimal grantTime;
+        private String grantTimeStr;
         private RepeatUnit repeatUnit;
         private Integer repeatInterval;
         private GrantTiming grantTiming;

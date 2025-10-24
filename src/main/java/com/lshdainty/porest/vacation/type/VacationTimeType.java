@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 import java.util.function.Function;
 
 @Getter
@@ -51,6 +52,10 @@ public enum VacationTimeType implements DisplayType {
      */
     public static String convertValueToDay(BigDecimal value) {
         String dayStr = "0일";
+
+        if (Objects.isNull(value)) {
+            return dayStr;
+        }
 
         if (value.compareTo(BigDecimal.ZERO) > 0) {
             StringBuilder builer = new StringBuilder();
