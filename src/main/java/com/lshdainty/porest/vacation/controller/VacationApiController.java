@@ -283,6 +283,17 @@ public class VacationApiController {
     }
 
     /**
+     * 휴가 정책 삭제
+     * DELETE /api/v1/vacation/policies/{vacationPolicyId}
+     */
+    @DeleteMapping("/api/v1/vacation/policies/{vacationPolicyId}")
+    public ApiResponse deleteVacationPolicy(@PathVariable("vacationPolicyId") Long vacationPolicyId) {
+        Long deletedPolicyId = vacationService.deleteVacationPolicy(vacationPolicyId);
+
+        return ApiResponse.success(new VacationApiDto.DeleteVacationPolicyResp(deletedPolicyId));
+    }
+
+    /**
      * 유저에게 여러 휴가 정책을 일괄 할당
      * POST /api/v1/users/{userId}/vacation-policies
      */
@@ -325,5 +336,38 @@ public class VacationApiController {
                 .toList();
 
         return ApiResponse.success(resp);
+    }
+
+    /**
+     * 유저에게 부여된 휴가 정책 회수 (단일)
+     * DELETE /api/v1/users/{userId}/vacation-policies/{vacationPolicyId}
+     */
+    @DeleteMapping("/api/v1/users/{userId}/vacation-policies/{vacationPolicyId}")
+    public ApiResponse revokeVacationPolicyFromUser(
+            @PathVariable("userId") String userId,
+            @PathVariable("vacationPolicyId") Long vacationPolicyId) {
+        Long userVacationPolicyId = vacationService.revokeVacationPolicyFromUser(userId, vacationPolicyId);
+
+        return ApiResponse.success(new VacationApiDto.RevokeVacationPolicyFromUserResp(
+                userId,
+                vacationPolicyId,
+                userVacationPolicyId
+        ));
+    }
+
+    /**
+     * 유저에게 부여된 여러 휴가 정책 일괄 회수
+     * DELETE /api/v1/users/{userId}/vacation-policies
+     */
+    @DeleteMapping("/api/v1/users/{userId}/vacation-policies")
+    public ApiResponse revokeVacationPoliciesFromUser(
+            @PathVariable("userId") String userId,
+            @RequestBody VacationApiDto.RevokeVacationPoliciesFromUserReq data) {
+        List<Long> revokedPolicyIds = vacationService.revokeVacationPoliciesFromUser(userId, data.getVacationPolicyIds());
+
+        return ApiResponse.success(new VacationApiDto.RevokeVacationPoliciesFromUserResp(
+                userId,
+                revokedPolicyIds
+        ));
     }
 }

@@ -228,4 +228,35 @@ public class VacationApiDto {
         private Integer specificMonths;
         private Integer specificDays;
     }
+
+    @Getter
+    @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class RevokeVacationPolicyFromUserResp {
+        private String userId;
+        private Long vacationPolicyId;
+        private Long userVacationPolicyId;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class RevokeVacationPoliciesFromUserReq {
+        private List<Long> vacationPolicyIds;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class RevokeVacationPoliciesFromUserResp {
+        private String userId;
+        private List<Long> revokedVacationPolicyIds;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class DeleteVacationPolicyResp {
+        private Long vacationPolicyId;
+    }
 }

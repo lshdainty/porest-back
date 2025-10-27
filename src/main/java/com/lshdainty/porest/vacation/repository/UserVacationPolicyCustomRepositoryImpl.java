@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import static com.lshdainty.porest.vacation.domain.QUserVacationPolicy.userVacationPolicy;
 
@@ -46,5 +47,38 @@ public class UserVacationPolicyCustomRepositoryImpl implements UserVacationPolic
                         .and(userVacationPolicy.vacationPolicy.id.eq(vacationPolicyId)))
                 .fetchFirst();
         return count != null;
+    }
+
+    @Override
+    public Optional<UserVacationPolicy> findById(Long userVacationPolicyId) {
+        return Optional.ofNullable(query
+                .selectFrom(userVacationPolicy)
+                .join(userVacationPolicy.vacationPolicy).fetchJoin()
+                .join(userVacationPolicy.user).fetchJoin()
+                .where(userVacationPolicy.id.eq(userVacationPolicyId))
+                .fetchOne()
+        );
+    }
+
+    @Override
+    public Optional<UserVacationPolicy> findByUserIdAndVacationPolicyId(String userId, Long vacationPolicyId) {
+        return Optional.ofNullable(query
+                .selectFrom(userVacationPolicy)
+                .join(userVacationPolicy.vacationPolicy).fetchJoin()
+                .join(userVacationPolicy.user).fetchJoin()
+                .where(userVacationPolicy.user.id.eq(userId)
+                        .and(userVacationPolicy.vacationPolicy.id.eq(vacationPolicyId)))
+                .fetchOne()
+        );
+    }
+
+    @Override
+    public List<UserVacationPolicy> findByVacationPolicyId(Long vacationPolicyId) {
+        return query
+                .selectFrom(userVacationPolicy)
+                .join(userVacationPolicy.vacationPolicy).fetchJoin()
+                .join(userVacationPolicy.user).fetchJoin()
+                .where(userVacationPolicy.vacationPolicy.id.eq(vacationPolicyId))
+                .fetch();
     }
 }

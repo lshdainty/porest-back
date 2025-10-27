@@ -1,5 +1,6 @@
 package com.lshdainty.porest.vacation.service;
 
+import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.holiday.repository.HolidayRepositoryImpl;
 import com.lshdainty.porest.user.service.UserService;
 import com.lshdainty.porest.user.domain.User;
@@ -343,6 +344,63 @@ public class VacationService {
     }
 
     /**
+     * 휴가 정책 삭제
+     *
+     * 휴가 정책을 소프트 삭제하고, 구성원에게 부여된 휴가 수량을 처리합니다.
+     * - 보유한 휴가에만 영향을 주고, 이미 사용했던 혹은 사용 예정으로 신청해둔 휴가에는 영향을 주지 않습니다.
+     *
+     * @param vacationPolicyId 삭제할 휴가 정책 ID
+     * @return 삭제된 휴가 정책 ID
+     */
+    @Transactional
+    public Long deleteVacationPolicy(Long vacationPolicyId) {
+        // 1. 휴가 정책 존재 확인
+        VacationPolicy vacationPolicy = checkVacationPolicyExist(vacationPolicyId);
+
+        // 2. 이미 삭제된 정책인지 확인
+        if (vacationPolicy.getIsDeleted() == YNType.Y) {
+            throw new IllegalArgumentException(ms.getMessage("error.validate.already.deleted.vacation.policy", null, null));
+        }
+
+        // 3. 삭제 가능 여부 확인
+        if (vacationPolicy.getCanDeleted() == YNType.N) {
+            throw new IllegalArgumentException(ms.getMessage("error.validate.cannot.delete.vacation.policy", null, null));
+        }
+
+        // 4. 휴가 정책 소프트 삭제
+        vacationPolicy.deleteVacationPolicy();
+
+        // 5. 해당 휴가 정책을 사용하는 모든 UserVacationPolicy를 소프트 삭제
+        List<UserVacationPolicy> userVacationPolicies = userVacationPolicyRepository.findByVacationPolicyId(vacationPolicyId);
+        int deletedUserVacationPolicyCount = 0;
+
+        for (UserVacationPolicy uvp : userVacationPolicies) {
+            // 이미 삭제된 경우 스킵
+            if (uvp.getDelYN() == YNType.Y) {
+                continue;
+            }
+
+            // UserVacationPolicy 소프트 삭제
+            uvp.deleteUserVacationPolicy();
+            deletedUserVacationPolicyCount++;
+        }
+
+        log.info("Deleted {} user vacation policy assignments for vacation policy {}",
+                deletedUserVacationPolicyCount, vacationPolicyId);
+
+        // TODO: 구성원에게 부여된 휴가 수량 처리
+        // - 해당 휴가 정책으로 부여된 모든 Vacation 조회
+        // - 각 Vacation의 remainTime에서 해당 정책의 grantTime만큼 차감
+        // - 단, 이미 사용한 휴가(VacationHistory)에는 영향을 주지 않음
+        // - 사용 예정으로 신청해둔 휴가(future VacationHistory)에도 영향을 주지 않음
+        log.warn("TODO: Process vacation grant removal for policy {}", vacationPolicyId);
+
+        log.info("Deleted vacation policy {}", vacationPolicyId);
+
+        return vacationPolicyId;
+    }
+
+    /**
      * 유저에게 여러 휴가 정책을 일괄 할당
      *
      * @param userId 유저 ID
@@ -421,6 +479,92 @@ public class VacationService {
                             .build();
                 })
                 .toList();
+    }
+
+    /**
+     * 유저에게 부여된 휴가 정책 회수 (단일)
+     *
+     * @param userId 유저 ID
+     * @param vacationPolicyId 휴가 정책 ID
+     * @return 회수된 UserVacationPolicy ID
+     */
+    @Transactional
+    public Long revokeVacationPolicyFromUser(String userId, Long vacationPolicyId) {
+        // 1. 유저 존재 확인
+        userService.checkUserExist(userId);
+
+        // 2. 휴가 정책 존재 확인
+        checkVacationPolicyExist(vacationPolicyId);
+
+        // 3. UserVacationPolicy 조회
+        UserVacationPolicy userVacationPolicy = userVacationPolicyRepository
+                .findByUserIdAndVacationPolicyId(userId, vacationPolicyId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        ms.getMessage("error.notfound.user.vacation.policy", null, null)));
+
+        // 4. 이미 삭제된 경우 예외 처리
+        if (userVacationPolicy.getDelYN() == YNType.Y) {
+            throw new IllegalArgumentException(ms.getMessage("error.validate.already.deleted.user.vacation.policy", null, null));
+        }
+
+        // 5. 소프트 삭제 수행
+        userVacationPolicy.deleteUserVacationPolicy();
+
+        log.info("Revoked vacation policy {} from user {}", vacationPolicyId, userId);
+
+        return userVacationPolicy.getId();
+    }
+
+    /**
+     * 유저에게 부여된 여러 휴가 정책 일괄 회수
+     *
+     * @param userId 유저 ID
+     * @param vacationPolicyIds 휴가 정책 ID 리스트
+     * @return 회수된 UserVacationPolicy ID 리스트
+     */
+    @Transactional
+    public List<Long> revokeVacationPoliciesFromUser(String userId, List<Long> vacationPolicyIds) {
+        // 1. 유저 존재 확인
+        userService.checkUserExist(userId);
+
+        List<Long> revokedIds = new ArrayList<>();
+
+        // 2. 각 휴가 정책에 대해 회수 처리
+        for (Long policyId : vacationPolicyIds) {
+            try {
+                // 휴가 정책 존재 확인
+                checkVacationPolicyExist(policyId);
+
+                // UserVacationPolicy 조회
+                Optional<UserVacationPolicy> optionalUvp = userVacationPolicyRepository
+                        .findByUserIdAndVacationPolicyId(userId, policyId);
+
+                if (optionalUvp.isEmpty()) {
+                    log.warn("User {} does not have vacation policy {}, skipping", userId, policyId);
+                    continue;
+                }
+
+                UserVacationPolicy userVacationPolicy = optionalUvp.get();
+
+                // 이미 삭제된 경우 스킵
+                if (userVacationPolicy.getDelYN() == YNType.Y) {
+                    log.warn("Vacation policy {} already revoked from user {}, skipping", policyId, userId);
+                    continue;
+                }
+
+                // 소프트 삭제 수행
+                userVacationPolicy.deleteUserVacationPolicy();
+                revokedIds.add(policyId);
+
+            } catch (Exception e) {
+                log.error("Failed to revoke vacation policy {} from user {}: {}", policyId, userId, e.getMessage());
+                // 일괄 처리 중 개별 에러는 스킵하고 계속 진행
+            }
+        }
+
+        log.info("Revoked {} vacation policies from user {}", revokedIds.size(), userId);
+
+        return revokedIds;
     }
 
     private List<VacationServiceDto> makeDayGroupDto(List<VacationHistory> dayHistories) {
