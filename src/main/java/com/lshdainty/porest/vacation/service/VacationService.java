@@ -12,11 +12,11 @@ import com.lshdainty.porest.vacation.repository.VacationPolicyCustomRepositoryIm
 import com.lshdainty.porest.vacation.repository.VacationRepositoryImpl;
 import com.lshdainty.porest.vacation.service.dto.VacationPolicyServiceDto;
 import com.lshdainty.porest.vacation.service.dto.VacationServiceDto;
-import com.lshdainty.porest.vacation.service.policy.ManualGrant;
-import com.lshdainty.porest.vacation.service.policy.OnRequest;
-import com.lshdainty.porest.vacation.service.policy.RepeatGrant;
+import com.lshdainty.porest.vacation.service.policy.VacationPolicyStrategy;
+import com.lshdainty.porest.vacation.service.policy.factory.VacationPolicyStrategyFactory;
+import com.lshdainty.porest.vacation.service.type.VacationTypeStrategy;
+import com.lshdainty.porest.vacation.service.type.factory.VacationTypeStrategyFactory;
 import com.lshdainty.porest.holiday.type.HolidayType;
-import com.lshdainty.porest.vacation.service.type.*;
 import com.lshdainty.porest.vacation.type.VacationTimeType;
 import com.lshdainty.porest.common.util.PorestTime;
 import lombok.RequiredArgsConstructor;
@@ -48,25 +48,13 @@ public class VacationService {
     private final UserRepositoryImpl userRepository;
     private final HolidayRepositoryImpl holidayRepository;
     private final UserService userService;
+    private final VacationPolicyStrategyFactory vacationPolicyStrategyFactory;
+    private final VacationTypeStrategyFactory vacationTypeStrategyFactory;
 
     @Transactional
     public Long registVacation(VacationServiceDto data) {
-        VacationService vacationService = switch (data.getType()) {
-            case ANNUAL ->
-                    new Annual(vacationRepository, vacationHistoryRepository, userService);
-            case MATERNITY ->
-                    new Maternity(vacationRepository, vacationHistoryRepository, userService);
-            case WEDDING ->
-                    new Wedding(vacationRepository, vacationHistoryRepository, userService);
-            case BEREAVEMENT ->
-                    new Bereavement(vacationRepository, vacationHistoryRepository, userService);
-            case OVERTIME ->
-                    new Overtime(vacationRepository, vacationHistoryRepository, userService);
-            default ->
-                    throw new IllegalArgumentException(ms.getMessage("error.notfound.vacationtype", null, null));
-        };
-
-        return vacationService.registVacation(data);
+        VacationTypeStrategy strategy = vacationTypeStrategyFactory.getStrategy(data.getType());
+        return strategy.registVacation(data);
     }
 
     @Transactional
@@ -304,16 +292,8 @@ public class VacationService {
     }
 
     public Long registVacationPolicy(VacationPolicyServiceDto data) {
-        VacationService vacationService = switch (data.getGrantMethod()) {
-            case ON_REQUEST
-                    -> new OnRequest(vacationPolicyRepository);
-            case MANUAL_GRANT
-                    -> new ManualGrant(vacationPolicyRepository);
-            case REPEAT_GRANT
-                    -> new RepeatGrant(ms, vacationPolicyRepository);
-        };
-
-        return vacationService.registVacationPolicy(data);
+        VacationPolicyStrategy strategy = vacationPolicyStrategyFactory.getStrategy(data.getGrantMethod());
+        return strategy.registVacationPolicy(data);
     }
 
     public VacationPolicyServiceDto searchVacationPolicy(Long vacationPolicyId) {

@@ -219,6 +219,25 @@ public class VacationApiController {
         ));
     }
 
+    @PostMapping("/api/v1/vacation/policies")
+    public ApiResponse registVacationPolicy(@RequestBody VacationApiDto.RegistVacationPolicyReq data) {
+        Long vacationPolicyId = vacationService.registVacationPolicy(VacationPolicyServiceDto.builder()
+                .name(data.getVacationPolicyName())
+                .desc(data.getVacationPolicyDesc())
+                .vacationType(data.getVacationType())
+                .grantMethod(data.getGrantMethod())
+                .grantTime(data.getGrantTime())
+                .repeatUnit(data.getRepeatUnit())
+                .repeatInterval(data.getRepeatInterval())
+                .grantTiming(data.getGrantTiming())
+                .specificMonths(data.getSpecificMonths())
+                .specificDays(data.getSpecificDays())
+                .build()
+        );
+
+        return ApiResponse.success(new VacationApiDto.RegistVacationPolicyResp(vacationPolicyId));
+    }
+
     @GetMapping("/api/v1/vacation/policies/{id}")
     public ApiResponse searchVacationPolicy(@PathVariable("id") Long vacationPolicyId) {
         VacationPolicyServiceDto policy = vacationService.searchVacationPolicy(vacationPolicyId);

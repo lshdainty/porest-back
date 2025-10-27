@@ -2,16 +2,12 @@ package com.lshdainty.porest.vacation.service.policy;
 
 import com.lshdainty.porest.vacation.domain.VacationPolicy;
 import com.lshdainty.porest.vacation.repository.VacationPolicyCustomRepositoryImpl;
-import com.lshdainty.porest.vacation.service.VacationService;
 import com.lshdainty.porest.vacation.service.dto.VacationPolicyServiceDto;
+import lombok.RequiredArgsConstructor;
 
-public class OnRequest extends VacationService {
-    VacationPolicyCustomRepositoryImpl vacationPolicyRepository;
-
-    public OnRequest(VacationPolicyCustomRepositoryImpl vacationPolicyRepository) {
-        super(null, null, null, vacationPolicyRepository, null, null, null);
-        this.vacationPolicyRepository = vacationPolicyRepository;
-    }
+@RequiredArgsConstructor
+public class OnRequest implements VacationPolicyStrategy {
+    private final VacationPolicyCustomRepositoryImpl vacationPolicyRepository;
 
     @Override
     public Long registVacationPolicy(VacationPolicyServiceDto data) {

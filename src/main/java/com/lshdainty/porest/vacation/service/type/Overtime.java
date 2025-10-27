@@ -6,27 +6,17 @@ import com.lshdainty.porest.vacation.domain.VacationHistory;
 import com.lshdainty.porest.vacation.repository.VacationHistoryRepositoryImpl;
 import com.lshdainty.porest.vacation.repository.VacationRepositoryImpl;
 import com.lshdainty.porest.user.service.UserService;
-import com.lshdainty.porest.vacation.service.VacationService;
 import com.lshdainty.porest.vacation.service.dto.VacationServiceDto;
+import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-public class Overtime extends VacationService {
-    VacationRepositoryImpl vacationRepository;
-    VacationHistoryRepositoryImpl vacationHistoryRepository;
-    UserService userService;
-
-    public Overtime(
-            VacationRepositoryImpl vacationRepository,
-            VacationHistoryRepositoryImpl vacationHistoryRepository,
-            UserService userService
-    ) {
-        super(null, vacationRepository, vacationHistoryRepository, null, null, null, userService);
-        this.vacationRepository = vacationRepository;
-        this.vacationHistoryRepository = vacationHistoryRepository;
-        this.userService = userService;
-    }
+@RequiredArgsConstructor
+public class Overtime implements VacationTypeStrategy {
+    private final VacationRepositoryImpl vacationRepository;
+    private final VacationHistoryRepositoryImpl vacationHistoryRepository;
+    private final UserService userService;
 
     @Override
     public Long registVacation(VacationServiceDto data) {

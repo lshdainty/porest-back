@@ -2,21 +2,16 @@ package com.lshdainty.porest.vacation.service.policy;
 
 import com.lshdainty.porest.vacation.domain.VacationPolicy;
 import com.lshdainty.porest.vacation.repository.VacationPolicyCustomRepositoryImpl;
-import com.lshdainty.porest.vacation.service.VacationService;
 import com.lshdainty.porest.vacation.service.dto.VacationPolicyServiceDto;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 
 import java.util.Objects;
 
-public class RepeatGrant extends VacationService {
-    MessageSource ms;
-    VacationPolicyCustomRepositoryImpl vacationPolicyRepository;
-
-    public RepeatGrant(MessageSource ms, VacationPolicyCustomRepositoryImpl vacationPolicyRepository) {
-        super(ms, null, null, vacationPolicyRepository, null, null, null);
-        this.ms = ms;
-        this.vacationPolicyRepository = vacationPolicyRepository;
-    }
+@RequiredArgsConstructor
+public class RepeatGrant implements VacationPolicyStrategy {
+    private final MessageSource ms;
+    private final VacationPolicyCustomRepositoryImpl vacationPolicyRepository;
 
     @Override
     public Long registVacationPolicy(VacationPolicyServiceDto data) {

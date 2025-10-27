@@ -171,4 +171,27 @@ public class VacationApiDto {
         private Integer specificMonths;
         private Integer specificDays;
     }
+
+    @Getter
+    @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class RegistVacationPolicyReq {
+        private String vacationPolicyName;
+        private String vacationPolicyDesc;
+        private VacationType vacationType;
+        private GrantMethod grantMethod;
+        private BigDecimal grantTime;
+        private RepeatUnit repeatUnit;
+        private Integer repeatInterval;
+        private GrantTiming grantTiming;
+        private Integer specificMonths;
+        private Integer specificDays;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class RegistVacationPolicyResp {
+        private Long vacationPolicyId;
+    }
 }
