@@ -229,10 +229,11 @@ public class VacationApiController {
                 .grantTime(data.getGrantTime())
                 .repeatUnit(data.getRepeatUnit())
                 .repeatInterval(data.getRepeatInterval())
-                .grantTiming(data.getGrantTiming())
                 .specificMonths(data.getSpecificMonths())
                 .specificDays(data.getSpecificDays())
                 .firstGrantDate(data.getFirstGrantDate())
+                .isRecurring(data.getIsRecurring())
+                .maxGrantCount(data.getMaxGrantCount())
                 .build()
         );
 
@@ -253,7 +254,6 @@ public class VacationApiController {
                 VacationTimeType.convertValueToDay(policy.getGrantTime()),
                 policy.getRepeatUnit(),
                 policy.getRepeatInterval(),
-                policy.getGrantTiming(),
                 policy.getSpecificMonths(),
                 policy.getSpecificDays()
         ));
@@ -274,7 +274,6 @@ public class VacationApiController {
                         VacationTimeType.convertValueToDay(vp.getGrantTime()),
                         vp.getRepeatUnit(),
                         vp.getRepeatInterval(),
-                        vp.getGrantTiming(),
                         vp.getSpecificMonths(),
                         vp.getSpecificDays()
                 ))
@@ -330,7 +329,6 @@ public class VacationApiController {
                         VacationTimeType.convertValueToDay(vp.getGrantTime()),
                         vp.getRepeatUnit(),
                         vp.getRepeatInterval(),
-                        vp.getGrantTiming(),
                         vp.getSpecificMonths(),
                         vp.getSpecificDays()
                 ))

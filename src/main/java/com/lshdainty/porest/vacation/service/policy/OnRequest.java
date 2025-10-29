@@ -29,10 +29,11 @@ public class OnRequest implements VacationPolicyStrategy {
                 data.getGrantTime(),
                 null,  // repeatUnit (스케줄러 불필요)
                 null,  // repeatInterval (스케줄러 불필요)
-                null,  // grantTiming (스케줄러 불필요)
                 null,  // specificMonths (스케줄러 불필요)
                 null,  // specificDays (스케줄러 불필요)
-                null   // firstGrantDate (스케줄러 불필요, 사용자가 신청 시 부여)
+                null,  // firstGrantDate (스케줄러 불필요, 사용자가 신청 시 부여)
+                null,  // isRecurring (신청 시 부여는 반복 개념 없음)
+                null   // maxGrantCount (신청 시 부여는 횟수 제한 없음)
         );
 
         vacationPolicyRepository.save(vacationPolicy);

@@ -1,9 +1,9 @@
 package com.lshdainty.porest.vacation.service.policy;
 
+import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.vacation.domain.VacationPolicy;
 import com.lshdainty.porest.vacation.repository.VacationPolicyCustomRepositoryImpl;
 import com.lshdainty.porest.vacation.service.dto.VacationPolicyServiceDto;
-import com.lshdainty.porest.vacation.type.GrantTiming;
 import com.lshdainty.porest.vacation.type.RepeatUnit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
@@ -32,10 +32,11 @@ public class RepeatGrant implements VacationPolicyStrategy {
                 data.getGrantTime(),
                 data.getRepeatUnit(),
                 data.getRepeatInterval(),
-                data.getGrantTiming(),
                 data.getSpecificMonths(),
                 data.getSpecificDays(),
-                data.getFirstGrantDate()
+                data.getFirstGrantDate(),
+                data.getIsRecurring(),
+                data.getMaxGrantCount()
         );
 
         vacationPolicyRepository.save(vacationPolicy);
@@ -49,9 +50,9 @@ public class RepeatGrant implements VacationPolicyStrategy {
      * 3. 부여시간 필수 및 양수 검증
      * 4. 반복 단위 필수 검증
      * 5. 반복 간격 필수 및 양수 검증
-     * 6. 부여 시점 지정 방식 필수 검증
-     * 7. 부여 시점에 따른 특정 월/일 검증
-     * 8. 첫 부여 시점 필수 검증
+     * 6. 첫 부여 시점 필수 검증
+     * 7. 반복 단위에 따른 specificMonths/Days 검증
+     * 8. 1회성 부여 관련 필드 검증
      *
      * @param data 휴가 정책 데이터
      */
@@ -86,21 +87,16 @@ public class RepeatGrant implements VacationPolicyStrategy {
             throw new IllegalArgumentException(ms.getMessage("vacation.policy.repeatInterval.positive", null, null));
         }
 
-        // 7. 부여 시점 지정 방식 필수 검증
-        if (Objects.isNull(data.getGrantTiming())) {
-            throw new IllegalArgumentException(ms.getMessage("vacation.policy.grantTiming.required", null, null));
-        }
-
-        // 8. 첫 부여 시점 필수 검증 (스케줄러가 반복 부여를 계산하기 위한 기준일)
+        // 7. 첫 부여 시점 필수 검증 (스케줄러가 반복 부여를 계산하기 위한 기준일)
         if (Objects.isNull(data.getFirstGrantDate())) {
             throw new IllegalArgumentException(ms.getMessage("vacation.policy.firstGrantDate.required", null, null));
         }
 
-        // 9. 부여 시점에 따른 세부 검증
-        validateGrantTiming(data);
-
-        // 10. 반복 단위에 따른 세부 검증
+        // 8. 반복 단위에 따른 specificMonths/Days 검증
         validateRepeatUnit(data);
+
+        // 9. 1회성 부여 관련 필드 검증
+        validateOneTimeGrant(data);
     }
 
     /**
@@ -184,7 +180,7 @@ public class RepeatGrant implements VacationPolicyStrategy {
                 }
                 break;
 
-            case DAYLY:
+            case DAILY:
                 // 일 반복은 특정 월/일이 필요 없음
                 break;
 
@@ -228,26 +224,70 @@ public class RepeatGrant implements VacationPolicyStrategy {
         }
     }
 
+    /**
+     * 1회성 부여 관련 필드 검증
+     * - isRecurring이 N인 경우 maxGrantCount는 필수
+     * - isRecurring이 Y인 경우 maxGrantCount는 null이어야 함
+     * - maxGrantCount가 설정된 경우 양수여야 함
+     *
+     * @param data 휴가 정책 데이터
+     */
+    private void validateOneTimeGrant(VacationPolicyServiceDto data) {
+        YNType isRecurring = data.getIsRecurring();
+        Integer maxGrantCount = data.getMaxGrantCount();
+
+        // isRecurring이 null인 경우 기본값은 Y (반복 부여)
+        if (Objects.isNull(isRecurring)) {
+            return;
+        }
+
+        // 1회성 부여(isRecurring=N)인 경우 maxGrantCount 필수
+        if (YNType.N.equals(isRecurring)) {
+            if (Objects.isNull(maxGrantCount)) {
+                throw new IllegalArgumentException(ms.getMessage("vacation.policy.maxGrantCount.required", null, null));
+            }
+            if (maxGrantCount <= 0) {
+                throw new IllegalArgumentException(ms.getMessage("vacation.policy.maxGrantCount.positive", null, null));
+            }
+        }
+
+        // 반복 부여(isRecurring=Y)인 경우 maxGrantCount는 null이어야 함
+        if (YNType.Y.equals(isRecurring) && Objects.nonNull(maxGrantCount)) {
+            throw new IllegalArgumentException(ms.getMessage("vacation.policy.maxGrantCount.unnecessary", null, null));
+        }
+    }
+
     /* ==================== 스케줄러용 날짜 계산 로직 ==================== */
 
     /**
      * 다음 휴가 부여 예정일 계산<br>
-     * 스케줄러에서 사용하며, 정책의 반복 단위와 첫 부여 시점을 기준으로 다음 부여일을 계산
+     * 스케줄러에서 사용하며, 정책의 반복 단위와 첫 부여 시점을 기준으로 다음 부여일을 계산<br>
+     * 1회성 부여 정책의 경우, 이미 부여되었다면 null을 반환하여 재부여를 방지
      *
      * @param policy 휴가 정책
      * @param baseDate 기준일 (일반적으로 마지막 부여일 또는 현재 날짜)
-     * @return 다음 부여 예정일
+     * @return 다음 부여 예정일 (1회성 정책에서 이미 부여되었다면 null)
      */
     public LocalDate calculateNextGrantDate(VacationPolicy policy, LocalDate baseDate) {
         RepeatUnit repeatUnit = policy.getRepeatUnit();
         Integer repeatInterval = policy.getRepeatInterval();
         LocalDateTime firstGrantDate = policy.getFirstGrantDate();
+        YNType isRecurring = policy.getIsRecurring();
 
         // 첫 부여일을 LocalDate로 변환
         LocalDate firstDate = firstGrantDate.toLocalDate();
 
         // 기준일이 첫 부여일보다 이전이면 첫 부여일 반환
         if (baseDate.isBefore(firstDate)) {
+            return firstDate;
+        }
+
+        // 1회성 부여 정책 처리: 이미 부여일이 지났다면 null 반환 (재부여 방지)
+        if (YNType.N.equals(isRecurring)) {
+            // 첫 부여일이 지났다면 더 이상 부여하지 않음
+            if (!baseDate.isBefore(firstDate)) {
+                return null;
+            }
             return firstDate;
         }
 
@@ -260,7 +300,7 @@ public class RepeatGrant implements VacationPolicyStrategy {
                 // 매월 부여: 매월 1일에 부여 (요구사항 기준)
                 return calculateNextMonthlyDate(baseDate, repeatInterval);
 
-            case DAYLY:
+            case DAILY:
                 // 매일 부여
                 return baseDate.plusDays(repeatInterval);
 
@@ -405,7 +445,7 @@ public class RepeatGrant implements VacationPolicyStrategy {
                 expiryDate = grantDate.with(TemporalAdjusters.lastDayOfMonth());
                 return expiryDate.atTime(23, 59, 59);
 
-            case DAYLY:
+            case DAILY:
                 // 매일 부여: 당일 23시 59분 59초에 소멸
                 return grantDate.atTime(23, 59, 59);
 

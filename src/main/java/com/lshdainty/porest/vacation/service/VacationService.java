@@ -358,7 +358,7 @@ public class VacationService {
         VacationPolicy vacationPolicy = checkVacationPolicyExist(vacationPolicyId);
 
         // 2. 이미 삭제된 정책인지 확인
-        if (vacationPolicy.getIsDeleted() == YNType.Y) {
+        if (vacationPolicy.getDelYN() == YNType.Y) {
             throw new IllegalArgumentException(ms.getMessage("error.validate.already.deleted.vacation.policy", null, null));
         }
 

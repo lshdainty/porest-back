@@ -31,10 +31,11 @@ public class ManualGrant implements VacationPolicyStrategy {
                 data.getGrantTime(),
                 null,  // repeatUnit (스케줄러 불필요)
                 null,  // repeatInterval (스케줄러 불필요)
-                null,  // grantTiming (스케줄러 불필요)
                 null,  // specificMonths (스케줄러 불필요)
                 null,  // specificDays (스케줄러 불필요)
-                null   // firstGrantDate (스케줄러 불필요, 관리자가 직접 부여)
+                null,  // firstGrantDate (스케줄러 불필요, 관리자가 직접 부여)
+                null,  // isRecurring (관리자 직접 부여는 반복 개념 없음)
+                null   // maxGrantCount (관리자 직접 부여는 횟수 제한 없음)
         );
 
         vacationPolicyRepository.save(vacationPolicy);
@@ -64,8 +65,7 @@ public class ManualGrant implements VacationPolicyStrategy {
 
         // 3. 스케줄 관련 필드는 모두 null이어야 함 (관리자가 직접 부여하므로 스케줄러 불필요)
         if (Objects.nonNull(data.getRepeatUnit()) || Objects.nonNull(data.getRepeatInterval()) ||
-            Objects.nonNull(data.getGrantTiming()) || Objects.nonNull(data.getSpecificMonths()) ||
-            Objects.nonNull(data.getSpecificDays())) {
+            Objects.nonNull(data.getSpecificMonths()) || Objects.nonNull(data.getSpecificDays())) {
             throw new IllegalArgumentException(ms.getMessage("vacation.policy.manual.schedule.unnecessary", null, null));
         }
 
