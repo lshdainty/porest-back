@@ -585,14 +585,14 @@ public class InitDB {
             saveVacationPolicy("조사(관리자용)", "빙부상, 빙모상, 시부상, 시모상에 대한 휴가 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다.", VacationType.BEREAVEMENT, GrantMethod.MANUAL_GRANT, new BigDecimal("3.0000"), null, null, null, null, null, null, null, null);
 
             // 스케줄에 의한 휴가 생성 정책 (REPEAT_GRANT - firstGrantDate 설정, isRecurring=Y, maxGrantCount=null)
-            saveVacationPolicy("연차", "연차 정책입니다. 매년 1월 1일 자동 부여.", VacationType.ANNUAL, GrantMethod.REPEAT_GRANT, new BigDecimal("15.0000"), RepeatUnit.YEARLY, 1, GrantTiming.FIXED_DATE, 1, 1, LocalDateTime.of(now.getYear(), 1, 1, 0, 0), YNType.Y, null);
-            saveVacationPolicy("1분기 연차", "1분기 연차 정책입니다. 매년 1월 1일 자동 부여.", VacationType.ANNUAL, GrantMethod.REPEAT_GRANT, new BigDecimal("4.0000"), RepeatUnit.YEARLY, 1, GrantTiming.FIXED_DATE, 1, 1, LocalDateTime.of(now.getYear(), 1, 1, 0, 0), YNType.Y, null);
-            saveVacationPolicy("2분기 연차", "2분기 연차 정책입니다. 매년 4월 1일 자동 부여.", VacationType.ANNUAL, GrantMethod.REPEAT_GRANT, new BigDecimal("4.0000"), RepeatUnit.YEARLY, 1, GrantTiming.FIXED_DATE, 4, 1, LocalDateTime.of(now.getYear(), 4, 1, 0, 0), YNType.Y, null);
-            saveVacationPolicy("3분기 연차", "3분기 연차 정책입니다. 매년 7월 1일 자동 부여.", VacationType.ANNUAL, GrantMethod.REPEAT_GRANT, new BigDecimal("4.0000"), RepeatUnit.YEARLY, 1, GrantTiming.FIXED_DATE, 7, 1, LocalDateTime.of(now.getYear(), 7, 1, 0, 0), YNType.Y, null);
-            saveVacationPolicy("4분기 연차", "4분기 연차 정책입니다. 매년 10월 1일 자동 부여.", VacationType.ANNUAL, GrantMethod.REPEAT_GRANT, new BigDecimal("3.0000"), RepeatUnit.YEARLY, 1, GrantTiming.FIXED_DATE, 10, 1, LocalDateTime.of(now.getYear(), 10, 1, 0, 0), YNType.Y, null);
-            saveVacationPolicy("7년 근속 휴가", "7년 근속 시 1회 부여되는 휴가입니다.", VacationType.ANNUAL, GrantMethod.REPEAT_GRANT, new BigDecimal("5.0000"), RepeatUnit.YEARLY, 7, GrantTiming.FIXED_DATE, 1, 1, LocalDateTime.of(now.getYear() + 7, 1, 1, 0, 0), YNType.N, 1);
-            saveVacationPolicy("3년 근속 휴가", "3년 근속 시 1회 부여되는 휴가입니다.", VacationType.ANNUAL, GrantMethod.REPEAT_GRANT, new BigDecimal("3.0000"), RepeatUnit.YEARLY, 3, GrantTiming.FIXED_DATE, 1, 1, LocalDateTime.of(now.getYear() + 3, 1, 1, 0, 0), YNType.N, 1);
-            saveVacationPolicy("매월 리프레시 휴가", "매월 1일 자동 부여되는 리프레시 휴가입니다.", VacationType.ANNUAL, GrantMethod.REPEAT_GRANT, new BigDecimal("0.5000"), RepeatUnit.MONTHLY, 1, GrantTiming.FIXED_DATE, null, 1, LocalDateTime.of(now.getYear(), now.getMonthValue(), 1, 0, 0), YNType.Y, null);
+            saveVacationPolicy("연차", "연차 정책입니다. 매년 1월 1일 자동 부여.", VacationType.ANNUAL, GrantMethod.REPEAT_GRANT, new BigDecimal("15.0000"), RepeatUnit.YEARLY, 1, 1, 1, LocalDateTime.of(now.getYear(), 1, 1, 0, 0), YNType.Y, null);
+            saveVacationPolicy("1분기 연차", "1분기 연차 정책입니다. 매년 1월 1일 자동 부여.", VacationType.ANNUAL, GrantMethod.REPEAT_GRANT, new BigDecimal("4.0000"), RepeatUnit.YEARLY, 1, 1, 1, LocalDateTime.of(now.getYear(), 1, 1, 0, 0), YNType.Y, null);
+            saveVacationPolicy("2분기 연차", "2분기 연차 정책입니다. 매년 4월 1일 자동 부여.", VacationType.ANNUAL, GrantMethod.REPEAT_GRANT, new BigDecimal("4.0000"), RepeatUnit.YEARLY, 1, 4, 1, LocalDateTime.of(now.getYear(), 4, 1, 0, 0), YNType.Y, null);
+            saveVacationPolicy("3분기 연차", "3분기 연차 정책입니다. 매년 7월 1일 자동 부여.", VacationType.ANNUAL, GrantMethod.REPEAT_GRANT, new BigDecimal("4.0000"), RepeatUnit.YEARLY, 1, 7, 1, LocalDateTime.of(now.getYear(), 7, 1, 0, 0), YNType.Y, null);
+            saveVacationPolicy("4분기 연차", "4분기 연차 정책입니다. 매년 10월 1일 자동 부여.", VacationType.ANNUAL, GrantMethod.REPEAT_GRANT, new BigDecimal("3.0000"), RepeatUnit.YEARLY, 1, 10, 1, LocalDateTime.of(now.getYear(), 10, 1, 0, 0), YNType.Y, null);
+            saveVacationPolicy("7년 근속 휴가", "7년 근속 시 1회 부여되는 휴가입니다.", VacationType.ANNUAL, GrantMethod.REPEAT_GRANT, new BigDecimal("5.0000"), RepeatUnit.YEARLY, 7, 1, 1, LocalDateTime.of(now.getYear() + 7, 1, 1, 0, 0), YNType.N, 1);
+            saveVacationPolicy("3년 근속 휴가", "3년 근속 시 1회 부여되는 휴가입니다.", VacationType.ANNUAL, GrantMethod.REPEAT_GRANT, new BigDecimal("3.0000"), RepeatUnit.YEARLY, 3, 1, 1, LocalDateTime.of(now.getYear() + 3, 1, 1, 0, 0), YNType.N, 1);
+            saveVacationPolicy("매월 리프레시 휴가", "매월 1일 자동 부여되는 리프레시 휴가입니다.", VacationType.ANNUAL, GrantMethod.REPEAT_GRANT, new BigDecimal("0.5000"), RepeatUnit.MONTHLY, 1, null, 1, LocalDateTime.of(now.getYear(), now.getMonthValue(), 1, 0, 0), YNType.Y, null);
 
             // 구성원 신청용 휴가 정책 (ON_REQUEST - firstGrantDate, isRecurring, maxGrantCount 모두 null)
             saveVacationPolicy("동원훈련", "동원 훈련에 대한 휴가 정책입니다.", VacationType.ARMY, GrantMethod.ON_REQUEST, new BigDecimal("3.0000"), null, null, null, null, null, null, null, null);
@@ -634,8 +634,8 @@ public class InitDB {
             em.persist(dues);
         }
 
-        public void saveVacationPolicy(String name, String desc, VacationType vacationType, GrantMethod grantMethod, BigDecimal grantTime, RepeatUnit repeatUnit, Integer repeatInterval, GrantTiming grantTiming, Integer specificMonths, Integer specificDays, LocalDateTime firstGrantDate, YNType isRecurring, Integer maxGrantCount) {
-            VacationPolicy vacationPolicy = VacationPolicy.createVacationPolicy(name, desc, vacationType, grantMethod, grantTime, repeatUnit, repeatInterval, grantTiming, specificMonths, specificDays, firstGrantDate, isRecurring, maxGrantCount);
+        public void saveVacationPolicy(String name, String desc, VacationType vacationType, GrantMethod grantMethod, BigDecimal grantTime, RepeatUnit repeatUnit, Integer repeatInterval, Integer specificMonths, Integer specificDays, LocalDateTime firstGrantDate, YNType isRecurring, Integer maxGrantCount) {
+            VacationPolicy vacationPolicy = VacationPolicy.createVacationPolicy(name, desc, vacationType, grantMethod, grantTime, repeatUnit, repeatInterval, specificMonths, specificDays, firstGrantDate, isRecurring, maxGrantCount);
             em.persist(vacationPolicy);
             if (vacationPolicy.getGrantMethod().equals(GrantMethod.MANUAL_GRANT)) {
                 vacationPolicy.updateCantDeleted();

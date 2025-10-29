@@ -99,106 +99,89 @@ public class RepeatGrant implements VacationPolicyStrategy {
         validateOneTimeGrant(data);
     }
 
-    /**
-     * 부여 시점에 따른 특정 월/일 검증
-     * - FIXED_DATE: 특정 월과 일 모두 필수
-     * - SPECIFIC_MONTH: 특정 월 필수
-     * - SPECIFIC_DAY: 특정 일 필수
-     * - QUARTER_END, HALF_END, YEAR_END: 특정 월/일 불필요
-     *
-     * @param data 휴가 정책 데이터
-     */
-    private void validateGrantTiming(VacationPolicyServiceDto data) {
-        GrantTiming grantTiming = data.getGrantTiming();
-
-        switch (grantTiming) {
-            case FIXED_DATE:
-                // 고정 날짜: 특정 월과 일 모두 필수
-                if (Objects.isNull(data.getSpecificMonths()) || Objects.isNull(data.getSpecificDays())) {
-                    throw new IllegalArgumentException(ms.getMessage("vacation.policy.fixedDate.monthDay.required", null, null));
-                }
-                validateMonth(data.getSpecificMonths());
-                validateDay(data.getSpecificDays());
-                break;
-
-            case SPECIFIC_MONTH:
-                // 특정 월: 월만 필수
-                if (Objects.isNull(data.getSpecificMonths())) {
-                    throw new IllegalArgumentException(ms.getMessage("vacation.policy.specificMonth.required", null, null));
-                }
-                validateMonth(data.getSpecificMonths());
-
-                // 특정 일이 설정된 경우도 검증
-                if (Objects.nonNull(data.getSpecificDays())) {
-                    validateDay(data.getSpecificDays());
-                }
-                break;
-
-            case SPECIFIC_DAY:
-                // 특정 일: 일만 필수
-                if (Objects.isNull(data.getSpecificDays())) {
-                    throw new IllegalArgumentException(ms.getMessage("vacation.policy.specificDay.required", null, null));
-                }
-                validateDay(data.getSpecificDays());
-                break;
-
-            case QUARTER_END:
-            case HALF_END:
-            case YEAR_END:
-                // 분기말, 반기말, 연말: 특정 월/일 불필요
-                if (Objects.nonNull(data.getSpecificMonths()) || Objects.nonNull(data.getSpecificDays())) {
-                    throw new IllegalArgumentException(ms.getMessage("vacation.policy.periodEnd.monthDay.unnecessary", null, null));
-                }
-                break;
-        }
-    }
 
     /**
      * 반복 단위에 따른 세부 검증
-     * - YEARLY: 연 반복은 특정 월과 일 필요
-     * - MONTHLY: 월 반복은 특정 일 필요
-     * - DAILY: 일 반복은 특정 월/일 불필요
+     * - YEARLY: 매년 반복 (specificMonths/Days 조합 검증)
+     * - MONTHLY: 매월 반복 (specificMonths 사용 불가)
+     * - QUARTERLY: 분기 반복 (specificMonths 사용 불가)
+     * - HALF: 반기 반복 (specificMonths 사용 불가)
+     * - DAILY: 매일 반복 (specificMonths/Days 둘 다 사용 불가)
      *
      * @param data 휴가 정책 데이터
      */
     private void validateRepeatUnit(VacationPolicyServiceDto data) {
         RepeatUnit repeatUnit = data.getRepeatUnit();
-        GrantTiming grantTiming = data.getGrantTiming();
+        Integer months = data.getSpecificMonths();
+        Integer days = data.getSpecificDays();
 
         switch (repeatUnit) {
             case YEARLY:
-                // 연 반복 + SPECIFIC_MONTH/SPECIFIC_DAY 조합 검증
-                if (grantTiming == GrantTiming.SPECIFIC_MONTH && Objects.isNull(data.getSpecificMonths())) {
-                    throw new IllegalArgumentException(ms.getMessage("vacation.policy.yearly.specificMonth.required", null, null));
+                // YEARLY는 4가지 패턴만 허용:
+                // 1) months=null, days=null: firstGrantDate 기준 매년
+                // 2) months=X, days=null: 매년 X월 1일
+                // 3) months=X, days=Y: 매년 X월 Y일 (Y가 해당 월의 일수를 초과하면 마지막 날로 조정)
+                // 4) months=null, days=Y: 허용 안 함 (어느 달인지 모름)
+                if (months == null && days != null) {
+                    throw new IllegalArgumentException(ms.getMessage("vacation.policy.yearly.monthRequired", null, null));
+                }
+                if (months != null) {
+                    validateMonth(months);
+                    if (days != null) {
+                        validateDay(days);
+                        // 월별 최대 일수 검증은 제거 - 스케줄러에서 해당 월의 마지막 날로 조정
+                    }
                 }
                 break;
 
             case MONTHLY:
-                // 월 반복 + SPECIFIC_DAY 조합 검증
-                if (grantTiming == GrantTiming.SPECIFIC_DAY && Objects.isNull(data.getSpecificDays())) {
-                    throw new IllegalArgumentException(ms.getMessage("vacation.policy.monthly.specificDay.required", null, null));
+                // MONTHLY는 2가지 패턴만 허용:
+                // 1) months=null, days=null: 매월 1일
+                // 2) months=null, days=X: 매월 X일
+                // 3) months=X, days=any: 허용 안 함 (매월인데 특정 월?)
+                if (months != null) {
+                    throw new IllegalArgumentException(ms.getMessage("vacation.policy.monthly.monthNotAllowed", null, null));
                 }
-                break;
-
-            case DAILY:
-                // 일 반복은 특정 월/일이 필요 없음
-                break;
-
-            case HALF:
-                // 반기 반복
-                if (grantTiming == GrantTiming.HALF_END) {
-                    // 반기말 부여는 특정 월/일 불필요
-                    break;
+                if (days != null) {
+                    validateDay(days);
                 }
                 break;
 
             case QUARTERLY:
-                // 분기 반복
-                if (grantTiming == GrantTiming.QUARTER_END) {
-                    // 분기말 부여는 특정 월/일 불필요
-                    break;
+                // QUARTERLY: months 지정 불가, days는 선택
+                // days 지정 시 각 분기 시작월(1,4,7,10월)의 X일에 부여
+                // 해당 월에 X일이 없으면 해당 월의 마지막 날로 조정 (스케줄러에서 처리)
+                if (months != null) {
+                    throw new IllegalArgumentException(ms.getMessage("vacation.policy.quarterly.monthNotAllowed", null, null));
+                }
+                if (days != null) {
+                    validateDay(days);
                 }
                 break;
+
+            case HALF:
+                // HALF: months 지정 불가, days는 선택
+                // days 지정 시 각 반기 시작월(1,7월)의 X일에 부여
+                // 해당 월에 X일이 없으면 해당 월의 마지막 날로 조정 (스케줄러에서 처리)
+                if (months != null) {
+                    throw new IllegalArgumentException(ms.getMessage("vacation.policy.half.monthNotAllowed", null, null));
+                }
+                if (days != null) {
+                    validateDay(days);
+                }
+                break;
+
+            case DAILY:
+                // DAILY: months, days 둘 다 불가
+                if (months != null || days != null) {
+                    throw new IllegalArgumentException(ms.getMessage("vacation.policy.daily.monthDayNotAllowed", null, null));
+                }
+                break;
+        }
+
+        // repeatInterval 최댓값 검증 (비현실적인 큰 값 방지)
+        if (data.getRepeatInterval() > 100) {
+            throw new IllegalArgumentException(ms.getMessage("vacation.policy.repeatInterval.tooLarge", null, null));
         }
     }
 
@@ -222,6 +205,25 @@ public class RepeatGrant implements VacationPolicyStrategy {
         if (day < 1 || day > 31) {
             throw new IllegalArgumentException(ms.getMessage("vacation.policy.day.invalid", null, null));
         }
+    }
+
+    /**
+     * 특정 월의 특정 일을 해당 월의 실제 마지막 날로 조정
+     * 예: 2월 31일 → 2월 28일(또는 29일), 4월 31일 → 4월 30일
+     *
+     * @param year 년도
+     * @param month 월 (1~12)
+     * @param day 일 (1~31)
+     * @return 조정된 LocalDate
+     */
+    private LocalDate adjustToValidDate(int year, int month, int day) {
+        LocalDate date = LocalDate.of(year, month, 1);
+        int lastDayOfMonth = date.lengthOfMonth();
+
+        // day가 해당 월의 마지막 날보다 크면 마지막 날로 조정
+        int adjustedDay = Math.min(day, lastDayOfMonth);
+
+        return LocalDate.of(year, month, adjustedDay);
     }
 
     /**
@@ -294,11 +296,12 @@ public class RepeatGrant implements VacationPolicyStrategy {
         switch (repeatUnit) {
             case YEARLY:
                 // 매년 부여: 첫 부여일의 월/일 기준으로 다음 년도 계산
-                return calculateNextYearlyDate(firstDate, baseDate, repeatInterval);
+                return calculateNextYearlyDate(firstDate, baseDate, repeatInterval,
+                    policy.getSpecificMonths(), policy.getSpecificDays());
 
             case MONTHLY:
                 // 매월 부여: 매월 1일에 부여 (요구사항 기준)
-                return calculateNextMonthlyDate(baseDate, repeatInterval);
+                return calculateNextMonthlyDate(baseDate, repeatInterval, policy.getSpecificDays());
 
             case DAILY:
                 // 매일 부여
@@ -306,11 +309,11 @@ public class RepeatGrant implements VacationPolicyStrategy {
 
             case QUARTERLY:
                 // 분기별 부여: 3개월마다
-                return calculateNextQuarterlyDate(firstDate, baseDate);
+                return calculateNextQuarterlyDate(firstDate, baseDate, policy.getSpecificDays());
 
             case HALF:
                 // 반기별 부여: 6개월마다
-                return calculateNextHalfYearlyDate(firstDate, baseDate);
+                return calculateNextHalfYearlyDate(firstDate, baseDate, policy.getSpecificDays());
 
             default:
                 throw new IllegalArgumentException("지원하지 않는 반복 단위입니다: " + repeatUnit);
@@ -319,23 +322,33 @@ public class RepeatGrant implements VacationPolicyStrategy {
 
     /**
      * 매년 부여의 다음 부여일 계산<br>
-     * 첫 부여일의 월/일을 기준으로 매년 동일한 날짜에 부여<br>
-     * 예: 첫 부여일이 2024-01-15이면, 2025-01-15, 2026-01-15... 부여
+     * specificMonths/Days 지정 시 해당 월/일에 부여<br>
+     * 해당 월에 지정된 일이 없으면 해당 월의 마지막 날로 조정<br>
+     * 예: months=2, days=31 → 2월 28일(또는 29일)
      *
      * @param firstDate 첫 부여일
      * @param baseDate 기준일
      * @param interval 반복 간격 (년)
+     * @param specificMonths 특정 월 (null이면 firstDate의 월 사용)
+     * @param specificDays 특정 일 (null이면 firstDate의 일 사용)
      * @return 다음 부여일
      */
-    private LocalDate calculateNextYearlyDate(LocalDate firstDate, LocalDate baseDate, int interval) {
+    private LocalDate calculateNextYearlyDate(LocalDate firstDate, LocalDate baseDate, int interval,
+                                               Integer specificMonths, Integer specificDays) {
         int yearsDiff = baseDate.getYear() - firstDate.getYear();
         int nextYearOffset = ((yearsDiff / interval) + 1) * interval;
+        int nextYear = firstDate.getYear() + nextYearOffset;
 
-        LocalDate nextDate = firstDate.plusYears(nextYearOffset);
+        // 월/일 결정
+        int targetMonth = specificMonths != null ? specificMonths : firstDate.getMonthValue();
+        int targetDay = specificDays != null ? specificDays : firstDate.getDayOfMonth();
+
+        // 해당 월의 유효한 날짜로 조정
+        LocalDate nextDate = adjustToValidDate(nextYear, targetMonth, targetDay);
 
         // 이미 지난 날짜면 추가로 interval만큼 더함
         if (!nextDate.isAfter(baseDate)) {
-            nextDate = nextDate.plusYears(interval);
+            nextDate = adjustToValidDate(nextYear + interval, targetMonth, targetDay);
         }
 
         return nextDate;
@@ -343,35 +356,45 @@ public class RepeatGrant implements VacationPolicyStrategy {
 
     /**
      * 매월 부여의 다음 부여일 계산<br>
-     * 요구사항: 매월 1일에 휴가 부여
+     * specificDays 지정 시 매월 해당 일에 부여 (없으면 1일)<br>
+     * 해당 월에 지정된 일이 없으면 해당 월의 마지막 날로 조정<br>
+     * 예: days=31이면 1월31일, 2월28일(or29일), 3월31일...
      *
      * @param baseDate 기준일
      * @param interval 반복 간격 (월)
-     * @return 다음 부여일 (매월 1일)
+     * @param specificDays 특정 일 (null이면 1일)
+     * @return 다음 부여일
      */
-    private LocalDate calculateNextMonthlyDate(LocalDate baseDate, int interval) {
-        // 현재 달의 1일
-        LocalDate firstDayOfMonth = baseDate.with(TemporalAdjusters.firstDayOfMonth());
+    private LocalDate calculateNextMonthlyDate(LocalDate baseDate, int interval, Integer specificDays) {
+        int targetDay = specificDays != null ? specificDays : 1;
 
-        // 기준일이 1일보다 뒤라면 다음 달 1일
-        if (baseDate.isAfter(firstDayOfMonth)) {
-            return firstDayOfMonth.plusMonths(interval);
+        // 현재 달의 targetDay
+        LocalDate targetDateThisMonth = adjustToValidDate(baseDate.getYear(), baseDate.getMonthValue(), targetDay);
+
+        // 기준일이 이번 달 targetDay보다 뒤라면 다음 달
+        if (baseDate.isAfter(targetDateThisMonth) || baseDate.equals(targetDateThisMonth)) {
+            LocalDate nextMonth = baseDate.plusMonths(interval);
+            return adjustToValidDate(nextMonth.getYear(), nextMonth.getMonthValue(), targetDay);
         }
 
-        return firstDayOfMonth;
+        return targetDateThisMonth;
     }
 
     /**
      * 분기별 부여의 다음 부여일 계산<br>
-     * 1분기: 1월 1일, 2분기: 4월 1일, 3분기: 7월 1일, 4분기: 10월 1일
+     * specificDays 지정 시 각 분기 시작월(1,4,7,10월)의 해당 일에 부여<br>
+     * 해당 월에 지정된 일이 없으면 해당 월의 마지막 날로 조정<br>
+     * 예: days=31이면 1/31, 4/30, 7/31, 10/31
      *
      * @param firstDate 첫 부여일
      * @param baseDate 기준일
+     * @param specificDays 특정 일 (null이면 1일)
      * @return 다음 부여일
      */
-    private LocalDate calculateNextQuarterlyDate(LocalDate firstDate, LocalDate baseDate) {
+    private LocalDate calculateNextQuarterlyDate(LocalDate firstDate, LocalDate baseDate, Integer specificDays) {
         int currentYear = baseDate.getYear();
         int currentMonth = baseDate.getMonthValue();
+        int targetDay = specificDays != null ? specificDays : 1;
 
         // 다음 분기 시작월 계산 (1, 4, 7, 10월)
         int nextQuarterStartMonth = ((currentMonth - 1) / 3 + 1) * 3 + 1;
@@ -379,15 +402,16 @@ public class RepeatGrant implements VacationPolicyStrategy {
         LocalDate nextDate;
         if (nextQuarterStartMonth > 12) {
             // 내년 1월
-            nextDate = LocalDate.of(currentYear + 1, 1, 1);
+            nextDate = adjustToValidDate(currentYear + 1, 1, targetDay);
         } else {
             // 같은 해의 다음 분기
-            nextDate = LocalDate.of(currentYear, nextQuarterStartMonth, 1);
+            nextDate = adjustToValidDate(currentYear, nextQuarterStartMonth, targetDay);
         }
 
         // 이미 지난 날짜면 다음 분기로
         if (!nextDate.isAfter(baseDate)) {
-            nextDate = nextDate.plusMonths(3);
+            LocalDate temp = nextDate.plusMonths(3);
+            nextDate = adjustToValidDate(temp.getYear(), temp.getMonthValue(), targetDay);
         }
 
         return nextDate;
@@ -395,28 +419,33 @@ public class RepeatGrant implements VacationPolicyStrategy {
 
     /**
      * 반기별 부여의 다음 부여일 계산<br>
-     * 상반기: 1월 1일, 하반기: 7월 1일
+     * specificDays 지정 시 각 반기 시작월(1,7월)의 해당 일에 부여<br>
+     * 해당 월에 지정된 일이 없으면 해당 월의 마지막 날로 조정<br>
+     * 예: days=31이면 1/31, 7/31
      *
      * @param firstDate 첫 부여일
      * @param baseDate 기준일
+     * @param specificDays 특정 일 (null이면 1일)
      * @return 다음 부여일
      */
-    private LocalDate calculateNextHalfYearlyDate(LocalDate firstDate, LocalDate baseDate) {
+    private LocalDate calculateNextHalfYearlyDate(LocalDate firstDate, LocalDate baseDate, Integer specificDays) {
         int currentYear = baseDate.getYear();
         int currentMonth = baseDate.getMonthValue();
+        int targetDay = specificDays != null ? specificDays : 1;
 
         LocalDate nextDate;
         if (currentMonth < 7) {
-            // 상반기: 7월 1일
-            nextDate = LocalDate.of(currentYear, 7, 1);
+            // 상반기: 7월
+            nextDate = adjustToValidDate(currentYear, 7, targetDay);
         } else {
-            // 하반기: 내년 1월 1일
-            nextDate = LocalDate.of(currentYear + 1, 1, 1);
+            // 하반기: 내년 1월
+            nextDate = adjustToValidDate(currentYear + 1, 1, targetDay);
         }
 
         // 이미 지난 날짜면 6개월 추가
         if (!nextDate.isAfter(baseDate)) {
-            nextDate = nextDate.plusMonths(6);
+            LocalDate temp = nextDate.plusMonths(6);
+            nextDate = adjustToValidDate(temp.getYear(), temp.getMonthValue(), targetDay);
         }
 
         return nextDate;

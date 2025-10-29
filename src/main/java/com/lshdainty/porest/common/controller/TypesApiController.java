@@ -25,14 +25,12 @@ public class TypesApiController {
 
     private final Map<String, Class<? extends DisplayType>> enumMap = Map.of(
             "grant-method", GrantMethod.class,
-            "grant-timing", GrantTiming.class,
             "repeat-unit", RepeatUnit.class,
             "vacation-time", VacationTimeType.class,
             "vacation-type", VacationType.class,
             "schedule-type", ScheduleType.class,
             "holiday-type", HolidayType.class,
             "origin-company-type", OriginCompanyType.class
-
     );
 
     @GetMapping("/api/v1/types/{enumName}")

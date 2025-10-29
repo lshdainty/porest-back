@@ -295,6 +295,7 @@ public class VacationService {
         return history.get();
     }
 
+    @Transactional
     public Long registVacationPolicy(VacationPolicyServiceDto data) {
         VacationPolicyStrategy strategy = vacationPolicyStrategyFactory.getStrategy(data.getGrantMethod());
         return strategy.registVacationPolicy(data);
@@ -312,7 +313,6 @@ public class VacationService {
                 .grantTime(policy.getGrantTime())
                 .repeatUnit(policy.getRepeatUnit())
                 .repeatInterval(policy.getRepeatInterval())
-                .grantTiming(policy.getGrantTiming())
                 .specificMonths(policy.getSpecificMonths())
                 .specificDays(policy.getSpecificDays())
                 .build();
@@ -330,7 +330,6 @@ public class VacationService {
                         .grantTime(p.getGrantTime())
                         .repeatUnit(p.getRepeatUnit())
                         .repeatInterval(p.getRepeatInterval())
-                        .grantTiming(p.getGrantTiming())
                         .specificMonths(p.getSpecificMonths())
                         .specificDays(p.getSpecificDays())
                         .build())
@@ -473,7 +472,6 @@ public class VacationService {
                             .grantTime(policy.getGrantTime())
                             .repeatUnit(policy.getRepeatUnit())
                             .repeatInterval(policy.getRepeatInterval())
-                            .grantTiming(policy.getGrantTiming())
                             .specificMonths(policy.getSpecificMonths())
                             .specificDays(policy.getSpecificDays())
                             .build();
