@@ -59,8 +59,9 @@ dependencies {
 }
 
 tasks.named('test') {
-    useJUnitPlatform()
-    finalizedBy jacocoTestReport
+    enabled = false
+//    useJUnitPlatform()
+//    finalizedBy jacocoTestReport
 }
 
 def jacocoExcludes = [

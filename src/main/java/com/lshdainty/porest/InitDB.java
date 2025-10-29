@@ -18,6 +18,7 @@ import com.lshdainty.porest.user.type.RoleType;
 import com.lshdainty.porest.vacation.domain.Vacation;
 import com.lshdainty.porest.vacation.domain.VacationHistory;
 import com.lshdainty.porest.vacation.domain.VacationPolicy;
+import com.lshdainty.porest.vacation.domain.UserVacationPolicy;
 import com.lshdainty.porest.vacation.type.*;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
@@ -47,6 +48,7 @@ public class InitDB {
         initService.initSetSchedule();
         initService.initSetDues();
         initService.initSetVacationPolicy();
+        initService.initSetUserVacationPolicy();
     }
 
     @Component
@@ -568,21 +570,14 @@ public class InitDB {
             LocalDateTime now = LocalDateTime.now();
 
             // 관리자 부여용 휴가정책 (MANUAL_GRANT - firstGrantDate, isRecurring, maxGrantCount 모두 null)
-            saveVacationPolicy("연차(관리자용)", "연차 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다.", VacationType.ANNUAL, GrantMethod.MANUAL_GRANT, new BigDecimal("15.0000"), null, null, null, null, null, null, null);
-            saveVacationPolicy("1분기 연차(관리자용)", "1분기 연차 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다.", VacationType.ANNUAL, GrantMethod.MANUAL_GRANT, new BigDecimal("4.0000"), null, null, null, null, null, null, null);
-            saveVacationPolicy("2분기 연차(관리자용)", "2분기 연차 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다.", VacationType.ANNUAL, GrantMethod.MANUAL_GRANT, new BigDecimal("4.0000"), null, null, null, null, null, null, null);
-            saveVacationPolicy("3분기 연차(관리자용)", "3분기 연차 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다.", VacationType.ANNUAL, GrantMethod.MANUAL_GRANT, new BigDecimal("4.0000"), null, null, null, null, null, null, null);
-            saveVacationPolicy("4분기 연차(관리자용)", "4분기 연차 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다.", VacationType.ANNUAL, GrantMethod.MANUAL_GRANT, new BigDecimal("4.0000"), null, null, null, null, null, null, null);
-            saveVacationPolicy("OT(관리자용)", "연장 근무에 대한 보상 휴가 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다.", VacationType.OVERTIME, GrantMethod.MANUAL_GRANT, null, null, null, null, null, null, null, null);
-            saveVacationPolicy("건강검진", "건강검진 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다.", VacationType.HEALTH, GrantMethod.MANUAL_GRANT, new BigDecimal("0.5000"), null, null, null, null, null, null, null);
-            saveVacationPolicy("동원훈련(관리자용)", "동원 훈련에 대한 휴가 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다.", VacationType.ARMY, GrantMethod.MANUAL_GRANT, new BigDecimal("3.0000"), null, null, null, null, null, null, null);
-            saveVacationPolicy("동미참훈련(관리자용)", "동미참 훈련에 대한 휴가 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다.", VacationType.ARMY, GrantMethod.MANUAL_GRANT, new BigDecimal("1.0000"), null, null, null, null, null, null, null);
-            saveVacationPolicy("예비군(관리자용)", "예비군 훈련에 대한 휴가 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다.", VacationType.ARMY, GrantMethod.MANUAL_GRANT, new BigDecimal("1.0000"), null, null, null, null, null, null, null);
-            saveVacationPolicy("예비군(반차)(관리자용)", "예비군 훈련에 대한 반차 휴가 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다.", VacationType.ARMY, GrantMethod.MANUAL_GRANT, new BigDecimal("0.5000"), null, null, null, null, null, null, null);
-            saveVacationPolicy("결혼(관리자용)", "결혼에 대한 휴가 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다.", VacationType.WEDDING, GrantMethod.MANUAL_GRANT, new BigDecimal("5.0000"), null, null, null, null, null, null, null);
-            saveVacationPolicy("출산(관리자용)", "출산에 대한 휴가 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다.", VacationType.MATERNITY, GrantMethod.MANUAL_GRANT, new BigDecimal("10.0000"), null, null, null, null, null, null, null);
-            saveVacationPolicy("조사(관리자용)", "부친상, 모친상에 대한 휴가 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다.", VacationType.BEREAVEMENT, GrantMethod.MANUAL_GRANT, new BigDecimal("5.0000"), null, null, null, null, null, null, null);
-            saveVacationPolicy("조사(관리자용)", "빙부상, 빙모상, 시부상, 시모상에 대한 휴가 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다.", VacationType.BEREAVEMENT, GrantMethod.MANUAL_GRANT, new BigDecimal("3.0000"), null, null, null, null, null, null, null);
+            saveVacationPolicy("연차(관리자용)", "연차 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다. 1분기 4일, 2분기 4일, 3분기 4일, 4분기 3일이 기본 값입니다.", VacationType.ANNUAL, GrantMethod.MANUAL_GRANT, null, null, null, null, null, null, null, null);
+            saveVacationPolicy("OT(관리자용)", "연장 근무에 대한 보상 휴가 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다. 1시간 단위로 부여합니다. 예) 1시간 50분 근무 -> 1시간 부여, 2시간 10분 근무 -> 2시간 부여", VacationType.OVERTIME, GrantMethod.MANUAL_GRANT, null, null, null, null, null, null, null, null);
+            saveVacationPolicy("건강검진", "건강검진 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다. 반차가 기본 값입니다.", VacationType.HEALTH, GrantMethod.MANUAL_GRANT, null, null, null, null, null, null, null, null);
+            saveVacationPolicy("예비군(관리자용)", "예비군 훈련에 대한 휴가 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다. 동원(3일), 동미참(1일), 민방위(1일), 민방위(반차)가 있습니다.", VacationType.ARMY, GrantMethod.MANUAL_GRANT, null, null, null, null, null, null, null, null);
+            saveVacationPolicy("결혼(관리자용)", "결혼에 대한 휴가 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다. 5일이 기본 값입니다.", VacationType.WEDDING, GrantMethod.MANUAL_GRANT, null, null, null, null, null, null, null, null);
+            saveVacationPolicy("출산(관리자용)", "출산에 대한 휴가 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다. 10일이 기본 값입니다.", VacationType.MATERNITY, GrantMethod.MANUAL_GRANT, null, null, null, null, null, null, null, null);
+            saveVacationPolicy("조사(관리자용)", "부친상, 모친상에 대한 휴가 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다. 5일이 기본 값입니다.", VacationType.BEREAVEMENT, GrantMethod.MANUAL_GRANT, null, null, null, null, null, null, null, null);
+            saveVacationPolicy("조사(관리자용)", "빙부상, 빙모상, 시부상, 시모상에 대한 휴가 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다. 3일이 기본 값입니다.", VacationType.BEREAVEMENT, GrantMethod.MANUAL_GRANT, null, null, null, null, null, null, null, null);
 
             // ===== 반복 부여 휴가 정책 (REPEAT_GRANT) =====
 
@@ -663,6 +658,79 @@ public class InitDB {
             } else {
                 vacationPolicy.updateCanDeleted();
             }
+        }
+
+        public void initSetUserVacationPolicy() {
+            // 유저 조회
+            User user1 = em.find(User.class, "user1");
+            User user2 = em.find(User.class, "user2");
+
+            // user1에게 휴가 정책 부여
+            // 반복 부여 휴가 정책: "연차"
+            saveUserVacationPolicy(user1, findVacationPolicyByName("연차"));
+
+            // 구성원 신청용 휴가 정책: 동원훈련, 동미참훈련, 예비군, 예비군(반차), OT, 결혼, 출산, 조사 2개
+            saveUserVacationPolicy(user1, findVacationPolicyByName("동원훈련"));
+            saveUserVacationPolicy(user1, findVacationPolicyByName("동미참훈련"));
+            saveUserVacationPolicy(user1, findVacationPolicyByName("예비군"));
+            saveUserVacationPolicy(user1, findVacationPolicyByName("예비군(반차)"));
+            saveUserVacationPolicy(user1, findVacationPolicyByName("OT"));
+            saveUserVacationPolicy(user1, findVacationPolicyByName("결혼"));
+            saveUserVacationPolicy(user1, findVacationPolicyByName("출산"));
+            // 조사 2개 (5일, 3일)
+            List<VacationPolicy> user1Bereavements = findVacationPoliciesByNameAndType("조사", VacationType.BEREAVEMENT);
+            for (VacationPolicy policy : user1Bereavements) {
+                saveUserVacationPolicy(user1, policy);
+            }
+
+            // user2에게 휴가 정책 부여
+            // 반복 부여 휴가 정책: 1분기 연차, 2분기 연차, 3분기 연차, 4분기 연차, 7년 근속 휴가
+            saveUserVacationPolicy(user2, findVacationPolicyByName("1분기 연차"));
+            saveUserVacationPolicy(user2, findVacationPolicyByName("2분기 연차"));
+            saveUserVacationPolicy(user2, findVacationPolicyByName("3분기 연차"));
+            saveUserVacationPolicy(user2, findVacationPolicyByName("4분기 연차"));
+            saveUserVacationPolicy(user2, findVacationPolicyByName("7년 근속 휴가"));
+
+            // 구성원 신청용 휴가 정책: 전부
+            saveUserVacationPolicy(user2, findVacationPolicyByName("동원훈련"));
+            saveUserVacationPolicy(user2, findVacationPolicyByName("동미참훈련"));
+            saveUserVacationPolicy(user2, findVacationPolicyByName("예비군"));
+            saveUserVacationPolicy(user2, findVacationPolicyByName("예비군(반차)"));
+            saveUserVacationPolicy(user2, findVacationPolicyByName("OT"));
+            saveUserVacationPolicy(user2, findVacationPolicyByName("결혼"));
+            saveUserVacationPolicy(user2, findVacationPolicyByName("출산"));
+            // 조사 2개 (5일, 3일)
+            List<VacationPolicy> user2Bereavements = findVacationPoliciesByNameAndType("조사", VacationType.BEREAVEMENT);
+            for (VacationPolicy policy : user2Bereavements) {
+                saveUserVacationPolicy(user2, policy);
+            }
+        }
+
+        private VacationPolicy findVacationPolicyByName(String name) {
+            return em.createQuery(
+                    "SELECT vp FROM VacationPolicy vp WHERE vp.name = :name AND vp.isDeleted = :isDeleted AND vp.grantMethod != :manualGrant", VacationPolicy.class)
+                    .setParameter("name", name)
+                    .setParameter("isDeleted", YNType.N)
+                    .setParameter("manualGrant", GrantMethod.MANUAL_GRANT)
+                    .getResultList()
+                    .stream()
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("휴가 정책을 찾을 수 없습니다: " + name));
+        }
+
+        private List<VacationPolicy> findVacationPoliciesByNameAndType(String name, VacationType type) {
+            return em.createQuery(
+                    "SELECT vp FROM VacationPolicy vp WHERE vp.name = :name AND vp.vacationType = :type AND vp.isDeleted = :isDeleted AND vp.grantMethod = :onRequest", VacationPolicy.class)
+                    .setParameter("name", name)
+                    .setParameter("type", type)
+                    .setParameter("isDeleted", YNType.N)
+                    .setParameter("onRequest", GrantMethod.ON_REQUEST)
+                    .getResultList();
+        }
+
+        private void saveUserVacationPolicy(User user, VacationPolicy vacationPolicy) {
+            UserVacationPolicy userVacationPolicy = UserVacationPolicy.createUserVacationPolicy(user, vacationPolicy);
+            em.persist(userVacationPolicy);
         }
     }
 }
