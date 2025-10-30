@@ -32,13 +32,6 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public List<User> findUsersWithVacations() {
-        return em.createQuery("select u from User u left join fetch u.vacations v where u.isDeleted = :uIsDeleted", User.class)
-                .setParameter("uIsDeleted", YNType.N)
-                .getResultList();
-    }
-
-    @Override
     public Optional<User> findByInvitationToken(String token) {
         List<User> result = em.createQuery("select u from User u where u.invitationToken = :token and u.isDeleted = :isDeleted", User.class)
                 .setParameter("token", token)

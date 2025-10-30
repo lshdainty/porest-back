@@ -1,9 +1,7 @@
 package com.lshdainty.porest.vacation.controller;
 
 import com.lshdainty.porest.common.controller.ApiResponse;
-import com.lshdainty.porest.user.domain.User;
 import com.lshdainty.porest.vacation.controller.dto.VacationApiDto;
-import com.lshdainty.porest.vacation.domain.Vacation;
 import com.lshdainty.porest.vacation.service.VacationService;
 import com.lshdainty.porest.vacation.service.dto.VacationPolicyServiceDto;
 import com.lshdainty.porest.vacation.service.dto.VacationServiceDto;
@@ -22,26 +20,11 @@ import java.util.List;
 public class VacationApiController {
     private final VacationService vacationService;
 
-    @PostMapping("/api/v1/vacation")
-    public ApiResponse registVacation(@RequestBody VacationApiDto.RegistVacationReq data) {
-        Long vacationId = vacationService.registVacation(VacationServiceDto.builder()
-                        .userId(data.getUserId())
-                        .desc(data.getVacationDesc())
-                        .type(data.getVacationType())
-                        .grantTime(data.getGrantTime())
-                        .occurDate(data.getOccurDate())
-                        .expiryDate(data.getExpiryDate())
-                        .build()
-        );
-
-        return ApiResponse.success(new VacationApiDto.RegistVacationResp(vacationId));
-    }
-
     @PostMapping("/api/v1/vacation/use")
     public ApiResponse useVacation(@RequestBody VacationApiDto.UseVacationReq data) {
         Long vacationUsageId = vacationService.useVacation(VacationServiceDto.builder()
                         .userId(data.getUserId())
-                        .vacationType(data.getVacationType())
+                        .type(data.getVacationType())
                         .desc(data.getVacationDesc())
                         .timeType(data.getVacationTimeType())
                         .startDate(data.getStartDate())
@@ -54,44 +37,80 @@ public class VacationApiController {
 
     @GetMapping("/api/v1/vacations/user/{userId}")
     public ApiResponse searchUserVacations(@PathVariable("userId") String userId) {
-        List<Vacation> vacations = vacationService.searchUserVacations(userId);
+        VacationServiceDto vacationInfo = vacationService.searchUserVacations(userId);
 
-        List<VacationApiDto.SearchUserVacationsResp> resp = vacations.stream()
-                .map(v -> new VacationApiDto.SearchUserVacationsResp(
-                        v.getId(),
-                        v.getType(),
-                        v.getType().getViewName(),
-                        v.getRemainTime(),
-                        v.getOccurDate(),
-                        v.getExpiryDate()
+        // VacationGrant 정보 변환
+        List<VacationApiDto.SearchUserVacationsResp.VacationGrantInfo> grantInfos = vacationInfo.getGrants().stream()
+                .map(g -> new VacationApiDto.SearchUserVacationsResp.VacationGrantInfo(
+                        g.getId(),
+                        g.getType(),
+                        g.getType().getViewName(),
+                        g.getDesc(),
+                        g.getGrantTime(),
+                        g.getRemainTime(),
+                        g.getGrantDate(),
+                        g.getExpiryDate()
                 ))
                 .toList();
+
+        // VacationUsage 정보 변환
+        List<VacationApiDto.SearchUserVacationsResp.VacationUsageInfo> usageInfos = vacationInfo.getUsages().stream()
+                .map(u -> new VacationApiDto.SearchUserVacationsResp.VacationUsageInfo(
+                        u.getId(),
+                        u.getDesc(),
+                        u.getType(),
+                        u.getType().getStrName(),
+                        u.getUsedTime(),
+                        u.getStartDate(),
+                        u.getEndDate()
+                ))
+                .toList();
+
+        VacationApiDto.SearchUserVacationsResp resp = new VacationApiDto.SearchUserVacationsResp(grantInfos, usageInfos);
 
         return ApiResponse.success(resp);
     }
 
     @GetMapping("/api/v1/vacations/usergroup")
     public ApiResponse searchUserGroupVacations() {
-        List<User> usersVacations = vacationService.searchUserGroupVacations();
+        List<VacationServiceDto> usersVacations = vacationService.searchUserGroupVacations();
 
         List<VacationApiDto.SearchUserGroupVacationsResp> resp = usersVacations.stream()
-                .map(user -> {
-                    List<VacationApiDto.SearchUserGroupVacationsResp.VacationInfo> vacations =
-                            user.getVacations().stream()
-                                    .map(v -> new VacationApiDto.SearchUserGroupVacationsResp.VacationInfo(
-                                            v.getId(),
-                                            v.getType(),
-                                            v.getType().getViewName(),
-                                            v.getRemainTime(),
-                                            v.getOccurDate(),
-                                            v.getExpiryDate()
+                .map(dto -> {
+                    // VacationGrant 정보 변환
+                    List<VacationApiDto.SearchUserGroupVacationsResp.VacationGrantInfo> grantInfos =
+                            dto.getGrants().stream()
+                                    .map(g -> new VacationApiDto.SearchUserGroupVacationsResp.VacationGrantInfo(
+                                            g.getId(),
+                                            g.getType(),
+                                            g.getType().getViewName(),
+                                            g.getDesc(),
+                                            g.getGrantTime(),
+                                            g.getRemainTime(),
+                                            g.getGrantDate(),
+                                            g.getExpiryDate()
+                                    ))
+                                    .toList();
+
+                    // VacationUsage 정보 변환
+                    List<VacationApiDto.SearchUserGroupVacationsResp.VacationUsageInfo> usageInfos =
+                            dto.getUsages().stream()
+                                    .map(u -> new VacationApiDto.SearchUserGroupVacationsResp.VacationUsageInfo(
+                                            u.getId(),
+                                            u.getDesc(),
+                                            u.getType(),
+                                            u.getType().getStrName(),
+                                            u.getUsedTime(),
+                                            u.getStartDate(),
+                                            u.getEndDate()
                                     ))
                                     .toList();
 
                     return new VacationApiDto.SearchUserGroupVacationsResp(
-                            user.getId(),
-                            user.getName(),
-                            vacations
+                            dto.getUser().getId(),
+                            dto.getUser().getName(),
+                            grantInfos,
+                            usageInfos
                     );
                 })
                 .toList();
@@ -103,27 +122,23 @@ public class VacationApiController {
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     public ApiResponse searcgAvailableVacations(@PathVariable("userId") String userId,
                                                 @RequestParam("startDate") LocalDateTime startDate) {
-        List<Vacation> vacations = vacationService.searcgAvailableVacations(userId, startDate);
+        List<VacationServiceDto> availableVacations = vacationService.searcgAvailableVacations(userId, startDate);
 
-        List<VacationApiDto.SearchAvailableVacationsResp> resp = vacations.stream()
-                .map(v -> new VacationApiDto.SearchAvailableVacationsResp(
-                        v.getId(),
-                        v.getType(),
-                        v.getType().getViewName(),
-                        v.getRemainTime(),
-                        v.getOccurDate(),
-                        v.getExpiryDate(),
-                        VacationTimeType.convertValueToDay(v.getRemainTime())
+        List<VacationApiDto.SearchAvailableVacationsResp> resp = availableVacations.stream()
+                .map(dto -> new VacationApiDto.SearchAvailableVacationsResp(
+                        dto.getType(),
+                        dto.getType().getViewName(),
+                        dto.getRemainTime(),
+                        VacationTimeType.convertValueToDay(dto.getRemainTime())
                 ))
                 .toList();
 
         return ApiResponse.success(resp);
     }
 
-    @DeleteMapping("/api/v1/vacation/history/{id}")
-    public ApiResponse deleteVacationHistory(@PathVariable("id") Long vacationHistoryId) {
-        String delUserId = "";   // 추후 로그인 한 사람의 id를 가져와서 삭제한 사람의 userNo에 세팅
-        vacationService.deleteVacationHistory(vacationHistoryId);
+    @DeleteMapping("/api/v1/vacation/usage/{id}")
+    public ApiResponse deleteVacationHistory(@PathVariable("id") Long vacationUsageId) {
+        vacationService.deleteVacationHistory(vacationUsageId);
         return ApiResponse.success();
     }
 
@@ -135,16 +150,16 @@ public class VacationApiController {
         List<VacationServiceDto> histories = vacationService.searchPeriodVacationUseHistories(startDate, endDate);
 
         List<VacationApiDto.SearchPeriodVacationUseHistoriesResp> resp = histories.stream()
-                .map(v -> new VacationApiDto.SearchPeriodVacationUseHistoriesResp(
-                        v.getUser().getId(),
-                        v.getUser().getName(),
-                        v.getId(),
-                        v.getDesc(),
-                        v.getHistoryIds(),
-                        v.getTimeType(),
-                        v.getTimeType().getStrName(),
-                        v.getStartDate(),
-                        v.getEndDate()
+                .map(dto -> new VacationApiDto.SearchPeriodVacationUseHistoriesResp(
+                        dto.getUser().getId(),
+                        dto.getUser().getName(),
+                        dto.getId(),
+                        dto.getDesc(),
+                        dto.getTimeType(),
+                        dto.getTimeType().getStrName(),
+                        dto.getUsedTime(),
+                        dto.getStartDate(),
+                        dto.getEndDate()
                 ))
                 .toList();
 
@@ -160,14 +175,14 @@ public class VacationApiController {
         List<VacationServiceDto> histories = vacationService.searchUserPeriodVacationUseHistories(userId, startDate, endDate);
 
         List<VacationApiDto.SearchUserPeriodVacationUseHistoriesResp> resp = histories.stream()
-                .map(v -> new VacationApiDto.SearchUserPeriodVacationUseHistoriesResp(
-                        v.getId(),
-                        v.getDesc(),
-                        v.getHistoryId(),
-                        v.getTimeType(),
-                        v.getTimeType().getStrName(),
-                        v.getStartDate(),
-                        v.getEndDate()
+                .map(dto -> new VacationApiDto.SearchUserPeriodVacationUseHistoriesResp(
+                        dto.getId(),
+                        dto.getDesc(),
+                        dto.getTimeType(),
+                        dto.getTimeType().getStrName(),
+                        dto.getUsedTime(),
+                        dto.getStartDate(),
+                        dto.getEndDate()
                 ))
                 .toList();
 

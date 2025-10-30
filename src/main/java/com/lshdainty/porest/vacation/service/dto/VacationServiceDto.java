@@ -1,8 +1,11 @@
 package com.lshdainty.porest.vacation.service.dto;
 
 import com.lshdainty.porest.user.domain.User;
+import com.lshdainty.porest.vacation.domain.VacationGrant;
+import com.lshdainty.porest.vacation.domain.VacationUsage;
 import com.lshdainty.porest.vacation.type.VacationTimeType;
 import com.lshdainty.porest.vacation.type.VacationType;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -63,6 +66,11 @@ public class VacationServiceDto {
     // 이전달 휴가 사용 예정 시간
     private BigDecimal prevExpectUsedTime;
 
+    // 부여받은 휴가 내역 리스트
+    private List<VacationGrant> grants;
+    // 사용한 휴가 내역 리스트
+    private List<VacationUsage> usages;
+
     @Override
     public String toString() {
         return "VacationServiceDto{" +
@@ -78,6 +86,8 @@ public class VacationServiceDto {
                 ", endDate: " + endDate +
                 ", timeType: " + timeType +
                 ", isDeleted: '" + isDeleted + '\'' +
+                ", grants: " + grants +
+                ", usages: " + usages +
                 '}';
     }
 }

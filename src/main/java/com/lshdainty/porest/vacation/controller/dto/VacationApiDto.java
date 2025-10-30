@@ -55,12 +55,35 @@ public class VacationApiDto {
     @AllArgsConstructor
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class SearchUserVacationsResp {
-        private Long vacationId;
-        private VacationType vacationType;
-        private String vacationTypeName;
-        private BigDecimal remainTime;
-        private LocalDateTime occurDate;
-        private LocalDateTime expiryDate;
+        private List<VacationGrantInfo> grants;  // 부여받은 내역
+        private List<VacationUsageInfo> usages;  // 사용한 내역
+
+        @Getter
+        @AllArgsConstructor
+        @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+        public static class VacationGrantInfo {
+            private Long vacationGrantId;
+            private VacationType vacationType;
+            private String vacationTypeName;
+            private String vacationGrantDesc;
+            private BigDecimal grantTime;
+            private BigDecimal remainTime;
+            private LocalDateTime grantDate;
+            private LocalDateTime expiryDate;
+        }
+
+        @Getter
+        @AllArgsConstructor
+        @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+        public static class VacationUsageInfo {
+            private Long vacationUsageId;
+            private String vacationUsageDesc;
+            private VacationTimeType vacationTimeType;
+            private String vacationTimeTypeName;
+            private BigDecimal usedTime;
+            private LocalDateTime startDate;
+            private LocalDateTime endDate;
+        }
     }
 
     @Getter
@@ -69,18 +92,34 @@ public class VacationApiDto {
     public static class SearchUserGroupVacationsResp {
         private String userId;
         private String userName;
-        private List<VacationInfo> vacations;
+        private List<VacationGrantInfo> grants;  // 부여받은 내역
+        private List<VacationUsageInfo> usages;  // 사용한 내역
 
         @Getter
         @AllArgsConstructor
         @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-        public static class VacationInfo {
-            private Long vacationId;
+        public static class VacationGrantInfo {
+            private Long vacationGrantId;
             private VacationType vacationType;
             private String vacationTypeName;
+            private String vacationGrantDesc;
+            private BigDecimal grantTime;
             private BigDecimal remainTime;
-            private LocalDateTime occurDate;
+            private LocalDateTime grantDate;
             private LocalDateTime expiryDate;
+        }
+
+        @Getter
+        @AllArgsConstructor
+        @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+        public static class VacationUsageInfo {
+            private Long vacationUsageId;
+            private String vacationUsageDesc;
+            private VacationTimeType vacationTimeType;
+            private String vacationTimeTypeName;
+            private BigDecimal usedTime;
+            private LocalDateTime startDate;
+            private LocalDateTime endDate;
         }
     }
 
@@ -88,13 +127,10 @@ public class VacationApiDto {
     @AllArgsConstructor
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class SearchAvailableVacationsResp {
-        private Long vacationId;
         private VacationType vacationType;
         private String vacationTypeName;
-        private BigDecimal remainTime;
-        private LocalDateTime occurDate;
-        private LocalDateTime expiryDate;
-        private String remainTimeStr;
+        private BigDecimal totalRemainTime;
+        private String totalRemainTimeStr;
     }
 
     @Getter
@@ -103,11 +139,11 @@ public class VacationApiDto {
     public static class SearchPeriodVacationUseHistoriesResp {
         private String userId;
         private String userName;
-        private Long vacationId;
-        private String vacationDesc;
-        private List<Long> vacationHistoryIds;
+        private Long vacationUsageId;
+        private String vacationUsageDesc;
         private VacationTimeType vacationTimeType;
         private String vacationTimeTypeName;
+        private BigDecimal usedTime;
         private LocalDateTime startDate;
         private LocalDateTime endDate;
     }
@@ -116,11 +152,11 @@ public class VacationApiDto {
     @AllArgsConstructor
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class SearchUserPeriodVacationUseHistoriesResp {
-        private Long vacationId;
-        private String vacationDesc;
-        private Long vacationHistoryId;
+        private Long vacationUsageId;
+        private String vacationUsageDesc;
         private VacationTimeType vacationTimeType;
         private String vacationTimeTypeName;
+        private BigDecimal usedTime;
         private LocalDateTime startDate;
         private LocalDateTime endDate;
     }

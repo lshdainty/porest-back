@@ -82,4 +82,43 @@ public class VacationGrantCustomRepositoryImpl implements VacationGrantCustomRep
                 .orderBy(vacationGrant.expiryDate.asc(), vacationGrant.grantDate.asc())
                 .fetch();
     }
+
+    @Override
+    public List<VacationGrant> findAllWithUser() {
+        return query
+                .selectFrom(vacationGrant)
+                .join(vacationGrant.user).fetchJoin()
+                .join(vacationGrant.policy).fetchJoin()
+                .where(vacationGrant.isDeleted.eq(YNType.N))
+                .orderBy(vacationGrant.user.id.asc(), vacationGrant.expiryDate.asc())
+                .fetch();
+    }
+
+    @Override
+    public List<VacationGrant> findAvailableGrantsByUserIdAndDate(String userId, java.time.LocalDateTime usageStartDate) {
+        return query
+                .selectFrom(vacationGrant)
+                .join(vacationGrant.user).fetchJoin()
+                .join(vacationGrant.policy).fetchJoin()
+                .where(vacationGrant.user.id.eq(userId)
+                        .and(vacationGrant.isDeleted.eq(YNType.N))
+                        .and(vacationGrant.remainTime.gt(java.math.BigDecimal.ZERO))
+                        .and(vacationGrant.grantDate.loe(usageStartDate))
+                        .and(vacationGrant.expiryDate.goe(usageStartDate)))
+                .orderBy(vacationGrant.expiryDate.asc(), vacationGrant.grantDate.asc())
+                .fetch();
+    }
+
+    @Override
+    public List<VacationGrant> findValidGrantsByUserIdAndBaseTime(String userId, java.time.LocalDateTime baseTime) {
+        return query
+                .selectFrom(vacationGrant)
+                .join(vacationGrant.user).fetchJoin()
+                .join(vacationGrant.policy).fetchJoin()
+                .where(vacationGrant.user.id.eq(userId)
+                        .and(vacationGrant.isDeleted.eq(YNType.N))
+                        .and(vacationGrant.grantDate.loe(baseTime))
+                        .and(vacationGrant.expiryDate.goe(baseTime)))
+                .fetch();
+    }
 }

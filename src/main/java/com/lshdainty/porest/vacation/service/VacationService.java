@@ -11,10 +11,9 @@ import com.lshdainty.porest.vacation.service.dto.VacationPolicyServiceDto;
 import com.lshdainty.porest.vacation.service.dto.VacationServiceDto;
 import com.lshdainty.porest.vacation.service.policy.VacationPolicyStrategy;
 import com.lshdainty.porest.vacation.service.policy.factory.VacationPolicyStrategyFactory;
-import com.lshdainty.porest.vacation.service.type.VacationTypeStrategy;
-import com.lshdainty.porest.vacation.service.type.factory.VacationTypeStrategyFactory;
 import com.lshdainty.porest.holiday.type.HolidayType;
 import com.lshdainty.porest.vacation.type.VacationTimeType;
+import com.lshdainty.porest.vacation.type.VacationType;
 import com.lshdainty.porest.common.util.PorestTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,11 +26,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -94,7 +90,7 @@ public class VacationService {
         // 9. 사용 가능한 VacationGrant 조회 (FIFO: VacationType 일치 + 휴가 시작일이 유효기간 내 + 만료일 가까운 순)
         List<VacationGrant> availableGrants = vacationGrantRepository.findAvailableGrantsByUserIdAndTypeAndDate(
                 data.getUserId(),
-                data.getVacationType(),
+                data.getType(),
                 data.getStartDate()  // 사용자가 사용하려는 휴가 시작일
         );
 
@@ -160,114 +156,219 @@ public class VacationService {
         return usage.getId();
     }
 
-    public List<Vacation> searchUserVacations(String userId) {
-        return vacationRepository.findVacationsByUserId(userId);
+    /**
+     * 유저의 휴가 부여 및 사용 내역 조회
+     *
+     * @param userId 유저 아이디
+     * @return 부여받은 내역(VacationGrant)과 사용한 내역(VacationUsage)
+     */
+    public VacationServiceDto searchUserVacations(String userId) {
+        // 유저 존재 확인
+        userService.checkUserExist(userId);
+
+        // 부여받은 내역 조회
+        List<VacationGrant> grants = vacationGrantRepository.findByUserId(userId);
+
+        // 사용한 내역 조회
+        List<VacationUsage> usages = vacationUsageRepository.findByUserId(userId);
+
+        return VacationServiceDto.builder()
+                .grants(grants)
+                .usages(usages)
+                .build();
     }
 
-    public List<User> searchUserGroupVacations() {
-        return userRepository.findUsersWithVacations();
+    /**
+     * 모든 유저의 휴가 부여 및 사용 내역 조회
+     *
+     * @return 모든 유저별 부여받은 내역(VacationGrant)과 사용한 내역(VacationUsage)
+     */
+    public List<VacationServiceDto> searchUserGroupVacations() {
+        // 모든 부여 내역 조회
+        List<VacationGrant> allGrants = vacationGrantRepository.findAllWithUser();
+
+        // 모든 사용 내역 조회
+        List<VacationUsage> allUsages = vacationUsageRepository.findAllWithUser();
+
+        // User별로 Grant 그룹핑
+        Map<String, List<VacationGrant>> grantsByUser = allGrants.stream()
+                .collect(Collectors.groupingBy(g -> g.getUser().getId()));
+
+        // User별로 Usage 그룹핑
+        Map<String, List<VacationUsage>> usagesByUser = allUsages.stream()
+                .collect(Collectors.groupingBy(u -> u.getUser().getId()));
+
+        // 모든 userId 수집
+        Set<String> allUserIds = new HashSet<>();
+        allUserIds.addAll(grantsByUser.keySet());
+        allUserIds.addAll(usagesByUser.keySet());
+
+        // User별로 VacationServiceDto 생성
+        return allUserIds.stream()
+                .map(userId -> {
+                    List<VacationGrant> grants = grantsByUser.getOrDefault(userId, new ArrayList<>());
+                    List<VacationUsage> usages = usagesByUser.getOrDefault(userId, new ArrayList<>());
+
+                    // User 객체는 grants나 usages에서 가져오기
+                    User user = null;
+                    if (!grants.isEmpty()) {
+                        user = grants.get(0).getUser();
+                    } else if (!usages.isEmpty()) {
+                        user = usages.get(0).getUser();
+                    }
+
+                    return VacationServiceDto.builder()
+                            .userId(userId)
+                            .user(user)
+                            .grants(grants)
+                            .usages(usages)
+                            .build();
+                })
+                .toList();
     }
 
-    public List<Vacation> searcgAvailableVacations(String userId, LocalDateTime startDate) {
+    /**
+     * 시작 날짜 기준으로 사용 가능한 휴가 조회 (VacationType별 그룹화)
+     *
+     * @param userId 유저 아이디
+     * @param startDate 시작 날짜
+     * @return VacationType별로 그룹화된 사용 가능한 휴가 내역
+     */
+    public List<VacationServiceDto> searcgAvailableVacations(String userId, LocalDateTime startDate) {
         // 유저 조회
         userService.checkUserExist(userId);
 
-        // 시작 날짜를 기준으로 등록 가능한 휴가 목록 조회
-        return vacationRepository.findVacationsByBaseTime(userId, startDate);
+        // 시작 날짜를 기준으로 사용 가능한 휴가 부여 내역 조회
+        List<VacationGrant> availableGrants = vacationGrantRepository.findAvailableGrantsByUserIdAndDate(userId, startDate);
+
+        // VacationType별로 그룹화하고 remainTime 합산
+        Map<VacationType, BigDecimal> remainTimeByType = availableGrants.stream()
+                .collect(Collectors.groupingBy(
+                        VacationGrant::getType,
+                        Collectors.reducing(
+                                BigDecimal.ZERO,
+                                VacationGrant::getRemainTime,
+                                BigDecimal::add
+                        )
+                ));
+
+        // VacationServiceDto 리스트로 변환
+        return remainTimeByType.entrySet().stream()
+                .map(entry -> VacationServiceDto.builder()
+                        .type(entry.getKey())
+                        .remainTime(entry.getValue())
+                        .build())
+                .toList();
     }
 
+    /**
+     * 휴가 사용 내역 삭제
+     * - VacationUsage를 소프트 삭제
+     * - VacationGrant의 remainTime 복구
+     *
+     * @param vacationUsageId 휴가 사용 내역 ID
+     */
     @Transactional
-    public void deleteVacationHistory(Long vacationHistoryId) {
-        VacationHistory history = checkVacationHistoryExist(vacationHistoryId);
-        Vacation vacation = checkVacationExist(history.getVacation().getId());
+    public void deleteVacationHistory(Long vacationUsageId) {
+        // 1. VacationUsage 조회
+        VacationUsage usage = vacationUsageRepository.findById(vacationUsageId)
+                .orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.vacation.usage", null, null)));
 
-        if (PorestTime.isAfterThanEndDate(LocalDateTime.now(), vacation.getExpiryDate())) {
-            throw new IllegalArgumentException(ms.getMessage("error.validate.expiry.isBeforeThanNow", null, null));
+        // 2. 이미 삭제된 경우 예외 처리
+        if (usage.getIsDeleted() == YNType.Y) {
+            throw new IllegalArgumentException(ms.getMessage("error.validate.already.deleted.vacation.usage", null, null));
         }
 
-        if (Objects.isNull(history.getType())) {
-            // 휴가 추가 내역
-            if (vacation.getRemainTime().compareTo(history.getGrantTime()) < 0) {
-                throw new IllegalArgumentException(ms.getMessage("error.validate.notEnoughRemainTime", null, null));
-            }
-
-            // 휴가 추가 내역은 삭제하고 추가된 휴가 차감
-            history.deleteRegistVacationHistory(vacation);
-        } else {
-            // 휴가 사용 내역
-            if (PorestTime.isAfterThanEndDate(LocalDateTime.now(), history.getUsedDateTime())) {
-                throw new IllegalArgumentException(ms.getMessage("error.validate.delete.isBeforeThanNow", null, null));
-            }
-
-            // 휴가 사용 내역은 삭제하고 차감된 휴가 추가
-            history.deleteUseVacationHistory(vacation);
+        // 3. 삭제 가능 시점 체크 (현재 시간이 사용 시작일 이전인지 확인)
+        if (PorestTime.isAfterThanEndDate(LocalDateTime.now(), usage.getStartDate())) {
+            throw new IllegalArgumentException(ms.getMessage("error.validate.delete.isBeforeThanNow", null, null));
         }
+
+        // 4. VacationUsageDeduction 조회 (차감 내역들)
+        List<VacationUsageDeduction> deductions = vacationUsageDeductionRepository.findByUsageId(vacationUsageId);
+
+        // 5. 각 차감 내역에서 차감했던 시간을 VacationGrant에 복구
+        for (VacationUsageDeduction deduction : deductions) {
+            VacationGrant grant = deduction.getGrant();
+            grant.addVacation(deduction.getDeductedTime());
+            log.info("VacationGrant {} 복구: {} 추가", grant.getId(), deduction.getDeductedTime());
+        }
+
+        // 6. VacationUsage 소프트 삭제
+        usage.deleteVacationUsage();
+
+        log.info("휴가 사용 내역 삭제 완료 - VacationUsage ID: {}, 복구된 차감 내역 수: {}", vacationUsageId, deductions.size());
     }
 
+    /**
+     * 기간별 휴가 사용 내역 조회
+     *
+     * @param startDate 조회 시작일
+     * @param endDate 조회 종료일
+     * @return 기간 내 모든 사용자의 휴가 사용 내역
+     */
     public List<VacationServiceDto> searchPeriodVacationUseHistories(LocalDateTime startDate, LocalDateTime endDate) {
-        // 기간에 맞는 history 내역 가져오기
-        List<VacationHistory> histories = vacationHistoryRepository.findVacationHistorysByPeriod(startDate, endDate);
+        // 기간에 맞는 휴가 사용 내역 조회 (startDate 기준)
+        List<VacationUsage> usages = vacationUsageRepository.findByPeriodWithUser(startDate, endDate);
 
-        // 유저 정보 반환을 위해 vacation 정보 가져오기
-        List<Vacation> vacations = vacationRepository.findVacationsByIdsWithUser(histories.stream()
-                .map(vh -> vh.getVacation().getId())
-                .distinct()
-                .toList()
-        );
-
-        // vacation id에 따른 user 정보 mapping
-        Map<Long, User> userMap = vacations.stream()
-                .collect(Collectors.toMap(Vacation::getId, v -> v.getUser()));
-
-        // 연차인 내역만 추출
-        List<VacationHistory> dayHistories = histories.stream()
-                .filter(vh -> vh.getType().equals(VacationTimeType.DAYOFF))
-                .collect(Collectors.toList());
-
-        // 시간단위 내역만 추출
-        List<VacationHistory> hourHistories = histories.stream()
-                .filter(vh -> !vh.getType().equals(VacationTimeType.DAYOFF))
-                .collect(Collectors.toList());
-
-        // 연차인 경우 따로 분리된 휴가를 start - end화 하여 serviceDto로 변환
-        // 시간단위 휴가인 경우 단순 serviceDto로 변환
-        // 반환된 두 배열을 하나의 List로 합침
-        List<VacationServiceDto> result = Stream.of(makeDayGroupDto(dayHistories), makeHourGroupDto(hourHistories))
-                .flatMap(Collection::stream)
+        // VacationServiceDto로 변환
+        return usages.stream()
+                .map(usage -> VacationServiceDto.builder()
+                        .id(usage.getId())
+                        .user(usage.getUser())
+                        .desc(usage.getDesc())
+                        .timeType(usage.getType())
+                        .startDate(usage.getStartDate())
+                        .endDate(usage.getEndDate())
+                        .usedTime(usage.getUsedTime())
+                        .build())
                 .toList();
-
-        // controller에서 user정보를 사용할 수 있게 vacation id에 맞는 user정보 세팅
-        for (VacationServiceDto dto : result) {
-            dto.setUser(userMap.get(dto.getId()));
-        }
-
-        return result;
     }
 
+    /**
+     * 유저별 기간별 휴가 사용 내역 조회
+     *
+     * @param userId 유저 ID
+     * @param startDate 조회 시작일
+     * @param endDate 조회 종료일
+     * @return 유저의 기간 내 휴가 사용 내역
+     */
     public List<VacationServiceDto> searchUserPeriodVacationUseHistories(String userId, LocalDateTime startDate, LocalDateTime endDate) {
-        // 기간에 맞는 유저 history 내역 가져오기
-        List<VacationHistory> histories = vacationHistoryRepository.findVacationUseHistorysByUserAndPeriod(userId, startDate, endDate);
+        // 유저 존재 확인
+        userService.checkUserExist(userId);
 
-        return histories.stream()
-                .map(vh -> VacationServiceDto.builder()
-                        .id(vh.getVacation().getId())
-                        .historyId(vh.getId())
-                        .timeType(vh.getType())
-                        .desc(vh.getDesc())
-                        .startDate(vh.getUsedDateTime())
-                        .endDate(vh.getUsedDateTime().plusSeconds(vh.getType().getSeconds()))
-                        .build()
-                )
+        // 유저의 기간에 맞는 휴가 사용 내역 조회 (startDate 기준)
+        List<VacationUsage> usages = vacationUsageRepository.findByUserIdAndPeriodWithUser(userId, startDate, endDate);
+
+        // VacationServiceDto로 변환
+        return usages.stream()
+                .map(usage -> VacationServiceDto.builder()
+                        .id(usage.getId())
+                        .desc(usage.getDesc())
+                        .timeType(usage.getType())
+                        .startDate(usage.getStartDate())
+                        .endDate(usage.getEndDate())
+                        .usedTime(usage.getUsedTime())
+                        .build())
                 .toList();
     }
 
+    /**
+     * 유저의 월별 휴가 사용 통계 조회
+     *
+     * @param userId 유저 ID
+     * @param year 년도
+     * @return 월별 휴가 사용 통계 (1~12월)
+     */
     public List<VacationServiceDto> searchUserMonthStatsVacationUseHistories(String userId, String year) {
-        // 기간에 맞는 유저 history 내역 가져오기
-        List<VacationHistory> histories = vacationHistoryRepository.findVacationUseHistorysByUserAndPeriod(
-                userId,
-                LocalDateTime.of(Integer.parseInt(year), 1, 1, 0, 0, 0),
-                LocalDateTime.of(Integer.parseInt(year), 12, 31, 23, 59, 59)
-        );
+        // 유저 존재 확인
+        userService.checkUserExist(userId);
+
+        // 해당 년도의 1월 1일 ~ 12월 31일 사이의 휴가 사용 내역 조회
+        LocalDateTime startDate = LocalDateTime.of(Integer.parseInt(year), 1, 1, 0, 0, 0);
+        LocalDateTime endDate = LocalDateTime.of(Integer.parseInt(year), 12, 31, 23, 59, 59);
+
+        List<VacationUsage> usages = vacationUsageRepository.findByUserIdAndPeriodWithUser(userId, startDate, endDate);
 
         // 월별 사용량 Map 생성 및 0 초기화 (순서 보장위해 LinkedHashMap 사용)
         Map<Integer, BigDecimal> monthlyMap = new LinkedHashMap<>();
@@ -275,12 +376,10 @@ public class VacationService {
             monthlyMap.put(i, BigDecimal.ZERO);
         }
 
-        // 월별 사용량 집계
-        for (VacationHistory history : histories) {
-            int month = history.getUsedDateTime().getMonthValue();
-            // DB Insert시 하루 기준으로 넣었음
-            BigDecimal useValue = history.getType().convertToValue(1);
-            monthlyMap.merge(month, useValue, BigDecimal::add);
+        // 월별 사용량 집계 (startDate의 월 기준)
+        for (VacationUsage usage : usages) {
+            int month = usage.getStartDate().getMonthValue();
+            monthlyMap.merge(month, usage.getUsedTime(), BigDecimal::add);
         }
 
         return monthlyMap.entrySet().stream()
@@ -292,24 +391,22 @@ public class VacationService {
                 .toList();
     }
 
+    /**
+     * 유저의 휴가 사용 통계 조회 (현재/이전달)
+     *
+     * @param userId 유저 ID
+     * @param baseTime 기준 시간
+     * @return 현재 및 이전달 휴가 통계
+     */
     public VacationServiceDto searchUserVacationUseStats(String userId, LocalDateTime baseTime) {
-        // 기준 시점에 유효한 모든 휴가 & 전체 이력
-        List<Vacation> curVacations = vacationRepository.findVacationsByBaseTimeWithHistory(userId, baseTime);
-        List<Vacation> prevVacations = vacationRepository.findVacationsByBaseTimeWithHistory(userId, baseTime.minusMonths(1));
+        // 유저 존재 확인
+        userService.checkUserExist(userId);
 
-        // 삭제 안된 이력만 필터링
-        List<VacationHistory> curHistories = curVacations.stream()
-                .flatMap(v -> v.getHistorys().stream())
-                .filter(vh -> YNType.N.equals(vh.getIsDeleted()))
-                .toList();
-        List<VacationHistory> prevHistories = prevVacations.stream()
-                .flatMap(v -> v.getHistorys().stream())
-                .filter(vh -> YNType.N.equals(vh.getIsDeleted()))
-                .toList();
+        // 현재 통계 계산
+        VacationStatsDto curStats = calculateStatsForBaseTime(userId, baseTime);
 
-        // 현재 및 이전 달 통계 계산
-        VacationServiceDto curStats = calculateStatsForDate(curHistories, baseTime);
-        VacationServiceDto prevStats = calculateStatsForDate(prevHistories, baseTime.minusMonths(1));
+        // 이전 달 통계 계산
+        VacationStatsDto prevStats = calculateStatsForBaseTime(userId, baseTime.minusMonths(1));
 
         return VacationServiceDto.builder()
                 .remainTime(curStats.getRemainTime())
@@ -321,16 +418,67 @@ public class VacationService {
                 .build();
     }
 
-    public Vacation checkVacationExist(Long vacationId) {
-        Optional<Vacation> vacation = vacationRepository.findById(vacationId);
-        vacation.orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.vacation", null, null)));
-        return vacation.get();
+    /**
+     * baseTime 기준 휴가 통계 계산 헬퍼 메서드
+     */
+    private VacationStatsDto calculateStatsForBaseTime(String userId, LocalDateTime baseTime) {
+        // baseTime 기준으로 유효한 VacationGrant 조회
+        List<VacationGrant> validGrants = vacationGrantRepository.findValidGrantsByUserIdAndBaseTime(userId, baseTime);
+
+        // 총 부여 시간 계산
+        BigDecimal totalGranted = validGrants.stream()
+                .map(VacationGrant::getGrantTime)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // baseTime 이전에 사용한 VacationUsage 조회 및 합산
+        List<VacationUsage> usedUsages = vacationUsageRepository.findUsedByUserIdAndBaseTime(userId, baseTime);
+        BigDecimal totalUsedTime = usedUsages.stream()
+                .map(VacationUsage::getUsedTime)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // baseTime 이후 사용 예정인 VacationUsage 조회 및 합산
+        List<VacationUsage> expectedUsages = vacationUsageRepository.findExpectedByUserIdAndBaseTime(userId, baseTime);
+        BigDecimal totalExpectUsedTime = expectedUsages.stream()
+                .map(VacationUsage::getUsedTime)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // 잔여 시간 계산
+        BigDecimal totalRemainTime = totalGranted.subtract(totalUsedTime);
+
+        return new VacationStatsDto(totalRemainTime, totalUsedTime, totalExpectUsedTime);
     }
 
-    public VacationHistory checkVacationHistoryExist(Long vacationHistoryId) {
-        Optional<VacationHistory> history = vacationHistoryRepository.findById(vacationHistoryId);
-        history.orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.vacation.history", null, null)));
-        return history.get();
+    /**
+     * 휴가 통계 내부 DTO
+     */
+    private static class VacationStatsDto {
+        private final BigDecimal remainTime;
+        private final BigDecimal usedTime;
+        private final BigDecimal expectUsedTime;
+
+        public VacationStatsDto(BigDecimal remainTime, BigDecimal usedTime, BigDecimal expectUsedTime) {
+            this.remainTime = remainTime;
+            this.usedTime = usedTime;
+            this.expectUsedTime = expectUsedTime;
+        }
+
+        public BigDecimal getRemainTime() {
+            return remainTime;
+        }
+
+        public BigDecimal getUsedTime() {
+            return usedTime;
+        }
+
+        public BigDecimal getExpectUsedTime() {
+            return expectUsedTime;
+        }
+    }
+
+    public VacationUsage checkVacationUsageExist(Long vacationUsageId) {
+        Optional<VacationUsage> usage = vacationUsageRepository.findById(vacationUsageId);
+        usage.orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.vacation.usage", null, null)));
+        return usage.get();
     }
 
     @Transactional
@@ -603,116 +751,4 @@ public class VacationService {
         return revokedIds;
     }
 
-    private List<VacationServiceDto> makeDayGroupDto(List<VacationHistory> dayHistories) {
-        List<VacationServiceDto> vacationDtos = new ArrayList<>();
-
-        String previousGroupKey = null;
-        VacationServiceDto vacationDto = null;
-        LocalDateTime previousDate = null;
-        List<Long> historyIds = null;
-
-        for (VacationHistory history : dayHistories) {
-            // 그룹 비교 키 생성
-            String currentGroupKey = history.getVacation().getId() + "-" + history.getType().name();
-            LocalDateTime currentDate = history.getUsedDateTime();
-
-            // 첫 행 || 이전 그룹 키와 다른 경우
-            if (previousGroupKey == null || !previousGroupKey.equals(currentGroupKey)) {
-                // 이전 그룹이 있다면 결과에 추가
-                if (previousGroupKey != null) {
-                    vacationDtos.add(vacationDto);
-                }
-
-                // 새로운 그룹 시작
-                previousGroupKey = currentGroupKey;
-                previousDate = currentDate;
-                historyIds = new ArrayList<>();
-                historyIds.add(history.getId());
-                vacationDto = VacationServiceDto.builder()
-                        .id(history.getVacation().getId())
-                        .historyIds(historyIds)
-                        .timeType(history.getType())
-                        .desc(history.getDesc())
-                        .startDate(currentDate)
-                        .endDate(currentDate.plusSeconds(history.getType().getSeconds()))
-                        .build();
-            } else {    // 이전 그룹 키와 같은 경우
-                // 연속된 날짜인지 확인 (1일 차이)
-                if (ChronoUnit.DAYS.between(previousDate, currentDate) == 1) {
-                    historyIds.add(history.getId());
-                    vacationDto.setHistoryIds(historyIds);
-                    vacationDto.setEndDate(currentDate.plusSeconds(VacationTimeType.DAYOFF.getSeconds()));
-                } else {
-                    // 연속되지 않으므로 현재 그룹을 완료하고 새 그룹 시작
-                    vacationDtos.add(vacationDto);
-
-                    historyIds = new ArrayList<>();
-                    historyIds.add(history.getId());
-                    vacationDto = VacationServiceDto.builder()
-                            .id(history.getVacation().getId())
-                            .historyIds(historyIds)
-                            .timeType(history.getType())
-                            .desc(history.getDesc())
-                            .startDate(currentDate)
-                            .endDate(currentDate.plusSeconds(history.getType().getSeconds()))
-                            .build();
-                }
-                previousDate = currentDate;
-            }
-        }
-
-        // 마지막 그룹 추가
-        if (previousGroupKey != null) {
-            vacationDtos.add(vacationDto);
-        }
-
-        return vacationDtos;
-    }
-
-    private List<VacationServiceDto> makeHourGroupDto(List<VacationHistory> hourHistories) {
-        List<VacationServiceDto> vacationDtos = new ArrayList<>();
-
-        for (VacationHistory history : hourHistories) {
-            vacationDtos.add(
-                    VacationServiceDto.builder()
-                            .id(history.getVacation().getId())
-                            .historyIds(List.of(history.getId()))
-                            .timeType(history.getType())
-                            .desc(history.getDesc())
-                            .startDate(history.getUsedDateTime())
-                            .endDate(history.getUsedDateTime().plusSeconds(history.getType().getSeconds()))
-                            .build()
-            );
-        }
-
-        return vacationDtos;
-    }
-
-    private VacationServiceDto calculateStatsForDate(List<VacationHistory> histories, LocalDateTime baseDate) {
-        // 기준일 이전에 부여된 총 휴가
-        BigDecimal totalGranted = histories.stream()
-                .filter(h -> h.getGrantTime() != null)
-                .map(VacationHistory::getGrantTime)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        // 기준일 이전에 사용된 총 휴가
-        BigDecimal totalUsedTime = histories.stream()
-                .filter(h -> h.getType() != null && !h.getUsedDateTime().isAfter(baseDate))
-                .map(h -> h.getType().convertToValue(1))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        // 기준일 이후에 사용될 총 휴가
-        BigDecimal totalExpectUsedTime = histories.stream()
-                .filter(h -> h.getType() != null && h.getUsedDateTime().isAfter(baseDate))
-                .map(h -> h.getType().convertToValue(1))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        BigDecimal totalRemainTime = totalGranted.subtract(totalUsedTime);
-
-        return VacationServiceDto.builder()
-                .remainTime(totalRemainTime)
-                .usedTime(totalUsedTime)
-                .expectUsedTime(totalExpectUsedTime)
-                .build();
-    }
 }

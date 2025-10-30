@@ -25,4 +25,53 @@ public interface VacationUsageCustomRepository {
      * 유저 ID로 VacationUsage 조회
      */
     List<VacationUsage> findByUserId(String userId);
+
+    /**
+     * 모든 VacationUsage 조회 (User 정보 포함)
+     * 모든 유저의 휴가 사용 내역을 조회
+     *
+     * @return 모든 VacationUsage 리스트
+     */
+    List<VacationUsage> findAllWithUser();
+
+    /**
+     * 기간별 VacationUsage 조회 (User 정보 포함)
+     * startDate가 지정된 기간 사이에 있는 휴가 사용 내역 조회
+     *
+     * @param startDate 조회 시작일
+     * @param endDate 조회 종료일
+     * @return 기간 내 VacationUsage 리스트
+     */
+    List<VacationUsage> findByPeriodWithUser(java.time.LocalDateTime startDate, java.time.LocalDateTime endDate);
+
+    /**
+     * 유저별 기간별 VacationUsage 조회 (User 정보 포함)
+     * 특정 유저의 startDate가 지정된 기간 사이에 있는 휴가 사용 내역 조회
+     *
+     * @param userId 유저 ID
+     * @param startDate 조회 시작일
+     * @param endDate 조회 종료일
+     * @return 기간 내 VacationUsage 리스트
+     */
+    List<VacationUsage> findByUserIdAndPeriodWithUser(String userId, java.time.LocalDateTime startDate, java.time.LocalDateTime endDate);
+
+    /**
+     * baseTime 이전에 사용한 VacationUsage 조회
+     * startDate <= baseTime인 휴가 사용 내역 조회
+     *
+     * @param userId 유저 ID
+     * @param baseTime 기준 시간
+     * @return baseTime 이전 VacationUsage 리스트
+     */
+    List<VacationUsage> findUsedByUserIdAndBaseTime(String userId, java.time.LocalDateTime baseTime);
+
+    /**
+     * baseTime 이후 사용 예정인 VacationUsage 조회
+     * startDate > baseTime인 휴가 사용 내역 조회
+     *
+     * @param userId 유저 ID
+     * @param baseTime 기준 시간
+     * @return baseTime 이후 VacationUsage 리스트
+     */
+    List<VacationUsage> findExpectedByUserIdAndBaseTime(String userId, java.time.LocalDateTime baseTime);
 }

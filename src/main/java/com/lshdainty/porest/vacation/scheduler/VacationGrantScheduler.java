@@ -8,6 +8,7 @@ import com.lshdainty.porest.vacation.repository.VacationGrantCustomRepositoryImp
 import com.lshdainty.porest.vacation.service.policy.RepeatGrant;
 import com.lshdainty.porest.vacation.service.policy.factory.VacationPolicyStrategyFactory;
 import com.lshdainty.porest.vacation.type.GrantMethod;
+import com.lshdainty.porest.vacation.type.VacationType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,18 +65,41 @@ public class VacationGrantScheduler {
             for (UserVacationPolicy uvp : targets) {
                 try {
                     VacationPolicy policy = uvp.getVacationPolicy();
+                    VacationType vacationType = policy.getVacationType();
 
-                    // 만료일 계산
-                    LocalDateTime grantDateTime = LocalDateTime.of(today, LocalDateTime.now().toLocalTime());
-                    LocalDateTime expiryDate = repeatGrantService.calculateExpiryDate(today, policy.getRepeatUnit());
+                    // 휴가 유형에 따라 시작일과 만료일 설정
+                    LocalDateTime startDate;
+                    LocalDateTime expiryDate;
+
+                    if (vacationType == VacationType.ANNUAL ||
+                        vacationType == VacationType.OVERTIME ||
+                        vacationType == VacationType.HEALTH ||
+                        vacationType == VacationType.ARMY) {
+                        // 연차, 연장, 건강, 군: 부여 날짜의 년도 1월 1일 ~ 12월 31일
+                        int year = today.getYear();
+                        startDate = LocalDateTime.of(year, 1, 1, 0, 0, 0);
+                        expiryDate = LocalDateTime.of(year, 12, 31, 23, 59, 59);
+                    } else if (vacationType == VacationType.MATERNITY ||
+                               vacationType == VacationType.WEDDING ||
+                               vacationType == VacationType.BEREAVEMENT) {
+                        // 출산, 결혼, 상조: 부여 날짜부터 +6개월
+                        startDate = LocalDateTime.of(today, LocalTime.of(0, 0, 0));
+                        expiryDate = startDate.plusMonths(6).minusSeconds(1); // 6개월 후 23:59:59
+                    } else {
+                        // 기타: 기존 로직 사용
+                        startDate = LocalDateTime.of(today, LocalDateTime.now().toLocalTime());
+                        expiryDate = repeatGrantService.calculateExpiryDate(today, policy.getRepeatUnit());
+                    }
 
                     // VacationGrant 생성
-                    VacationGrant vacationGrant = VacationGrant.createVacation(
+                    String desc = policy.getName() + "에 의한 휴가 부여";
+                    VacationGrant vacationGrant = VacationGrant.createVacationGrant(
                             uvp.getUser(),
                             policy,
-                            policy.getVacationType(),
+                            desc,
+                            vacationType,
                             policy.getGrantTime(),
-                            grantDateTime,
+                            startDate,
                             expiryDate
                     );
 
@@ -82,13 +107,15 @@ public class VacationGrantScheduler {
 
                     // 다음 부여일 갱신 (현재 부여일 기준으로 재계산)
                     LocalDate newNextGrantDate = repeatGrantService.calculateNextGrantDate(policy, today);
-                    uvp.updateGrantHistory(grantDateTime, newNextGrantDate);
+                    uvp.updateGrantHistory(startDate, newNextGrantDate);
 
                     successCount++;
-                    log.info("휴가 부여 완료 - User: {}, Policy: {}, GrantTime: {}, ExpiryDate: {}, NextGrantDate: {}",
+                    log.info("휴가 부여 완료 - User: {}, Policy: {}, VacationType: {}, GrantTime: {}, StartDate: {}, ExpiryDate: {}, NextGrantDate: {}",
                             uvp.getUser().getId(),
                             policy.getName(),
+                            vacationType.getViewName(),
                             policy.getGrantTime(),
+                            startDate,
                             expiryDate,
                             newNextGrantDate);
 

@@ -272,54 +272,25 @@ public class InitDB {
             saveVacationPolicy("조사", "빙부상, 빙모상, 시부상, 시모상에 대한 휴가 정책입니다.", VacationType.BEREAVEMENT, GrantMethod.ON_REQUEST, new BigDecimal("3.0000"), null, null, null, null, null, null, null);
         }
 
-        public void saveMember(String id, String name, String email, LocalDate birth, OriginCompanyType company, String workTime, YNType lunar) {
-            String encodedPassword = passwordEncoder.encode("1234");
-            User user = User.createUser(id, encodedPassword, name, email, birth, company, workTime, lunar, null, null);
-            em.persist(user);
-        }
-
-        public Department saveDepartment(String name, String nameKR, Department parent, Long level, String desc, String color, Company company) {
-            Department department = Department.createDepartment(name, nameKR, parent, null, level, desc, color, company);
-            em.persist(department);
-            return department;
-        }
-
-        public void saveHoliday(String name, String date, HolidayType type, CountryCode countryCode, YNType lunarYN, String lunarDate, YNType isRecurring, String icon) {
-            Holiday holiday = Holiday.createHoliday(name, date, type, countryCode, lunarYN, lunarDate, isRecurring, icon);
-            em.persist(holiday);
-        }
-
-        public void saveSchedule(String userId, String desc, ScheduleType type, LocalDateTime startDate, LocalDateTime endDate) {
-            User user = em.find(User.class, userId);
-            Schedule schedule = Schedule.createSchedule(user, desc, type, startDate, endDate);
-            em.persist(schedule);
-        }
-
-        public void saveDues(String userName, Long amount, DuesType type, DuesCalcType calc, String date, String detail) {
-            Dues dues = Dues.createDues(userName, amount, type, calc, date, detail);
-            em.persist(dues);
-        }
-
-        public void saveVacationPolicy(String name, String desc, VacationType vacationType, GrantMethod grantMethod, BigDecimal grantTime, RepeatUnit repeatUnit, Integer repeatInterval, Integer specificMonths, Integer specificDays, LocalDateTime firstGrantDate, YNType isRecurring, Integer maxGrantCount) {
-            VacationPolicy vacationPolicy = VacationPolicy.createVacationPolicy(name, desc, vacationType, grantMethod, grantTime, repeatUnit, repeatInterval, specificMonths, specificDays, firstGrantDate, isRecurring, maxGrantCount);
-            em.persist(vacationPolicy);
-            if (vacationPolicy.getGrantMethod().equals(GrantMethod.MANUAL_GRANT)) {
-                vacationPolicy.updateCantDeleted();
-            } else {
-                vacationPolicy.updateCanDeleted();
-            }
-        }
-
         public void initSetUserVacationPolicy() {
             // 유저 조회
             User user1 = em.find(User.class, "user1");
             User user2 = em.find(User.class, "user2");
+            User user3 = em.find(User.class, "user3");
+            User user4 = em.find(User.class, "user4");
+            User user5 = em.find(User.class, "user5");
+            User user6 = em.find(User.class, "user6");
+
+            // 조사 정책 조회 (재사용)
+            List<VacationPolicy> bereavementPolicies = findVacationPoliciesByNameAndType("조사", VacationType.BEREAVEMENT);
 
             // user1에게 휴가 정책 부여
-            // 반복 부여 휴가 정책: "연차"
-            saveUserVacationPolicy(user1, findVacationPolicyByName("연차"));
-
-            // 구성원 신청용 휴가 정책: 동원훈련, 동미참훈련, 예비군, 예비군(반차), OT, 결혼, 출산, 조사 2개
+            // 반복 부여 휴가 정책: 분기별 연차
+            saveUserVacationPolicy(user1, findVacationPolicyByName("1분기 연차"));
+            saveUserVacationPolicy(user1, findVacationPolicyByName("2분기 연차"));
+            saveUserVacationPolicy(user1, findVacationPolicyByName("3분기 연차"));
+            saveUserVacationPolicy(user1, findVacationPolicyByName("4분기 연차"));
+            // 구성원 신청용 휴가 정책
             saveUserVacationPolicy(user1, findVacationPolicyByName("동원훈련"));
             saveUserVacationPolicy(user1, findVacationPolicyByName("동미참훈련"));
             saveUserVacationPolicy(user1, findVacationPolicyByName("예비군"));
@@ -327,21 +298,18 @@ public class InitDB {
             saveUserVacationPolicy(user1, findVacationPolicyByName("OT"));
             saveUserVacationPolicy(user1, findVacationPolicyByName("결혼"));
             saveUserVacationPolicy(user1, findVacationPolicyByName("출산"));
-            // 조사 2개 (5일, 3일)
-            List<VacationPolicy> user1Bereavements = findVacationPoliciesByNameAndType("조사", VacationType.BEREAVEMENT);
-            for (VacationPolicy policy : user1Bereavements) {
+            for (VacationPolicy policy : bereavementPolicies) {
                 saveUserVacationPolicy(user1, policy);
             }
 
             // user2에게 휴가 정책 부여
-            // 반복 부여 휴가 정책: 1분기 연차, 2분기 연차, 3분기 연차, 4분기 연차, 7년 근속 휴가
+            // 반복 부여 휴가 정책: 분기별 연차 + 7년 근속 휴가
             saveUserVacationPolicy(user2, findVacationPolicyByName("1분기 연차"));
             saveUserVacationPolicy(user2, findVacationPolicyByName("2분기 연차"));
             saveUserVacationPolicy(user2, findVacationPolicyByName("3분기 연차"));
             saveUserVacationPolicy(user2, findVacationPolicyByName("4분기 연차"));
             saveUserVacationPolicy(user2, findVacationPolicyByName("7년 근속 휴가"));
-
-            // 구성원 신청용 휴가 정책: 전부
+            // 구성원 신청용 휴가 정책
             saveUserVacationPolicy(user2, findVacationPolicyByName("동원훈련"));
             saveUserVacationPolicy(user2, findVacationPolicyByName("동미참훈련"));
             saveUserVacationPolicy(user2, findVacationPolicyByName("예비군"));
@@ -349,16 +317,33 @@ public class InitDB {
             saveUserVacationPolicy(user2, findVacationPolicyByName("OT"));
             saveUserVacationPolicy(user2, findVacationPolicyByName("결혼"));
             saveUserVacationPolicy(user2, findVacationPolicyByName("출산"));
-            // 조사 2개 (5일, 3일)
-            List<VacationPolicy> user2Bereavements = findVacationPoliciesByNameAndType("조사", VacationType.BEREAVEMENT);
-            for (VacationPolicy policy : user2Bereavements) {
+            for (VacationPolicy policy : bereavementPolicies) {
                 saveUserVacationPolicy(user2, policy);
+            }
+
+            // user3~6에게도 동일하게 분기별 연차 정책 부여
+            for (User user : List.of(user3, user4, user5, user6)) {
+                saveUserVacationPolicy(user, findVacationPolicyByName("1분기 연차"));
+                saveUserVacationPolicy(user, findVacationPolicyByName("2분기 연차"));
+                saveUserVacationPolicy(user, findVacationPolicyByName("3분기 연차"));
+                saveUserVacationPolicy(user, findVacationPolicyByName("4분기 연차"));
+                // 구성원 신청용 휴가 정책
+                saveUserVacationPolicy(user, findVacationPolicyByName("동원훈련"));
+                saveUserVacationPolicy(user, findVacationPolicyByName("동미참훈련"));
+                saveUserVacationPolicy(user, findVacationPolicyByName("예비군"));
+                saveUserVacationPolicy(user, findVacationPolicyByName("예비군(반차)"));
+                saveUserVacationPolicy(user, findVacationPolicyByName("OT"));
+                saveUserVacationPolicy(user, findVacationPolicyByName("결혼"));
+                saveUserVacationPolicy(user, findVacationPolicyByName("출산"));
+                for (VacationPolicy policy : bereavementPolicies) {
+                    saveUserVacationPolicy(user, policy);
+                }
             }
         }
 
         private VacationPolicy findVacationPolicyByName(String name) {
             return em.createQuery(
-                    "SELECT vp FROM VacationPolicy vp WHERE vp.name = :name AND vp.isDeleted = :isDeleted AND vp.grantMethod != :manualGrant", VacationPolicy.class)
+                            "SELECT vp FROM VacationPolicy vp WHERE vp.name = :name AND vp.isDeleted = :isDeleted AND vp.grantMethod != :manualGrant", VacationPolicy.class)
                     .setParameter("name", name)
                     .setParameter("isDeleted", YNType.N)
                     .setParameter("manualGrant", GrantMethod.MANUAL_GRANT)
@@ -370,7 +355,7 @@ public class InitDB {
 
         private List<VacationPolicy> findVacationPoliciesByNameAndType(String name, VacationType type) {
             return em.createQuery(
-                    "SELECT vp FROM VacationPolicy vp WHERE vp.name = :name AND vp.vacationType = :type AND vp.isDeleted = :isDeleted AND vp.grantMethod = :onRequest", VacationPolicy.class)
+                            "SELECT vp FROM VacationPolicy vp WHERE vp.name = :name AND vp.vacationType = :type AND vp.isDeleted = :isDeleted AND vp.grantMethod = :onRequest", VacationPolicy.class)
                     .setParameter("name", name)
                     .setParameter("type", type)
                     .setParameter("isDeleted", YNType.N)
@@ -378,9 +363,17 @@ public class InitDB {
                     .getResultList();
         }
 
-        private void saveUserVacationPolicy(User user, VacationPolicy vacationPolicy) {
-            UserVacationPolicy userVacationPolicy = UserVacationPolicy.createUserVacationPolicy(user, vacationPolicy);
-            em.persist(userVacationPolicy);
+        private VacationPolicy findManualGrantPolicyByNameAndType(String name, VacationType type) {
+            return em.createQuery(
+                            "SELECT vp FROM VacationPolicy vp WHERE vp.name = :name AND vp.vacationType = :type AND vp.isDeleted = :isDeleted AND vp.grantMethod = :manualGrant", VacationPolicy.class)
+                    .setParameter("name", name)
+                    .setParameter("type", type)
+                    .setParameter("isDeleted", YNType.N)
+                    .setParameter("manualGrant", GrantMethod.MANUAL_GRANT)
+                    .getResultList()
+                    .stream()
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("휴가 정책을 찾을 수 없습니다: " + name + ", " + type));
         }
 
         /**
@@ -397,60 +390,70 @@ public class InitDB {
             User user5 = em.find(User.class, "user5");
             User user6 = em.find(User.class, "user6");
 
+            // 휴가 정책 조회
+            VacationPolicy q1Policy = findVacationPolicyByName("1분기 연차");
+            VacationPolicy q2Policy = findVacationPolicyByName("2분기 연차");
+            VacationPolicy q3Policy = findVacationPolicyByName("3분기 연차");
+            VacationPolicy q4Policy = findVacationPolicyByName("4분기 연차");
+            VacationPolicy otPolicy = findManualGrantPolicyByNameAndType("OT(관리자용)", VacationType.OVERTIME);
+            VacationPolicy maternityPolicy = findManualGrantPolicyByNameAndType("출산(관리자용)", VacationType.MATERNITY);
+
             // ===== user1 연차 부여 (현재 연도) =====
-            saveVacationGrant(user1, VacationType.ANNUAL, "1분기 휴가", new BigDecimal("4.0000"), now.getYear());
-            saveVacationGrant(user1, VacationType.ANNUAL, "2분기 휴가", new BigDecimal("4.0000"), now.getYear());
-            saveVacationGrant(user1, VacationType.ANNUAL, "3분기 휴가", new BigDecimal("4.0000"), now.getYear());
-            saveVacationGrant(user1, VacationType.ANNUAL, "4분기 휴가", new BigDecimal("3.0000"), now.getYear());
+            saveVacationGrant(user1, q1Policy, VacationType.ANNUAL, "1분기 연차에 의한 휴가 부여", new BigDecimal("4.0000"), now.getYear());
+            saveVacationGrant(user1, q2Policy, VacationType.ANNUAL, "2분기 연차에 의한 휴가 부여", new BigDecimal("4.0000"), now.getYear());
+            saveVacationGrant(user1, q3Policy, VacationType.ANNUAL, "3분기 연차에 의한 휴가 부여", new BigDecimal("4.0000"), now.getYear());
+            saveVacationGrant(user1, q4Policy, VacationType.ANNUAL, "4분기 연차에 의한 휴가 부여", new BigDecimal("3.0000"), now.getYear());
             // user1 OT 부여 (3건)
-            saveVacationGrant(user1, VacationType.OVERTIME, "OT", new BigDecimal("0.1250"), now.getYear());
-            saveVacationGrant(user1, VacationType.OVERTIME, "OT", new BigDecimal("0.2500"), now.getYear());
-            saveVacationGrant(user1, VacationType.OVERTIME, "OT", new BigDecimal("0.1250"), now.getYear());
+            saveVacationGrant(user1, otPolicy, VacationType.OVERTIME, "OT(관리자용)에 의한 휴가 부여", new BigDecimal("0.1250"), now.getYear());
+            saveVacationGrant(user1, otPolicy, VacationType.OVERTIME, "OT(관리자용)에 의한 휴가 부여", new BigDecimal("0.2500"), now.getYear());
+            saveVacationGrant(user1, otPolicy, VacationType.OVERTIME, "OT(관리자용)에 의한 휴가 부여", new BigDecimal("0.1250"), now.getYear());
+            // user1 출산 휴가 부여 (사용 내역을 위해)
+            saveVacationGrant(user1, maternityPolicy, VacationType.MATERNITY, "출산(관리자용)에 의한 휴가 부여", new BigDecimal("10.0000"), now.getYear());
 
             // ===== user2 연차 부여 (현재 연도) =====
-            saveVacationGrant(user2, VacationType.ANNUAL, "1분기 휴가", new BigDecimal("4.0000"), now.getYear());
-            saveVacationGrant(user2, VacationType.ANNUAL, "2분기 휴가", new BigDecimal("4.0000"), now.getYear());
-            saveVacationGrant(user2, VacationType.ANNUAL, "3분기 휴가", new BigDecimal("4.0000"), now.getYear());
-            saveVacationGrant(user2, VacationType.ANNUAL, "4분기 휴가", new BigDecimal("3.0000"), now.getYear());
+            saveVacationGrant(user2, q1Policy, VacationType.ANNUAL, "1분기 연차에 의한 휴가 부여", new BigDecimal("4.0000"), now.getYear());
+            saveVacationGrant(user2, q2Policy, VacationType.ANNUAL, "2분기 연차에 의한 휴가 부여", new BigDecimal("4.0000"), now.getYear());
+            saveVacationGrant(user2, q3Policy, VacationType.ANNUAL, "3분기 연차에 의한 휴가 부여", new BigDecimal("4.0000"), now.getYear());
+            saveVacationGrant(user2, q4Policy, VacationType.ANNUAL, "4분기 연차에 의한 휴가 부여", new BigDecimal("3.0000"), now.getYear());
 
             // ===== user3 연차 부여 (현재 연도) =====
-            saveVacationGrant(user3, VacationType.ANNUAL, "1분기 휴가", new BigDecimal("4.0000"), now.getYear());
-            saveVacationGrant(user3, VacationType.ANNUAL, "2분기 휴가", new BigDecimal("4.0000"), now.getYear());
-            saveVacationGrant(user3, VacationType.ANNUAL, "3분기 휴가", new BigDecimal("4.0000"), now.getYear());
-            saveVacationGrant(user3, VacationType.ANNUAL, "4분기 휴가", new BigDecimal("3.0000"), now.getYear());
+            saveVacationGrant(user3, q1Policy, VacationType.ANNUAL, "1분기 연차에 의한 휴가 부여", new BigDecimal("4.0000"), now.getYear());
+            saveVacationGrant(user3, q2Policy, VacationType.ANNUAL, "2분기 연차에 의한 휴가 부여", new BigDecimal("4.0000"), now.getYear());
+            saveVacationGrant(user3, q3Policy, VacationType.ANNUAL, "3분기 연차에 의한 휴가 부여", new BigDecimal("4.0000"), now.getYear());
+            saveVacationGrant(user3, q4Policy, VacationType.ANNUAL, "4분기 연차에 의한 휴가 부여", new BigDecimal("3.0000"), now.getYear());
 
             // ===== user4 연차 부여 (현재 연도) =====
-            saveVacationGrant(user4, VacationType.ANNUAL, "1분기 휴가", new BigDecimal("4.0000"), now.getYear());
-            saveVacationGrant(user4, VacationType.ANNUAL, "2분기 휴가", new BigDecimal("4.0000"), now.getYear());
-            saveVacationGrant(user4, VacationType.ANNUAL, "3분기 휴가", new BigDecimal("4.0000"), now.getYear());
-            saveVacationGrant(user4, VacationType.ANNUAL, "4분기 휴가", new BigDecimal("3.0000"), now.getYear());
+            saveVacationGrant(user4, q1Policy, VacationType.ANNUAL, "1분기 연차에 의한 휴가 부여", new BigDecimal("4.0000"), now.getYear());
+            saveVacationGrant(user4, q2Policy, VacationType.ANNUAL, "2분기 연차에 의한 휴가 부여", new BigDecimal("4.0000"), now.getYear());
+            saveVacationGrant(user4, q3Policy, VacationType.ANNUAL, "3분기 연차에 의한 휴가 부여", new BigDecimal("4.0000"), now.getYear());
+            saveVacationGrant(user4, q4Policy, VacationType.ANNUAL, "4분기 연차에 의한 휴가 부여", new BigDecimal("3.0000"), now.getYear());
 
             // ===== user5 연차 부여 (현재 연도) =====
-            saveVacationGrant(user5, VacationType.ANNUAL, "1분기 휴가", new BigDecimal("4.0000"), now.getYear());
-            saveVacationGrant(user5, VacationType.ANNUAL, "2분기 휴가", new BigDecimal("4.0000"), now.getYear());
-            saveVacationGrant(user5, VacationType.ANNUAL, "3분기 휴가", new BigDecimal("4.0000"), now.getYear());
-            saveVacationGrant(user5, VacationType.ANNUAL, "4분기 휴가", new BigDecimal("3.0000"), now.getYear());
+            saveVacationGrant(user5, q1Policy, VacationType.ANNUAL, "1분기 연차에 의한 휴가 부여", new BigDecimal("4.0000"), now.getYear());
+            saveVacationGrant(user5, q2Policy, VacationType.ANNUAL, "2분기 연차에 의한 휴가 부여", new BigDecimal("4.0000"), now.getYear());
+            saveVacationGrant(user5, q3Policy, VacationType.ANNUAL, "3분기 연차에 의한 휴가 부여", new BigDecimal("4.0000"), now.getYear());
+            saveVacationGrant(user5, q4Policy, VacationType.ANNUAL, "4분기 연차에 의한 휴가 부여", new BigDecimal("3.0000"), now.getYear());
             // user5 OT 부여 (3건)
-            saveVacationGrant(user5, VacationType.OVERTIME, "OT", new BigDecimal("0.1250"), now.getYear());
-            saveVacationGrant(user5, VacationType.OVERTIME, "OT", new BigDecimal("0.1250"), now.getYear());
-            saveVacationGrant(user5, VacationType.OVERTIME, "OT", new BigDecimal("0.1250"), now.getYear());
+            saveVacationGrant(user5, otPolicy, VacationType.OVERTIME, "OT(관리자용)에 의한 휴가 부여", new BigDecimal("0.1250"), now.getYear());
+            saveVacationGrant(user5, otPolicy, VacationType.OVERTIME, "OT(관리자용)에 의한 휴가 부여", new BigDecimal("0.1250"), now.getYear());
+            saveVacationGrant(user5, otPolicy, VacationType.OVERTIME, "OT(관리자용)에 의한 휴가 부여", new BigDecimal("0.1250"), now.getYear());
 
             // ===== user6 연차 부여 (현재 연도) =====
-            saveVacationGrant(user6, VacationType.ANNUAL, "1분기 휴가", new BigDecimal("4.0000"), now.getYear());
-            saveVacationGrant(user6, VacationType.ANNUAL, "2분기 휴가", new BigDecimal("4.0000"), now.getYear());
-            saveVacationGrant(user6, VacationType.ANNUAL, "3분기 휴가", new BigDecimal("4.0000"), now.getYear());
-            saveVacationGrant(user6, VacationType.ANNUAL, "4분기 휴가", new BigDecimal("3.0000"), now.getYear());
+            saveVacationGrant(user6, q1Policy, VacationType.ANNUAL, "1분기 연차에 의한 휴가 부여", new BigDecimal("4.0000"), now.getYear());
+            saveVacationGrant(user6, q2Policy, VacationType.ANNUAL, "2분기 연차에 의한 휴가 부여", new BigDecimal("4.0000"), now.getYear());
+            saveVacationGrant(user6, q3Policy, VacationType.ANNUAL, "3분기 연차에 의한 휴가 부여", new BigDecimal("4.0000"), now.getYear());
+            saveVacationGrant(user6, q4Policy, VacationType.ANNUAL, "4분기 연차에 의한 휴가 부여", new BigDecimal("3.0000"), now.getYear());
             // user6 OT 부여
-            saveVacationGrant(user6, VacationType.OVERTIME, "OT", new BigDecimal("0.1250"), now.getYear());
+            saveVacationGrant(user6, otPolicy, VacationType.OVERTIME, "OT(관리자용)에 의한 휴가 부여", new BigDecimal("0.1250"), now.getYear());
 
             // ===== user1 다음 연도 휴가 부여 =====
-            saveVacationGrant(user1, VacationType.ANNUAL, "1분기 휴가", new BigDecimal("4.0000"), now.getYear()+1);
-            saveVacationGrant(user1, VacationType.ANNUAL, "2분기 휴가", new BigDecimal("4.0000"), now.getYear()+1);
-            saveVacationGrant(user1, VacationType.ANNUAL, "3분기 휴가", new BigDecimal("4.0000"), now.getYear()+1);
-            saveVacationGrant(user1, VacationType.ANNUAL, "4분기 휴가", new BigDecimal("3.0000"), now.getYear()+1);
+            saveVacationGrant(user1, q1Policy, VacationType.ANNUAL, "1분기 연차에 의한 휴가 부여", new BigDecimal("4.0000"), now.getYear()+1);
+            saveVacationGrant(user1, q2Policy, VacationType.ANNUAL, "2분기 연차에 의한 휴가 부여", new BigDecimal("4.0000"), now.getYear()+1);
+            saveVacationGrant(user1, q3Policy, VacationType.ANNUAL, "3분기 연차에 의한 휴가 부여", new BigDecimal("4.0000"), now.getYear()+1);
+            saveVacationGrant(user1, q4Policy, VacationType.ANNUAL, "4분기 연차에 의한 휴가 부여", new BigDecimal("3.0000"), now.getYear()+1);
             // user1 다음 연도 OT 부여 (2건)
-            saveVacationGrant(user1, VacationType.OVERTIME, "OT", new BigDecimal("0.1250"), now.getYear()+1);
-            saveVacationGrant(user1, VacationType.OVERTIME, "OT", new BigDecimal("0.3750"), now.getYear()+1);
+            saveVacationGrant(user1, otPolicy, VacationType.OVERTIME, "OT(관리자용)에 의한 휴가 부여", new BigDecimal("0.1250"), now.getYear()+1);
+            saveVacationGrant(user1, otPolicy, VacationType.OVERTIME, "OT(관리자용)에 의한 휴가 부여", new BigDecimal("0.3750"), now.getYear()+1);
 
             // ===== 휴가 사용 내역 마이그레이션 (VacationUsage + VacationUsageDeduction) =====
             // 모든 Grant를 다시 조회 (FIFO용)
@@ -647,25 +650,91 @@ public class InitDB {
             em.flush();
         }
 
-        private void saveVacationGrant(User user, VacationType type, String desc, BigDecimal grantTime, int year) {
-            VacationGrant grant = VacationGrant.createVacationGrant(
-                    user, null, desc, type, grantTime,
-                    LocalDateTime.of(year, 1, 1, 0, 0),
-                    LocalDateTime.of(year, 12, 31, 23, 59, 59)
-            );
-            em.persist(grant);
-        }
-
         private List<VacationGrant> findGrantsByUserAndType(User user, VacationType type) {
             return em.createQuery(
-                    "SELECT vg FROM VacationGrant vg " +
-                    "WHERE vg.user = :user AND vg.type = :type AND vg.isDeleted = :isDeleted " +
-                    "ORDER BY vg.expiryDate ASC, vg.grantDate ASC",
-                    VacationGrant.class)
+                            "SELECT vg FROM VacationGrant vg " +
+                                    "WHERE vg.user = :user AND vg.type = :type AND vg.isDeleted = :isDeleted " +
+                                    "ORDER BY vg.expiryDate ASC, vg.grantDate ASC",
+                            VacationGrant.class)
                     .setParameter("user", user)
                     .setParameter("type", type)
                     .setParameter("isDeleted", YNType.N)
                     .getResultList();
+        }
+
+        public void saveMember(String id, String name, String email, LocalDate birth, OriginCompanyType company, String workTime, YNType lunar) {
+            String encodedPassword = passwordEncoder.encode("1234");
+            User user = User.createUser(id, encodedPassword, name, email, birth, company, workTime, lunar, null, null);
+            em.persist(user);
+        }
+
+        public Department saveDepartment(String name, String nameKR, Department parent, Long level, String desc, String color, Company company) {
+            Department department = Department.createDepartment(name, nameKR, parent, null, level, desc, color, company);
+            em.persist(department);
+            return department;
+        }
+
+        public void saveHoliday(String name, String date, HolidayType type, CountryCode countryCode, YNType lunarYN, String lunarDate, YNType isRecurring, String icon) {
+            Holiday holiday = Holiday.createHoliday(name, date, type, countryCode, lunarYN, lunarDate, isRecurring, icon);
+            em.persist(holiday);
+        }
+
+        public void saveSchedule(String userId, String desc, ScheduleType type, LocalDateTime startDate, LocalDateTime endDate) {
+            User user = em.find(User.class, userId);
+            Schedule schedule = Schedule.createSchedule(user, desc, type, startDate, endDate);
+            em.persist(schedule);
+        }
+
+        public void saveDues(String userName, Long amount, DuesType type, DuesCalcType calc, String date, String detail) {
+            Dues dues = Dues.createDues(userName, amount, type, calc, date, detail);
+            em.persist(dues);
+        }
+
+        public void saveVacationPolicy(String name, String desc, VacationType vacationType, GrantMethod grantMethod, BigDecimal grantTime, RepeatUnit repeatUnit, Integer repeatInterval, Integer specificMonths, Integer specificDays, LocalDateTime firstGrantDate, YNType isRecurring, Integer maxGrantCount) {
+            VacationPolicy vacationPolicy = VacationPolicy.createVacationPolicy(name, desc, vacationType, grantMethod, grantTime, repeatUnit, repeatInterval, specificMonths, specificDays, firstGrantDate, isRecurring, maxGrantCount);
+            em.persist(vacationPolicy);
+            if (vacationPolicy.getGrantMethod().equals(GrantMethod.MANUAL_GRANT)) {
+                vacationPolicy.updateCantDeleted();
+            } else {
+                vacationPolicy.updateCanDeleted();
+            }
+        }
+
+        private void saveUserVacationPolicy(User user, VacationPolicy vacationPolicy) {
+            UserVacationPolicy userVacationPolicy = UserVacationPolicy.createUserVacationPolicy(user, vacationPolicy);
+            em.persist(userVacationPolicy);
+        }
+
+        private void saveVacationGrant(User user, VacationPolicy policy, VacationType type, String desc, BigDecimal grantTime, int year) {
+            LocalDateTime startDate;
+            LocalDateTime expiryDate;
+
+            // 휴가 유형에 따라 시작일과 만료일 설정
+            if (type == VacationType.ANNUAL ||
+                type == VacationType.OVERTIME ||
+                type == VacationType.HEALTH ||
+                type == VacationType.ARMY) {
+                // 연차, 연장, 건강, 군: 해당 년도 1월 1일 ~ 12월 31일
+                startDate = LocalDateTime.of(year, 1, 1, 0, 0, 0);
+                expiryDate = LocalDateTime.of(year, 12, 31, 23, 59, 59);
+            } else if (type == VacationType.MATERNITY ||
+                       type == VacationType.WEDDING ||
+                       type == VacationType.BEREAVEMENT) {
+                // 출산, 결혼, 상조: 현재 시점부터 +6개월
+                LocalDateTime now = LocalDateTime.now();
+                startDate = LocalDateTime.of(now.getYear(), now.getMonthValue(), now.getDayOfMonth(), 0, 0, 0);
+                expiryDate = startDate.plusMonths(6).minusSeconds(1);
+            } else {
+                // 기타
+                startDate = LocalDateTime.of(year, 1, 1, 0, 0, 0);
+                expiryDate = LocalDateTime.of(year, 12, 31, 23, 59, 59);
+            }
+
+            VacationGrant grant = VacationGrant.createVacationGrant(
+                    user, policy, desc, type, grantTime,
+                    startDate, expiryDate
+            );
+            em.persist(grant);
         }
 
         private void saveVacationUsageWithFIFO(User user, List<VacationGrant> grants, String desc,
