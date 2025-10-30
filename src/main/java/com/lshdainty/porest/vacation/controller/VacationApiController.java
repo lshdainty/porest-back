@@ -20,7 +20,11 @@ import java.util.List;
 public class VacationApiController {
     private final VacationService vacationService;
 
-    @PostMapping("/api/v1/vacation/use")
+    /**
+     * 휴가 사용
+     * POST /api/v1/vacation-usages
+     */
+    @PostMapping("/api/v1/vacation-usages")
     public ApiResponse useVacation(@RequestBody VacationApiDto.UseVacationReq data) {
         Long vacationUsageId = vacationService.useVacation(VacationServiceDto.builder()
                         .userId(data.getUserId())
@@ -35,7 +39,11 @@ public class VacationApiController {
         return ApiResponse.success(new VacationApiDto.UseVacationResp(vacationUsageId));
     }
 
-    @GetMapping("/api/v1/vacations/user/{userId}")
+    /**
+     * 특정 유저의 휴가 정보 조회 (부여/사용 내역)
+     * GET /api/v1/users/{userId}/vacations
+     */
+    @GetMapping("/api/v1/users/{userId}/vacations")
     public ApiResponse searchUserVacations(@PathVariable("userId") String userId) {
         VacationServiceDto vacationInfo = vacationService.searchUserVacations(userId);
 
@@ -71,7 +79,11 @@ public class VacationApiController {
         return ApiResponse.success(resp);
     }
 
-    @GetMapping("/api/v1/vacations/usergroup")
+    /**
+     * 모든 유저의 휴가 정보 조회
+     * GET /api/v1/vacations
+     */
+    @GetMapping("/api/v1/vacations")
     public ApiResponse searchUserGroupVacations() {
         List<VacationServiceDto> usersVacations = vacationService.searchUserGroupVacations();
 
@@ -118,7 +130,11 @@ public class VacationApiController {
         return ApiResponse.success(resp);
     }
 
-    @GetMapping("/api/v1/vacation/available/{userId}")
+    /**
+     * 특정 유저의 사용 가능한 휴가 조회
+     * GET /api/v1/users/{userId}/vacations/available
+     */
+    @GetMapping("/api/v1/users/{userId}/vacations/available")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     public ApiResponse searcgAvailableVacations(@PathVariable("userId") String userId,
                                                 @RequestParam("startDate") LocalDateTime startDate) {
@@ -136,13 +152,21 @@ public class VacationApiController {
         return ApiResponse.success(resp);
     }
 
-    @DeleteMapping("/api/v1/vacation/usage/{id}")
+    /**
+     * 휴가 사용 내역 삭제
+     * DELETE /api/v1/vacation-usages/{id}
+     */
+    @DeleteMapping("/api/v1/vacation-usages/{id}")
     public ApiResponse deleteVacationHistory(@PathVariable("id") Long vacationUsageId) {
         vacationService.deleteVacationHistory(vacationUsageId);
         return ApiResponse.success();
     }
 
-    @GetMapping("/api/v1/vacation/use/histories/period")
+    /**
+     * 기간별 휴가 사용 내역 조회 (전체 유저)
+     * GET /api/v1/vacation-usages
+     */
+    @GetMapping("/api/v1/vacation-usages")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     public ApiResponse searchPeriodVacationUseHistories(
             @RequestParam("startDate") LocalDateTime startDate,
@@ -166,7 +190,11 @@ public class VacationApiController {
         return ApiResponse.success(resp);
     }
 
-    @GetMapping("/api/v1/vacation/use/histories/user/period")
+    /**
+     * 특정 유저의 기간별 휴가 사용 내역 조회
+     * GET /api/v1/users/{userId}/vacation-usages
+     */
+    @GetMapping("/api/v1/users/{userId}/vacation-usages")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     public ApiResponse searchUserPeriodVacationUseHistories(
             @RequestParam("userId") String userId,
@@ -189,7 +217,11 @@ public class VacationApiController {
         return ApiResponse.success(resp);
     }
 
-    @GetMapping("/api/v1/vacation/use/histories/user/month/stats")
+    /**
+     * 특정 유저의 월별 휴가 사용 통계 조회
+     * GET /api/v1/users/{userId}/vacation-usages/monthly-stats
+     */
+    @GetMapping("/api/v1/users/{userId}/vacation-usages/monthly-stats")
     public ApiResponse searchUserMonthStatsVacationUseHistories(
             @RequestParam("userId") String userId,
             @RequestParam("year") String year) {
@@ -206,7 +238,11 @@ public class VacationApiController {
         return ApiResponse.success(resp);
     }
 
-    @GetMapping("/api/v1/vacation/use/stats/user")
+    /**
+     * 특정 유저의 휴가 사용 통계 조회
+     * GET /api/v1/users/{userId}/vacations/stats
+     */
+    @GetMapping("/api/v1/users/{userId}/vacations/stats")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     public ApiResponse searchUserVacationUseStats(
             @RequestParam("userId") String userId,
@@ -233,7 +269,11 @@ public class VacationApiController {
         ));
     }
 
-    @PostMapping("/api/v1/vacation/policies")
+    /**
+     * 휴가 정책 등록
+     * POST /api/v1/vacation-policies
+     */
+    @PostMapping("/api/v1/vacation-policies")
     public ApiResponse registVacationPolicy(@RequestBody VacationApiDto.RegistVacationPolicyReq data) {
         Long vacationPolicyId = vacationService.registVacationPolicy(VacationPolicyServiceDto.builder()
                 .name(data.getVacationPolicyName())
@@ -254,7 +294,11 @@ public class VacationApiController {
         return ApiResponse.success(new VacationApiDto.RegistVacationPolicyResp(vacationPolicyId));
     }
 
-    @GetMapping("/api/v1/vacation/policies/{id}")
+    /**
+     * 특정 휴가 정책 조회
+     * GET /api/v1/vacation-policies/{id}
+     */
+    @GetMapping("/api/v1/vacation-policies/{id}")
     public ApiResponse searchVacationPolicy(@PathVariable("id") Long vacationPolicyId) {
         VacationPolicyServiceDto policy = vacationService.searchVacationPolicy(vacationPolicyId);
 
@@ -273,7 +317,11 @@ public class VacationApiController {
         ));
     }
 
-    @GetMapping("/api/v1/vacation/policies")
+    /**
+     * 휴가 정책 목록 조회
+     * GET /api/v1/vacation-policies
+     */
+    @GetMapping("/api/v1/vacation-policies")
     public ApiResponse searchVacationPolicies() {
         List<VacationPolicyServiceDto> policies = vacationService.searchVacationPolicies();
 
@@ -298,10 +346,10 @@ public class VacationApiController {
 
     /**
      * 휴가 정책 삭제
-     * DELETE /api/v1/vacation/policies/{vacationPolicyId}
+     * DELETE /api/v1/vacation-policies/{id}
      */
-    @DeleteMapping("/api/v1/vacation/policies/{vacationPolicyId}")
-    public ApiResponse deleteVacationPolicy(@PathVariable("vacationPolicyId") Long vacationPolicyId) {
+    @DeleteMapping("/api/v1/vacation-policies/{id}")
+    public ApiResponse deleteVacationPolicy(@PathVariable("id") Long vacationPolicyId) {
         Long deletedPolicyId = vacationService.deleteVacationPolicy(vacationPolicyId);
 
         return ApiResponse.success(new VacationApiDto.DeleteVacationPolicyResp(deletedPolicyId));
