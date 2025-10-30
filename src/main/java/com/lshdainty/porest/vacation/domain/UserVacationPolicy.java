@@ -15,29 +15,54 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)  // -> protected Order() {}와 동일한 의미 (롬복으로 생성자 막기)
 @Table(name = "user_vacation_policy")
 public class UserVacationPolicy extends AuditingFields {
+    /**
+     * 유저 휴가 정책 관리 아이디<br>
+     * 테이블 관리용 seq
+     */
     @Id @GeneratedValue
     @Column(name = "user_vacation_policy_id")
     private Long id;
 
+    /**
+     * 유저 객체<br>
+     * 테이블 컬럼은 user_id
+     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     @Setter
     private User user;
 
+    /**
+     * 휴가 정책 객체<br>
+     * 테이블 컬럼은 vacation_policy_id
+     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vacation_policy_id")
     @Setter
     private VacationPolicy vacationPolicy;
 
+    /**
+     * 마지막 휴가 부여 시간<br>
+     * policy_type이 repeat(반복)인 경우 스케줄러 실행으로<br>
+     * 휴가를 부여하는데 중복 부여 방지를 위한 컬럼
+     */
     @Column(name = "last_granted_at")
-    private LocalDateTime lastGrantedAt;    // 마지막 휴가 부여 시점 (스케줄러 중복 부여 방지용)
+    private LocalDateTime lastGrantedAt;
 
+    /**
+     * 다음 휴가 부여 예정 일자<br>
+     * 스케줄러 조회 최적화용 컬럼<br>
+     * (인덱스 추가 예정)
+     */
     @Column(name = "next_grant_date")
-    private LocalDate nextGrantDate;        // 다음 휴가 부여 예정일 (스케줄러 조회 최적화용, 인덱스 권장)
+    private LocalDate nextGrantDate;
 
+    /**
+     * 삭제 여부
+     */
     @Enumerated(EnumType.STRING)
     @Column(name = "is_deleted")
-    private YNType isDeleted;                   // 삭제여부
+    private YNType isDeleted;
 
     // user 추가 연관관계 편의 메소드
     public void addUser(User user) {

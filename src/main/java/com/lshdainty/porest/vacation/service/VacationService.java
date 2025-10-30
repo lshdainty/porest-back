@@ -262,11 +262,11 @@ public class VacationService {
         // 삭제 안된 이력만 필터링
         List<VacationHistory> curHistories = curVacations.stream()
                 .flatMap(v -> v.getHistorys().stream())
-                .filter(vh -> "N".equals(vh.getIsDeleted()))
+                .filter(vh -> YNType.N.equals(vh.getIsDeleted()))
                 .toList();
         List<VacationHistory> prevHistories = prevVacations.stream()
                 .flatMap(v -> v.getHistorys().stream())
-                .filter(vh -> "N".equals(vh.getIsDeleted()))
+                .filter(vh -> YNType.N.equals(vh.getIsDeleted()))
                 .toList();
 
         // 현재 및 이전 달 통계 계산

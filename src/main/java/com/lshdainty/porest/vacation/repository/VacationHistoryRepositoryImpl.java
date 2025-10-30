@@ -1,5 +1,6 @@
 package com.lshdainty.porest.vacation.repository;
 
+import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.vacation.domain.VacationHistory;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,7 @@ public class VacationHistoryRepositoryImpl implements VacationHistoryRepository 
         return em.createQuery("select vh from VacationHistory vh where vh.type is not null and vh.usedDateTime between :start and :end and vh.isDeleted = :isDeleted order by vh.vacation.id, vh.usedDateTime", VacationHistory.class)
                 .setParameter("start", start)
                 .setParameter("end", end)
-                .setParameter("isDeleted", "N")
+                .setParameter("isDeleted", YNType.N)
                 .getResultList();
     }
 
@@ -39,7 +40,7 @@ public class VacationHistoryRepositoryImpl implements VacationHistoryRepository 
                 .setParameter("userId", userId)
                 .setParameter("start", start)
                 .setParameter("end", end)
-                .setParameter("isDeleted", "N")
+                .setParameter("isDeleted", YNType.N)
                 .getResultList();
     }
 }

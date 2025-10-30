@@ -24,7 +24,7 @@ import java.util.List;
 @Table(name = "vacation_policy")
 public class VacationPolicy extends AuditingFields {
     /**
-     * 휴가 정책 아이디
+     * 휴가 정책 아이디<br>
      * 테이블 관리용 seq
      */
     @Id @GeneratedValue
@@ -32,45 +32,48 @@ public class VacationPolicy extends AuditingFields {
     private Long id;
 
     /**
-     * 휴가 정책 이름
+     * 휴가 정책 이름<br>
      * 정책을 구분할 수 있는 이름
      */
     @Column(name = "vacation_policy_name")
     private String name;
 
     /**
-     * 휴가 정책 설명
-     * 사용자가 휴가를 신청하거나 할때 확인할 수 있는 정책 내용
+     * 휴가 정책 설명<br>
+     * 사용자가 휴가를 신청하거나 할때<br>
+     * 확인할 수 있는 정책 내용
      */
     @Column(name = "vacation_policy_desc")
     private String desc;
 
     /**
-     * 휴가 타입
-     * vacation 테이블에서 그룹화하여 휴가 일수를 관리하기 위한 휴가 타입
+     * 휴가 타입<br>
+     * vacation 테이블에서 그룹화하여<br>
+     * 휴가 일수를 관리하기 위한 휴가 타입
      */
     @Enumerated(EnumType.STRING)
     @Column(name = "vacation_type")
     private VacationType  vacationType;
 
     /**
-     * 휴가 부여 방법
-     * 타입에 따라서 휴가가 부여되는 방식이 결정된다.
+     * 휴가 부여 방법<br>
+     * 타입에 따라서 휴가가 부여되는<br>
+     * 방식이 결정된다.
      */
     @Enumerated(EnumType.STRING)
     @Column(name = "grant_method")
     private GrantMethod grantMethod;
 
     /**
-     * 휴가 부여 기준 시간
+     * 휴가 부여 기준 시간<br>
      * 정책에 설정된 휴가 부여 시간
      */
     @Column(name = "grant_time")
     private BigDecimal grantTime;
 
     /**
-     * 휴가 부여 반복 단위
-     * 반복 부여일 경우에 사용되는 값
+     * 휴가 부여 반복 단위<br>
+     * 반복 부여일 경우에 사용되는 값<br>
      * 해당 단위에 따라 스케줄링되어 휴가가 자동 부여됨
      */
     @Enumerated(EnumType.STRING)
@@ -78,43 +81,43 @@ public class VacationPolicy extends AuditingFields {
     private RepeatUnit repeatUnit;
 
     /**
-     * 휴가 부여 반복 간격
-     * 반복 부여일 경우에 사용되는 값
-     * 해당 값에 따라 스케줄링되어 휴가가 자동 부여됨
+     * 휴가 부여 반복 간격<br>
+     * 반복 부여일 경우에 사용되는 값<br>
+     * 해당 값에 따라 스케줄링되어 휴가가 자동 부여됨<br>
      * 예) 2년 간격
      */
     @Column(name = "repeat_Interval")
     private Integer repeatInterval;
 
     /**
-     * 특정 월 지정
-     * 반복 부여일 경우에 사용되는 값
-     * 해당 값에 따라 스케줄링되어 휴가가 자동 부여됨
+     * 특정 월 지정<br>
+     * 반복 부여일 경우에 사용되는 값<br>
+     * 해당 값에 따라 스케줄링되어 휴가가 자동 부여됨<br>
      * 예) 매년 10월 16일
      */
     @Column(name = "specific_months")
     private Integer specificMonths;
 
     /**
-     * 특정 일 지정
-     * 반복 부여일 경우에 사용되는 값
-     * 해당 값에 따라 스케줄링되어 휴가가 자동 부여됨
+     * 특정 일 지정<br>
+     * 반복 부여일 경우에 사용되는 값<br>
+     * 해당 값에 따라 스케줄링되어 휴가가 자동 부여됨<br>
      * 예) 매년 10월 16일
      */
     @Column(name = "specific_days")
     private Integer specificDays;
 
     /**
-     * 첫 부여 시점
-     * 정책 생성 시점과는 다른 값
+     * 첫 부여 시점<br>
+     * 정책 생성 시점과는 다른 값<br>
      * 정책은 25년에 생성했지만 정책 실행은 26년도부터 가능하도록 할 때 사용
      */
     @Column(name = "first_grant_date")
     private LocalDateTime firstGrantDate;
 
     /**
-     * 반복 여부
-     * Y: 계속 반복 부여 (매년, 매월 등)
+     * 반복 여부<br>
+     * Y: 계속 반복 부여 (매년, 매월 등)<br>
      * N: 1회만 부여 (N년 후 1회 부여)
      */
     @Enumerated(EnumType.STRING)
@@ -122,20 +125,24 @@ public class VacationPolicy extends AuditingFields {
     private YNType isRecurring;
 
     /**
-     * 최대 부여 횟수
-     * isRecurring = N일 때 사용
-     * null이면 제한 없음, 1이면 1회만 부여
+     * 최대 부여 횟수<br>
+     * isRecurring = N일 때 사용<br>
+     * null이면 제한 없음, 1이면 1회만 부여<br>
      * 예: "7년 후 1회 부여" → maxGrantCount = 1
      */
     @Column(name = "max_grant_count")
     private Integer maxGrantCount;
 
-    /* 삭제 가능 여부 */
+    /**
+     * 삭제 가능 여부
+     */
     @Enumerated(EnumType.STRING)
     @Column(name = "can_deleted")
     private YNType canDeleted;
 
-    /* 삭제 여부 */
+    /**
+     * 삭제 여부
+     */
     @Enumerated(EnumType.STRING)
     @Column(name = "is_deleted")
     private YNType isDeleted;
