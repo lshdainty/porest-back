@@ -547,13 +547,24 @@ public class VacationService {
         log.info("Deleted {} user vacation policy assignments for vacation policy {}",
                 deletedUserVacationPolicyCount, vacationPolicyId);
 
-        // TODO: 구성원에게 부여된 휴가 수량 처리
-        // - 해당 휴가 정책으로 부여된 모든 Vacation 조회
-        // - 각 Vacation의 remainTime에서 해당 정책의 grantTime만큼 차감
-        // - 단, 이미 사용한 휴가(VacationHistory)에는 영향을 주지 않음
-        // - 사용 예정으로 신청해둔 휴가(future VacationHistory)에도 영향을 주지 않음
-        log.warn("TODO: Process vacation restore removal for policy {}", vacationPolicyId);
+        // 6. 해당 휴가 정책으로 부여된 모든 VacationGrant 회수 처리
+        List<VacationGrant> grants = vacationGrantRepository.findByPolicyId(vacationPolicyId);
+        int revokedGrantCount = 0;
 
+        for (VacationGrant grant : grants) {
+            // ACTIVE 상태인 grant만 회수 처리
+            // EXHAUSTED(소진), EXPIRED(만료), REVOKED(이미 회수됨)는 스킵
+            if (grant.getStatus() == com.lshdainty.porest.vacation.type.GrantStatus.ACTIVE) {
+                grant.revoke();
+                revokedGrantCount++;
+
+                log.info("Revoked vacation grant {} from user {} (remainTime: {})",
+                        grant.getId(), grant.getUser().getId(), grant.getRemainTime());
+            }
+        }
+
+        log.info("Revoked {} active vacation grants for vacation policy {}",
+                revokedGrantCount, vacationPolicyId);
         log.info("Deleted vacation policy {}", vacationPolicyId);
 
         return vacationPolicyId;
@@ -668,7 +679,26 @@ public class VacationService {
         // 5. 소프트 삭제 수행
         userVacationPolicy.deleteUserVacationPolicy();
 
-        log.info("Revoked vacation policy {} from user {}", vacationPolicyId, userId);
+        // 6. 해당 유저에게 해당 정책으로 부여된 VacationGrant 회수 처리
+        List<VacationGrant> userGrants = vacationGrantRepository.findByUserId(userId);
+        int revokedGrantCount = 0;
+
+        for (VacationGrant grant : userGrants) {
+            // 해당 정책으로 부여된 grant인지 확인
+            if (grant.getPolicy().getId().equals(vacationPolicyId)) {
+                // ACTIVE 상태인 grant만 회수 처리
+                if (grant.getStatus() == com.lshdainty.porest.vacation.type.GrantStatus.ACTIVE) {
+                    grant.revoke();
+                    revokedGrantCount++;
+
+                    log.info("Revoked vacation grant {} from user {} (remainTime: {})",
+                            grant.getId(), userId, grant.getRemainTime());
+                }
+            }
+        }
+
+        log.info("Revoked vacation policy {} from user {} ({} grants revoked)",
+                vacationPolicyId, userId, revokedGrantCount);
 
         return userVacationPolicy.getId();
     }
@@ -686,6 +716,7 @@ public class VacationService {
         userService.checkUserExist(userId);
 
         List<Long> revokedIds = new ArrayList<>();
+        int totalRevokedGrants = 0;
 
         // 2. 각 휴가 정책에 대해 회수 처리
         for (Long policyId : vacationPolicyIds) {
@@ -712,7 +743,27 @@ public class VacationService {
 
                 // 소프트 삭제 수행
                 userVacationPolicy.deleteUserVacationPolicy();
+
+                // 해당 유저에게 해당 정책으로 부여된 VacationGrant 회수 처리
+                List<VacationGrant> userGrants = vacationGrantRepository.findByUserId(userId);
+                int revokedGrantCount = 0;
+
+                for (VacationGrant grant : userGrants) {
+                    // 해당 정책으로 부여된 grant인지 확인
+                    if (grant.getPolicy().getId().equals(policyId)) {
+                        // ACTIVE 상태인 grant만 회수 처리
+                        if (grant.getStatus() == com.lshdainty.porest.vacation.type.GrantStatus.ACTIVE) {
+                            grant.revoke();
+                            revokedGrantCount++;
+                        }
+                    }
+                }
+
+                totalRevokedGrants += revokedGrantCount;
                 revokedIds.add(policyId);
+
+                log.info("Revoked vacation policy {} from user {} ({} grants revoked)",
+                        policyId, userId, revokedGrantCount);
 
             } catch (Exception e) {
                 log.error("Failed to revoke vacation policy {} from user {}: {}", policyId, userId, e.getMessage());
@@ -720,7 +771,8 @@ public class VacationService {
             }
         }
 
-        log.info("Revoked {} vacation policies from user {}", revokedIds.size(), userId);
+        log.info("Revoked {} vacation policies from user {} ({} total grants revoked)",
+                revokedIds.size(), userId, totalRevokedGrants);
 
         return revokedIds;
     }

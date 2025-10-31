@@ -34,6 +34,60 @@ public class VacationGrantScheduler {
     private final VacationPolicyStrategyFactory strategyFactory;
 
     /**
+     * 만료된 휴가 자동 처리 스케줄러<br>
+     * 매일 자정(00:00)에 실행<br>
+     * cron: "초 분 시 일 월 요일"
+     */
+    @Scheduled(cron = "0 0 0 * * *")
+    @Transactional
+    public void expireVacationsDaily() {
+        LocalDateTime now = LocalDateTime.now();
+        log.info("========== 휴가 만료 처리 스케줄러 시작 ========== [{}]", now);
+
+        try {
+            // 1. 만료 대상 VacationGrant 조회 (status == ACTIVE && expiryDate < 현재)
+            List<VacationGrant> expiredTargets = vacationGrantRepository.findExpiredTargets(now);
+            log.info("만료 대상 휴가 수: {}", expiredTargets.size());
+
+            if (expiredTargets.isEmpty()) {
+                log.info("만료 처리할 휴가가 없습니다.");
+                return;
+            }
+
+            // 2. 각 grant에 대해 만료 처리
+            int successCount = 0;
+            int failCount = 0;
+
+            for (VacationGrant grant : expiredTargets) {
+                try {
+                    // 만료 처리 (status를 EXPIRED로 변경)
+                    grant.expire();
+                    successCount++;
+
+                    log.info("휴가 만료 처리 완료 - Grant ID: {}, User: {}, VacationType: {}, RemainTime: {}, ExpiryDate: {}",
+                            grant.getId(),
+                            grant.getUser().getId(),
+                            grant.getType().getViewName(),
+                            grant.getRemainTime(),
+                            grant.getExpiryDate());
+
+                } catch (Exception e) {
+                    log.error("휴가 만료 처리 실패 - VacationGrant ID: {}, Error: {}",
+                            grant.getId(), e.getMessage(), e);
+                    failCount++;
+                }
+            }
+
+            log.info("========== 휴가 만료 처리 스케줄러 완료 ========== 성공: {}, 실패: {}, 총: {}",
+                    successCount, failCount, expiredTargets.size());
+
+        } catch (Exception e) {
+            log.error("휴가 만료 처리 스케줄러 실행 중 오류 발생", e);
+            throw e;
+        }
+    }
+
+    /**
      * 반복 부여 휴가 자동 부여 스케줄러<br>
      * 매일 12시에 실행<br>
      * cron: "초 분 시 일 월 요일"

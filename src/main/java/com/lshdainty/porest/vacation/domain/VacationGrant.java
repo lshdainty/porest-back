@@ -185,6 +185,15 @@ public class VacationGrant extends AuditingFields {
     }
 
     /**
+     * 회수 처리<br>
+     * 휴가 정책 삭제 또는 유저에게서 정책 회수 시 호출<br>
+     * remainTime은 유지하여 회수 전 상태를 추적 가능하도록 함
+     */
+    public void revoke() {
+        this.status = GrantStatus.REVOKED;
+    }
+
+    /**
      * 사용 가능 여부
      */
     public boolean isAvailable() {

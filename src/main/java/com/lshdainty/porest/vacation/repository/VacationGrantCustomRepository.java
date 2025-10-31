@@ -78,4 +78,15 @@ public interface VacationGrantCustomRepository {
      * @return baseTime 기준 유효한 VacationGrant 리스트
      */
     List<VacationGrant> findValidGrantsByUserIdAndBaseTime(String userId, java.time.LocalDateTime baseTime);
+
+    /**
+     * 만료 대상 VacationGrant 조회
+     * - status == ACTIVE
+     * - expiryDate < 현재 날짜
+     * - isDeleted == N
+     *
+     * @param currentDate 현재 날짜
+     * @return 만료 대상 VacationGrant 리스트
+     */
+    List<VacationGrant> findExpiredTargets(java.time.LocalDateTime currentDate);
 }

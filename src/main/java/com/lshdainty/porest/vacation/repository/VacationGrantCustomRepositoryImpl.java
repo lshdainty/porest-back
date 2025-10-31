@@ -2,6 +2,7 @@ package com.lshdainty.porest.vacation.repository;
 
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.vacation.domain.VacationGrant;
+import com.lshdainty.porest.vacation.type.GrantStatus;
 import com.lshdainty.porest.vacation.type.VacationType;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
@@ -38,7 +39,8 @@ public class VacationGrantCustomRepositoryImpl implements VacationGrantCustomRep
                 .join(vacationGrant.user).fetchJoin()
                 .join(vacationGrant.policy).fetchJoin()
                 .where(vacationGrant.user.id.eq(userId)
-                        .and(vacationGrant.isDeleted.eq(YNType.N)))
+                        .and(vacationGrant.isDeleted.eq(YNType.N))
+                        .and(vacationGrant.status.eq(GrantStatus.ACTIVE)))
                 .fetch();
     }
 
@@ -61,6 +63,7 @@ public class VacationGrantCustomRepositoryImpl implements VacationGrantCustomRep
                 .join(vacationGrant.policy).fetchJoin()
                 .where(vacationGrant.user.id.eq(userId)
                         .and(vacationGrant.isDeleted.eq(YNType.N))
+                        .and(vacationGrant.status.eq(GrantStatus.ACTIVE))
                         .and(vacationGrant.remainTime.gt(java.math.BigDecimal.ZERO)))
                 .orderBy(vacationGrant.expiryDate.asc(), vacationGrant.grantDate.asc())
                 .fetch();
@@ -74,6 +77,7 @@ public class VacationGrantCustomRepositoryImpl implements VacationGrantCustomRep
                 .join(vacationGrant.policy).fetchJoin()
                 .where(vacationGrant.user.id.eq(userId)
                         .and(vacationGrant.isDeleted.eq(YNType.N))
+                        .and(vacationGrant.status.eq(GrantStatus.ACTIVE))
                         .and(vacationGrant.type.eq(vacationType))
                         .and(vacationGrant.remainTime.gt(java.math.BigDecimal.ZERO))
                         .and(vacationGrant.grantDate.loe(usageStartDate))
@@ -88,7 +92,8 @@ public class VacationGrantCustomRepositoryImpl implements VacationGrantCustomRep
                 .selectFrom(vacationGrant)
                 .join(vacationGrant.user).fetchJoin()
                 .join(vacationGrant.policy).fetchJoin()
-                .where(vacationGrant.isDeleted.eq(YNType.N))
+                .where(vacationGrant.isDeleted.eq(YNType.N)
+                        .and(vacationGrant.status.eq(GrantStatus.ACTIVE)))
                 .orderBy(vacationGrant.user.id.asc(), vacationGrant.expiryDate.asc())
                 .fetch();
     }
@@ -101,6 +106,7 @@ public class VacationGrantCustomRepositoryImpl implements VacationGrantCustomRep
                 .join(vacationGrant.policy).fetchJoin()
                 .where(vacationGrant.user.id.eq(userId)
                         .and(vacationGrant.isDeleted.eq(YNType.N))
+                        .and(vacationGrant.status.eq(GrantStatus.ACTIVE))
                         .and(vacationGrant.remainTime.gt(java.math.BigDecimal.ZERO))
                         .and(vacationGrant.grantDate.loe(usageStartDate))
                         .and(vacationGrant.expiryDate.goe(usageStartDate)))
@@ -116,8 +122,21 @@ public class VacationGrantCustomRepositoryImpl implements VacationGrantCustomRep
                 .join(vacationGrant.policy).fetchJoin()
                 .where(vacationGrant.user.id.eq(userId)
                         .and(vacationGrant.isDeleted.eq(YNType.N))
+                        .and(vacationGrant.status.eq(GrantStatus.ACTIVE))
                         .and(vacationGrant.grantDate.loe(baseTime))
                         .and(vacationGrant.expiryDate.goe(baseTime)))
+                .fetch();
+    }
+
+    @Override
+    public List<VacationGrant> findExpiredTargets(LocalDateTime currentDate) {
+        return query
+                .selectFrom(vacationGrant)
+                .join(vacationGrant.user).fetchJoin()
+                .join(vacationGrant.policy).fetchJoin()
+                .where(vacationGrant.isDeleted.eq(YNType.N)
+                        .and(vacationGrant.status.eq(GrantStatus.ACTIVE))
+                        .and(vacationGrant.expiryDate.lt(currentDate)))
                 .fetch();
     }
 }
