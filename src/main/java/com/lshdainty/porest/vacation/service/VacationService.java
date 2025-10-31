@@ -287,7 +287,7 @@ public class VacationService {
         // 5. 각 차감 내역에서 차감했던 시간을 VacationGrant에 복구
         for (VacationUsageDeduction deduction : deductions) {
             VacationGrant grant = deduction.getGrant();
-            grant.grant(deduction.getDeductedTime());
+            grant.restore(deduction.getDeductedTime());
             log.info("VacationGrant {} 복구: {} 추가", grant.getId(), deduction.getDeductedTime());
         }
 
@@ -552,7 +552,7 @@ public class VacationService {
         // - 각 Vacation의 remainTime에서 해당 정책의 grantTime만큼 차감
         // - 단, 이미 사용한 휴가(VacationHistory)에는 영향을 주지 않음
         // - 사용 예정으로 신청해둔 휴가(future VacationHistory)에도 영향을 주지 않음
-        log.warn("TODO: Process vacation grant removal for policy {}", vacationPolicyId);
+        log.warn("TODO: Process vacation restore removal for policy {}", vacationPolicyId);
 
         log.info("Deleted vacation policy {}", vacationPolicyId);
 

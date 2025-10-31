@@ -24,7 +24,7 @@ public class TypesApiController {
     private final MessageSource ms;
 
     private final Map<String, Class<? extends DisplayType>> enumMap = Map.of(
-            "grant-method", GrantMethod.class,
+            "restore-method", GrantMethod.class,
             "repeat-unit", RepeatUnit.class,
             "vacation-time", VacationTimeType.class,
             "vacation-type", VacationType.class,

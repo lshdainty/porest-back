@@ -3,11 +3,13 @@ package com.lshdainty.porest.vacation.domain;
 import com.lshdainty.porest.common.domain.AuditingFields;
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.user.domain.User;
+import com.lshdainty.porest.vacation.type.GrantStatus;
 import com.lshdainty.porest.vacation.type.VacationType;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -91,6 +93,16 @@ public class VacationGrant extends AuditingFields {
     private BigDecimal remainTime;
 
     /**
+     * 휴가 부여 상태<br>
+     * 부여한 휴가의 현재 상태를 의미함. is_deleted와는 의미가 다름<br>
+     * 사용 기간이 지난 휴가 등 상태가 다양하기 때문에 해당 컬럼을 사용하고<br>
+     * 완전히 잘못된 데이터의 경우만 is_deleted로 소프트 삭제 처리함
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "grant_status")
+    private GrantStatus status;
+
+    /**
      * 삭제 여부
      */
     @Enumerated(EnumType.STRING)
@@ -126,17 +138,21 @@ public class VacationGrant extends AuditingFields {
         vg.expiryDate = expiryDate;
         vg.grantTime = grantTime;
         vg.remainTime = grantTime;
+        vg.status = GrantStatus.ACTIVE;
         vg.isDeleted = YNType.N;
         return vg;
     }
 
     /* 비즈니스 편의 메소드 */
     /**
-     * 휴가 부여 메소드<br>
+     * 휴가 복원 메소드<br>
      * remainTime(잔여시간)에 grantTime(추가시간)을 더함
      */
-    public void grant(BigDecimal grantTime) {
+    public void restore(BigDecimal grantTime) {
         this.remainTime = getRemainTime().add(grantTime);
+        if (getStatus() == GrantStatus.EXHAUSTED) {
+            this.status = GrantStatus.ACTIVE;
+        }
     }
 
     /**
@@ -145,5 +161,36 @@ public class VacationGrant extends AuditingFields {
      */
     public void deduct(BigDecimal deductTime) {
         this.remainTime = getRemainTime().subtract(deductTime);
+
+        if (getRemainTime().compareTo(BigDecimal.ZERO) == 0) {
+            this.status = GrantStatus.EXHAUSTED;
+        }
+    }
+
+    /**
+     * 만료 확인
+     */
+    public boolean isExpired() {
+        return getExpiryDate() != null &&
+                LocalDate.now().isAfter(getExpiryDate().toLocalDate());
+    }
+
+    /**
+     * 만료 처리<br>
+     * 만료 처리시 remainTime은 0으로 처리하지 않는다.<br>
+     * 전체 사용 안해도 남아있는 시간을 쉽게 확인하기 위해 0처리 안함
+     */
+    public void expire() {
+        this.status = GrantStatus.EXPIRED;
+    }
+
+    /**
+     * 사용 가능 여부
+     */
+    public boolean isAvailable() {
+        return getStatus().equals(GrantStatus.ACTIVE) &&
+                getRemainTime().compareTo(BigDecimal.ZERO) > 0 &&
+                !isExpired() &&
+                getIsDeleted().equals(YNType.N);
     }
 }
