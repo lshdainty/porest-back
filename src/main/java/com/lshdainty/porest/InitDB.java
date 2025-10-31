@@ -472,179 +472,179 @@ public class InitDB {
 
             // user1 연차 사용 내역
             saveVacationUsageWithFIFO(user1, user1Grants, "연차", VacationTimeType.DAYOFF,
-                    LocalDateTime.of(now.getYear(), 1, 2, 0, 0),
-                    LocalDateTime.of(now.getYear(), 1, 3, 23, 59, 59),
+                    LocalDateTime.of(2025, 1, 2, 0, 0),
+                    LocalDateTime.of(2025, 1, 3, 23, 59, 59),
                     new BigDecimal("2.0000"));
 
             saveVacationUsageWithFIFO(user1, user1Grants, "1시간", VacationTimeType.ONETIMEOFF,
-                    LocalDateTime.of(now.getYear(), 2, 3, 9, 0),
-                    LocalDateTime.of(now.getYear(), 2, 3, 10, 0),
+                    LocalDateTime.of(2025, 2, 3, 9, 0),
+                    LocalDateTime.of(2025, 2, 3, 10, 0),
                     new BigDecimal("0.1250"));
 
             saveVacationUsageWithFIFO(user1, user1Grants, "연차", VacationTimeType.DAYOFF,
-                    LocalDateTime.of(now.getYear(), 3, 17, 0, 0),
-                    LocalDateTime.of(now.getYear(), 3, 17, 23, 59, 59),
+                    LocalDateTime.of(2025, 3, 17, 0, 0),
+                    LocalDateTime.of(2025, 3, 17, 23, 59, 59),
                     new BigDecimal("1.0000"));
 
             saveVacationUsageWithFIFO(user1, user1Grants, "연차", VacationTimeType.DAYOFF,
-                    LocalDateTime.of(now.getYear(), 10, 10, 0, 0),
-                    LocalDateTime.of(now.getYear(), 10, 10, 23, 59, 59),
+                    LocalDateTime.of(2025, 10, 10, 0, 0),
+                    LocalDateTime.of(2025, 10, 10, 23, 59, 59),
                     new BigDecimal("1.0000"));
 
             saveVacationUsageWithFIFO(user1, user1Grants, "오전반차", VacationTimeType.MORNINGOFF,
-                    LocalDateTime.of(now.getYear(), 10, 15, 9, 0),
-                    LocalDateTime.of(now.getYear(), 10, 15, 14, 0),
+                    LocalDateTime.of(2025, 10, 15, 9, 0),
+                    LocalDateTime.of(2025, 10, 15, 14, 0),
                     new BigDecimal("0.5000"));
 
             saveVacationUsageWithFIFO(user1, user1Grants, "오후반차", VacationTimeType.AFTERNOONOFF,
-                    LocalDateTime.of(now.getYear(), 12, 19, 14, 0),
-                    LocalDateTime.of(now.getYear(), 12, 19, 18, 0),
+                    LocalDateTime.of(2025, 12, 19, 14, 0),
+                    LocalDateTime.of(2025, 12, 19, 18, 0),
                     new BigDecimal("0.5000"));
 
             // user1 출산 휴가 사용 내역
             saveVacationUsageWithFIFO(user1, user1MaternityGrants, "연차", VacationTimeType.DAYOFF,
-                    LocalDateTime.of(now.getYear(), 6, 2, 0, 0),
-                    LocalDateTime.of(now.getYear(), 6, 5, 23, 59, 59),
+                    LocalDateTime.of(2025, 11, 3, 0, 0),
+                    LocalDateTime.of(2025, 11, 5, 23, 59, 59),
                     new BigDecimal("3.0000"));
 
             saveVacationUsageWithFIFO(user1, user1MaternityGrants, "연차", VacationTimeType.DAYOFF,
-                    LocalDateTime.of(now.getYear(), 8, 11, 0, 0),
-                    LocalDateTime.of(now.getYear(), 8, 14, 23, 59, 59),
+                    LocalDateTime.of(2025, 8, 11, 0, 0),
+                    LocalDateTime.of(2025, 8, 14, 23, 59, 59),
                     new BigDecimal("4.0000"));
 
             // user2 연차 사용 내역
             saveVacationUsageWithFIFO(user2, user2Grants, "연차", VacationTimeType.DAYOFF,
-                    LocalDateTime.of(now.getYear(), 4, 8, 0, 0),
-                    LocalDateTime.of(now.getYear(), 4, 8, 23, 59, 59),
+                    LocalDateTime.of(2025, 4, 8, 0, 0),
+                    LocalDateTime.of(2025, 4, 8, 23, 59, 59),
                     new BigDecimal("1.0000"));
 
             saveVacationUsageWithFIFO(user2, user2Grants, "1시간", VacationTimeType.ONETIMEOFF,
-                    LocalDateTime.of(now.getYear(), 4, 9, 9, 0),
-                    LocalDateTime.of(now.getYear(), 4, 9, 10, 0),
+                    LocalDateTime.of(2025, 4, 9, 9, 0),
+                    LocalDateTime.of(2025, 4, 9, 10, 0),
                     new BigDecimal("0.1250"));
 
             saveVacationUsageWithFIFO(user2, user2Grants, "연차", VacationTimeType.DAYOFF,
-                    LocalDateTime.of(now.getYear(), 7, 25, 0, 0),
-                    LocalDateTime.of(now.getYear(), 7, 25, 23, 59, 59),
+                    LocalDateTime.of(2025, 7, 25, 0, 0),
+                    LocalDateTime.of(2025, 7, 25, 23, 59, 59),
                     new BigDecimal("1.0000"));
 
             saveVacationUsageWithFIFO(user2, user2Grants, "연차", VacationTimeType.DAYOFF,
-                    LocalDateTime.of(now.getYear(), 8, 14, 0, 0),
-                    LocalDateTime.of(now.getYear(), 8, 14, 23, 59, 59),
+                    LocalDateTime.of(2025, 8, 14, 0, 0),
+                    LocalDateTime.of(2025, 8, 14, 23, 59, 59),
                     new BigDecimal("1.0000"));
 
             saveVacationUsageWithFIFO(user2, user2Grants, "3시간", VacationTimeType.THREETIMEOFF,
-                    LocalDateTime.of(now.getYear(), 9, 8, 9, 0),
-                    LocalDateTime.of(now.getYear(), 9, 8, 12, 0),
+                    LocalDateTime.of(2025, 9, 8, 9, 0),
+                    LocalDateTime.of(2025, 9, 8, 12, 0),
                     new BigDecimal("0.3750"));
 
             saveVacationUsageWithFIFO(user2, user2Grants, "오후반차", VacationTimeType.AFTERNOONOFF,
-                    LocalDateTime.of(now.getYear(), 10, 10, 14, 0),
-                    LocalDateTime.of(now.getYear(), 10, 10, 18, 0),
+                    LocalDateTime.of(2025, 10, 10, 14, 0),
+                    LocalDateTime.of(2025, 10, 10, 18, 0),
                     new BigDecimal("0.5000"));
 
             // user3 연차 사용 내역
             saveVacationUsageWithFIFO(user3, user3Grants, "연차", VacationTimeType.DAYOFF,
-                    LocalDateTime.of(now.getYear(), 1, 2, 0, 0),
-                    LocalDateTime.of(now.getYear(), 1, 3, 23, 59, 59),
+                    LocalDateTime.of(2025, 1, 2, 0, 0),
+                    LocalDateTime.of(2025, 1, 3, 23, 59, 59),
                     new BigDecimal("2.0000"));
 
             saveVacationUsageWithFIFO(user3, user3Grants, "연차", VacationTimeType.DAYOFF,
-                    LocalDateTime.of(now.getYear(), 3, 17, 0, 0),
-                    LocalDateTime.of(now.getYear(), 3, 17, 23, 59, 59),
+                    LocalDateTime.of(2025, 3, 17, 0, 0),
+                    LocalDateTime.of(2025, 3, 17, 23, 59, 59),
                     new BigDecimal("1.0000"));
 
             saveVacationUsageWithFIFO(user3, user3Grants, "2시간", VacationTimeType.TWOTIMEOFF,
-                    LocalDateTime.of(now.getYear(), 4, 9, 9, 0),
-                    LocalDateTime.of(now.getYear(), 4, 9, 11, 0),
+                    LocalDateTime.of(2025, 4, 9, 9, 0),
+                    LocalDateTime.of(2025, 4, 9, 11, 0),
                     new BigDecimal("0.2500"));
 
             saveVacationUsageWithFIFO(user3, user3Grants, "연차", VacationTimeType.DAYOFF,
-                    LocalDateTime.of(now.getYear(), 6, 2, 0, 0),
-                    LocalDateTime.of(now.getYear(), 6, 2, 23, 59, 59),
+                    LocalDateTime.of(2025, 6, 2, 0, 0),
+                    LocalDateTime.of(2025, 6, 2, 23, 59, 59),
                     new BigDecimal("1.0000"));
 
             saveVacationUsageWithFIFO(user3, user3Grants, "연차", VacationTimeType.DAYOFF,
-                    LocalDateTime.of(now.getYear(), 8, 14, 0, 0),
-                    LocalDateTime.of(now.getYear(), 8, 14, 23, 59, 59),
+                    LocalDateTime.of(2025, 8, 14, 0, 0),
+                    LocalDateTime.of(2025, 8, 14, 23, 59, 59),
                     new BigDecimal("1.0000"));
 
             saveVacationUsageWithFIFO(user3, user3Grants, "오후반차", VacationTimeType.AFTERNOONOFF,
-                    LocalDateTime.of(now.getYear(), 10, 10, 14, 0),
-                    LocalDateTime.of(now.getYear(), 10, 10, 18, 0),
+                    LocalDateTime.of(2025, 10, 10, 14, 0),
+                    LocalDateTime.of(2025, 10, 10, 18, 0),
                     new BigDecimal("0.5000"));
 
             // user4 연차 사용 내역
             saveVacationUsageWithFIFO(user4, user4Grants, "연차", VacationTimeType.DAYOFF,
-                    LocalDateTime.of(now.getYear(), 1, 2, 0, 0),
-                    LocalDateTime.of(now.getYear(), 1, 3, 23, 59, 59),
+                    LocalDateTime.of(2025, 1, 2, 0, 0),
+                    LocalDateTime.of(2025, 1, 3, 23, 59, 59),
                     new BigDecimal("2.0000"));
 
             saveVacationUsageWithFIFO(user4, user4Grants, "연차", VacationTimeType.DAYOFF,
-                    LocalDateTime.of(now.getYear(), 1, 31, 0, 0),
-                    LocalDateTime.of(now.getYear(), 1, 31, 23, 59, 59),
+                    LocalDateTime.of(2025, 1, 31, 0, 0),
+                    LocalDateTime.of(2025, 1, 31, 23, 59, 59),
                     new BigDecimal("1.0000"));
 
             saveVacationUsageWithFIFO(user4, user4Grants, "연차", VacationTimeType.DAYOFF,
-                    LocalDateTime.of(now.getYear(), 5, 7, 0, 0),
-                    LocalDateTime.of(now.getYear(), 5, 9, 23, 59, 59),
+                    LocalDateTime.of(2025, 5, 7, 0, 0),
+                    LocalDateTime.of(2025, 5, 9, 23, 59, 59),
                     new BigDecimal("3.0000"));
 
             // user5 연차 사용 내역
             saveVacationUsageWithFIFO(user5, user5Grants, "연차", VacationTimeType.DAYOFF,
-                    LocalDateTime.of(now.getYear(), 1, 2, 0, 0),
-                    LocalDateTime.of(now.getYear(), 1, 3, 23, 59, 59),
+                    LocalDateTime.of(2025, 1, 2, 0, 0),
+                    LocalDateTime.of(2025, 1, 3, 23, 59, 59),
                     new BigDecimal("2.0000"));
 
             saveVacationUsageWithFIFO(user5, user5Grants, "연차", VacationTimeType.DAYOFF,
-                    LocalDateTime.of(now.getYear(), 5, 7, 0, 0),
-                    LocalDateTime.of(now.getYear(), 5, 9, 23, 59, 59),
+                    LocalDateTime.of(2025, 5, 7, 0, 0),
+                    LocalDateTime.of(2025, 5, 9, 23, 59, 59),
                     new BigDecimal("3.0000"));
 
             saveVacationUsageWithFIFO(user5, user5Grants, "연차", VacationTimeType.DAYOFF,
-                    LocalDateTime.of(now.getYear(), 6, 2, 0, 0),
-                    LocalDateTime.of(now.getYear(), 6, 5, 23, 59, 59),
+                    LocalDateTime.of(2025, 6, 2, 0, 0),
+                    LocalDateTime.of(2025, 6, 5, 23, 59, 59),
                     new BigDecimal("3.0000"));
 
             saveVacationUsageWithFIFO(user5, user5Grants, "연차", VacationTimeType.DAYOFF,
-                    LocalDateTime.of(now.getYear(), 10, 10, 0, 0),
-                    LocalDateTime.of(now.getYear(), 10, 10, 23, 59, 59),
+                    LocalDateTime.of(2025, 10, 10, 0, 0),
+                    LocalDateTime.of(2025, 10, 10, 23, 59, 59),
                     new BigDecimal("1.0000"));
 
             saveVacationUsageWithFIFO(user5, user5Grants, "연차", VacationTimeType.DAYOFF,
-                    LocalDateTime.of(now.getYear(), 12, 26, 0, 0),
-                    LocalDateTime.of(now.getYear(), 12, 26, 23, 59, 59),
+                    LocalDateTime.of(2025, 12, 26, 0, 0),
+                    LocalDateTime.of(2025, 12, 26, 23, 59, 59),
                     new BigDecimal("1.0000"));
 
             // user6 연차 사용 내역
             saveVacationUsageWithFIFO(user6, user6Grants, "연차", VacationTimeType.DAYOFF,
-                    LocalDateTime.of(now.getYear(), 4, 8, 0, 0),
-                    LocalDateTime.of(now.getYear(), 4, 8, 23, 59, 59),
+                    LocalDateTime.of(2025, 4, 8, 0, 0),
+                    LocalDateTime.of(2025, 4, 8, 23, 59, 59),
                     new BigDecimal("1.0000"));
 
             saveVacationUsageWithFIFO(user6, user6Grants, "1시간", VacationTimeType.ONETIMEOFF,
-                    LocalDateTime.of(now.getYear(), 4, 9, 9, 0),
-                    LocalDateTime.of(now.getYear(), 4, 9, 10, 0),
+                    LocalDateTime.of(2025, 4, 9, 9, 0),
+                    LocalDateTime.of(2025, 4, 9, 10, 0),
                     new BigDecimal("0.1250"));
 
             saveVacationUsageWithFIFO(user6, user6Grants, "연차", VacationTimeType.DAYOFF,
-                    LocalDateTime.of(now.getYear(), 7, 25, 0, 0),
-                    LocalDateTime.of(now.getYear(), 7, 25, 23, 59, 59),
+                    LocalDateTime.of(2025, 7, 25, 0, 0),
+                    LocalDateTime.of(2025, 7, 25, 23, 59, 59),
                     new BigDecimal("1.0000"));
 
             saveVacationUsageWithFIFO(user6, user6Grants, "연차", VacationTimeType.DAYOFF,
-                    LocalDateTime.of(now.getYear(), 8, 14, 0, 0),
-                    LocalDateTime.of(now.getYear(), 8, 14, 23, 59, 59),
+                    LocalDateTime.of(2025, 8, 14, 0, 0),
+                    LocalDateTime.of(2025, 8, 14, 23, 59, 59),
                     new BigDecimal("1.0000"));
 
             saveVacationUsageWithFIFO(user6, user6Grants, "3시간", VacationTimeType.THREETIMEOFF,
-                    LocalDateTime.of(now.getYear(), 9, 8, 9, 0),
-                    LocalDateTime.of(now.getYear(), 9, 8, 12, 0),
+                    LocalDateTime.of(2025, 9, 8, 9, 0),
+                    LocalDateTime.of(2025, 9, 8, 12, 0),
                     new BigDecimal("0.3750"));
 
             saveVacationUsageWithFIFO(user6, user6Grants, "오후반차", VacationTimeType.AFTERNOONOFF,
-                    LocalDateTime.of(now.getYear(), 10, 10, 14, 0),
-                    LocalDateTime.of(now.getYear(), 10, 10, 18, 0),
+                    LocalDateTime.of(2025, 10, 10, 14, 0),
+                    LocalDateTime.of(2025, 10, 10, 18, 0),
                     new BigDecimal("0.5000"));
 
             em.flush();
@@ -720,9 +720,9 @@ public class InitDB {
             } else if (type == VacationType.MATERNITY ||
                        type == VacationType.WEDDING ||
                        type == VacationType.BEREAVEMENT) {
-                // 출산, 결혼, 상조: 현재 시점부터 +6개월
+                // 출산, 결혼, 상조: 현재 -3부터 +6개월
                 LocalDateTime now = LocalDateTime.now();
-                startDate = LocalDateTime.of(now.getYear(), now.getMonthValue(), now.getDayOfMonth(), 0, 0, 0);
+                startDate = LocalDateTime.of(now.getYear(), now.getMonthValue() - 3, now.getDayOfMonth(), 0, 0, 0);
                 expiryDate = startDate.plusMonths(6).minusSeconds(1);
             } else {
                 // 기타
@@ -767,7 +767,7 @@ public class InitDB {
                     em.persist(deduction);
 
                     // VacationGrant의 remainTime 차감
-                    grant.deductedVacation(deductibleTime);
+                    grant.deduct(deductibleTime);
                     remainingNeedTime = remainingNeedTime.subtract(deductibleTime);
                 }
             }

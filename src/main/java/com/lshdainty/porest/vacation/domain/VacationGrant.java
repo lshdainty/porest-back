@@ -132,10 +132,10 @@ public class VacationGrant extends AuditingFields {
 
     /* 비즈니스 편의 메소드 */
     /**
-     * 휴가 추가 메소드<br>
+     * 휴가 부여 메소드<br>
      * remainTime(잔여시간)에 grantTime(추가시간)을 더함
      */
-    public void addVacation(BigDecimal grantTime) {
+    public void grant(BigDecimal grantTime) {
         this.remainTime = getRemainTime().add(grantTime);
     }
 
@@ -143,17 +143,7 @@ public class VacationGrant extends AuditingFields {
      * 휴가 차감 메소드<br>
      * remainTime(잔여시간)에서 deductTime을(사용시간)을 뺌
      */
-    public void deductedVacation(BigDecimal deductTime) {
+    public void deduct(BigDecimal deductTime) {
         this.remainTime = getRemainTime().subtract(deductTime);
-    }
-
-    /**
-     * grantDate, expireDate를 비교하여<br>
-     * 부여일자가 만료일자 이전인지 확인
-     *
-     * @return true, false
-     */
-    public boolean isBeforeGrant() {
-        return !getGrantDate().isBefore(getExpiryDate());
     }
 }

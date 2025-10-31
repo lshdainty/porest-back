@@ -7,6 +7,7 @@ import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -61,7 +62,7 @@ public class VacationUsageCustomRepositoryImpl implements VacationUsageCustomRep
     }
 
     @Override
-    public List<VacationUsage> findByPeriodWithUser(java.time.LocalDateTime startDate, java.time.LocalDateTime endDate) {
+    public List<VacationUsage> findByPeriodWithUser(LocalDateTime startDate, LocalDateTime endDate) {
         return query
                 .selectFrom(vacationUsage)
                 .join(vacationUsage.user).fetchJoin()
@@ -73,7 +74,7 @@ public class VacationUsageCustomRepositoryImpl implements VacationUsageCustomRep
     }
 
     @Override
-    public List<VacationUsage> findByUserIdAndPeriodWithUser(String userId, java.time.LocalDateTime startDate, java.time.LocalDateTime endDate) {
+    public List<VacationUsage> findByUserIdAndPeriodWithUser(String userId, LocalDateTime startDate, LocalDateTime endDate) {
         return query
                 .selectFrom(vacationUsage)
                 .join(vacationUsage.user).fetchJoin()
@@ -86,7 +87,7 @@ public class VacationUsageCustomRepositoryImpl implements VacationUsageCustomRep
     }
 
     @Override
-    public List<VacationUsage> findUsedByUserIdAndBaseTime(String userId, java.time.LocalDateTime baseTime) {
+    public List<VacationUsage> findUsedByUserIdAndBaseTime(String userId, LocalDateTime baseTime) {
         return query
                 .selectFrom(vacationUsage)
                 .join(vacationUsage.user).fetchJoin()
@@ -97,7 +98,7 @@ public class VacationUsageCustomRepositoryImpl implements VacationUsageCustomRep
     }
 
     @Override
-    public List<VacationUsage> findExpectedByUserIdAndBaseTime(String userId, java.time.LocalDateTime baseTime) {
+    public List<VacationUsage> findExpectedByUserIdAndBaseTime(String userId, LocalDateTime baseTime) {
         return query
                 .selectFrom(vacationUsage)
                 .join(vacationUsage.user).fetchJoin()

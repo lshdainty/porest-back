@@ -4,7 +4,6 @@ import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.holiday.repository.HolidayRepositoryImpl;
 import com.lshdainty.porest.user.service.UserService;
 import com.lshdainty.porest.user.domain.User;
-import com.lshdainty.porest.user.repository.UserRepositoryImpl;
 import com.lshdainty.porest.vacation.domain.*;
 import com.lshdainty.porest.vacation.repository.*;
 import com.lshdainty.porest.vacation.service.dto.VacationPolicyServiceDto;
@@ -24,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -37,7 +35,6 @@ public class VacationService {
     private final MessageSource ms;
     private final VacationPolicyCustomRepositoryImpl vacationPolicyRepository;
     private final UserVacationPolicyCustomRepositoryImpl userVacationPolicyRepository;
-    private final UserRepositoryImpl userRepository;
     private final HolidayRepositoryImpl holidayRepository;
     private final UserService userService;
     private final VacationPolicyStrategyFactory vacationPolicyStrategyFactory;
@@ -135,7 +132,7 @@ public class VacationService {
                 deductionsToSave.add(deduction);
 
                 // VacationGrant의 remainTime 차감
-                grant.deductedVacation(deductibleTime);
+                grant.deduct(deductibleTime);
 
                 remainingNeedTime = remainingNeedTime.subtract(deductibleTime);
             }
@@ -290,7 +287,7 @@ public class VacationService {
         // 5. 각 차감 내역에서 차감했던 시간을 VacationGrant에 복구
         for (VacationUsageDeduction deduction : deductions) {
             VacationGrant grant = deduction.getGrant();
-            grant.addVacation(deduction.getDeductedTime());
+            grant.grant(deduction.getDeductedTime());
             log.info("VacationGrant {} 복구: {} 추가", grant.getId(), deduction.getDeductedTime());
         }
 
@@ -403,10 +400,10 @@ public class VacationService {
         userService.checkUserExist(userId);
 
         // 현재 통계 계산
-        VacationStatsDto curStats = calculateStatsForBaseTime(userId, baseTime);
+        VacationServiceDto curStats = calculateStatsForBaseTime(userId, baseTime);
 
         // 이전 달 통계 계산
-        VacationStatsDto prevStats = calculateStatsForBaseTime(userId, baseTime.minusMonths(1));
+        VacationServiceDto prevStats = calculateStatsForBaseTime(userId, baseTime.minusMonths(1));
 
         return VacationServiceDto.builder()
                 .remainTime(curStats.getRemainTime())
@@ -421,7 +418,7 @@ public class VacationService {
     /**
      * baseTime 기준 휴가 통계 계산 헬퍼 메서드
      */
-    private VacationStatsDto calculateStatsForBaseTime(String userId, LocalDateTime baseTime) {
+    private VacationServiceDto calculateStatsForBaseTime(String userId, LocalDateTime baseTime) {
         // baseTime 기준으로 유효한 VacationGrant 조회
         List<VacationGrant> validGrants = vacationGrantRepository.findValidGrantsByUserIdAndBaseTime(userId, baseTime);
 
@@ -445,34 +442,11 @@ public class VacationService {
         // 잔여 시간 계산
         BigDecimal totalRemainTime = totalGranted.subtract(totalUsedTime);
 
-        return new VacationStatsDto(totalRemainTime, totalUsedTime, totalExpectUsedTime);
-    }
-
-    /**
-     * 휴가 통계 내부 DTO
-     */
-    private static class VacationStatsDto {
-        private final BigDecimal remainTime;
-        private final BigDecimal usedTime;
-        private final BigDecimal expectUsedTime;
-
-        public VacationStatsDto(BigDecimal remainTime, BigDecimal usedTime, BigDecimal expectUsedTime) {
-            this.remainTime = remainTime;
-            this.usedTime = usedTime;
-            this.expectUsedTime = expectUsedTime;
-        }
-
-        public BigDecimal getRemainTime() {
-            return remainTime;
-        }
-
-        public BigDecimal getUsedTime() {
-            return usedTime;
-        }
-
-        public BigDecimal getExpectUsedTime() {
-            return expectUsedTime;
-        }
+        return VacationServiceDto.builder()
+                .remainTime(totalRemainTime)
+                .usedTime(totalUsedTime)
+                .expectUsedTime(totalExpectUsedTime)
+                .build();
     }
 
     public VacationUsage checkVacationUsageExist(Long vacationUsageId) {

@@ -74,9 +74,7 @@ public class VacationApiController {
                 ))
                 .toList();
 
-        VacationApiDto.SearchUserVacationsResp resp = new VacationApiDto.SearchUserVacationsResp(grantInfos, usageInfos);
-
-        return ApiResponse.success(resp);
+        return ApiResponse.success(new VacationApiDto.SearchUserVacationsResp(grantInfos, usageInfos));
     }
 
     /**
@@ -197,7 +195,7 @@ public class VacationApiController {
     @GetMapping("/api/v1/users/{userId}/vacation-usages")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     public ApiResponse searchUserPeriodVacationUseHistories(
-            @RequestParam("userId") String userId,
+            @PathVariable("userId") String userId,
             @RequestParam("startDate") LocalDateTime startDate,
             @RequestParam("endDate") LocalDateTime endDate) {
         List<VacationServiceDto> histories = vacationService.searchUserPeriodVacationUseHistories(userId, startDate, endDate);
@@ -223,7 +221,7 @@ public class VacationApiController {
      */
     @GetMapping("/api/v1/users/{userId}/vacation-usages/monthly-stats")
     public ApiResponse searchUserMonthStatsVacationUseHistories(
-            @RequestParam("userId") String userId,
+            @PathVariable("userId") String userId,
             @RequestParam("year") String year) {
         List<VacationServiceDto> histories = vacationService.searchUserMonthStatsVacationUseHistories(userId, year);
 
@@ -245,7 +243,7 @@ public class VacationApiController {
     @GetMapping("/api/v1/users/{userId}/vacations/stats")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     public ApiResponse searchUserVacationUseStats(
-            @RequestParam("userId") String userId,
+            @PathVariable("userId") String userId,
             @RequestParam("baseDate") LocalDateTime baseDate) {
         VacationServiceDto stats = vacationService.searchUserVacationUseStats(userId, baseDate);
 

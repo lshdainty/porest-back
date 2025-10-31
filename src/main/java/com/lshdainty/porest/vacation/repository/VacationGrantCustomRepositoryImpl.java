@@ -2,11 +2,13 @@ package com.lshdainty.porest.vacation.repository;
 
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.vacation.domain.VacationGrant;
+import com.lshdainty.porest.vacation.type.VacationType;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.lshdainty.porest.vacation.domain.QVacationGrant.vacationGrant;
@@ -65,10 +67,7 @@ public class VacationGrantCustomRepositoryImpl implements VacationGrantCustomRep
     }
 
     @Override
-    public List<VacationGrant> findAvailableGrantsByUserIdAndTypeAndDate(
-            String userId,
-            com.lshdainty.porest.vacation.type.VacationType vacationType,
-            java.time.LocalDateTime usageStartDate) {
+    public List<VacationGrant> findAvailableGrantsByUserIdAndTypeAndDate(String userId, VacationType vacationType, LocalDateTime usageStartDate) {
         return query
                 .selectFrom(vacationGrant)
                 .join(vacationGrant.user).fetchJoin()
@@ -95,7 +94,7 @@ public class VacationGrantCustomRepositoryImpl implements VacationGrantCustomRep
     }
 
     @Override
-    public List<VacationGrant> findAvailableGrantsByUserIdAndDate(String userId, java.time.LocalDateTime usageStartDate) {
+    public List<VacationGrant> findAvailableGrantsByUserIdAndDate(String userId, LocalDateTime usageStartDate) {
         return query
                 .selectFrom(vacationGrant)
                 .join(vacationGrant.user).fetchJoin()
@@ -110,7 +109,7 @@ public class VacationGrantCustomRepositoryImpl implements VacationGrantCustomRep
     }
 
     @Override
-    public List<VacationGrant> findValidGrantsByUserIdAndBaseTime(String userId, java.time.LocalDateTime baseTime) {
+    public List<VacationGrant> findValidGrantsByUserIdAndBaseTime(String userId, LocalDateTime baseTime) {
         return query
                 .selectFrom(vacationGrant)
                 .join(vacationGrant.user).fetchJoin()

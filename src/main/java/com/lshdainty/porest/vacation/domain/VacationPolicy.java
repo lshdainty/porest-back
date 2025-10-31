@@ -9,7 +9,6 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 import org.hibernate.annotations.BatchSize;
 
 import java.math.BigDecimal;
@@ -154,13 +153,13 @@ public class VacationPolicy extends AuditingFields {
     @OneToMany(mappedBy = "policy", cascade = CascadeType.ALL)
     private List<VacationGrant> vacationGrants = new ArrayList<>();
 
-    // 개발용
+    // 개발용(테스트 데이터 만들때만 사용 운영에선 삭제 예정)
     public void updateCantDeleted() {
         this.canDeleted = YNType.N;
         this.isDeleted = YNType.N;
     }
 
-    // 개발용
+    // 개발용(테스트 데이터 만들때만 사용 운영에선 삭제 예정)
     public void updateCanDeleted() {
         this.canDeleted = YNType.Y;
         this.isDeleted = YNType.N;

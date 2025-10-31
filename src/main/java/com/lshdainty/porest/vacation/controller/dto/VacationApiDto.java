@@ -16,25 +16,6 @@ public class VacationApiDto {
     @Getter
     @AllArgsConstructor
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    public static class RegistVacationReq {
-        private String userId;
-        private String vacationDesc;
-        private VacationType vacationType;
-        private BigDecimal grantTime;
-        private LocalDateTime occurDate;
-        private LocalDateTime expiryDate;
-    }
-
-    @Getter
-    @AllArgsConstructor
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    public static class RegistVacationResp {
-        private Long vacationId;
-    }
-
-    @Getter
-    @AllArgsConstructor
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class UseVacationReq {
         private String userId;
         private VacationType vacationType;
