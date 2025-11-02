@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static com.lshdainty.porest.vacation.domain.QVacationGrant.vacationGrant;
 
@@ -138,5 +139,15 @@ public class VacationGrantCustomRepositoryImpl implements VacationGrantCustomRep
                         .and(vacationGrant.status.eq(GrantStatus.ACTIVE))
                         .and(vacationGrant.expiryDate.lt(currentDate)))
                 .fetch();
+    }
+
+    @Override
+    public Optional<VacationGrant> findById(Long id) {
+        return Optional.ofNullable(query
+                .selectFrom(vacationGrant)
+                .join(vacationGrant.user).fetchJoin()
+                .join(vacationGrant.policy).fetchJoin()
+                .where(vacationGrant.id.eq(id))
+                .fetchOne());
     }
 }

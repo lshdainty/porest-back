@@ -11,6 +11,8 @@ import com.lshdainty.porest.vacation.service.dto.VacationServiceDto;
 import com.lshdainty.porest.vacation.service.policy.VacationPolicyStrategy;
 import com.lshdainty.porest.vacation.service.policy.factory.VacationPolicyStrategyFactory;
 import com.lshdainty.porest.holiday.type.HolidayType;
+import com.lshdainty.porest.vacation.type.GrantMethod;
+import com.lshdainty.porest.vacation.type.GrantStatus;
 import com.lshdainty.porest.vacation.type.VacationTimeType;
 import com.lshdainty.porest.vacation.type.VacationType;
 import com.lshdainty.porest.common.util.PorestTime;
@@ -554,7 +556,7 @@ public class VacationService {
         for (VacationGrant grant : grants) {
             // ACTIVE 상태인 grant만 회수 처리
             // EXHAUSTED(소진), EXPIRED(만료), REVOKED(이미 회수됨)는 스킵
-            if (grant.getStatus() == com.lshdainty.porest.vacation.type.GrantStatus.ACTIVE) {
+            if (grant.getStatus() == GrantStatus.ACTIVE) {
                 grant.revoke();
                 revokedGrantCount++;
 
@@ -687,7 +689,7 @@ public class VacationService {
             // 해당 정책으로 부여된 grant인지 확인
             if (grant.getPolicy().getId().equals(vacationPolicyId)) {
                 // ACTIVE 상태인 grant만 회수 처리
-                if (grant.getStatus() == com.lshdainty.porest.vacation.type.GrantStatus.ACTIVE) {
+                if (grant.getStatus() == GrantStatus.ACTIVE) {
                     grant.revoke();
                     revokedGrantCount++;
 
@@ -752,7 +754,7 @@ public class VacationService {
                     // 해당 정책으로 부여된 grant인지 확인
                     if (grant.getPolicy().getId().equals(policyId)) {
                         // ACTIVE 상태인 grant만 회수 처리
-                        if (grant.getStatus() == com.lshdainty.porest.vacation.type.GrantStatus.ACTIVE) {
+                        if (grant.getStatus() == GrantStatus.ACTIVE) {
                             grant.revoke();
                             revokedGrantCount++;
                         }
@@ -775,6 +777,112 @@ public class VacationService {
                 revokedIds.size(), userId, totalRevokedGrants);
 
         return revokedIds;
+    }
+
+    /**
+     * 관리자가 특정 사용자에게 휴가를 직접 부여
+     *
+     * @param userId 유저 ID
+     * @param data 휴가 부여 정보 (정책 ID, 부여 시간, 부여일, 만료일, 사유)
+     * @return 생성된 VacationGrant
+     */
+    @Transactional
+    public VacationGrant manualGrantVacation(String userId, VacationServiceDto data) {
+        // 1. 사용자 존재 확인
+        User user = userService.checkUserExist(userId);
+
+        // 2. 휴가 정책 존재 확인
+        VacationPolicy policy = checkVacationPolicyExist(data.getPolicyId());
+
+        // 3. 휴가 정책의 부여 방식이 MANUAL_GRANT인지 확인
+        if (policy.getGrantMethod() != GrantMethod.MANUAL_GRANT) {
+            throw new IllegalArgumentException(
+                    ms.getMessage("error.validate.vacation.notManualGrantPolicy", null, null)
+            );
+        }
+
+        // 4. 부여 시간 검증 (필수, 양수)
+        if (data.getGrantTime() == null || data.getGrantTime().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException(
+                    ms.getMessage("error.validate.vacation.grantTimeRequired", null, null)
+            );
+        }
+
+        // 5. 부여일과 만료일 검증 (부여일 < 만료일)
+        if (data.getGrantDate() == null || data.getExpiryDate() == null) {
+            throw new IllegalArgumentException(
+                    ms.getMessage("error.validate.vacation.grantExpiryDateRequired", null, null)
+            );
+        }
+
+        if (PorestTime.isAfterThanEndDate(data.getGrantDate(), data.getExpiryDate())) {
+            throw new IllegalArgumentException(
+                    ms.getMessage("error.validate.vacation.grantDateAfterExpiryDate", null, null)
+            );
+        }
+
+        // 6. VacationGrant 생성
+        VacationGrant vacationGrant = VacationGrant.createVacationGrant(
+                user,
+                policy,
+                data.getDesc() != null ? data.getDesc() : "관리자 직접 부여",
+                policy.getVacationType(),
+                data.getGrantTime(),
+                data.getGrantDate(),
+                data.getExpiryDate()
+        );
+
+        // 7. 저장
+        vacationGrantRepository.save(vacationGrant);
+
+        log.info("Manually granted vacation: grantId={}, userId={}, policyId={}, grantTime={}, grantDate={}, expiryDate={}",
+                vacationGrant.getId(), userId, policy.getId(), data.getGrantTime(), data.getGrantDate(), data.getExpiryDate());
+
+        return vacationGrant;
+    }
+
+    /**
+     * 특정 휴가 부여 회수 (관리자가 직접 부여한 휴가를 취소)
+     *
+     * @param vacationGrantId 휴가 부여 ID
+     * @return 회수된 VacationGrant
+     */
+    @Transactional
+    public VacationGrant revokeVacationGrant(Long vacationGrantId) {
+        // 1. VacationGrant 존재 확인
+        VacationGrant grant = vacationGrantRepository.findById(vacationGrantId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        ms.getMessage("error.notFound.vacationGrant", null, null)
+                ));
+
+        // 2. 이미 삭제된 경우
+        if (grant.getIsDeleted() == YNType.Y) {
+            throw new IllegalArgumentException(
+                    ms.getMessage("error.validate.vacation.alreadyDeleted", null, null)
+            );
+        }
+
+        // 3. ACTIVE 상태인 경우에만 회수 가능
+        if (grant.getStatus() != GrantStatus.ACTIVE) {
+            throw new IllegalArgumentException(
+                    ms.getMessage("error.validate.vacation.notActiveGrant", null, null)
+            );
+        }
+
+        // 4. 일부라도 사용된 경우 회수 불가
+        if (grant.getRemainTime().compareTo(grant.getGrantTime()) < 0) {
+            throw new IllegalArgumentException(
+                    ms.getMessage("error.validate.vacation.partiallyUsedGrant", null, null)
+            );
+        }
+
+        // 5. 회수 처리
+        grant.revoke();
+
+        log.info("Revoked vacation grant: grantId={}, userId={}, policyId={}, grantTime={}",
+                grant.getId(), grant.getUser().getId(), grant.getPolicy().getId(), grant.getGrantTime());
+
+        return grant;
     }
 
 }

@@ -278,4 +278,35 @@ public class VacationApiDto {
     public static class DeleteVacationPolicyResp {
         private Long vacationPolicyId;
     }
+
+    @Getter
+    @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class ManualGrantVacationReq {
+        private Long vacationPolicyId;
+        private BigDecimal grantTime;
+        private LocalDateTime grantDate;
+        private LocalDateTime expiryDate;
+        private String grantDesc;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class ManualGrantVacationResp {
+        private Long vacationGrantId;
+        private String userId;
+        private Long vacationPolicyId;
+        private BigDecimal grantTime;
+        private LocalDateTime grantDate;
+        private LocalDateTime expiryDate;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class RevokeVacationGrantResp {
+        private Long vacationGrantId;
+        private String userId;
+    }
 }

@@ -89,4 +89,12 @@ public interface VacationGrantCustomRepository {
      * @return 만료 대상 VacationGrant 리스트
      */
     List<VacationGrant> findExpiredTargets(java.time.LocalDateTime currentDate);
+
+    /**
+     * ID로 VacationGrant 조회
+     *
+     * @param id VacationGrant ID
+     * @return VacationGrant Optional
+     */
+    java.util.Optional<VacationGrant> findById(Long id);
 }

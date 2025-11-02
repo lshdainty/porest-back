@@ -44,6 +44,10 @@ public class VacationServiceDto {
 
     // 휴가 부여 시간
     private BigDecimal grantTime;
+    // 휴가 부여 시작일 (관리자 부여용)
+    private LocalDateTime grantDate;
+    // 휴가 정책 ID (관리자 부여용)
+    private Long policyId;
 
     // 휴가 사용 시작 시간
     private LocalDateTime startDate;

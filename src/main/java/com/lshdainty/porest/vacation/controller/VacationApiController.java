@@ -2,6 +2,7 @@ package com.lshdainty.porest.vacation.controller;
 
 import com.lshdainty.porest.common.controller.ApiResponse;
 import com.lshdainty.porest.vacation.controller.dto.VacationApiDto;
+import com.lshdainty.porest.vacation.domain.VacationGrant;
 import com.lshdainty.porest.vacation.service.VacationService;
 import com.lshdainty.porest.vacation.service.dto.VacationPolicyServiceDto;
 import com.lshdainty.porest.vacation.service.dto.VacationServiceDto;
@@ -427,6 +428,50 @@ public class VacationApiController {
         return ApiResponse.success(new VacationApiDto.RevokeVacationPoliciesFromUserResp(
                 userId,
                 revokedPolicyIds
+        ));
+    }
+
+    /**
+     * 관리자가 특정 사용자에게 휴가를 직접 부여
+     * POST /api/v1/users/{userId}/vacation-grants
+     */
+    @PostMapping("/api/v1/users/{userId}/vacation-grants")
+    public ApiResponse manualGrantVacation(
+            @PathVariable("userId") String userId,
+            @RequestBody VacationApiDto.ManualGrantVacationReq data) {
+
+        // DTO 변환
+        VacationServiceDto serviceDto = VacationServiceDto.builder()
+                .policyId(data.getVacationPolicyId())
+                .grantTime(data.getGrantTime())
+                .grantDate(data.getGrantDate())
+                .expiryDate(data.getExpiryDate())
+                .desc(data.getGrantDesc())
+                .build();
+
+        VacationGrant grant = vacationService.manualGrantVacation(userId, serviceDto);
+
+        return ApiResponse.success(new VacationApiDto.ManualGrantVacationResp(
+                grant.getId(),
+                userId,
+                grant.getPolicy().getId(),
+                grant.getGrantTime(),
+                grant.getGrantDate(),
+                grant.getExpiryDate()
+        ));
+    }
+
+    /**
+     * 특정 휴가 부여 회수 (관리자가 직접 부여한 휴가를 취소)
+     * DELETE /api/v1/vacation-grants/{vacationGrantId}
+     */
+    @DeleteMapping("/api/v1/vacation-grants/{vacationGrantId}")
+    public ApiResponse revokeVacationGrant(@PathVariable("vacationGrantId") Long vacationGrantId) {
+        VacationGrant grant = vacationService.revokeVacationGrant(vacationGrantId);
+
+        return ApiResponse.success(new VacationApiDto.RevokeVacationGrantResp(
+                grant.getId(),
+                grant.getUser().getId()
         ));
     }
 }
