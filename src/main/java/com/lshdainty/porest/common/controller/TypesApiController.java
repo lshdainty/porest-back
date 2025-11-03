@@ -23,14 +23,18 @@ import java.util.Map;
 public class TypesApiController {
     private final MessageSource ms;
 
-    private final Map<String, Class<? extends DisplayType>> enumMap = Map.of(
-            "restore-method", GrantMethod.class,
-            "repeat-unit", RepeatUnit.class,
-            "vacation-time", VacationTimeType.class,
-            "vacation-type", VacationType.class,
-            "schedule-type", ScheduleType.class,
-            "holiday-type", HolidayType.class,
-            "origin-company-type", OriginCompanyType.class
+    private final Map<String, Class<? extends DisplayType>> enumMap = Map.ofEntries(
+            Map.entry("grant-method", GrantMethod.class),
+            Map.entry("repeat-unit", RepeatUnit.class),
+            Map.entry("vacation-time", VacationTimeType.class),
+            Map.entry("vacation-type", VacationType.class),
+            Map.entry("effective-type", EffectiveType.class),
+            Map.entry("expiration-type", ExpirationType.class),
+            Map.entry("approval-status", ApprovalStatus.class),
+            Map.entry("grant-status", GrantStatus.class),
+            Map.entry("schedule-type", ScheduleType.class),
+            Map.entry("holiday-type", HolidayType.class),
+            Map.entry("origin-company-type", OriginCompanyType.class)
     );
 
     @GetMapping("/api/v1/types/{enumName}")
