@@ -287,6 +287,8 @@ public class VacationApiController {
                 .firstGrantDate(data.getFirstGrantDate())
                 .isRecurring(data.getIsRecurring())
                 .maxGrantCount(data.getMaxGrantCount())
+                .effectiveType(data.getEffectiveType())
+                .expirationType(data.getExpirationType())
                 .build()
         );
 
@@ -312,7 +314,9 @@ public class VacationApiController {
                 policy.getRepeatUnit(),
                 policy.getRepeatInterval(),
                 policy.getSpecificMonths(),
-                policy.getSpecificDays()
+                policy.getSpecificDays(),
+                policy.getEffectiveType(),
+                policy.getExpirationType()
         ));
     }
 
@@ -336,7 +340,9 @@ public class VacationApiController {
                         vp.getRepeatUnit(),
                         vp.getRepeatInterval(),
                         vp.getSpecificMonths(),
-                        vp.getSpecificDays()
+                        vp.getSpecificDays(),
+                        vp.getEffectiveType(),
+                        vp.getExpirationType()
                 ))
                 .toList();
 
@@ -391,7 +397,9 @@ public class VacationApiController {
                         vp.getRepeatUnit(),
                         vp.getRepeatInterval(),
                         vp.getSpecificMonths(),
-                        vp.getSpecificDays()
+                        vp.getSpecificDays(),
+                        vp.getEffectiveType(),
+                        vp.getExpirationType()
                 ))
                 .toList();
 

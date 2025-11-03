@@ -11,10 +11,7 @@ import com.lshdainty.porest.vacation.service.dto.VacationServiceDto;
 import com.lshdainty.porest.vacation.service.policy.VacationPolicyStrategy;
 import com.lshdainty.porest.vacation.service.policy.factory.VacationPolicyStrategyFactory;
 import com.lshdainty.porest.holiday.type.HolidayType;
-import com.lshdainty.porest.vacation.type.GrantMethod;
-import com.lshdainty.porest.vacation.type.GrantStatus;
-import com.lshdainty.porest.vacation.type.VacationTimeType;
-import com.lshdainty.porest.vacation.type.VacationType;
+import com.lshdainty.porest.vacation.type.*;
 import com.lshdainty.porest.common.util.PorestTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -477,6 +474,8 @@ public class VacationService {
                 .repeatInterval(policy.getRepeatInterval())
                 .specificMonths(policy.getSpecificMonths())
                 .specificDays(policy.getSpecificDays())
+                .effectiveType(policy.getEffectiveType())
+                .expirationType(policy.getExpirationType())
                 .build();
     }
 
@@ -494,6 +493,8 @@ public class VacationService {
                         .repeatInterval(p.getRepeatInterval())
                         .specificMonths(p.getSpecificMonths())
                         .specificDays(p.getSpecificDays())
+                        .effectiveType(p.getEffectiveType())
+                        .expirationType(p.getExpirationType())
                         .build())
                 .toList();
     }
@@ -647,6 +648,8 @@ public class VacationService {
                             .repeatInterval(policy.getRepeatInterval())
                             .specificMonths(policy.getSpecificMonths())
                             .specificDays(policy.getSpecificDays())
+                            .effectiveType(policy.getEffectiveType())
+                            .expirationType(policy.getExpirationType())
                             .build();
                 })
                 .toList();
@@ -808,38 +811,42 @@ public class VacationService {
             );
         }
 
-        // 5. 부여일과 만료일 검증 (부여일 < 만료일)
-        if (data.getGrantDate() == null || data.getExpiryDate() == null) {
-            throw new IllegalArgumentException(
-                    ms.getMessage("error.validate.vacation.grantExpiryDateRequired", null, null)
-            );
-        }
+        // 5. grantDate와 expiryDate 계산 (정책의 effectiveType, expirationType 사용)
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime grantDate = policy.getEffectiveType().calculateDate(now);
+        LocalDateTime expiryDate = policy.getExpirationType().calculateDate(grantDate);
 
-        if (PorestTime.isAfterThanEndDate(data.getGrantDate(), data.getExpiryDate())) {
+        log.info("Calculated dates using policy types - grantDate: {}, expiryDate: {}", grantDate, expiryDate);
+
+        // 6. 부여일과 만료일 검증 (부여일 < 만료일)
+        if (PorestTime.isAfterThanEndDate(grantDate, expiryDate)) {
             throw new IllegalArgumentException(
                     ms.getMessage("error.validate.vacation.grantDateAfterExpiryDate", null, null)
             );
         }
 
-        // 6. VacationGrant 생성
+        // TODO: 추후에 관리자가 주는 정책은 정책에서 날짜를 계산할 수도 있지만 관리자가 직접 발생일과 만료일을 설정할 수도 있다. 관련된 로직 추가 예정
+
+        // 7. VacationGrant 생성
         VacationGrant vacationGrant = VacationGrant.createVacationGrant(
                 user,
                 policy,
                 data.getDesc() != null ? data.getDesc() : "관리자 직접 부여",
                 policy.getVacationType(),
                 data.getGrantTime(),
-                data.getGrantDate(),
-                data.getExpiryDate()
+                grantDate,
+                expiryDate
         );
 
-        // 7. 저장
+        // 8. 저장
         vacationGrantRepository.save(vacationGrant);
 
         log.info("Manually granted vacation: grantId={}, userId={}, policyId={}, grantTime={}, grantDate={}, expiryDate={}",
-                vacationGrant.getId(), userId, policy.getId(), data.getGrantTime(), data.getGrantDate(), data.getExpiryDate());
+                vacationGrant.getId(), userId, policy.getId(), data.getGrantTime(), grantDate, expiryDate);
 
         return vacationGrant;
     }
+
 
     /**
      * 특정 휴가 부여 회수 (관리자가 직접 부여한 휴가를 취소)

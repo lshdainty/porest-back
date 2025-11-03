@@ -121,29 +121,10 @@ public class VacationGrantScheduler {
                     VacationPolicy policy = uvp.getVacationPolicy();
                     VacationType vacationType = policy.getVacationType();
 
-                    // 휴가 유형에 따라 시작일과 만료일 설정
-                    LocalDateTime startDate;
-                    LocalDateTime expiryDate;
-
-                    if (vacationType == VacationType.ANNUAL ||
-                        vacationType == VacationType.OVERTIME ||
-                        vacationType == VacationType.HEALTH ||
-                        vacationType == VacationType.ARMY) {
-                        // 연차, 연장, 건강, 군: 부여 날짜의 년도 1월 1일 ~ 12월 31일
-                        int year = today.getYear();
-                        startDate = LocalDateTime.of(year, 1, 1, 0, 0, 0);
-                        expiryDate = LocalDateTime.of(year, 12, 31, 23, 59, 59);
-                    } else if (vacationType == VacationType.MATERNITY ||
-                               vacationType == VacationType.WEDDING ||
-                               vacationType == VacationType.BEREAVEMENT) {
-                        // 출산, 결혼, 상조: 부여 날짜부터 +6개월
-                        startDate = LocalDateTime.of(today, LocalTime.of(0, 0, 0));
-                        expiryDate = startDate.plusMonths(6).minusSeconds(1); // 6개월 후 23:59:59
-                    } else {
-                        // 기타: 기존 로직 사용
-                        startDate = LocalDateTime.of(today, LocalDateTime.now().toLocalTime());
-                        expiryDate = repeatGrantService.calculateExpiryDate(today, policy.getRepeatUnit());
-                    }
+                    // 효력 발생일과 만료일 계산
+                    LocalDateTime now = LocalDateTime.now();
+                    LocalDateTime startDate = policy.getEffectiveType().calculateDate(now);
+                    LocalDateTime expiryDate = policy.getExpirationType().calculateDate(startDate);
 
                     // VacationGrant 생성
                     String desc = policy.getName() + "에 의한 휴가 부여";

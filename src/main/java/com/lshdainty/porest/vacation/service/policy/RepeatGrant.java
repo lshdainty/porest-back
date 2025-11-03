@@ -36,7 +36,9 @@ public class RepeatGrant implements VacationPolicyStrategy {
                 data.getSpecificDays(),
                 data.getFirstGrantDate(),
                 data.getIsRecurring(),
-                data.getMaxGrantCount()
+                data.getMaxGrantCount(),
+                data.getEffectiveType(),
+                data.getExpirationType()
         );
 
         vacationPolicyRepository.save(vacationPolicy);
@@ -97,6 +99,16 @@ public class RepeatGrant implements VacationPolicyStrategy {
 
         // 9. 1회성 부여 관련 필드 검증
         validateOneTimeGrant(data);
+
+        // 10. effectiveType 필수 검증
+        if (Objects.isNull(data.getEffectiveType())) {
+            throw new IllegalArgumentException(ms.getMessage("vacation.policy.effectiveType.required", null, null));
+        }
+
+        // 11. expirationType 필수 검증
+        if (Objects.isNull(data.getExpirationType())) {
+            throw new IllegalArgumentException(ms.getMessage("vacation.policy.expirationType.required", null, null));
+        }
     }
 
 
@@ -449,52 +461,6 @@ public class RepeatGrant implements VacationPolicyStrategy {
         }
 
         return nextDate;
-    }
-
-    /**
-     * 휴가 만료일 계산<br>
-     * 매년 부여: 12월 31일 소멸<br>
-     * 매월 부여: 해당 월 말일 소멸
-     *
-     * @param grantDate 부여일
-     * @param repeatUnit 반복 단위
-     * @return 만료일
-     */
-    public LocalDateTime calculateExpiryDate(LocalDate grantDate, RepeatUnit repeatUnit) {
-        LocalDate expiryDate;
-
-        switch (repeatUnit) {
-            case YEARLY:
-                // 매년 부여: 해당 년도 12월 31일 23시 59분 59초에 소멸
-                expiryDate = LocalDate.of(grantDate.getYear(), 12, 31);
-                return expiryDate.atTime(23, 59, 59);
-
-            case MONTHLY:
-                // 매월 부여: 해당 월 말일 23시 59분 59초에 소멸
-                expiryDate = grantDate.with(TemporalAdjusters.lastDayOfMonth());
-                return expiryDate.atTime(23, 59, 59);
-
-            case DAILY:
-                // 매일 부여: 당일 23시 59분 59초에 소멸
-                return grantDate.atTime(23, 59, 59);
-
-            case QUARTERLY:
-                // 분기별 부여: 해당 분기 말일 소멸
-                int quarterEndMonth = ((grantDate.getMonthValue() - 1) / 3 + 1) * 3;
-                expiryDate = LocalDate.of(grantDate.getYear(), quarterEndMonth, 1)
-                        .with(TemporalAdjusters.lastDayOfMonth());
-                return expiryDate.atTime(23, 59, 59);
-
-            case HALF:
-                // 반기별 부여: 해당 반기 말일 소멸 (6월 30일 or 12월 31일)
-                int halfEndMonth = grantDate.getMonthValue() <= 6 ? 6 : 12;
-                expiryDate = LocalDate.of(grantDate.getYear(), halfEndMonth, 1)
-                        .with(TemporalAdjusters.lastDayOfMonth());
-                return expiryDate.atTime(23, 59, 59);
-
-            default:
-                throw new IllegalArgumentException("지원하지 않는 반복 단위입니다: " + repeatUnit);
-        }
     }
 
     /**

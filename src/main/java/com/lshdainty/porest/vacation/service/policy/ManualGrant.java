@@ -35,7 +35,9 @@ public class ManualGrant implements VacationPolicyStrategy {
                 null,  // specificDays (스케줄러 불필요)
                 null,  // firstGrantDate (스케줄러 불필요, 관리자가 직접 부여)
                 null,  // isRecurring (관리자 직접 부여는 반복 개념 없음)
-                null   // maxGrantCount (관리자 직접 부여는 횟수 제한 없음)
+                null,  // maxGrantCount (관리자 직접 부여는 횟수 제한 없음)
+                data.getEffectiveType(),   // effectiveType
+                data.getExpirationType()   // expirationType
         );
 
         vacationPolicyRepository.save(vacationPolicy);
@@ -72,6 +74,16 @@ public class ManualGrant implements VacationPolicyStrategy {
         // 4. grantTime이 설정된 경우, 0보다 커야 함 (관리자 직접 부여는 grantTime이 optional)
         if (Objects.nonNull(data.getGrantTime()) && data.getGrantTime().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException(ms.getMessage("vacation.policy.grantTime.positive", null, null));
+        }
+
+        // 5. effectiveType 필수 검증
+        if (Objects.isNull(data.getEffectiveType())) {
+            throw new IllegalArgumentException(ms.getMessage("vacation.policy.effectiveType.required", null, null));
+        }
+
+        // 6. expirationType 필수 검증
+        if (Objects.isNull(data.getExpirationType())) {
+            throw new IllegalArgumentException(ms.getMessage("vacation.policy.expirationType.required", null, null));
         }
     }
 }

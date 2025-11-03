@@ -33,7 +33,9 @@ public class OnRequest implements VacationPolicyStrategy {
                 null,  // specificDays (스케줄러 불필요)
                 null,  // firstGrantDate (스케줄러 불필요, 사용자가 신청 시 부여)
                 null,  // isRecurring (신청 시 부여는 반복 개념 없음)
-                null   // maxGrantCount (신청 시 부여는 횟수 제한 없음)
+                null,  // maxGrantCount (신청 시 부여는 횟수 제한 없음)
+                data.getEffectiveType(),   // effectiveType
+                data.getExpirationType()   // expirationType
         );
 
         vacationPolicyRepository.save(vacationPolicy);
@@ -67,6 +69,16 @@ public class OnRequest implements VacationPolicyStrategy {
         // 4. 정책명 중복 검증
         if (vacationPolicyRepository.existsByName(data.getName())) {
             throw new IllegalArgumentException(ms.getMessage("vacation.policy.name.duplicate", null, null));
+        }
+
+        // 5. effectiveType 필수 검증
+        if (Objects.isNull(data.getEffectiveType())) {
+            throw new IllegalArgumentException(ms.getMessage("vacation.policy.effectiveType.required", null, null));
+        }
+
+        // 6. expirationType 필수 검증
+        if (Objects.isNull(data.getExpirationType())) {
+            throw new IllegalArgumentException(ms.getMessage("vacation.policy.expirationType.required", null, null));
         }
     }
 }

@@ -2,9 +2,7 @@ package com.lshdainty.porest.vacation.domain;
 
 import com.lshdainty.porest.common.domain.AuditingFields;
 import com.lshdainty.porest.common.type.YNType;
-import com.lshdainty.porest.vacation.type.GrantMethod;
-import com.lshdainty.porest.vacation.type.RepeatUnit;
-import com.lshdainty.porest.vacation.type.VacationType;
+import com.lshdainty.porest.vacation.type.*;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -132,6 +130,24 @@ public class VacationPolicy extends AuditingFields {
     private Integer maxGrantCount;
 
     /**
+     * 유효기간 발효일 타입<br>
+     * 휴가 생성 시 추가되는 유효기간을 계산하기 위한 타입<br>
+     * 지금은 간단하게 당해년도 1월 1일, 생성 즉시 2개만 생성
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "effective_type")
+    private EffectiveType effectiveType;
+
+    /**
+     * 유효기간 만료일 타입<br>
+     * 휴가 생성 시 추가되는 유효기간을 계산하기 위한 타입<br>
+     * 지금은 간단하게 당해년도 12월 31일, +1~12개월 까지만 생성
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "expiration_type")
+    private ExpirationType expirationType;
+
+    /**
      * 삭제 가능 여부
      */
     @Enumerated(EnumType.STRING)
@@ -172,7 +188,7 @@ public class VacationPolicy extends AuditingFields {
      *
      * @return VacationPolicy
      */
-    public static VacationPolicy createVacationPolicy(String name, String desc, VacationType vacationType, GrantMethod grantMethod, BigDecimal grantTime, RepeatUnit repeatUnit, Integer repeatInterval, Integer specificMonths, Integer specificDays, LocalDateTime firstGrantDate, YNType isRecurring, Integer maxGrantCount) {
+    public static VacationPolicy createVacationPolicy(String name, String desc, VacationType vacationType, GrantMethod grantMethod, BigDecimal grantTime, RepeatUnit repeatUnit, Integer repeatInterval, Integer specificMonths, Integer specificDays, LocalDateTime firstGrantDate, YNType isRecurring, Integer maxGrantCount, EffectiveType effectiveType, ExpirationType expirationType) {
         VacationPolicy vacationPolicy = new VacationPolicy();
         vacationPolicy.name = name;
         vacationPolicy.desc = desc;
@@ -186,6 +202,8 @@ public class VacationPolicy extends AuditingFields {
         vacationPolicy.firstGrantDate = firstGrantDate;
         vacationPolicy.isRecurring = isRecurring;
         vacationPolicy.maxGrantCount = maxGrantCount;
+        vacationPolicy.effectiveType = effectiveType;
+        vacationPolicy.expirationType = expirationType;
         vacationPolicy.canDeleted = YNType.Y;
         vacationPolicy.isDeleted = YNType.N;
         return vacationPolicy;

@@ -1,9 +1,7 @@
 package com.lshdainty.porest.vacation.service.dto;
 
 import com.lshdainty.porest.common.type.YNType;
-import com.lshdainty.porest.vacation.type.GrantMethod;
-import com.lshdainty.porest.vacation.type.RepeatUnit;
-import com.lshdainty.porest.vacation.type.VacationType;
+import com.lshdainty.porest.vacation.type.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,4 +26,6 @@ public class VacationPolicyServiceDto {
     private LocalDateTime firstGrantDate;  // 첫 부여 시점 (반복 부여 방식에서 필수)
     private YNType isRecurring;            // 반복 여부 (Y: 반복, N: 1회)
     private Integer maxGrantCount;         // 최대 부여 횟수 (1회성 정책용)
+    private EffectiveType effectiveType;   // 유효기간 발효일 타입
+    private ExpirationType expirationType; // 유효기간 만료일 타입
 }
