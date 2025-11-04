@@ -178,7 +178,7 @@ public class VacationGrant extends AuditingFields {
         vg.type = type;
         vg.grantTime = grantTime;
         vg.remainTime = grantTime;
-        vg.status = GrantStatus.PENDING_APPROVAL;
+        vg.status = GrantStatus.PENDING;
         vg.isDeleted = YNType.N;
         // grantDate와 expiryDate는 승인 완료 시점에 설정
         return vg;
@@ -245,6 +245,17 @@ public class VacationGrant extends AuditingFields {
     }
 
     /**
+     * 승인 진행 중 상태로 변경<br>
+     * 승인자가 2명 이상이고 1명 이상이 승인했을 때 PROGRESS 상태로 전환
+     */
+    public void updateToProgress() {
+        if (this.status != GrantStatus.PENDING && this.status != GrantStatus.PROGRESS) {
+            throw new IllegalStateException("대기 또는 진행 상태가 아닌 휴가는 진행 상태로 변경할 수 없습니다.");
+        }
+        this.status = GrantStatus.PROGRESS;
+    }
+
+    /**
      * 승인 완료 처리<br>
      * 모든 승인자가 승인하면 ACTIVE 상태로 전환하고 유효기간을 설정
      *
@@ -252,8 +263,8 @@ public class VacationGrant extends AuditingFields {
      * @param expiryDate 휴가 만료일
      */
     public void approve(LocalDateTime grantDate, LocalDateTime expiryDate) {
-        if (this.status != GrantStatus.PENDING_APPROVAL) {
-            throw new IllegalStateException("승인 대기 상태가 아닌 휴가는 승인할 수 없습니다.");
+        if (this.status != GrantStatus.PENDING && this.status != GrantStatus.PROGRESS) {
+            throw new IllegalStateException("대기 또는 진행 상태가 아닌 휴가는 승인할 수 없습니다.");
         }
         this.status = GrantStatus.ACTIVE;
         this.grantDate = grantDate;
@@ -265,8 +276,8 @@ public class VacationGrant extends AuditingFields {
      * 한 명이라도 거부하면 REJECTED 상태로 전환
      */
     public void reject() {
-        if (this.status != GrantStatus.PENDING_APPROVAL) {
-            throw new IllegalStateException("승인 대기 상태가 아닌 휴가는 거부할 수 없습니다.");
+        if (this.status != GrantStatus.PENDING && this.status != GrantStatus.PROGRESS) {
+            throw new IllegalStateException("대기 또는 진행 상태가 아닌 휴가는 거부할 수 없습니다.");
         }
         this.status = GrantStatus.REJECTED;
     }

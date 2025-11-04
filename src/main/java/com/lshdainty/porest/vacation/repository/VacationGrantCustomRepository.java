@@ -97,4 +97,14 @@ public interface VacationGrantCustomRepository {
      * @return VacationGrant Optional
      */
     java.util.Optional<VacationGrant> findById(Long id);
+
+    /**
+     * 사용자 ID로 ON_REQUEST 방식의 모든 VacationGrant 조회 (모든 상태 포함)
+     * - 승인대기, 활성, 소진, 만료, 회수, 거부 등 모든 상태 포함
+     * - 신청일시 최신순으로 정렬
+     *
+     * @param userId 사용자 ID
+     * @return ON_REQUEST 방식의 모든 VacationGrant 리스트
+     */
+    List<VacationGrant> findAllRequestedVacationsByUserId(String userId);
 }

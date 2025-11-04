@@ -150,4 +150,17 @@ public class VacationGrantCustomRepositoryImpl implements VacationGrantCustomRep
                 .where(vacationGrant.id.eq(id))
                 .fetchOne());
     }
+
+    @Override
+    public List<VacationGrant> findAllRequestedVacationsByUserId(String userId) {
+        return query
+                .selectFrom(vacationGrant)
+                .join(vacationGrant.user).fetchJoin()
+                .join(vacationGrant.policy).fetchJoin()
+                .where(vacationGrant.user.id.eq(userId)
+                        .and(vacationGrant.isDeleted.eq(YNType.N))
+                        .and(vacationGrant.policy.grantMethod.eq(com.lshdainty.porest.vacation.type.GrantMethod.ON_REQUEST)))
+                .orderBy(vacationGrant.requestDate.desc())
+                .fetch();
+    }
 }

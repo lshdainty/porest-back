@@ -1022,7 +1022,7 @@ public class VacationService {
             });
         }
 
-        // 7. VacationGrant 생성 (PENDING_APPROVAL 상태)
+        // 7. VacationGrant 생성 (PENDING 상태)
         VacationGrant vacationGrant = VacationGrant.createPendingVacationGrant(
                 user,
                 policy,
@@ -1112,6 +1112,7 @@ public class VacationService {
 
         // 6. VacationGrant의 모든 승인이 완료되었는지 확인
         boolean allApproved = allApprovals.stream().allMatch(VacationApproval::isApproved);
+        int totalApprovalCount = allApprovals.size();
 
         if (allApproved) {
             // 모든 승인이 완료되면 VacationGrant를 ACTIVE 상태로 전환
@@ -1125,6 +1126,13 @@ public class VacationService {
             log.info("휴가 전체 승인 완료 - VacationGrant ID: {}, Final Approver: {}, Status: ACTIVE",
                     vacationGrant.getId(), approverId);
         } else {
+            // 승인자가 2명 이상이고 1명 이상이 승인한 경우 PROGRESS 상태로 전환
+            if (totalApprovalCount >= 2) {
+                vacationGrant.updateToProgress();
+                log.info("휴가 승인 진행 중 - VacationGrant ID: {}, Approver: {} (순서: {}), Status: PROGRESS",
+                        vacationGrant.getId(), approverId, currentOrder);
+            }
+
             long pendingCount = allApprovals.stream().filter(VacationApproval::isPending).count();
             log.info("휴가 부분 승인 완료 - VacationGrant ID: {}, Approver: {} (순서: {}), 남은 승인: {}",
                     vacationGrant.getId(), approverId, currentOrder, pendingCount);
@@ -1211,6 +1219,151 @@ public class VacationService {
                         .approvalStatus(approval.getApprovalStatus())
                         .build())
                 .toList();
+    }
+
+    /**
+     * 사용자 ID로 ON_REQUEST 방식의 모든 휴가 신청 내역 조회 (모든 상태 포함)
+     * - 승인대기, 승인완료, 거부, 회수, 만료, 소진 등 모든 상태를 포함
+     * - 신청일시 최신순으로 반환
+     *
+     * @param userId 사용자 ID
+     * @return ON_REQUEST 방식의 모든 휴가 신청 내역
+     */
+    public List<VacationServiceDto> getAllRequestedVacationsByUserId(String userId) {
+        // 사용자 존재 확인
+        userService.checkUserExist(userId);
+
+        // ON_REQUEST 방식의 모든 휴가 신청 내역 조회
+        List<VacationGrant> grants = vacationGrantRepository.findAllRequestedVacationsByUserId(userId);
+
+        return grants.stream()
+                .map(grant -> VacationServiceDto.builder()
+                        .id(grant.getId())
+                        .policyId(grant.getPolicy().getId())
+                        .policyName(grant.getPolicy().getName())
+                        .type(grant.getType())
+                        .desc(grant.getDesc())
+                        .grantTime(grant.getGrantTime())
+                        .remainTime(grant.getRemainTime())
+                        .grantDate(grant.getGrantDate())
+                        .expiryDate(grant.getExpiryDate())
+                        .requestDate(grant.getRequestDate())
+                        .grantStatus(grant.getStatus())
+                        .build())
+                .toList();
+    }
+
+    /**
+     * 사용자 ID로 ON_REQUEST 방식의 휴가 신청 통계 조회
+     *
+     * @param userId 사용자 ID
+     * @return 휴가 신청 통계 정보
+     */
+    public VacationServiceDto getRequestedVacationStatsByUserId(String userId) {
+        // 사용자 존재 확인
+        userService.checkUserExist(userId);
+
+        // ON_REQUEST 방식의 모든 휴가 신청 내역 조회
+        List<VacationGrant> allGrants = vacationGrantRepository.findAllRequestedVacationsByUserId(userId);
+
+        // 현재 날짜 기준
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startOfCurrentMonth = now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime startOfPreviousMonth = startOfCurrentMonth.minusMonths(1);
+
+        // 1. 전체 신청 건수
+        long totalRequestCount = allGrants.size();
+
+        // 2. 이번 달 신청 건수
+        long currentMonthRequestCount = allGrants.stream()
+                .filter(grant -> grant.getRequestDate() != null &&
+                        grant.getRequestDate().isAfter(startOfCurrentMonth))
+                .count();
+
+        // 전월 신청 건수 (증감 비율 계산용)
+        long previousMonthRequestCount = allGrants.stream()
+                .filter(grant -> grant.getRequestDate() != null &&
+                        grant.getRequestDate().isAfter(startOfPreviousMonth) &&
+                        grant.getRequestDate().isBefore(startOfCurrentMonth))
+                .count();
+
+        // 3. 증감 비율 계산
+        Double changeRate = 0.0;
+        if (previousMonthRequestCount > 0) {
+            changeRate = ((double) (currentMonthRequestCount - previousMonthRequestCount) / previousMonthRequestCount) * 100.0;
+        } else if (currentMonthRequestCount > 0) {
+            changeRate = 100.0; // 전월 0건, 이번달 1건 이상인 경우 100% 증가
+        }
+
+        // 4. 대기 건수
+        long pendingCount = allGrants.stream()
+                .filter(grant -> grant.getStatus() == GrantStatus.PENDING)
+                .count();
+
+        // 5. 평균 처리 기간 (일수) - ACTIVE 또는 REJECTED 상태만 계산
+        List<VacationGrant> processedGrants = allGrants.stream()
+                .filter(grant -> grant.getStatus() == GrantStatus.ACTIVE || grant.getStatus() == GrantStatus.REJECTED)
+                .filter(grant -> grant.getRequestDate() != null && grant.getModifyDate() != null)
+                .toList();
+
+        Double averageProcessingDays = 0.0;
+        if (!processedGrants.isEmpty()) {
+            long totalProcessingSeconds = processedGrants.stream()
+                    .mapToLong(grant -> {
+                        java.time.Duration duration = java.time.Duration.between(
+                                grant.getRequestDate(),
+                                grant.getModifyDate()
+                        );
+                        return duration.toDays();
+                    })
+                    .sum();
+            averageProcessingDays = (double) totalProcessingSeconds / processedGrants.size();
+        }
+
+        // 6. 진행 중 건수
+        long progressCount = allGrants.stream()
+                .filter(grant -> grant.getStatus() == GrantStatus.PROGRESS)
+                .count();
+
+        // 7. 승인 건수
+        long approvedCount = allGrants.stream()
+                .filter(grant -> grant.getStatus() == GrantStatus.ACTIVE)
+                .count();
+
+        // 8. 승인율 계산
+        Double approvalRate = 0.0;
+        if (totalRequestCount > 0) {
+            approvalRate = ((double) approvedCount / totalRequestCount) * 100.0;
+        }
+
+        // 9. 반려 건수
+        long rejectedCount = allGrants.stream()
+                .filter(grant -> grant.getStatus() == GrantStatus.REJECTED)
+                .count();
+
+        // 10. 획득 휴가 시간 (승인된 건만)
+        BigDecimal acquiredVacationTime = allGrants.stream()
+                .filter(grant -> grant.getStatus() == GrantStatus.ACTIVE)
+                .map(VacationGrant::getGrantTime)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // 11. 획득 휴가 일수 문자열
+        String acquiredVacationTimeStr = VacationTimeType.convertValueToDay(acquiredVacationTime);
+
+        return VacationServiceDto.builder()
+                .totalRequestCount(totalRequestCount)
+                .currentMonthRequestCount(currentMonthRequestCount)
+                .changeRate(changeRate)
+                .pendingCount(pendingCount)
+                .averageProcessingDays(averageProcessingDays)
+                .progressCount(progressCount)
+                .approvedCount(approvedCount)
+                .approvalRate(approvalRate)
+                .rejectedCount(rejectedCount)
+                .acquiredVacationTime(acquiredVacationTime)
+                .acquiredVacationTimeStr(acquiredVacationTimeStr)
+                .grantsList(allGrants)
+                .build();
     }
 
 }

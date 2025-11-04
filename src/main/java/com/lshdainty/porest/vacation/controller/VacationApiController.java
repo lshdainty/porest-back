@@ -569,4 +569,60 @@ public class VacationApiController {
 
         return ApiResponse.success(new VacationApiDto.GetPendingApprovalsByApproverResp(approvalInfos));
     }
+
+    /**
+     * 특정 유저의 휴가 신청 내역 조회 (ON_REQUEST 방식, 모든 상태 포함)
+     * GET /api/v1/users/{userId}/vacation-requests
+     */
+    @GetMapping("/api/v1/users/{userId}/vacation-requests")
+    public ApiResponse getUserRequestedVacations(@PathVariable("userId") String userId) {
+        List<VacationServiceDto> requestedVacations = vacationService.getAllRequestedVacationsByUserId(userId);
+
+        List<VacationApiDto.GetUserRequestedVacationsResp> resp = requestedVacations.stream()
+                .map(v -> new VacationApiDto.GetUserRequestedVacationsResp(
+                        v.getId(),
+                        v.getPolicyId(),
+                        v.getPolicyName(),
+                        v.getType(),
+                        v.getType().getViewName(),
+                        v.getDesc(),
+                        v.getGrantTime(),
+                        VacationTimeType.convertValueToDay(v.getGrantTime()),
+                        v.getRemainTime(),
+                        VacationTimeType.convertValueToDay(v.getRemainTime()),
+                        v.getGrantDate(),
+                        v.getExpiryDate(),
+                        v.getRequestDate(),
+                        v.getGrantStatus(),
+                        v.getGrantStatus().getViewName()
+                ))
+                .toList();
+
+        return ApiResponse.success(resp);
+    }
+
+    /**
+     * 특정 유저의 휴가 신청 통계 조회 (ON_REQUEST 방식)
+     * GET /api/v1/users/{userId}/vacation-requests/stats
+     */
+    @GetMapping("/api/v1/users/{userId}/vacation-requests/stats")
+    public ApiResponse getUserRequestedVacationStats(@PathVariable("userId") String userId) {
+        VacationServiceDto stats = vacationService.getRequestedVacationStatsByUserId(userId);
+
+        VacationApiDto.GetUserRequestedVacationStatsResp resp = new VacationApiDto.GetUserRequestedVacationStatsResp(
+                stats.getTotalRequestCount(),
+                stats.getCurrentMonthRequestCount(),
+                stats.getChangeRate(),
+                stats.getPendingCount(),
+                stats.getAverageProcessingDays(),
+                stats.getProgressCount(),
+                stats.getApprovedCount(),
+                stats.getApprovalRate(),
+                stats.getRejectedCount(),
+                stats.getAcquiredVacationTimeStr(),
+                stats.getAcquiredVacationTime()
+        );
+
+        return ApiResponse.success(resp);
+    }
 }

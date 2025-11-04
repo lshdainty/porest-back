@@ -3,6 +3,7 @@ package com.lshdainty.porest.vacation.service.dto;
 import com.lshdainty.porest.user.domain.User;
 import com.lshdainty.porest.vacation.domain.VacationGrant;
 import com.lshdainty.porest.vacation.domain.VacationUsage;
+import com.lshdainty.porest.vacation.type.GrantStatus;
 import com.lshdainty.porest.vacation.type.VacationTimeType;
 import com.lshdainty.porest.vacation.type.VacationType;
 import lombok.AllArgsConstructor;
@@ -48,6 +49,8 @@ public class VacationServiceDto {
     private LocalDateTime grantDate;
     // 휴가 정책 ID (관리자 부여용)
     private Long policyId;
+    // 휴가 정책명
+    private String policyName;
 
     // 휴가 사용 시작 시간
     private LocalDateTime startDate;
@@ -79,6 +82,36 @@ public class VacationServiceDto {
     private String requestReason;
     // 승인자 ID 리스트 (ON_REQUEST 방식)
     private List<String> approverIds;
+    // 휴가 부여 상태
+    private GrantStatus grantStatus;
+    // 휴가 신청일시 (ON_REQUEST 방식)
+    private LocalDateTime requestDate;
+
+    // ========== 휴가 신청 통계 관련 필드 ==========
+    // 1. 전체 신청 건수
+    private Long totalRequestCount;
+    // 2. 이번 달 신청 건수
+    private Long currentMonthRequestCount;
+    // 3. 증감 비율 (전월 대비 이번달)
+    private Double changeRate;
+    // 4. 대기 건수
+    private Long pendingCount;
+    // 5. 평균 처리 기간 (일수)
+    private Double averageProcessingDays;
+    // 6. 진행 중 건수
+    private Long progressCount;
+    // 7. 승인 건수
+    private Long approvedCount;
+    // 8. 승인율 (%)
+    private Double approvalRate;
+    // 9. 반려 건수
+    private Long rejectedCount;
+    // 10. 획득 휴가 일수 (문자열 형태: "1일 2시간")
+    private String acquiredVacationTimeStr;
+    // 11. 획득 휴가 시간 (BigDecimal)
+    private BigDecimal acquiredVacationTime;
+    // 12. 조회된 grants 리스트
+    private List<VacationGrant> grantsList;
 
     @Override
     public String toString() {

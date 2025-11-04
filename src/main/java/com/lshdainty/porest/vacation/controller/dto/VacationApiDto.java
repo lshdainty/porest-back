@@ -383,4 +383,42 @@ public class VacationApiDto {
             private String approvalStatusName;
         }
     }
+
+    @Getter
+    @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class GetUserRequestedVacationsResp {
+        private Long vacationGrantId;
+        private Long policyId;
+        private String policyName;
+        private VacationType vacationType;
+        private String vacationTypeName;
+        private String desc;
+        private BigDecimal grantTime;
+        private String grantTimeStr;
+        private BigDecimal remainTime;
+        private String remainTimeStr;
+        private LocalDateTime grantDate;
+        private LocalDateTime expiryDate;
+        private LocalDateTime requestDate;
+        private GrantStatus grantStatus;
+        private String grantStatusName;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class GetUserRequestedVacationStatsResp {
+        private Long totalRequestCount;
+        private Long currentMonthRequestCount;
+        private Double changeRate;
+        private Long pendingCount;
+        private Double averageProcessingDays;
+        private Long progressCount;
+        private Long approvedCount;
+        private Double approvalRate;
+        private Long rejectedCount;
+        private String acquiredVacationTimeStr;
+        private BigDecimal acquiredVacationTime;
+    }
 }
