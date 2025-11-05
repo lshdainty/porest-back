@@ -646,9 +646,10 @@ public class VacationService {
      * 유저에게 할당된 휴가 정책 조회
      *
      * @param userId 유저 ID
+     * @param grantMethod 부여 방법 필터 (Optional)
      * @return 유저에게 할당된 휴가 정책 리스트
      */
-    public List<VacationPolicyServiceDto> getUserAssignedVacationPolicies(String userId) {
+    public List<VacationPolicyServiceDto> getUserAssignedVacationPolicies(String userId, GrantMethod grantMethod) {
         // 유저 존재 확인
         userService.checkUserExist(userId);
 
@@ -656,6 +657,8 @@ public class VacationService {
         List<UserVacationPolicy> userVacationPolicies = userVacationPolicyRepository.findByUserId(userId);
 
         return userVacationPolicies.stream()
+                // grantMethod 필터링 (null이면 모두 반환)
+                .filter(uvp -> grantMethod == null || uvp.getVacationPolicy().getGrantMethod() == grantMethod)
                 .map(uvp -> {
                     VacationPolicy policy = uvp.getVacationPolicy();
 

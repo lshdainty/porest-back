@@ -7,6 +7,7 @@ import com.lshdainty.porest.vacation.service.VacationService;
 import com.lshdainty.porest.vacation.service.dto.VacationApprovalServiceDto;
 import com.lshdainty.porest.vacation.service.dto.VacationPolicyServiceDto;
 import com.lshdainty.porest.vacation.service.dto.VacationServiceDto;
+import com.lshdainty.porest.vacation.type.GrantMethod;
 import com.lshdainty.porest.vacation.type.VacationTimeType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -385,8 +386,10 @@ public class VacationApiController {
      * GET /api/v1/users/{userId}/vacation-policies
      */
     @GetMapping("/api/v1/users/{userId}/vacation-policies")
-    public ApiResponse getUserAssignedVacationPolicies(@PathVariable("userId") String userId) {
-        List<VacationPolicyServiceDto> policies = vacationService.getUserAssignedVacationPolicies(userId);
+    public ApiResponse getUserAssignedVacationPolicies(
+            @PathVariable("userId") String userId,
+            @RequestParam(value = "grantMethod", required = false) GrantMethod grantMethod) {
+        List<VacationPolicyServiceDto> policies = vacationService.getUserAssignedVacationPolicies(userId, grantMethod);
 
         List<VacationApiDto.GetUserAssignedVacationPoliciesResp> resp = policies.stream()
                 .map(vp -> new VacationApiDto.GetUserAssignedVacationPoliciesResp(
