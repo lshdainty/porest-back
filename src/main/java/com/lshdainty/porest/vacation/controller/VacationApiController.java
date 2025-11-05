@@ -405,6 +405,10 @@ public class VacationApiController {
                         vp.getRepeatInterval(),
                         vp.getSpecificMonths(),
                         vp.getSpecificDays(),
+                        vp.getFirstGrantDate(),
+                        vp.getIsRecurring(),
+                        vp.getMaxGrantCount(),
+                        vp.getApprovalRequiredCount(),
                         vp.getEffectiveType(),
                         vp.getExpirationType(),
                         vp.getRepeatGrantDescription()

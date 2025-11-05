@@ -252,6 +252,10 @@ public class VacationApiDto {
         private Integer repeatInterval;
         private Integer specificMonths;
         private Integer specificDays;
+        private LocalDateTime firstGrantDate;
+        private YNType isRecurring;
+        private Integer maxGrantCount;
+        private Integer approvalRequiredCount;
         private EffectiveType effectiveType;
         private ExpirationType expirationType;
         private String repeatGrantDescription; // 반복 부여 정책의 한국어 설명
