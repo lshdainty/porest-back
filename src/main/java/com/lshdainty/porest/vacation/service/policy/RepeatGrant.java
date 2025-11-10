@@ -50,11 +50,12 @@ public class RepeatGrant implements VacationPolicyStrategy {
      * 1. 정책명 필수 검증
      * 2. 정책명 중복 검증
      * 3. 부여시간 필수 및 양수 검증
-     * 4. 반복 단위 필수 검증
-     * 5. 반복 간격 필수 및 양수 검증
-     * 6. 첫 부여 시점 필수 검증
-     * 7. 반복 단위에 따른 specificMonths/Days 검증
-     * 8. 1회성 부여 관련 필드 검증
+     * 4. minuteGrantYn 필수 검증
+     * 5. 반복 단위 필수 검증
+     * 6. 반복 간격 필수 및 양수 검증
+     * 7. 첫 부여 시점 필수 검증
+     * 8. 반복 단위에 따른 specificMonths/Days 검증
+     * 9. 1회성 부여 관련 필드 검증
      *
      * @param data 휴가 정책 데이터
      */
@@ -79,33 +80,38 @@ public class RepeatGrant implements VacationPolicyStrategy {
             throw new IllegalArgumentException(ms.getMessage("vacation.policy.grantTime.positive", null, null));
         }
 
-        // 5. 반복 단위 필수 검증
+        // 5. minuteGrantYn 필수 검증
+        if (Objects.isNull(data.getMinuteGrantYn())) {
+            throw new IllegalArgumentException(ms.getMessage("vacation.policy.minuteGrantYn.required", null, null));
+        }
+
+        // 6. 반복 단위 필수 검증
         if (Objects.isNull(data.getRepeatUnit())) {
             throw new IllegalArgumentException(ms.getMessage("vacation.policy.repeatUnit.required", null, null));
         }
 
-        // 6. 반복 간격 필수 및 양수 검증
+        // 7. 반복 간격 필수 및 양수 검증
         if (Objects.isNull(data.getRepeatInterval()) || data.getRepeatInterval() <= 0) {
             throw new IllegalArgumentException(ms.getMessage("vacation.policy.repeatInterval.positive", null, null));
         }
 
-        // 7. 첫 부여 시점 필수 검증 (스케줄러가 반복 부여를 계산하기 위한 기준일)
+        // 8. 첫 부여 시점 필수 검증 (스케줄러가 반복 부여를 계산하기 위한 기준일)
         if (Objects.isNull(data.getFirstGrantDate())) {
             throw new IllegalArgumentException(ms.getMessage("vacation.policy.firstGrantDate.required", null, null));
         }
 
-        // 8. 반복 단위에 따른 specificMonths/Days 검증
+        // 9. 반복 단위에 따른 specificMonths/Days 검증
         validateRepeatUnit(data);
 
-        // 9. 1회성 부여 관련 필드 검증
+        // 10. 1회성 부여 관련 필드 검증
         validateOneTimeGrant(data);
 
-        // 10. effectiveType 필수 검증
+        // 11. effectiveType 필수 검증
         if (Objects.isNull(data.getEffectiveType())) {
             throw new IllegalArgumentException(ms.getMessage("vacation.policy.effectiveType.required", null, null));
         }
 
-        // 11. expirationType 필수 검증
+        // 12. expirationType 필수 검증
         if (Objects.isNull(data.getExpirationType())) {
             throw new IllegalArgumentException(ms.getMessage("vacation.policy.expirationType.required", null, null));
         }

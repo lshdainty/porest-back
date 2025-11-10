@@ -43,6 +43,8 @@ public class ManualGrant implements VacationPolicyStrategy {
      * 1. 정책명 필수 검증
      * 2. 정책명 중복 검증
      * 3. 스케줄 관련 필드 null 검증
+     * 4. grantTimeExists에 따른 grantTime 검증
+     * 5. minuteGrantYn 필수 검증
      *
      * 참고: 관리자 직접 부여 방식은 부여 단위를 선택하지 않고 관리자가 직접 수량을 지정
      *
@@ -65,17 +67,38 @@ public class ManualGrant implements VacationPolicyStrategy {
             throw new IllegalArgumentException(ms.getMessage("vacation.policy.manual.schedule.unnecessary", null, null));
         }
 
-        // 4. grantTime이 설정된 경우, 0보다 커야 함 (관리자 직접 부여는 grantTime이 optional)
-        if (Objects.nonNull(data.getGrantTime()) && data.getGrantTime().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException(ms.getMessage("vacation.policy.grantTime.positive", null, null));
+        // 4. grantTimeExists 필수 검증
+        if (Objects.isNull(data.getGrantTimeExists())) {
+            throw new IllegalArgumentException(ms.getMessage("vacation.policy.grantTimeExists.required", null, null));
         }
 
-        // 5. effectiveType 필수 검증
+        // 5. grantTimeExists에 따른 grantTime 검증
+        if (com.lshdainty.porest.common.type.YNType.isY(data.getGrantTimeExists())) {
+            // grantTimeExists가 Y인 경우: grantTime 필수 및 양수 검증
+            if (Objects.isNull(data.getGrantTime())) {
+                throw new IllegalArgumentException(ms.getMessage("vacation.policy.grantTime.required", null, null));
+            }
+            if (data.getGrantTime().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new IllegalArgumentException(ms.getMessage("vacation.policy.grantTime.positive", null, null));
+            }
+        } else {
+            // grantTimeExists가 N인 경우: grantTime은 null이어야 함
+            if (Objects.nonNull(data.getGrantTime())) {
+                throw new IllegalArgumentException(ms.getMessage("vacation.policy.grantTime.unnecessary", null, null));
+            }
+        }
+
+        // 6. minuteGrantYn 필수 검증
+        if (Objects.isNull(data.getMinuteGrantYn())) {
+            throw new IllegalArgumentException(ms.getMessage("vacation.policy.minuteGrantYn.required", null, null));
+        }
+
+        // 7. effectiveType 필수 검증
         if (Objects.isNull(data.getEffectiveType())) {
             throw new IllegalArgumentException(ms.getMessage("vacation.policy.effectiveType.required", null, null));
         }
 
-        // 6. expirationType 필수 검증
+        // 8. expirationType 필수 검증
         if (Objects.isNull(data.getExpirationType())) {
             throw new IllegalArgumentException(ms.getMessage("vacation.policy.expirationType.required", null, null));
         }

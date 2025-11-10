@@ -68,10 +68,10 @@ public class VacationPolicy extends AuditingFields {
     private BigDecimal grantTime;
 
     /**
-     * 휴가 부여 시간 존재 여부<br>
+     * 기준 시간 존재 여부<br>
      * Y면 휴가 부여시 grantTime으로 자동 입력<br>
      * N이면 휴가 부여시 관리자 혹은 OT 시간차에 의해 계산된 시간이 들어감<br>
-     * 해당 값이 Y면 무조건 grantTime은 0.0625 이상이어야하고 N이면 무조건 null이어야함
+     * 해당 값이 Y면 무조건 grantTime은 0 이상이어야하고 N이면 무조건 null이어야함
      */
     @Enumerated(EnumType.STRING)
     @Column(name = "grant_time_exists")
@@ -368,7 +368,7 @@ public class VacationPolicy extends AuditingFields {
      * 해당 메소드를 통해 휴가 정책 삭제할 것
      */
     public void deleteVacationPolicy() {
-        if (this.canDeleted.equals(YNType.N)) {
+        if (YNType.isN(this.canDeleted)) {
             return;
         }
         this.isDeleted = YNType.Y;

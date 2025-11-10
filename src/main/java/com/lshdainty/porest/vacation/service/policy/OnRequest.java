@@ -44,8 +44,9 @@ public class OnRequest implements VacationPolicyStrategy {
     /**
      * 신청시 부여 방식의 휴가 정책 검증
      * 1. 정책명 필수 검증
-     * 2. 부여시간 필수 및 양수 검증
-     * 3. 정책명 중복 검증
+     * 2. 정책명 중복 검증
+     * 3. grantTimeExists에 따른 grantTime 검증
+     * 4. minuteGrantYn 필수 검증
      *
      * @param data 휴가 정책 데이터
      */
@@ -55,27 +56,43 @@ public class OnRequest implements VacationPolicyStrategy {
             throw new IllegalArgumentException(ms.getMessage("vacation.policy.name.required", null, null));
         }
 
-        // 2. 부여시간 필수 검증 (신청시 부여할 수량 지정 필요)
-        if (Objects.isNull(data.getGrantTime())) {
-            throw new IllegalArgumentException(ms.getMessage("vacation.policy.grantTime.required", null, null));
-        }
-
-        // 3. 부여시간은 0보다 커야 함
-        if (data.getGrantTime().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException(ms.getMessage("vacation.policy.grantTime.positive", null, null));
-        }
-
-        // 4. 정책명 중복 검증
+        // 2. 정책명 중복 검증
         if (vacationPolicyRepository.existsByName(data.getName())) {
             throw new IllegalArgumentException(ms.getMessage("vacation.policy.name.duplicate", null, null));
         }
 
-        // 5. effectiveType 필수 검증
+        // 3. grantTimeExists 필수 검증
+        if (Objects.isNull(data.getGrantTimeExists())) {
+            throw new IllegalArgumentException(ms.getMessage("vacation.policy.grantTimeExists.required", null, null));
+        }
+
+        // 4. grantTimeExists에 따른 grantTime 검증
+        if (com.lshdainty.porest.common.type.YNType.isY(data.getGrantTimeExists())) {
+            // grantTimeExists가 Y인 경우: grantTime 필수 및 양수 검증
+            if (Objects.isNull(data.getGrantTime())) {
+                throw new IllegalArgumentException(ms.getMessage("vacation.policy.grantTime.required", null, null));
+            }
+            if (data.getGrantTime().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new IllegalArgumentException(ms.getMessage("vacation.policy.grantTime.positive", null, null));
+            }
+        } else {
+            // grantTimeExists가 N인 경우: grantTime은 null이어야 함 (동적 계산)
+            if (Objects.nonNull(data.getGrantTime())) {
+                throw new IllegalArgumentException(ms.getMessage("vacation.policy.grantTime.unnecessary", null, null));
+            }
+        }
+
+        // 5. minuteGrantYn 필수 검증
+        if (Objects.isNull(data.getMinuteGrantYn())) {
+            throw new IllegalArgumentException(ms.getMessage("vacation.policy.minuteGrantYn.required", null, null));
+        }
+
+        // 6. effectiveType 필수 검증
         if (Objects.isNull(data.getEffectiveType())) {
             throw new IllegalArgumentException(ms.getMessage("vacation.policy.effectiveType.required", null, null));
         }
 
-        // 6. expirationType 필수 검증
+        // 7. expirationType 필수 검증
         if (Objects.isNull(data.getExpirationType())) {
             throw new IllegalArgumentException(ms.getMessage("vacation.policy.expirationType.required", null, null));
         }
