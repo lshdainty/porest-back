@@ -3,6 +3,7 @@ package com.lshdainty.porest.vacation.domain;
 import com.lshdainty.porest.common.domain.AuditingFields;
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.user.domain.User;
+import com.lshdainty.porest.vacation.type.ApprovalStatus;
 import com.lshdainty.porest.vacation.type.GrantStatus;
 import com.lshdainty.porest.vacation.type.VacationType;
 import jakarta.persistence.*;
@@ -265,7 +266,7 @@ public class VacationGrant extends AuditingFields {
         return getStatus().equals(GrantStatus.ACTIVE) &&
                 getRemainTime().compareTo(BigDecimal.ZERO) > 0 &&
                 !isExpired() &&
-                getIsDeleted().equals(YNType.N);
+                YNType.isN(getIsDeleted());
     }
 
     /**
@@ -314,7 +315,7 @@ public class VacationGrant extends AuditingFields {
      */
     public User getCurrentPendingApprover() {
         return vacationApprovals.stream()
-                .filter(approval -> approval.getApprovalStatus() == com.lshdainty.porest.vacation.type.ApprovalStatus.PENDING)
+                .filter(approval -> approval.getApprovalStatus() == ApprovalStatus.PENDING)
                 .min((a1, a2) -> Integer.compare(a1.getApprovalOrder(), a2.getApprovalOrder()))
                 .map(VacationApproval::getApprover)
                 .orElse(null);

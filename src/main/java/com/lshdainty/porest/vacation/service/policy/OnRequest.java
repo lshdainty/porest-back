@@ -1,5 +1,6 @@
 package com.lshdainty.porest.vacation.service.policy;
 
+import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.vacation.domain.VacationPolicy;
 import com.lshdainty.porest.vacation.repository.VacationPolicyCustomRepositoryImpl;
 import com.lshdainty.porest.vacation.service.dto.VacationPolicyServiceDto;
@@ -67,7 +68,7 @@ public class OnRequest implements VacationPolicyStrategy {
         }
 
         // 4. isFlexibleGrant에 따른 grantTime 검증
-        if (com.lshdainty.porest.common.type.YNType.isY(data.getIsFlexibleGrant())) {
+        if (YNType.isY(data.getIsFlexibleGrant())) {
             // isFlexibleGrant가 Y인 경우: grantTime은 null이어야 함 (가변 부여, 동적 계산)
             if (Objects.nonNull(data.getGrantTime())) {
                 throw new IllegalArgumentException(ms.getMessage("vacation.policy.grantTime.unnecessary", null, null));
@@ -110,9 +111,9 @@ public class OnRequest implements VacationPolicyStrategy {
         VacationType vacationType = policy.getVacationType();
 
         // isFlexibleGrant가 N인 경우: 정책에 정의된 시간 사용 (고정 부여)
-        if (policy.getIsFlexibleGrant() == com.lshdainty.porest.common.type.YNType.N) {
+        if (YNType.isN(policy.getIsFlexibleGrant())) {
             BigDecimal policyGrantTime = policy.getGrantTime();
-            if (policyGrantTime == null) {
+            if (Objects.isNull(policyGrantTime)) {
                 throw new IllegalArgumentException(
                         ms.getMessage("error.validate.vacation.grantTimeNotDefined", null, null)
                 );
@@ -124,12 +125,12 @@ public class OnRequest implements VacationPolicyStrategy {
         // OVERTIME 타입인 경우: 시작/종료 시간 차이를 계산
         if (vacationType == VacationType.OVERTIME) {
             // 필수 값 검증
-            if (requestStartTime == null) {
+            if (Objects.isNull(requestStartTime)) {
                 throw new IllegalArgumentException(
                         ms.getMessage("error.validate.vacation.startTimeRequired", null, null)
                 );
             }
-            if (requestEndTime == null) {
+            if (Objects.isNull(requestEndTime)) {
                 throw new IllegalArgumentException(
                         ms.getMessage("error.validate.vacation.endTimeRequired", null, null)
                 );
@@ -146,7 +147,7 @@ public class OnRequest implements VacationPolicyStrategy {
             long minutes = Duration.between(requestStartTime, requestEndTime).toMinutes();
 
             // minuteGrantYn에 따라 분단위 부여 여부 결정
-            if (policy.getMinuteGrantYn() == com.lshdainty.porest.common.type.YNType.Y) {
+            if (YNType.isY(policy.getMinuteGrantYn())) {
                 // 분단위 부여: 30분 단위로 계산
                 // 예: 90분 → 1.5시간 → 0.1875 (1시간 + 30분)
                 long hours = minutes / 60;

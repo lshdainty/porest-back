@@ -1,5 +1,6 @@
 package com.lshdainty.porest.vacation.service.policy;
 
+import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.vacation.domain.VacationPolicy;
 import com.lshdainty.porest.vacation.repository.VacationPolicyCustomRepositoryImpl;
 import com.lshdainty.porest.vacation.service.dto.VacationPolicyServiceDto;
@@ -73,7 +74,7 @@ public class ManualGrant implements VacationPolicyStrategy {
         }
 
         // 5. isFlexibleGrant에 따른 grantTime 검증
-        if (com.lshdainty.porest.common.type.YNType.isY(data.getIsFlexibleGrant())) {
+        if (YNType.isY(data.getIsFlexibleGrant())) {
             // isFlexibleGrant가 Y인 경우: grantTime은 null이어야 함 (가변 부여)
             if (Objects.nonNull(data.getGrantTime())) {
                 throw new IllegalArgumentException(ms.getMessage("vacation.policy.grantTime.unnecessary", null, null));

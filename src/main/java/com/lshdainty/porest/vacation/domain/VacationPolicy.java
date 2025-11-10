@@ -239,22 +239,22 @@ public class VacationPolicy extends AuditingFields {
      * @param name 정책명
      * @param desc 정책 설명
      * @param vacationType 휴가 타입
-     * @param grantTime 부여 시간 (grantTimeExists가 Y일 경우 필수)
-     * @param grantTimeExists 부여 시간 존재 여부
+     * @param grantTime 부여 시간 (isFlexibleGrant N일 경우 필수)
+     * @param isFlexibleGrant 가변 부여 여부
      * @param minuteGrantYn 분단위 부여 여부
      * @param approvalRequiredCount 승인 필요 인원수 (null 또는 0이면 즉시 부여)
      * @param effectiveType 유효기간 발효일 타입
      * @param expirationType 유효기간 만료일 타입
      * @return VacationPolicy
      */
-    public static VacationPolicy createOnRequestPolicy(String name, String desc, VacationType vacationType, BigDecimal grantTime, YNType grantTimeExists, YNType minuteGrantYn, Integer approvalRequiredCount, EffectiveType effectiveType, ExpirationType expirationType) {
+    public static VacationPolicy createOnRequestPolicy(String name, String desc, VacationType vacationType, BigDecimal grantTime, YNType isFlexibleGrant, YNType minuteGrantYn, Integer approvalRequiredCount, EffectiveType effectiveType, ExpirationType expirationType) {
         VacationPolicy vacationPolicy = new VacationPolicy();
         vacationPolicy.name = name;
         vacationPolicy.desc = desc;
         vacationPolicy.vacationType = vacationType;
         vacationPolicy.grantMethod = GrantMethod.ON_REQUEST;
         // grantTime 검증 및 설정
-        vacationPolicy.validateAndSetGrantTime(grantTime, grantTimeExists);
+        vacationPolicy.validateAndSetGrantTime(grantTime, isFlexibleGrant);
         vacationPolicy.minuteGrantYn = minuteGrantYn;
         vacationPolicy.approvalRequiredCount = approvalRequiredCount;
         vacationPolicy.effectiveType = effectiveType;
@@ -281,21 +281,21 @@ public class VacationPolicy extends AuditingFields {
      * @param name 정책명
      * @param desc 정책 설명
      * @param vacationType 휴가 타입
-     * @param grantTime 부여 시간 (grantTimeExists가 Y일 경우 필수, 관리자가 직접 지정할 수도 있음)
-     * @param grantTimeExists 부여 시간 존재 여부
+     * @param grantTime 부여 시간 (isFlexibleGrant N일 경우 필수, 관리자가 직접 지정할 수도 있음)
+     * @param isFlexibleGrant 가변 부여 여부
      * @param minuteGrantYn 분단위 부여 여부
      * @param effectiveType 유효기간 발효일 타입
      * @param expirationType 유효기간 만료일 타입
      * @return VacationPolicy
      */
-    public static VacationPolicy createManualGrantPolicy(String name, String desc, VacationType vacationType, BigDecimal grantTime, YNType grantTimeExists, YNType minuteGrantYn, EffectiveType effectiveType, ExpirationType expirationType) {
+    public static VacationPolicy createManualGrantPolicy(String name, String desc, VacationType vacationType, BigDecimal grantTime, YNType isFlexibleGrant, YNType minuteGrantYn, EffectiveType effectiveType, ExpirationType expirationType) {
         VacationPolicy vacationPolicy = new VacationPolicy();
         vacationPolicy.name = name;
         vacationPolicy.desc = desc;
         vacationPolicy.vacationType = vacationType;
         vacationPolicy.grantMethod = GrantMethod.MANUAL_GRANT;
         // grantTime 검증 및 설정
-        vacationPolicy.validateAndSetGrantTime(grantTime, grantTimeExists);
+        vacationPolicy.validateAndSetGrantTime(grantTime, isFlexibleGrant);
         vacationPolicy.minuteGrantYn = minuteGrantYn;
         vacationPolicy.effectiveType = effectiveType;
         vacationPolicy.expirationType = expirationType;
@@ -342,7 +342,7 @@ public class VacationPolicy extends AuditingFields {
         vacationPolicy.desc = desc;
         vacationPolicy.vacationType = vacationType;
         vacationPolicy.grantMethod = GrantMethod.REPEAT_GRANT;
-        // 스케줄러에 의한 휴가 생성이므로 grantTime은 무조건 있어야하고 grantTimeExists은 강제 N 설정
+        // 스케줄러에 의한 휴가 생성이므로 가변부여는 없음 무조건 정책 시간이 존재해야함
         vacationPolicy.grantTime = grantTime;
         vacationPolicy.isFlexibleGrant = YNType.N;
         vacationPolicy.minuteGrantYn = minuteGrantYn;

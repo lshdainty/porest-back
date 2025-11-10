@@ -262,7 +262,7 @@ public class RepeatGrant implements VacationPolicyStrategy {
         }
 
         // 1회성 부여(isRecurring=N)인 경우 maxGrantCount 필수
-        if (YNType.N.equals(isRecurring)) {
+        if (YNType.isN(isRecurring)) {
             if (Objects.isNull(maxGrantCount)) {
                 throw new IllegalArgumentException(ms.getMessage("vacation.policy.maxGrantCount.required", null, null));
             }
@@ -272,7 +272,7 @@ public class RepeatGrant implements VacationPolicyStrategy {
         }
 
         // 반복 부여(isRecurring=Y)인 경우 maxGrantCount는 null이어야 함
-        if (YNType.Y.equals(isRecurring) && Objects.nonNull(maxGrantCount)) {
+        if (YNType.isY(isRecurring) && Objects.nonNull(maxGrantCount)) {
             throw new IllegalArgumentException(ms.getMessage("vacation.policy.maxGrantCount.unnecessary", null, null));
         }
     }
@@ -303,7 +303,7 @@ public class RepeatGrant implements VacationPolicyStrategy {
         }
 
         // 1회성 부여 정책 처리: 이미 부여일이 지났다면 null 반환 (재부여 방지)
-        if (YNType.N.equals(isRecurring)) {
+        if (YNType.isN(isRecurring)) {
             // 첫 부여일이 지났다면 더 이상 부여하지 않음
             if (!baseDate.isBefore(firstDate)) {
                 return null;
@@ -542,7 +542,7 @@ public class RepeatGrant implements VacationPolicyStrategy {
         description.append(" 부여");
 
         // 5. 1회성 부여 여부
-        if (YNType.N.equals(isRecurring) && maxGrantCount != null) {
+        if (YNType.isN(isRecurring) && maxGrantCount != null) {
             // 첫 부여일 기준으로 몇 년 후인지 계산
             LocalDateTime firstGrantDate = policy.getFirstGrantDate();
             if (firstGrantDate != null && repeatUnit == RepeatUnit.YEARLY && repeatInterval != null) {
