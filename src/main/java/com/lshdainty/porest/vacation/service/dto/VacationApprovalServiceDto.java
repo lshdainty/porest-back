@@ -40,6 +40,12 @@ public class VacationApprovalServiceDto {
     private LocalDateTime approvalDate;
     // 거부 사유
     private String rejectionReason;
+    // 승인 순서
+    private Integer approvalOrder;
+    // 승인자 ID
+    private String approverId;
+    // 승인자 이름
+    private String approverName;
 
     @Override
     public String toString() {

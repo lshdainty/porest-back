@@ -1213,6 +1213,44 @@ public class VacationService {
     }
 
     /**
+     * 휴가 신청 취소 처리
+     *
+     * @param vacationGrantId 휴가 부여 ID
+     * @param userId 신청자 ID
+     * @return 취소된 VacationGrant ID
+     */
+    @Transactional
+    public Long cancelVacationRequest(Long vacationGrantId, String userId) {
+        // 1. VacationGrant 조회
+        VacationGrant vacationGrant = vacationGrantRepository.findById(vacationGrantId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        ms.getMessage("error.notFound.vacationGrant", null, null)
+                ));
+
+        // 2. 신청자 권한 검증 (신청자만 취소 가능)
+        if (!vacationGrant.getUser().getId().equals(userId)) {
+            throw new IllegalArgumentException(
+                    ms.getMessage("error.validate.vacation.notAuthorizedRequester", null, null)
+            );
+        }
+
+        // 3. PENDING 상태인지 확인 (한 명도 승인하지 않은 상태에서만 취소 가능)
+        if (vacationGrant.getStatus() != GrantStatus.PENDING) {
+            throw new IllegalArgumentException(
+                    ms.getMessage("error.validate.vacation.cannotCancelAfterApproval", null, null)
+            );
+        }
+
+        // 4. 취소 처리
+        vacationGrant.cancel();
+
+        log.info("휴가 신청 취소 완료 - VacationGrant ID: {}, User: {}",
+                vacationGrantId, userId);
+
+        return vacationGrant.getId();
+    }
+
+    /**
      * 승인자의 대기 중인 승인 목록 조회
      *
      * @param approverId 승인자 ID
@@ -1263,6 +1301,20 @@ public class VacationService {
                     // 현재 승인 대기 중인 승인자 조회
                     User currentApprover = grant.getCurrentPendingApprover();
 
+                    // 승인자 목록 조회 (approvalOrder 순서대로 정렬됨)
+                    List<VacationApproval> approvals = vacationApprovalRepository.findByVacationGrantId(grant.getId());
+                    List<VacationApprovalServiceDto> approvers = approvals.stream()
+                            .sorted((a1, a2) -> Integer.compare(a1.getApprovalOrder(), a2.getApprovalOrder()))
+                            .map(approval -> VacationApprovalServiceDto.builder()
+                                    .id(approval.getId())
+                                    .approverId(approval.getApprover().getId())
+                                    .approverName(approval.getApprover().getName())
+                                    .approvalOrder(approval.getApprovalOrder())
+                                    .approvalStatus(approval.getApprovalStatus())
+                                    .approvalDate(approval.getApprovalDate())
+                                    .build())
+                            .toList();
+
                     return VacationServiceDto.builder()
                             .id(grant.getId())
                             .policyId(grant.getPolicy().getId())
@@ -1281,6 +1333,7 @@ public class VacationService {
                             .createDate(grant.getCreateDate())
                             .currentApproverId(currentApprover != null ? currentApprover.getId() : null)
                             .currentApproverName(currentApprover != null ? currentApprover.getName() : null)
+                            .approvers(approvers)
                             .build();
                 })
                 .toList();
@@ -1374,13 +1427,18 @@ public class VacationService {
                 .filter(grant -> grant.getStatus() == GrantStatus.REJECTED)
                 .count();
 
-        // 10. 획득 휴가 시간 (승인된 건만)
+        // 10. 취소 건수
+        long canceledCount = allGrants.stream()
+                .filter(grant -> grant.getStatus() == GrantStatus.CANCELED)
+                .count();
+
+        // 11. 획득 휴가 시간 (승인된 건만)
         BigDecimal acquiredVacationTime = allGrants.stream()
                 .filter(grant -> grant.getStatus() == GrantStatus.ACTIVE)
                 .map(VacationGrant::getGrantTime)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // 11. 획득 휴가 일수 문자열
+        // 12. 획득 휴가 일수 문자열
         String acquiredVacationTimeStr = VacationTimeType.convertValueToDay(acquiredVacationTime);
 
         return VacationServiceDto.builder()
@@ -1393,6 +1451,7 @@ public class VacationService {
                 .approvedCount(approvedCount)
                 .approvalRate(approvalRate)
                 .rejectedCount(rejectedCount)
+                .canceledCount(canceledCount)
                 .acquiredVacationTime(acquiredVacationTime)
                 .acquiredVacationTimeStr(acquiredVacationTimeStr)
                 .grantsList(allGrants)

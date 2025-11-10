@@ -375,6 +375,13 @@ public class VacationApiDto {
     @Getter
     @AllArgsConstructor
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class CancelVacationRequestResp {
+        private Long vacationGrantId;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class GetPendingApprovalsByApproverResp {
         private List<PendingApprovalInfo> pendingApprovals;
 
@@ -425,6 +432,20 @@ public class VacationApiDto {
         private LocalDateTime createDate;  // 신청일
         private String currentApproverId;  // 현재 승인 대기 중인 승인자 ID
         private String currentApproverName;  // 현재 승인 대기 중인 승인자 이름
+        private List<ApproverInfo> approvers;  // 승인자 목록 (순서대로 정렬됨)
+
+        @Getter
+        @AllArgsConstructor
+        @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+        public static class ApproverInfo {
+            private Long approvalId;
+            private String approverId;
+            private String approverName;
+            private Integer approvalOrder;
+            private ApprovalStatus approvalStatus;
+            private String approvalStatusName;
+            private LocalDateTime approvalDate;
+        }
     }
 
     @Getter
@@ -440,6 +461,7 @@ public class VacationApiDto {
         private Long approvedCount;
         private Double approvalRate;
         private Long rejectedCount;
+        private Long canceledCount;
         private String acquiredVacationTimeStr;
         private BigDecimal acquiredVacationTime;
     }

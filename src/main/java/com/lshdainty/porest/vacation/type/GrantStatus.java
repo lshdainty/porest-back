@@ -45,11 +45,17 @@ public enum GrantStatus implements DisplayType {
      */
     PROGRESS("진행"),
     /**
-     * 거부<br>
+     * 반려<br>
      * 승인권자가 모두 거부를 한 경우 해당 값으로 update<br>
      * 해당 값일때는 휴가를 사용할 수 없음
      */
-    REJECTED("거부");
+    REJECTED("반려"),
+    /**
+     * 취소<br>
+     * 신청자가 신청한 휴가를 취소하면 해당 값으로 update<br>
+     * 해당 값은 한 명도 승인을 안한 경우에만 가능
+     */
+    CANCELED("취소");
 
     private String strName;
 

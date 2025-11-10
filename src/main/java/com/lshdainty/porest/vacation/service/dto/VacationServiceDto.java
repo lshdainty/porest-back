@@ -96,6 +96,8 @@ public class VacationServiceDto {
     private String currentApproverId;
     // 현재 승인 대기 중인 승인자 이름
     private String currentApproverName;
+    // 승인자 목록 (순서대로 정렬됨)
+    private List<VacationApprovalServiceDto> approvers;
     // 휴가 정책 기준 부여 시간
     private BigDecimal policyGrantTime;
 
@@ -118,11 +120,13 @@ public class VacationServiceDto {
     private Double approvalRate;
     // 9. 반려 건수
     private Long rejectedCount;
-    // 10. 획득 휴가 일수 (문자열 형태: "1일 2시간")
+    // 10. 취소 건수
+    private Long canceledCount;
+    // 11. 획득 휴가 일수 (문자열 형태: "1일 2시간")
     private String acquiredVacationTimeStr;
-    // 11. 획득 휴가 시간 (BigDecimal)
+    // 12. 획득 휴가 시간 (BigDecimal)
     private BigDecimal acquiredVacationTime;
-    // 12. 조회된 grants 리스트
+    // 13. 조회된 grants 리스트
     private List<VacationGrant> grantsList;
 
     @Override

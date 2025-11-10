@@ -260,16 +260,6 @@ public class VacationGrant extends AuditingFields {
     }
 
     /**
-     * 사용 가능 여부
-     */
-    public boolean isAvailable() {
-        return getStatus().equals(GrantStatus.ACTIVE) &&
-                getRemainTime().compareTo(BigDecimal.ZERO) > 0 &&
-                !isExpired() &&
-                YNType.isN(getIsDeleted());
-    }
-
-    /**
      * 승인 진행 중 상태로 변경<br>
      * 승인자가 2명 이상이고 1명 이상이 승인했을 때 PROGRESS 상태로 전환
      */
@@ -306,6 +296,20 @@ public class VacationGrant extends AuditingFields {
         }
         this.status = GrantStatus.REJECTED;
     }
+
+    /**
+     * 휴가 신청 취소 처리<br>
+     * 신청자가 직접 휴가 신청을 취소하면 CANCELED 상태로 전환<br>
+     * 한 명도 승인하지 않은 PENDING 상태에서만 취소 가능
+     */
+    public void cancel() {
+        if (this.status != GrantStatus.PENDING) {
+            throw new IllegalStateException("대기 상태가 아닌 휴가는 취소할 수 없습니다.");
+        }
+        this.status = GrantStatus.CANCELED;
+    }
+
+
 
     /**
      * 현재 승인 대기 중인 승인자 조회<br>
