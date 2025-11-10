@@ -61,21 +61,21 @@ public class VacationPolicy extends AuditingFields {
     private GrantMethod grantMethod;
 
     /**
+     * 가변 부여 여부<br>
+     * N면 휴가 부여시 grantTime으로 자동 입력<br>
+     * Y이면 휴가 부여시 관리자 혹은 OT 시간차에 의해 계산된 시간이 들어감<br>
+     * 해당 값이 N이면 무조건 grantTime은 0 이상이어야하고 Y이면 무조건 null이어야함
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "grant_time_exists")
+    private YNType isFlexibleGrant;
+
+    /**
      * 휴가 부여 기준 시간<br>
      * 정책에 설정된 휴가 부여 시간
      */
     @Column(name = "grant_time")
     private BigDecimal grantTime;
-
-    /**
-     * 기준 시간 존재 여부<br>
-     * Y면 휴가 부여시 grantTime으로 자동 입력<br>
-     * N이면 휴가 부여시 관리자 혹은 OT 시간차에 의해 계산된 시간이 들어감<br>
-     * 해당 값이 Y면 무조건 grantTime은 0 이상이어야하고 N이면 무조건 null이어야함
-     */
-    @Enumerated(EnumType.STRING)
-    @Column(name = "grant_time_exists")
-    private YNType grantTimeExists;
 
     /**
      * 분단위 부여 여부<br>
@@ -214,19 +214,20 @@ public class VacationPolicy extends AuditingFields {
 
     /**
      * grantTime 검증 및 설정 편의 메서드<br>
-     * grantTimeExists가 Y면 grantTime이 0.0625 이상인지 검증<br>
-     * grantTimeExists가 N이면 grantTime을 null로 강제 설정
+     * isFlexibleGrant가 Y면 grantTime을 null로 강제 설정<br>
+     * isFlexibleGrant가 N이면 grantTime을 넘겨받은 값으로 설정
      *
      * @param grantTime 부여 시간
-     * @param grantTimeExists 부여 시간 존재 여부
+     * @param isFlexibleGrant 가변 부여 여부
      */
-    public void validateAndSetGrantTime(BigDecimal grantTime, YNType grantTimeExists) {
-        if (YNType.isY(grantTimeExists)) {
-            this.grantTime = grantTime;
-            this.grantTimeExists = YNType.Y;
-        } else {
+    public void validateAndSetGrantTime(BigDecimal grantTime, YNType isFlexibleGrant) {
+        if (YNType.isY(isFlexibleGrant)) {
             this.grantTime = null;
-            this.grantTimeExists = YNType.N;
+            this.isFlexibleGrant = YNType.Y;
+        } else {
+
+            this.grantTime = grantTime;
+            this.isFlexibleGrant = YNType.N;
         }
     }
 
@@ -343,7 +344,7 @@ public class VacationPolicy extends AuditingFields {
         vacationPolicy.grantMethod = GrantMethod.REPEAT_GRANT;
         // 스케줄러에 의한 휴가 생성이므로 grantTime은 무조건 있어야하고 grantTimeExists은 강제 N 설정
         vacationPolicy.grantTime = grantTime;
-        vacationPolicy.grantTimeExists = YNType.N;
+        vacationPolicy.isFlexibleGrant = YNType.N;
         vacationPolicy.minuteGrantYn = minuteGrantYn;
         vacationPolicy.repeatUnit = repeatUnit;
         vacationPolicy.repeatInterval = repeatInterval;

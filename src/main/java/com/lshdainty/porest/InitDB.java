@@ -220,14 +220,15 @@ public class InitDB {
             LocalDateTime now = LocalDateTime.now();
 
             // 관리자 부여용 휴가정책 (MANUAL_GRANT - firstGrantDate, isRecurring, maxGrantCount 모두 null)
-            saveVacationPolicy("연차(관리자용)", "연차 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다. 1분기 4일, 2분기 4일, 3분기 4일, 4분기 3일이 기본 값입니다.", VacationType.ANNUAL, GrantMethod.MANUAL_GRANT, null, YNType.N, YNType.N, null, null, null, null, null, null, null, EffectiveType.START_OF_YEAR, ExpirationType.END_OF_YEAR, null);
-            saveVacationPolicy("OT(관리자용)", "연장 근무에 대한 보상 휴가 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다. 1시간 단위로 부여합니다. 예) 1시간 50분 근무 -> 1시간 부여, 2시간 10분 근무 -> 2시간 부여", VacationType.OVERTIME, GrantMethod.MANUAL_GRANT, null, YNType.N, YNType.N, null, null, null, null, null, null, null, EffectiveType.START_OF_YEAR, ExpirationType.END_OF_YEAR, null);
-            saveVacationPolicy("건강검진", "건강검진 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다. 반차가 기본 값입니다.", VacationType.HEALTH, GrantMethod.MANUAL_GRANT, null, YNType.N, YNType.N, null, null, null, null, null, null, null, EffectiveType.START_OF_YEAR, ExpirationType.END_OF_YEAR, null);
-            saveVacationPolicy("예비군(관리자용)", "예비군 훈련에 대한 휴가 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다. 동원(3일), 동미참(1일), 민방위(1일), 민방위(반차)가 있습니다.", VacationType.ARMY, GrantMethod.MANUAL_GRANT, null, YNType.N, YNType.N, null, null, null, null, null, null, null, EffectiveType.START_OF_YEAR, ExpirationType.END_OF_YEAR, null);
-            saveVacationPolicy("결혼(관리자용)", "결혼에 대한 휴가 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다. 5일이 기본 값입니다.", VacationType.WEDDING, GrantMethod.MANUAL_GRANT, null, YNType.N, YNType.N, null, null, null, null, null, null, null, EffectiveType.IMMEDIATELY, ExpirationType.SIX_MONTHS_AFTER_GRANT, null);
-            saveVacationPolicy("출산(관리자용)", "출산에 대한 휴가 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다. 10일이 기본 값입니다.", VacationType.MATERNITY, GrantMethod.MANUAL_GRANT, null, YNType.N, YNType.N, null, null, null, null, null, null, null, EffectiveType.IMMEDIATELY, ExpirationType.SIX_MONTHS_AFTER_GRANT, null);
-            saveVacationPolicy("조사(관리자용)", "부친상, 모친상에 대한 휴가 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다. 5일이 기본 값입니다.", VacationType.BEREAVEMENT, GrantMethod.MANUAL_GRANT, null, YNType.N, YNType.N, null, null, null, null, null, null, null, EffectiveType.IMMEDIATELY, ExpirationType.ONE_MONTHS_AFTER_GRANT, null);
-            saveVacationPolicy("조사(관리자용)", "빙부상, 빙모상, 시부상, 시모상에 대한 휴가 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다. 3일이 기본 값입니다.", VacationType.BEREAVEMENT, GrantMethod.MANUAL_GRANT, null, YNType.N, YNType.N, null, null, null, null, null, null, null, EffectiveType.IMMEDIATELY, ExpirationType.ONE_MONTHS_AFTER_GRANT, null);
+            // isFlexibleGrant = Y (관리자가 직접 시간을 지정하므로 가변 부여)
+            saveVacationPolicy("연차(관리자용)", "연차 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다. 1분기 4일, 2분기 4일, 3분기 4일, 4분기 3일이 기본 값입니다.", VacationType.ANNUAL, GrantMethod.MANUAL_GRANT, null, YNType.Y, YNType.N, null, null, null, null, null, null, null, EffectiveType.START_OF_YEAR, ExpirationType.END_OF_YEAR, null);
+            saveVacationPolicy("OT(관리자용)", "연장 근무에 대한 보상 휴가 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다. 1시간 단위로 부여합니다. 예) 1시간 50분 근무 -> 1시간 부여, 2시간 10분 근무 -> 2시간 부여", VacationType.OVERTIME, GrantMethod.MANUAL_GRANT, null, YNType.Y, YNType.N, null, null, null, null, null, null, null, EffectiveType.START_OF_YEAR, ExpirationType.END_OF_YEAR, null);
+            saveVacationPolicy("건강검진", "건강검진 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다. 반차가 기본 값입니다.", VacationType.HEALTH, GrantMethod.MANUAL_GRANT, null, YNType.Y, YNType.N, null, null, null, null, null, null, null, EffectiveType.START_OF_YEAR, ExpirationType.END_OF_YEAR, null);
+            saveVacationPolicy("예비군(관리자용)", "예비군 훈련에 대한 휴가 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다. 동원(3일), 동미참(1일), 민방위(1일), 민방위(반차)가 있습니다.", VacationType.ARMY, GrantMethod.MANUAL_GRANT, null, YNType.Y, YNType.N, null, null, null, null, null, null, null, EffectiveType.START_OF_YEAR, ExpirationType.END_OF_YEAR, null);
+            saveVacationPolicy("결혼(관리자용)", "결혼에 대한 휴가 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다. 5일이 기본 값입니다.", VacationType.WEDDING, GrantMethod.MANUAL_GRANT, null, YNType.Y, YNType.N, null, null, null, null, null, null, null, EffectiveType.IMMEDIATELY, ExpirationType.SIX_MONTHS_AFTER_GRANT, null);
+            saveVacationPolicy("출산(관리자용)", "출산에 대한 휴가 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다. 10일이 기본 값입니다.", VacationType.MATERNITY, GrantMethod.MANUAL_GRANT, null, YNType.Y, YNType.N, null, null, null, null, null, null, null, EffectiveType.IMMEDIATELY, ExpirationType.SIX_MONTHS_AFTER_GRANT, null);
+            saveVacationPolicy("조사(관리자용)", "부친상, 모친상에 대한 휴가 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다. 5일이 기본 값입니다.", VacationType.BEREAVEMENT, GrantMethod.MANUAL_GRANT, null, YNType.Y, YNType.N, null, null, null, null, null, null, null, EffectiveType.IMMEDIATELY, ExpirationType.ONE_MONTHS_AFTER_GRANT, null);
+            saveVacationPolicy("조사(관리자용)", "빙부상, 빙모상, 시부상, 시모상에 대한 휴가 정책입니다. 관리자가 직접 휴가를 부여하는 정책입니다. 3일이 기본 값입니다.", VacationType.BEREAVEMENT, GrantMethod.MANUAL_GRANT, null, YNType.Y, YNType.N, null, null, null, null, null, null, null, EffectiveType.IMMEDIATELY, ExpirationType.ONE_MONTHS_AFTER_GRANT, null);
 
             // ===== 반복 부여 휴가 정책 (REPEAT_GRANT) =====
 
@@ -261,15 +262,16 @@ public class InitDB {
             saveVacationPolicy("매일 포인트 휴가", "매일 자동 부여되는 포인트 휴가입니다. 0.1일씩 적립.", VacationType.ANNUAL, GrantMethod.REPEAT_GRANT, new BigDecimal("0.1000"), null, YNType.N, RepeatUnit.DAILY, 1, null, null, LocalDateTime.of(now.getYear(), 1, 1, 0, 0), YNType.Y, null, EffectiveType.START_OF_YEAR, ExpirationType.END_OF_YEAR, null);
 
             // 구성원 신청용 휴가 정책 (ON_REQUEST - firstGrantDate, isRecurring, maxGrantCount 모두 null)
-            saveVacationPolicy("동원훈련", "동원 훈련에 대한 휴가 정책입니다.", VacationType.ARMY, GrantMethod.ON_REQUEST, new BigDecimal("3.0000"), YNType.Y, YNType.N, null, null, null, null, null, null, null, EffectiveType.START_OF_YEAR, ExpirationType.END_OF_YEAR, 1);
-            saveVacationPolicy("동미참훈련", "동미참 훈련에 대한 휴가 정책입니다.", VacationType.ARMY, GrantMethod.ON_REQUEST, new BigDecimal("1.0000"), YNType.Y, YNType.N, null, null, null, null, null, null, null, EffectiveType.START_OF_YEAR, ExpirationType.END_OF_YEAR, 1);
-            saveVacationPolicy("예비군", "예비군 훈련에 대한 휴가 정책입니다.", VacationType.ARMY, GrantMethod.ON_REQUEST, new BigDecimal("1.0000"), YNType.Y, YNType.N, null, null, null, null, null, null, null, EffectiveType.START_OF_YEAR, ExpirationType.END_OF_YEAR, 1);
-            saveVacationPolicy("예비군(반차)", "예비군 훈련에 대한 반차 휴가 정책입니다.", VacationType.ARMY, GrantMethod.ON_REQUEST, new BigDecimal("0.5000"), YNType.Y, YNType.N, null, null, null, null, null, null, null, EffectiveType.START_OF_YEAR, ExpirationType.END_OF_YEAR, 1);
-            saveVacationPolicy("OT", "연장 근무에 대한 보상 휴가 정책입니다. 구성원이 직접 신청하는 휴가 정책입니다.", VacationType.OVERTIME, GrantMethod.ON_REQUEST, null, YNType.N, YNType.N, null, null, null, null, null, null, null, EffectiveType.START_OF_YEAR, ExpirationType.END_OF_YEAR, 1);
-            saveVacationPolicy("결혼", "결혼에 대한 휴가 정책입니다.", VacationType.WEDDING, GrantMethod.ON_REQUEST, new BigDecimal("5.0000"), YNType.Y, YNType.N, null, null, null, null, null, null, null, EffectiveType.IMMEDIATELY, ExpirationType.SIX_MONTHS_AFTER_GRANT, 1);
-            saveVacationPolicy("출산", "출산에 대한 휴가 정책입니다.", VacationType.MATERNITY, GrantMethod.ON_REQUEST, new BigDecimal("10.0000"), YNType.Y, YNType.N, null, null, null, null, null, null, null, EffectiveType.IMMEDIATELY, ExpirationType.SIX_MONTHS_AFTER_GRANT, 1);
-            saveVacationPolicy("조사", "부친상, 모친상에 대한 휴가 정책입니다.", VacationType.BEREAVEMENT, GrantMethod.ON_REQUEST, new BigDecimal("5.0000"), YNType.Y, YNType.N, null, null, null, null, null, null, null, EffectiveType.IMMEDIATELY, ExpirationType.ONE_MONTHS_AFTER_GRANT, 1);
-            saveVacationPolicy("조사", "빙부상, 빙모상, 시부상, 시모상에 대한 휴가 정책입니다.", VacationType.BEREAVEMENT, GrantMethod.ON_REQUEST, new BigDecimal("3.0000"), YNType.Y, YNType.N, null, null, null, null, null, null, null, EffectiveType.IMMEDIATELY, ExpirationType.ONE_MONTHS_AFTER_GRANT, 1);
+            // isFlexibleGrant = N (고정 시간 부여), isFlexibleGrant = Y (가변 부여, 예: OT는 시간 계산)
+            saveVacationPolicy("동원훈련", "동원 훈련에 대한 휴가 정책입니다.", VacationType.ARMY, GrantMethod.ON_REQUEST, new BigDecimal("3.0000"), YNType.N, YNType.N, null, null, null, null, null, null, null, EffectiveType.START_OF_YEAR, ExpirationType.END_OF_YEAR, 1);
+            saveVacationPolicy("동미참훈련", "동미참 훈련에 대한 휴가 정책입니다.", VacationType.ARMY, GrantMethod.ON_REQUEST, new BigDecimal("1.0000"), YNType.N, YNType.N, null, null, null, null, null, null, null, EffectiveType.START_OF_YEAR, ExpirationType.END_OF_YEAR, 1);
+            saveVacationPolicy("예비군", "예비군 훈련에 대한 휴가 정책입니다.", VacationType.ARMY, GrantMethod.ON_REQUEST, new BigDecimal("1.0000"), YNType.N, YNType.N, null, null, null, null, null, null, null, EffectiveType.START_OF_YEAR, ExpirationType.END_OF_YEAR, 1);
+            saveVacationPolicy("예비군(반차)", "예비군 훈련에 대한 반차 휴가 정책입니다.", VacationType.ARMY, GrantMethod.ON_REQUEST, new BigDecimal("0.5000"), YNType.N, YNType.N, null, null, null, null, null, null, null, EffectiveType.START_OF_YEAR, ExpirationType.END_OF_YEAR, 1);
+            saveVacationPolicy("OT", "연장 근무에 대한 보상 휴가 정책입니다. 구성원이 직접 신청하는 휴가 정책입니다.", VacationType.OVERTIME, GrantMethod.ON_REQUEST, null, YNType.Y, YNType.Y, null, null, null, null, null, null, null, EffectiveType.START_OF_YEAR, ExpirationType.END_OF_YEAR, 1);
+            saveVacationPolicy("결혼", "결혼에 대한 휴가 정책입니다.", VacationType.WEDDING, GrantMethod.ON_REQUEST, new BigDecimal("5.0000"), YNType.N, YNType.N, null, null, null, null, null, null, null, EffectiveType.IMMEDIATELY, ExpirationType.SIX_MONTHS_AFTER_GRANT, 1);
+            saveVacationPolicy("출산", "출산에 대한 휴가 정책입니다.", VacationType.MATERNITY, GrantMethod.ON_REQUEST, new BigDecimal("10.0000"), YNType.N, YNType.N, null, null, null, null, null, null, null, EffectiveType.IMMEDIATELY, ExpirationType.SIX_MONTHS_AFTER_GRANT, 1);
+            saveVacationPolicy("조사", "부친상, 모친상에 대한 휴가 정책입니다.", VacationType.BEREAVEMENT, GrantMethod.ON_REQUEST, new BigDecimal("5.0000"), YNType.N, YNType.N, null, null, null, null, null, null, null, EffectiveType.IMMEDIATELY, ExpirationType.ONE_MONTHS_AFTER_GRANT, 1);
+            saveVacationPolicy("조사", "빙부상, 빙모상, 시부상, 시모상에 대한 휴가 정책입니다.", VacationType.BEREAVEMENT, GrantMethod.ON_REQUEST, new BigDecimal("3.0000"), YNType.N, YNType.N, null, null, null, null, null, null, null, EffectiveType.IMMEDIATELY, ExpirationType.ONE_MONTHS_AFTER_GRANT, 1);
         }
 
         public void initSetUserVacationPolicy() {
@@ -690,12 +692,12 @@ public class InitDB {
             em.persist(dues);
         }
 
-        public void saveVacationPolicy(String name, String desc, VacationType vacationType, GrantMethod grantMethod, BigDecimal grantTime, YNType grantTimeExists, YNType minuteGrantYn, RepeatUnit repeatUnit, Integer repeatInterval, Integer specificMonths, Integer specificDays, LocalDateTime firstGrantDate, YNType isRecurring, Integer maxGrantCount, EffectiveType effectiveType, ExpirationType expirationType, Integer approvalRequiredCount) {
+        public void saveVacationPolicy(String name, String desc, VacationType vacationType, GrantMethod grantMethod, BigDecimal grantTime, YNType isFlexibleGrant, YNType minuteGrantYn, RepeatUnit repeatUnit, Integer repeatInterval, Integer specificMonths, Integer specificDays, LocalDateTime firstGrantDate, YNType isRecurring, Integer maxGrantCount, EffectiveType effectiveType, ExpirationType expirationType, Integer approvalRequiredCount) {
             VacationPolicy policy;
             switch (grantMethod) {
-                case MANUAL_GRANT -> policy = VacationPolicy.createManualGrantPolicy(name, desc, vacationType, grantTime, grantTimeExists, minuteGrantYn, effectiveType, expirationType);
+                case MANUAL_GRANT -> policy = VacationPolicy.createManualGrantPolicy(name, desc, vacationType, grantTime, isFlexibleGrant, minuteGrantYn, effectiveType, expirationType);
                 case REPEAT_GRANT -> policy = VacationPolicy.createRepeatGrantPolicy(name, desc, vacationType, grantTime, minuteGrantYn, repeatUnit, repeatInterval, specificMonths, specificDays, firstGrantDate, isRecurring, maxGrantCount, effectiveType, expirationType);
-                case ON_REQUEST -> policy = VacationPolicy.createOnRequestPolicy(name, desc, vacationType, grantTime, grantTimeExists, minuteGrantYn, approvalRequiredCount, effectiveType, expirationType);
+                case ON_REQUEST -> policy = VacationPolicy.createOnRequestPolicy(name, desc, vacationType, grantTime, isFlexibleGrant, minuteGrantYn, approvalRequiredCount, effectiveType, expirationType);
                 default -> {
                     return;
                 }

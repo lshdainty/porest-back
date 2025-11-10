@@ -282,7 +282,7 @@ public class VacationApiController {
                 .vacationType(data.getVacationType())
                 .grantMethod(data.getGrantMethod())
                 .grantTime(data.getGrantTime())
-                .grantTimeExists(data.getGrantTimeExists())
+                .isFlexibleGrant(data.getIsFlexibleGrant())
                 .minuteGrantYn(data.getMinuteGrantYn())
                 .repeatUnit(data.getRepeatUnit())
                 .repeatInterval(data.getRepeatInterval())
@@ -316,7 +316,7 @@ public class VacationApiController {
                 policy.getGrantMethod(),
                 policy.getGrantTime(),
                 VacationTimeType.convertValueToDay(policy.getGrantTime()),
-                policy.getGrantTimeExists(),
+                policy.getIsFlexibleGrant(),
                 policy.getMinuteGrantYn(),
                 policy.getRepeatUnit(),
                 policy.getRepeatInterval(),
@@ -345,7 +345,7 @@ public class VacationApiController {
                         vp.getGrantMethod(),
                         vp.getGrantTime(),
                         VacationTimeType.convertValueToDay(vp.getGrantTime()),
-                        vp.getGrantTimeExists(),
+                        vp.getIsFlexibleGrant(),
                         vp.getMinuteGrantYn(),
                         vp.getRepeatUnit(),
                         vp.getRepeatInterval(),
@@ -407,7 +407,7 @@ public class VacationApiController {
                         vp.getGrantMethod(),
                         vp.getGrantTime(),
                         VacationTimeType.convertValueToDay(vp.getGrantTime()),
-                        vp.getGrantTimeExists(),
+                        vp.getIsFlexibleGrant(),
                         vp.getMinuteGrantYn(),
                         vp.getRepeatUnit(),
                         vp.getRepeatInterval(),

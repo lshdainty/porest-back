@@ -30,7 +30,7 @@ public class OnRequest implements VacationPolicyStrategy {
                 data.getDesc(),
                 data.getVacationType(),
                 data.getGrantTime(),
-                data.getGrantTimeExists(),
+                data.getIsFlexibleGrant(),
                 data.getMinuteGrantYn(),
                 data.getApprovalRequiredCount(),
                 data.getEffectiveType(),   // effectiveType
@@ -45,7 +45,7 @@ public class OnRequest implements VacationPolicyStrategy {
      * 신청시 부여 방식의 휴가 정책 검증
      * 1. 정책명 필수 검증
      * 2. 정책명 중복 검증
-     * 3. grantTimeExists에 따른 grantTime 검증
+     * 3. isFlexibleGrant에 따른 grantTime 검증
      * 4. minuteGrantYn 필수 검증
      *
      * @param data 휴가 정책 데이터
@@ -61,24 +61,24 @@ public class OnRequest implements VacationPolicyStrategy {
             throw new IllegalArgumentException(ms.getMessage("vacation.policy.name.duplicate", null, null));
         }
 
-        // 3. grantTimeExists 필수 검증
-        if (Objects.isNull(data.getGrantTimeExists())) {
-            throw new IllegalArgumentException(ms.getMessage("vacation.policy.grantTimeExists.required", null, null));
+        // 3. isFlexibleGrant 필수 검증
+        if (Objects.isNull(data.getIsFlexibleGrant())) {
+            throw new IllegalArgumentException(ms.getMessage("vacation.policy.isFlexibleGrant.required", null, null));
         }
 
-        // 4. grantTimeExists에 따른 grantTime 검증
-        if (com.lshdainty.porest.common.type.YNType.isY(data.getGrantTimeExists())) {
-            // grantTimeExists가 Y인 경우: grantTime 필수 및 양수 검증
+        // 4. isFlexibleGrant에 따른 grantTime 검증
+        if (com.lshdainty.porest.common.type.YNType.isY(data.getIsFlexibleGrant())) {
+            // isFlexibleGrant가 Y인 경우: grantTime은 null이어야 함 (가변 부여, 동적 계산)
+            if (Objects.nonNull(data.getGrantTime())) {
+                throw new IllegalArgumentException(ms.getMessage("vacation.policy.grantTime.unnecessary", null, null));
+            }
+        } else {
+            // isFlexibleGrant가 N인 경우: grantTime 필수 및 양수 검증 (고정 부여)
             if (Objects.isNull(data.getGrantTime())) {
                 throw new IllegalArgumentException(ms.getMessage("vacation.policy.grantTime.required", null, null));
             }
             if (data.getGrantTime().compareTo(BigDecimal.ZERO) <= 0) {
                 throw new IllegalArgumentException(ms.getMessage("vacation.policy.grantTime.positive", null, null));
-            }
-        } else {
-            // grantTimeExists가 N인 경우: grantTime은 null이어야 함 (동적 계산)
-            if (Objects.nonNull(data.getGrantTime())) {
-                throw new IllegalArgumentException(ms.getMessage("vacation.policy.grantTime.unnecessary", null, null));
             }
         }
 
@@ -109,8 +109,8 @@ public class OnRequest implements VacationPolicyStrategy {
     public BigDecimal calculateGrantTime(VacationPolicy policy, LocalDateTime requestStartTime, LocalDateTime requestEndTime) {
         VacationType vacationType = policy.getVacationType();
 
-        // grantTimeExists가 Y인 경우: 정책에 정의된 시간 사용
-        if (policy.getGrantTimeExists() == com.lshdainty.porest.common.type.YNType.Y) {
+        // isFlexibleGrant가 N인 경우: 정책에 정의된 시간 사용 (고정 부여)
+        if (policy.getIsFlexibleGrant() == com.lshdainty.porest.common.type.YNType.N) {
             BigDecimal policyGrantTime = policy.getGrantTime();
             if (policyGrantTime == null) {
                 throw new IllegalArgumentException(
@@ -120,7 +120,7 @@ public class OnRequest implements VacationPolicyStrategy {
             return policyGrantTime;
         }
 
-        // grantTimeExists가 N인 경우: 동적 계산 (OVERTIME 등)
+        // isFlexibleGrant가 Y인 경우: 동적 계산 (가변 부여, OVERTIME 등)
         // OVERTIME 타입인 경우: 시작/종료 시간 차이를 계산
         if (vacationType == VacationType.OVERTIME) {
             // 필수 값 검증
