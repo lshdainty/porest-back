@@ -625,6 +625,9 @@ public class VacationApiController {
                 ))
                 .toList();
 
+        /*TODO: 휴가 결재자에 대한 정보를 배열로 반환하도록 하고 그 안에서 현결재자 정보를 넣는 방식으로 수정해야함
+        *  신청 정보 뷰어에서 정보를 보여주기위해 api 수정 필요*/
+
         return ApiResponse.success(resp);
     }
 
