@@ -1,6 +1,8 @@
 package com.lshdainty.porest.vacation.repository;
 
 import com.lshdainty.porest.vacation.domain.UserVacationPolicy;
+import com.lshdainty.porest.vacation.type.GrantMethod;
+import com.lshdainty.porest.vacation.type.VacationType;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -30,4 +32,7 @@ public interface UserVacationPolicyCustomRepository {
 
     // 오늘 부여 대상인 반복 부여 정책 조회 (스케줄러용)
     List<UserVacationPolicy> findRepeatGrantTargetsForToday(LocalDate today);
+
+    // 유저 ID로 휴가 정책 조회 (휴가 타입, 부여 방식 필터링 옵션)
+    List<UserVacationPolicy> findByUserIdWithFilters(String userId, VacationType vacationType, GrantMethod grantMethod);
 }

@@ -9,6 +9,7 @@ import com.lshdainty.porest.vacation.service.dto.VacationPolicyServiceDto;
 import com.lshdainty.porest.vacation.service.dto.VacationServiceDto;
 import com.lshdainty.porest.vacation.type.GrantMethod;
 import com.lshdainty.porest.vacation.type.GrantStatus;
+import com.lshdainty.porest.vacation.type.VacationType;
 import com.lshdainty.porest.vacation.type.VacationTimeType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -418,6 +419,42 @@ public class VacationApiController {
                         vp.getIsRecurring(),
                         vp.getMaxGrantCount(),
                         vp.getApprovalRequiredCount(),
+                        vp.getEffectiveType(),
+                        vp.getExpirationType(),
+                        vp.getRepeatGrantDescription()
+                ))
+                .toList();
+
+        return ApiResponse.success(resp);
+    }
+
+    /**
+     * 유저에게 부여된 휴가 정책 조회 (필터링 옵션 포함)
+     * GET /api/v1/users/{userId}/vacation-policies/assigned
+     */
+    @GetMapping("/api/v1/users/{userId}/vacation-policies/assigned")
+    public ApiResponse getUserAssignedVacationPoliciesWithFilters(
+            @PathVariable("userId") String userId,
+            @RequestParam(value = "vacationType", required = false) VacationType vacationType,
+            @RequestParam(value = "grantMethod", required = false) GrantMethod grantMethod) {
+        List<VacationPolicyServiceDto> policies = vacationService.getUserAssignedVacationPoliciesWithFilters(
+                userId, vacationType, grantMethod);
+
+        List<VacationApiDto.GetVacationPolicyAssignmentStatusResp.VacationPolicyInfo> resp = policies.stream()
+                .map(vp -> new VacationApiDto.GetVacationPolicyAssignmentStatusResp.VacationPolicyInfo(
+                        vp.getId(),
+                        vp.getName(),
+                        vp.getDesc(),
+                        vp.getVacationType(),
+                        vp.getGrantMethod(),
+                        vp.getGrantTime(),
+                        VacationTimeType.convertValueToDay(vp.getGrantTime()),
+                        vp.getIsFlexibleGrant(),
+                        vp.getMinuteGrantYn(),
+                        vp.getRepeatUnit(),
+                        vp.getRepeatInterval(),
+                        vp.getSpecificMonths(),
+                        vp.getSpecificDays(),
                         vp.getEffectiveType(),
                         vp.getExpirationType(),
                         vp.getRepeatGrantDescription()

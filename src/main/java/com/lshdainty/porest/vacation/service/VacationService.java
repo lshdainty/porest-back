@@ -1576,4 +1576,53 @@ public class VacationService {
                 .build();
     }
 
+    /**
+     * 유저에게 부여된 휴가 정책 조회 (필터링 옵션 포함)
+     * - 휴가 타입(vacationType)과 부여 방식(grantMethod)으로 필터링 가능
+     *
+     * @param userId 유저 ID
+     * @param vacationType 휴가 타입 필터 (Optional)
+     * @param grantMethod 부여 방식 필터 (Optional)
+     * @return 필터링된 휴가 정책 리스트
+     */
+    public List<VacationPolicyServiceDto> getUserAssignedVacationPoliciesWithFilters(
+            String userId, VacationType vacationType, GrantMethod grantMethod) {
+        // 유저 존재 확인
+        userService.checkUserExist(userId);
+
+        // 필터링된 유저 휴가 정책 조회
+        List<UserVacationPolicy> userVacationPolicies =
+                userVacationPolicyRepository.findByUserIdWithFilters(userId, vacationType, grantMethod);
+
+        return userVacationPolicies.stream()
+                .map(uvp -> {
+                    VacationPolicy policy = uvp.getVacationPolicy();
+
+                    // 반복 부여 정책일 경우 한국어 설명 생성
+                    String repeatGrantDescription = null;
+                    if (policy.getGrantMethod() == GrantMethod.REPEAT_GRANT) {
+                        repeatGrantDescription = RepeatGrant.generateRepeatGrantDescription(policy);
+                    }
+
+                    return VacationPolicyServiceDto.builder()
+                            .id(policy.getId())
+                            .name(policy.getName())
+                            .desc(policy.getDesc())
+                            .vacationType(policy.getVacationType())
+                            .grantMethod(policy.getGrantMethod())
+                            .grantTime(policy.getGrantTime())
+                            .isFlexibleGrant(policy.getIsFlexibleGrant())
+                            .minuteGrantYn(policy.getMinuteGrantYn())
+                            .repeatUnit(policy.getRepeatUnit())
+                            .repeatInterval(policy.getRepeatInterval())
+                            .specificMonths(policy.getSpecificMonths())
+                            .specificDays(policy.getSpecificDays())
+                            .effectiveType(policy.getEffectiveType())
+                            .expirationType(policy.getExpirationType())
+                            .repeatGrantDescription(repeatGrantDescription)
+                            .build();
+                })
+                .toList();
+    }
+
 }

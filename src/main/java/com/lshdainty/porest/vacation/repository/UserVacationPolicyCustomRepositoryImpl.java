@@ -3,6 +3,8 @@ package com.lshdainty.porest.vacation.repository;
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.vacation.domain.UserVacationPolicy;
 import com.lshdainty.porest.vacation.type.GrantMethod;
+import com.lshdainty.porest.vacation.type.VacationType;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
@@ -106,6 +108,31 @@ public class UserVacationPolicyCustomRepositoryImpl implements UserVacationPolic
                                 // 정책 자체가 삭제되지 않음
                                 .and(userVacationPolicy.vacationPolicy.isDeleted.eq(YNType.N))
                 )
+                .fetch();
+    }
+
+    @Override
+    public List<UserVacationPolicy> findByUserIdWithFilters(String userId, VacationType vacationType, GrantMethod grantMethod) {
+        BooleanBuilder builder = new BooleanBuilder();
+
+        // 기본 조건: userId와 삭제되지 않은 정책
+        builder.and(userVacationPolicy.user.id.eq(userId))
+                .and(userVacationPolicy.isDeleted.eq(YNType.N));
+
+        // vacationType 필터 (optional)
+        if (vacationType != null) {
+            builder.and(userVacationPolicy.vacationPolicy.vacationType.eq(vacationType));
+        }
+
+        // grantMethod 필터 (optional)
+        if (grantMethod != null) {
+            builder.and(userVacationPolicy.vacationPolicy.grantMethod.eq(grantMethod));
+        }
+
+        return query
+                .selectFrom(userVacationPolicy)
+                .join(userVacationPolicy.vacationPolicy).fetchJoin()
+                .where(builder)
                 .fetch();
     }
 }
