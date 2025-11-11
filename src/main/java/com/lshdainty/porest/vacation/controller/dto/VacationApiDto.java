@@ -465,4 +465,34 @@ public class VacationApiDto {
         private String acquiredVacationTimeStr;
         private BigDecimal acquiredVacationTime;
     }
+
+    @Getter
+    @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class GetVacationPolicyAssignmentStatusResp {
+        private List<VacationPolicyInfo> assignedPolicies;
+        private List<VacationPolicyInfo> unassignedPolicies;
+
+        @Getter
+        @AllArgsConstructor
+        @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+        public static class VacationPolicyInfo {
+            private Long vacationPolicyId;
+            private String vacationPolicyName;
+            private String vacationPolicyDesc;
+            private VacationType vacationType;
+            private GrantMethod grantMethod;
+            private BigDecimal grantTime;
+            private String grantTimeStr;
+            private YNType isFlexibleGrant;        // 가변 부여 여부 (Y: 가변, N: 고정)
+            private YNType minuteGrantYn;          // 분단위 부여 여부
+            private RepeatUnit repeatUnit;
+            private Integer repeatInterval;
+            private Integer specificMonths;
+            private Integer specificDays;
+            private EffectiveType effectiveType;
+            private ExpirationType expirationType;
+            private String repeatGrantDesc;        // 반복 부여 정책의 한국어 설명
+        }
+    }
 }

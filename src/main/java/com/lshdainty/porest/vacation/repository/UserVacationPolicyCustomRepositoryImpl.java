@@ -37,7 +37,9 @@ public class UserVacationPolicyCustomRepositoryImpl implements UserVacationPolic
         return query
                 .selectFrom(userVacationPolicy)
                 .join(userVacationPolicy.vacationPolicy).fetchJoin()
-                .where(userVacationPolicy.user.id.eq(userId))
+                .where(userVacationPolicy.user.id.eq(userId)
+                        .and(userVacationPolicy.isDeleted.eq(YNType.N))
+                )
                 .fetch();
     }
 

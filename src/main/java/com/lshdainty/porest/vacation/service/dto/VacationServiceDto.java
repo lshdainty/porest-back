@@ -129,6 +129,12 @@ public class VacationServiceDto {
     // 13. 조회된 grants 리스트
     private List<VacationGrant> grantsList;
 
+    // ========== 휴가 정책 할당 상태 관련 필드 ==========
+    // 할당된 휴가 정책 리스트
+    private List<VacationPolicyServiceDto> assignedPolicies;
+    // 할당되지 않은 휴가 정책 리스트
+    private List<VacationPolicyServiceDto> unassignedPolicies;
+
     @Override
     public String toString() {
         return "VacationServiceDto{" +

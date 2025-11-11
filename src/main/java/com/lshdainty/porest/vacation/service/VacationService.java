@@ -1458,4 +1458,75 @@ public class VacationService {
                 .build();
     }
 
+    /**
+     * 유저의 휴가 정책 할당 상태 조회
+     * - 전체 휴가 정책 중 해당 유저에게 할당된 정책과 할당되지 않은 정책을 분리하여 반환
+     *
+     * @param userId 유저 ID
+     * @return 할당된 정책 리스트와 할당되지 않은 정책 리스트
+     */
+    public VacationServiceDto getVacationPolicyAssignmentStatus(String userId) {
+        // 1. 유저 존재 확인
+        userService.checkUserExist(userId);
+
+        // 2. 모든 휴가 정책 조회
+        List<VacationPolicy> allPolicies = vacationPolicyRepository.findVacationPolicies();
+
+        // 3. 유저에게 할당된 휴가 정책 조회
+        List<UserVacationPolicy> userVacationPolicies = userVacationPolicyRepository.findByUserId(userId);
+
+        // 4. 할당된 정책 ID Set 생성 (빠른 조회를 위해)
+        Set<Long> assignedPolicyIds = userVacationPolicies.stream()
+                .map(uvp -> uvp.getVacationPolicy().getId())
+                .collect(Collectors.toSet());
+
+        // 5. 할당된 정책과 할당되지 않은 정책 분리
+        List<VacationPolicyServiceDto> assignedPolicies = allPolicies.stream()
+                .filter(p -> assignedPolicyIds.contains(p.getId()))
+                .map(p -> convertToPolicyServiceDto(p))
+                .toList();
+
+        List<VacationPolicyServiceDto> unassignedPolicies = allPolicies.stream()
+                .filter(p -> !assignedPolicyIds.contains(p.getId()))
+                .map(p -> convertToPolicyServiceDto(p))
+                .toList();
+
+        log.info("User {} vacation policy assignment status - assigned: {}, unassigned: {}",
+                userId, assignedPolicies.size(), unassignedPolicies.size());
+
+        return VacationServiceDto.builder()
+                .assignedPolicies(assignedPolicies)
+                .unassignedPolicies(unassignedPolicies)
+                .build();
+    }
+
+    /**
+     * VacationPolicy를 VacationPolicyServiceDto로 변환하는 헬퍼 메서드
+     */
+    private VacationPolicyServiceDto convertToPolicyServiceDto(VacationPolicy policy) {
+        // 반복 부여 정책일 경우 한국어 설명 생성
+        String repeatGrantDescription = null;
+        if (policy.getGrantMethod() == GrantMethod.REPEAT_GRANT) {
+            repeatGrantDescription = RepeatGrant.generateRepeatGrantDescription(policy);
+        }
+
+        return VacationPolicyServiceDto.builder()
+                .id(policy.getId())
+                .name(policy.getName())
+                .desc(policy.getDesc())
+                .vacationType(policy.getVacationType())
+                .grantMethod(policy.getGrantMethod())
+                .isFlexibleGrant(policy.getIsFlexibleGrant())
+                .grantTime(policy.getGrantTime())
+                .minuteGrantYn(policy.getMinuteGrantYn())
+                .repeatUnit(policy.getRepeatUnit())
+                .repeatInterval(policy.getRepeatInterval())
+                .specificMonths(policy.getSpecificMonths())
+                .specificDays(policy.getSpecificDays())
+                .effectiveType(policy.getEffectiveType())
+                .expirationType(policy.getExpirationType())
+                .repeatGrantDescription(repeatGrantDescription)
+                .build();
+    }
+
 }

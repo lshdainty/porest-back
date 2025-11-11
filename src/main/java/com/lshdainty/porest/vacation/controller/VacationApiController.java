@@ -684,4 +684,64 @@ public class VacationApiController {
                 stats.getAcquiredVacationTime()
         ));
     }
+
+    /**
+     * 유저의 휴가 정책 할당 상태 조회 (할당된 정책 + 할당되지 않은 정책)
+     * GET /api/v1/users/{userId}/vacation-policies/assignment-status
+     */
+    @GetMapping("/api/v1/users/{userId}/vacation-policies/assignment-status")
+    public ApiResponse getVacationPolicyAssignmentStatus(@PathVariable("userId") String userId) {
+        VacationServiceDto result = vacationService.getVacationPolicyAssignmentStatus(userId);
+
+        // 할당된 정책 변환
+        List<VacationApiDto.GetVacationPolicyAssignmentStatusResp.VacationPolicyInfo> assignedPolicies =
+                result.getAssignedPolicies().stream()
+                        .map(vp -> new VacationApiDto.GetVacationPolicyAssignmentStatusResp.VacationPolicyInfo(
+                                vp.getId(),
+                                vp.getName(),
+                                vp.getDesc(),
+                                vp.getVacationType(),
+                                vp.getGrantMethod(),
+                                vp.getGrantTime(),
+                                VacationTimeType.convertValueToDay(vp.getGrantTime()),
+                                vp.getIsFlexibleGrant(),
+                                vp.getMinuteGrantYn(),
+                                vp.getRepeatUnit(),
+                                vp.getRepeatInterval(),
+                                vp.getSpecificMonths(),
+                                vp.getSpecificDays(),
+                                vp.getEffectiveType(),
+                                vp.getExpirationType(),
+                                vp.getRepeatGrantDescription()
+                        ))
+                        .toList();
+
+        // 할당되지 않은 정책 변환
+        List<VacationApiDto.GetVacationPolicyAssignmentStatusResp.VacationPolicyInfo> unassignedPolicies =
+                result.getUnassignedPolicies().stream()
+                        .map(vp -> new VacationApiDto.GetVacationPolicyAssignmentStatusResp.VacationPolicyInfo(
+                                vp.getId(),
+                                vp.getName(),
+                                vp.getDesc(),
+                                vp.getVacationType(),
+                                vp.getGrantMethod(),
+                                vp.getGrantTime(),
+                                VacationTimeType.convertValueToDay(vp.getGrantTime()),
+                                vp.getIsFlexibleGrant(),
+                                vp.getMinuteGrantYn(),
+                                vp.getRepeatUnit(),
+                                vp.getRepeatInterval(),
+                                vp.getSpecificMonths(),
+                                vp.getSpecificDays(),
+                                vp.getEffectiveType(),
+                                vp.getExpirationType(),
+                                vp.getRepeatGrantDescription()
+                        ))
+                        .toList();
+
+        return ApiResponse.success(new VacationApiDto.GetVacationPolicyAssignmentStatusResp(
+                assignedPolicies,
+                unassignedPolicies
+        ));
+    }
 }
