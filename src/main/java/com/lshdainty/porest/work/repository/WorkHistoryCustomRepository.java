@@ -5,7 +5,7 @@ import com.lshdainty.porest.work.domain.WorkHistory;
 import java.util.List;
 import java.util.Optional;
 
-public interface WorkHistoryRepository {
+public interface WorkHistoryCustomRepository {
     // 신규 업무 이력 저장
     void save(WorkHistory workHistory);
     // 단건 업무 이력 조회

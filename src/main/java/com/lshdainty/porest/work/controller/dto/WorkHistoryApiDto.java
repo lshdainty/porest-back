@@ -14,10 +14,10 @@ public class WorkHistoryApiDto {
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class CreateWorkHistoryReq {
         private LocalDate workDate;
-        private Long workUser;
-        private Long workGroup;
-        private Long workPart;
-        private Long workClass;
+        private String workUserId;
+        private String workGroupCode;
+        private String workPartCode;
+        private String workClassCode;
         private BigDecimal workHour;
         private String workContent;
     }
@@ -34,10 +34,10 @@ public class WorkHistoryApiDto {
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class UpdateWorkHistoryReq {
         private LocalDate workDate;
-        private Long workUser;
-        private Long workGroup;
-        private Long workPart;
-        private Long workClass;
+        private String workUserId;
+        private String workGroupCode;
+        private String workPartCode;
+        private String workClassCode;
         private BigDecimal workHour;
         private String workContent;
     }

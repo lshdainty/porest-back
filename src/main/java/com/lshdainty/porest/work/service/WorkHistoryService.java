@@ -1,10 +1,11 @@
 package com.lshdainty.porest.work.service;
 
 import com.lshdainty.porest.user.domain.User;
-import com.lshdainty.porest.user.repository.UserRepositoryImpl;
+import com.lshdainty.porest.user.service.UserService;
 import com.lshdainty.porest.work.domain.WorkCode;
 import com.lshdainty.porest.work.domain.WorkHistory;
-import com.lshdainty.porest.work.repository.WorkHistoryRepositoryImpl;
+import com.lshdainty.porest.work.repository.WorkCodeRepositoryImpl;
+import com.lshdainty.porest.work.repository.WorkHistoryCustomRepositoryImpl;
 import com.lshdainty.porest.work.service.dto.WorkHistoryServiceDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,19 +23,23 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class WorkHistoryService {
     private final MessageSource ms;
-    private final WorkHistoryRepositoryImpl workHistoryRepository;
-    private final UserRepositoryImpl userRepository;
+    private final WorkHistoryCustomRepositoryImpl workHistoryRepository;
+    private final WorkCodeRepositoryImpl workCodeRepository;
+    private final UserService userService;
 
     @Transactional
     public Long createWorkHistory(WorkHistoryServiceDto data) {
-        User user = checkUserExist(data.getUser().getId());
+        User user = userService.checkUserExist(data.getUserId());
+        WorkCode group = checkWorkCodeExist(data.getGroupCode());
+        WorkCode part = checkWorkCodeExist(data.getPartCode());
+        WorkCode classes = checkWorkCodeExist(data.getClassCode());
 
         WorkHistory workHistory = WorkHistory.createWorkHistory(
                 data.getDate(),
                 user,
-                data.getGroup(),
-                data.getPart(),
-                data.getClasses(),
+                group,
+                part,
+                classes,
                 data.getHours(),
                 data.getContent()
         );
@@ -49,10 +54,11 @@ public class WorkHistoryService {
                 .map(w -> WorkHistoryServiceDto.builder()
                         .seq(w.getSeq())
                         .date(w.getDate())
-                        .user(w.getUser())
-                        .group(w.getGroup())
-                        .part(w.getPart())
-                        .classes(w.getClasses())
+                        .userId(w.getUser().getId())
+                        .userName(w.getUser().getName())
+                        .groupName(w.getGroup().getName())
+                        .partName(w.getPart().getName())
+                        .className(w.getClasses().getName())
                         .hours(w.getHours())
                         .content(w.getContent())
                         .build())
@@ -65,10 +71,11 @@ public class WorkHistoryService {
         return WorkHistoryServiceDto.builder()
                 .seq(w.getSeq())
                 .date(w.getDate())
-                .user(w.getUser())
-                .group(w.getGroup())
-                .part(w.getPart())
-                .classes(w.getClasses())
+                .userId(w.getUser().getId())
+                .userName(w.getUser().getName())
+                .groupName(w.getGroup().getName())
+                .partName(w.getPart().getName())
+                .className(w.getClasses().getName())
                 .hours(w.getHours())
                 .content(w.getContent())
                 .build();
@@ -77,14 +84,17 @@ public class WorkHistoryService {
     @Transactional
     public void updateWorkHistory(WorkHistoryServiceDto data) {
         WorkHistory workHistory = checkWorkHistoryExist(data.getSeq());
-        User user = data.getUser() != null ? checkUserExist(data.getUser().getId()) : null;
+        User user = userService.checkUserExist(data.getUserId());
+        WorkCode group = checkWorkCodeExist(data.getGroupCode());
+        WorkCode part = checkWorkCodeExist(data.getPartCode());
+        WorkCode classes = checkWorkCodeExist(data.getClassCode());
 
         workHistory.updateWorkHistory(
                 data.getDate(),
                 user,
-                data.getGroup(),
-                data.getPart(),
-                data.getClasses(),
+                group,
+                part,
+                classes,
                 data.getHours(),
                 data.getContent()
         );
@@ -98,13 +108,16 @@ public class WorkHistoryService {
 
     private WorkHistory checkWorkHistoryExist(Long seq) {
         Optional<WorkHistory> workHistory = workHistoryRepository.findById(seq);
-        workHistory.orElseThrow(() -> new IllegalArgumentException("업무 이력을 찾을 수 없습니다."));
+        workHistory.orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.work.history", null, null)));
         return workHistory.get();
     }
 
-    private User checkUserExist(String userId) {
-        Optional<User> user = userRepository.findById(userId);
-        user.orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        return user.get();
+    private WorkCode checkWorkCodeExist(String code) {
+        if (code == null) {
+            throw new IllegalArgumentException(ms.getMessage("error.validate.work.code.required", null, null));
+        }
+        Optional<WorkCode> workCode = workCodeRepository.findByCode(code);
+        workCode.orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.work.code", null, null)));
+        return workCode.get();
     }
 }

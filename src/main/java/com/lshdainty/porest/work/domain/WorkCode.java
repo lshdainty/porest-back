@@ -20,9 +20,15 @@ public class WorkCode extends AuditingFields {
     private Long seq;
 
     /**
+     * 코드 값 (예: "a", "a-1", "d-1")
+     */
+    @Column(name = "work_code", nullable = false, unique = true, length = 50)
+    private String code;
+
+    /**
      * 코드 이름
      */
-    @Column(name = "work_code_name")
+    @Column(name = "work_code_name", nullable = false, length = 100)
     private String name;
 
     /**
@@ -44,4 +50,41 @@ public class WorkCode extends AuditingFields {
     @Enumerated(EnumType.STRING)
     @Column(name = "is_deleted")
     private YNType isDeleted;
+
+    /**
+     * 업무 코드 생성 함수<br>
+     * Entity의 경우 Setter없이 Getter만 사용<br>
+     * 해당 메소드를 통해 업무 코드 생성할 것
+     *
+     * @return WorkCode
+     */
+    public static WorkCode createWorkCode(String code, String name, WorkCode parent, Integer orderSeq) {
+        WorkCode workCode = new WorkCode();
+        workCode.code = code;
+        workCode.name = name;
+        workCode.parent = parent;
+        workCode.orderSeq = orderSeq;
+        workCode.isDeleted = YNType.N;
+        return workCode;
+    }
+
+    /**
+     * 업무 코드 수정 함수<br>
+     * Entity의 경우 Setter없이 Getter만 사용<br>
+     * 해당 메소드를 통해 업무 코드 수정할 것
+     */
+    public void updateWorkCode(String code, String name, WorkCode parent, Integer orderSeq) {
+        if (code != null) { this.code = code; }
+        if (name != null) { this.name = name; }
+        if (parent != null) { this.parent = parent; }
+        if (orderSeq != null) { this.orderSeq = orderSeq; }
+    }
+
+    /**
+     * 업무 코드 삭제 함수 (Soft Delete)<br>
+     * is_deleted 플래그를 Y로 설정
+     */
+    public void deleteWorkCode() {
+        this.isDeleted = YNType.Y;
+    }
 }
