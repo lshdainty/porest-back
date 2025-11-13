@@ -2,6 +2,7 @@ package com.lshdainty.porest.work.domain;
 
 import com.lshdainty.porest.common.domain.AuditingFields;
 import com.lshdainty.porest.common.type.YNType;
+import com.lshdainty.porest.work.type.CodeType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -20,16 +21,23 @@ public class WorkCode extends AuditingFields {
     private Long seq;
 
     /**
-     * 코드 값 (예: "a", "a-1", "d-1")
+     * 코드 값
      */
-    @Column(name = "work_code", nullable = false, unique = true, length = 50)
+    @Column(name = "work_code")
     private String code;
 
     /**
-     * 코드 이름
+     * 코드명
      */
-    @Column(name = "work_code_name", nullable = false, length = 100)
+    @Column(name = "work_code_name")
     private String name;
+
+    /**
+     * 코드타입
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "code_type")
+    private CodeType type;
 
     /**
      * 부모 코드 (자기 참조)
@@ -58,10 +66,11 @@ public class WorkCode extends AuditingFields {
      *
      * @return WorkCode
      */
-    public static WorkCode createWorkCode(String code, String name, WorkCode parent, Integer orderSeq) {
+    public static WorkCode createWorkCode(String code, String name, CodeType type, WorkCode parent, Integer orderSeq) {
         WorkCode workCode = new WorkCode();
         workCode.code = code;
         workCode.name = name;
+        workCode.type = type;
         workCode.parent = parent;
         workCode.orderSeq = orderSeq;
         workCode.isDeleted = YNType.N;

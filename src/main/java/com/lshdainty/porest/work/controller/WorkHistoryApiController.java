@@ -2,8 +2,11 @@ package com.lshdainty.porest.work.controller;
 
 import com.lshdainty.porest.common.controller.ApiResponse;
 import com.lshdainty.porest.work.controller.dto.WorkHistoryApiDto;
+import com.lshdainty.porest.work.service.WorkCodeService;
 import com.lshdainty.porest.work.service.WorkHistoryService;
+import com.lshdainty.porest.work.service.dto.WorkCodeServiceDto;
 import com.lshdainty.porest.work.service.dto.WorkHistoryServiceDto;
+import com.lshdainty.porest.work.type.CodeType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +19,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class WorkHistoryApiController {
     private final WorkHistoryService workHistoryService;
+    private final WorkCodeService workCodeService;
 
     @PostMapping("/api/v1/work-histories")
     public ApiResponse createWorkHistory(@RequestBody WorkHistoryApiDto.CreateWorkHistoryReq data) {
@@ -84,5 +88,28 @@ public class WorkHistoryApiController {
     public ApiResponse deleteWorkHistory(@PathVariable("seq") Long seq) {
         workHistoryService.deleteWorkHistory(seq);
         return ApiResponse.success();
+    }
+
+    /**
+     * 업무 코드 통합 조회 API
+     * GET /api/v1/work-codes
+     */
+    @GetMapping("/api/v1/work-codes")
+    public ApiResponse getWorkCodes(
+            @RequestParam(value = "parent_work_code", required = false) String parentWorkCode,
+            @RequestParam(value = "parent_work_code_seq", required = false) Long parentWorkCodeSeq,
+            @RequestParam(value = "parent_is_null", required = false) Boolean parentIsNull,
+            @RequestParam(value = "type", required = false) CodeType type
+    ) {
+        List<WorkCodeServiceDto> workCodes = workCodeService.findWorkCodes(parentWorkCode, parentWorkCodeSeq, parentIsNull, type);
+        return ApiResponse.success(workCodes.stream()
+                .map(wc -> new WorkHistoryApiDto.WorkCodeResp(
+                        wc.getSeq(),
+                        wc.getCode(),
+                        wc.getName(),
+                        wc.getType(),
+                        wc.getOrderSeq()
+                ))
+                .collect(Collectors.toList()));
     }
 }

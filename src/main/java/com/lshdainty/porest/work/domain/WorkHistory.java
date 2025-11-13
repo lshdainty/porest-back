@@ -54,8 +54,8 @@ public class WorkHistory extends AuditingFields {
      * 업무 분류
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "work_class")
-    private WorkCode classes;
+    @JoinColumn(name = "work_division")
+    private WorkCode division;
 
     /**
      * 업무 시간
@@ -83,13 +83,13 @@ public class WorkHistory extends AuditingFields {
      *
      * @return WorkHistory
      */
-    public static WorkHistory createWorkHistory(LocalDate date, User user, WorkCode group, WorkCode part, WorkCode classes, BigDecimal hours, String content) {
+    public static WorkHistory createWorkHistory(LocalDate date, User user, WorkCode group, WorkCode part, WorkCode division, BigDecimal hours, String content) {
         WorkHistory workHistory = new WorkHistory();
         workHistory.date = date;
         workHistory.user = user;
         workHistory.group = group;
         workHistory.part = part;
-        workHistory.classes = classes;
+        workHistory.division = division;
         workHistory.hours = hours;
         workHistory.content = content;
         workHistory.isDeleted = YNType.N;
@@ -101,12 +101,12 @@ public class WorkHistory extends AuditingFields {
      * Entity의 경우 Setter없이 Getter만 사용<br>
      * 해당 메소드를 통해 업무 이력 수정할 것
      */
-    public void updateWorkHistory(LocalDate date, User user, WorkCode group, WorkCode part, WorkCode classes, BigDecimal hours, String content) {
+    public void updateWorkHistory(LocalDate date, User user, WorkCode group, WorkCode part, WorkCode division, BigDecimal hours, String content) {
         if (date != null) { this.date = date; }
         if (user != null) { this.user = user; }
         if (group != null) { this.group = group; }
         if (part != null) { this.part = part; }
-        if (classes != null) { this.classes = classes; }
+        if (division != null) { this.division = division; }
         if (hours != null) { this.hours = hours; }
         if (content != null) { this.content = content; }
     }

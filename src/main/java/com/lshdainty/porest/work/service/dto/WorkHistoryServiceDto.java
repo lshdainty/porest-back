@@ -1,5 +1,6 @@
 package com.lshdainty.porest.work.service.dto;
 
+import com.lshdainty.porest.user.domain.User;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,6 +13,7 @@ import java.time.LocalDate;
 public class WorkHistoryServiceDto {
     private Long seq;
     private LocalDate date;
+    private User user;
     private String userId;
     private String groupCode;
     private String partCode;

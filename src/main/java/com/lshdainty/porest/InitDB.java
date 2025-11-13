@@ -17,9 +17,12 @@ import com.lshdainty.porest.user.domain.User;
 import com.lshdainty.porest.user.type.RoleType;
 import com.lshdainty.porest.vacation.domain.*;
 import com.lshdainty.porest.vacation.type.*;
+import com.lshdainty.porest.work.domain.WorkCode;
+import com.lshdainty.porest.work.type.CodeType;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.jdbc.Work;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,6 +49,7 @@ public class InitDB {
         initService.initSetVacationPolicy();
         initService.initSetUserVacationPolicy();
         initService.initSetVacationGrant();
+        initService.initSetWorkCode();
     }
 
     @Component
@@ -664,6 +668,45 @@ public class InitDB {
                     .getResultList();
         }
 
+        public void initSetWorkCode() {
+            WorkCode group = saveWorkCode("work_group", "업무 그룹", CodeType.LABEL, null, 0);
+
+            WorkCode assignment = saveWorkCode("assignment", "과제", CodeType.OPTION, group, 1);
+            WorkCode assignmentWorkPart = saveWorkCode("work_part", "업무 파트", CodeType.LABEL, assignment, 0);
+
+            saveWorkCode("assignment_1", "업무이력 개발",  CodeType.OPTION, assignmentWorkPart, 1);
+            saveWorkCode("assignment_2", "휴가 사용 개발",  CodeType.OPTION, assignmentWorkPart, 2);
+            saveWorkCode("assignment_3", "권한 로직 개발",  CodeType.OPTION, assignmentWorkPart, 3);
+
+            WorkCode operation = saveWorkCode("operation", "운영", CodeType.OPTION, group, 2);
+            WorkCode operationWorkPart = saveWorkCode("work_part", "업무 파트", CodeType.LABEL, operation, 0);
+
+            saveWorkCode("operation_1", "시스템1 운영",  CodeType.OPTION, operationWorkPart, 1);
+            saveWorkCode("operation_2", "시스템2 운영",  CodeType.OPTION, operationWorkPart, 2);
+            saveWorkCode("operation_3", "시스템3 운영",  CodeType.OPTION, operationWorkPart, 3);
+            saveWorkCode("operation_4", "시스템4 운영",  CodeType.OPTION, operationWorkPart, 4);
+            saveWorkCode("operation_5", "시스템5 운영",  CodeType.OPTION, operationWorkPart, 5);
+
+            WorkCode project = saveWorkCode("project", "프로젝트", CodeType.OPTION, group, 3);
+            WorkCode projectWorkPart = saveWorkCode("work_part", "업무 파트", CodeType.LABEL, project, 0);
+
+            saveWorkCode("project_1", "신규 hr 개발 프로젝트",  CodeType.OPTION, projectWorkPart, 1);
+
+            WorkCode etc = saveWorkCode("etc", "기타", CodeType.OPTION, group, 4);
+            WorkCode etcWorkPart = saveWorkCode("work_part", "업무 파트", CodeType.LABEL, etc, 0);
+
+            saveWorkCode("etc_1", "기타",  CodeType.OPTION, etcWorkPart, 1);
+
+            WorkCode division = saveWorkCode("work_division", "업무 구분", CodeType.LABEL, null, 0);
+
+            saveWorkCode("division_1", "회의", CodeType.OPTION, division, 1);
+            saveWorkCode("division_2", "문서작성", CodeType.OPTION, division, 2);
+            saveWorkCode("division_3", "개발", CodeType.OPTION, division, 3);
+            saveWorkCode("division_4", "테스트", CodeType.OPTION, division, 4);
+            saveWorkCode("division_5", "교육", CodeType.OPTION, division, 5);
+            saveWorkCode("division_6", "휴가", CodeType.OPTION, division, 6);
+        }
+
         public void saveMember(String id, String name, String email, LocalDate birth, OriginCompanyType company, String workTime, YNType lunar) {
             String encodedPassword = passwordEncoder.encode("1234");
             User user = User.createUser(id, encodedPassword, name, email, birth, company, workTime, lunar, null, null);
@@ -709,6 +752,12 @@ public class InitDB {
             } else {
                 policy.updateCanDeleted();
             }
+        }
+
+        public WorkCode saveWorkCode(String code, String name, CodeType type, WorkCode parent, Integer orderSeq) {
+            WorkCode workCode = WorkCode.createWorkCode(code, name, type, parent, orderSeq);
+            em.persist(workCode);
+            return workCode;
         }
 
         private void saveUserVacationPolicy(User user, VacationPolicy vacationPolicy) {

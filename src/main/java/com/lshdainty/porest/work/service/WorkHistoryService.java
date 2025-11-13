@@ -58,7 +58,7 @@ public class WorkHistoryService {
                         .userName(w.getUser().getName())
                         .groupName(w.getGroup().getName())
                         .partName(w.getPart().getName())
-                        .className(w.getClasses().getName())
+                        .className(w.getDivision().getName())
                         .hours(w.getHours())
                         .content(w.getContent())
                         .build())
@@ -75,7 +75,7 @@ public class WorkHistoryService {
                 .userName(w.getUser().getName())
                 .groupName(w.getGroup().getName())
                 .partName(w.getPart().getName())
-                .className(w.getClasses().getName())
+                .className(w.getDivision().getName())
                 .hours(w.getHours())
                 .content(w.getContent())
                 .build();

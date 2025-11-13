@@ -2,6 +2,7 @@ package com.lshdainty.porest.work.controller.dto;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.lshdainty.porest.work.type.CodeType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -54,5 +55,16 @@ public class WorkHistoryApiDto {
         private String workClassName;
         private BigDecimal workHour;
         private String workContent;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class WorkCodeResp {
+        private Long workCodeSeq;
+        private String workCode;
+        private String workCodeName;
+        private CodeType codeType;
+        private Integer orderSeq;
     }
 }
