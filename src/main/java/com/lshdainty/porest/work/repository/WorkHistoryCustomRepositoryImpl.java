@@ -30,7 +30,7 @@ public class WorkHistoryCustomRepositoryImpl implements WorkHistoryCustomReposit
                 .join(workHistory.user).fetchJoin()
                 .leftJoin(workHistory.group).fetchJoin()
                 .leftJoin(workHistory.part).fetchJoin()
-                .leftJoin(workHistory.classes).fetchJoin()
+                .leftJoin(workHistory.division).fetchJoin()
                 .where(workHistory.seq.eq(id))
                 .fetchOne()
         );
@@ -43,7 +43,7 @@ public class WorkHistoryCustomRepositoryImpl implements WorkHistoryCustomReposit
                 .join(workHistory.user).fetchJoin()
                 .leftJoin(workHistory.group).fetchJoin()
                 .leftJoin(workHistory.part).fetchJoin()
-                .leftJoin(workHistory.classes).fetchJoin()
+                .leftJoin(workHistory.division).fetchJoin()
                 .where(workHistory.isDeleted.eq(YNType.N))
                 .orderBy(workHistory.date.desc())
                 .fetch();

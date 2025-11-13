@@ -26,4 +26,9 @@ public class WorkHistoryServiceDto {
     private String groupName;
     private String partName;
     private String className;
+
+    // WorkCode 전체 정보 조회용 필드
+    private WorkCodeServiceDto groupInfo;
+    private WorkCodeServiceDto partInfo;
+    private WorkCodeServiceDto classInfo;
 }

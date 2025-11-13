@@ -49,10 +49,11 @@ public class WorkHistoryApiDto {
     public static class WorkHistoryResp {
         private Long workHistorySeq;
         private LocalDate workDate;
+        private String workUserId;
         private String workUserName;
-        private String workGroupName;
-        private String workPartName;
-        private String workClassName;
+        private WorkCodeResp workGroup;
+        private WorkCodeResp workPart;
+        private WorkCodeResp workClass;
         private BigDecimal workHour;
         private String workContent;
     }

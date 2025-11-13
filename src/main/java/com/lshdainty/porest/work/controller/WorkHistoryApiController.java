@@ -43,10 +43,11 @@ public class WorkHistoryApiController {
                 .map(w -> new WorkHistoryApiDto.WorkHistoryResp(
                         w.getSeq(),
                         w.getDate(),
+                        w.getUserId(),
                         w.getUserName(),
-                        w.getGroupName(),
-                        w.getPartName(),
-                        w.getClassName(),
+                        convertToWorkCodeResp(w.getGroupInfo()),
+                        convertToWorkCodeResp(w.getPartInfo()),
+                        convertToWorkCodeResp(w.getClassInfo()),
                         w.getHours(),
                         w.getContent()
                 ))
@@ -59,10 +60,11 @@ public class WorkHistoryApiController {
         return ApiResponse.success(new WorkHistoryApiDto.WorkHistoryResp(
                 w.getSeq(),
                 w.getDate(),
+                w.getUserId(),
                 w.getUserName(),
-                w.getGroupName(),
-                w.getPartName(),
-                w.getClassName(),
+                convertToWorkCodeResp(w.getGroupInfo()),
+                convertToWorkCodeResp(w.getPartInfo()),
+                convertToWorkCodeResp(w.getClassInfo()),
                 w.getHours(),
                 w.getContent()
         ));
@@ -103,13 +105,20 @@ public class WorkHistoryApiController {
     ) {
         List<WorkCodeServiceDto> workCodes = workCodeService.findWorkCodes(parentWorkCode, parentWorkCodeSeq, parentIsNull, type);
         return ApiResponse.success(workCodes.stream()
-                .map(wc -> new WorkHistoryApiDto.WorkCodeResp(
-                        wc.getSeq(),
-                        wc.getCode(),
-                        wc.getName(),
-                        wc.getType(),
-                        wc.getOrderSeq()
-                ))
+                .map(this::convertToWorkCodeResp)
                 .collect(Collectors.toList()));
+    }
+
+    private WorkHistoryApiDto.WorkCodeResp convertToWorkCodeResp(WorkCodeServiceDto dto) {
+        if (dto == null) {
+            return null;
+        }
+        return new WorkHistoryApiDto.WorkCodeResp(
+                dto.getSeq(),
+                dto.getCode(),
+                dto.getName(),
+                dto.getType(),
+                dto.getOrderSeq()
+        );
     }
 }

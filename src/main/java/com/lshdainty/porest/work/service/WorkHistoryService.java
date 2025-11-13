@@ -6,6 +6,7 @@ import com.lshdainty.porest.work.domain.WorkCode;
 import com.lshdainty.porest.work.domain.WorkHistory;
 import com.lshdainty.porest.work.repository.WorkCodeRepositoryImpl;
 import com.lshdainty.porest.work.repository.WorkHistoryCustomRepositoryImpl;
+import com.lshdainty.porest.work.service.dto.WorkCodeServiceDto;
 import com.lshdainty.porest.work.service.dto.WorkHistoryServiceDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -59,6 +60,9 @@ public class WorkHistoryService {
                         .groupName(w.getGroup().getName())
                         .partName(w.getPart().getName())
                         .className(w.getDivision().getName())
+                        .groupInfo(convertToWorkCodeDto(w.getGroup()))
+                        .partInfo(convertToWorkCodeDto(w.getPart()))
+                        .classInfo(convertToWorkCodeDto(w.getDivision()))
                         .hours(w.getHours())
                         .content(w.getContent())
                         .build())
@@ -76,6 +80,9 @@ public class WorkHistoryService {
                 .groupName(w.getGroup().getName())
                 .partName(w.getPart().getName())
                 .className(w.getDivision().getName())
+                .groupInfo(convertToWorkCodeDto(w.getGroup()))
+                .partInfo(convertToWorkCodeDto(w.getPart()))
+                .classInfo(convertToWorkCodeDto(w.getDivision()))
                 .hours(w.getHours())
                 .content(w.getContent())
                 .build();
@@ -119,5 +126,18 @@ public class WorkHistoryService {
         Optional<WorkCode> workCode = workCodeRepository.findByCode(code);
         workCode.orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.work.code", null, null)));
         return workCode.get();
+    }
+
+    private WorkCodeServiceDto convertToWorkCodeDto(WorkCode workCode) {
+        if (workCode == null) {
+            return null;
+        }
+        return WorkCodeServiceDto.builder()
+                .seq(workCode.getSeq())
+                .code(workCode.getCode())
+                .name(workCode.getName())
+                .type(workCode.getType())
+                .orderSeq(workCode.getOrderSeq())
+                .build();
     }
 }
