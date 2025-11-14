@@ -7,7 +7,7 @@ pipeline {
     
     environment {
         DEPLOY_PATH = '~/porest-back'
-        JAR_NAME = 'application.jar'
+        JAR_NAME = 'porest-0.0.1-SNAPSHOT.jar'
     }
     
     stages {
