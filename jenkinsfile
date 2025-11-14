@@ -45,7 +45,7 @@ pipeline {
                     
                     // JAR 파일 복사
                     sh """
-                        cp build/libs/*.jar ${DEPLOY_PATH}/${JAR_NAME}
+                        cp build/libs/*-SNAPSHOT.jar ${DEPLOY_PATH}/${JAR_NAME}
                     """
                     
                     // 애플리케이션 재시작
