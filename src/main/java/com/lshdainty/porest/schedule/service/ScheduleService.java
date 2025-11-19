@@ -55,6 +55,19 @@ public class ScheduleService {
     }
 
     @Transactional
+    public Long updateSchedule(Long scheduleId, ScheduleServiceDto data) {
+        // 1. 기존 스케줄 삭제
+        deleteSchedule(scheduleId);
+
+        // 2. 새로운 스케줄 등록
+        Long newScheduleId = registSchedule(data);
+
+        log.info("스케줄 수정 완료 - 기존 ID: {}, 새로운 ID: {}", scheduleId, newScheduleId);
+
+        return newScheduleId;
+    }
+
+    @Transactional
     public void deleteSchedule(Long scheduleId) {
         Schedule schedule = checkScheduleExist(scheduleId);
 

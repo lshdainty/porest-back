@@ -30,6 +30,24 @@ public class ScheduleApiDto {
     @Getter
     @AllArgsConstructor
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class UpdateScheduleReq {
+        private String userId;
+        private ScheduleType scheduleType;
+        private String scheduleDesc;
+        private LocalDateTime startDate;
+        private LocalDateTime endDate;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class UpdateScheduleResp {
+        private Long scheduleId;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class SearchSchedulesByUserResp {
         private Long scheduleId;
         private ScheduleType scheduleType;

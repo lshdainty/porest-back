@@ -34,6 +34,30 @@ public class ScheduleApiController {
         return ApiResponse.success(new ScheduleApiDto.RegistScheduleResp(scheduleId));
     }
 
+    @PutMapping("/api/v1/schedule/{id}")
+    public ApiResponse updateSchedule(
+            @PathVariable("id") Long scheduleId,
+            @RequestBody ScheduleApiDto.UpdateScheduleReq data) {
+        Long newScheduleId = scheduleService.updateSchedule(
+                scheduleId,
+                ScheduleServiceDto.builder()
+                        .userId(data.getUserId())
+                        .type(data.getScheduleType())
+                        .desc(data.getScheduleDesc())
+                        .startDate(data.getStartDate())
+                        .endDate(data.getEndDate())
+                        .build()
+        );
+
+        return ApiResponse.success(new ScheduleApiDto.UpdateScheduleResp(newScheduleId));
+    }
+
+    @DeleteMapping("/api/v1/schedule/{id}")
+    public ApiResponse deleteSchedule(@PathVariable("id") Long scheduleId) {
+        scheduleService.deleteSchedule(scheduleId);
+        return ApiResponse.success();
+    }
+
     @GetMapping("/api/v1/schedules/user/{userNo}")
     public ApiResponse searchSchedulesByUser(@PathVariable("userNo") String userId) {
         List<Schedule> schedules = scheduleService.searchSchedulesByUser(userId);
@@ -73,12 +97,5 @@ public class ScheduleApiController {
                 .toList();
 
         return ApiResponse.success(resp);
-    }
-
-    @DeleteMapping("/api/v1/schedule/{id}")
-    public ApiResponse deleteSchedule(@PathVariable("id") Long scheduleId, HttpServletRequest req) {
-        String delUserId = "";   // 추후 로그인 한 사람의 id를 가져와서 삭제한 사람의 userNo에 세팅
-        scheduleService.deleteSchedule(scheduleId);
-        return ApiResponse.success();
     }
 }
