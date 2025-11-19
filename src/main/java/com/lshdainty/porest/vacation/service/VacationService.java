@@ -304,6 +304,27 @@ public class VacationService {
     }
 
     /**
+     * 휴가 사용 수정
+     * - 기존 휴가 사용 내역 삭제 후 새로운 휴가 사용 내역 등록
+     *
+     * @param vacationUsageId 수정할 휴가 사용 내역 ID
+     * @param data 새로운 휴가 사용 정보
+     * @return 새로 생성된 휴가 사용 내역 ID
+     */
+    @Transactional
+    public Long updateVacationUsage(Long vacationUsageId, VacationServiceDto data) {
+        // 1. 기존 휴가 사용 내역 삭제
+        cancelVacationUsage(vacationUsageId);
+
+        // 2. 새로운 휴가 사용 내역 등록
+        Long newVacationUsageId = useVacation(data);
+
+        log.info("휴가 사용 내역 수정 완료 - 기존 ID: {}, 새로운 ID: {}", vacationUsageId, newVacationUsageId);
+
+        return newVacationUsageId;
+    }
+
+    /**
      * 기간별 휴가 사용 내역 조회
      *
      * @param startDate 조회 시작일
@@ -316,15 +337,25 @@ public class VacationService {
 
         // VacationServiceDto로 변환
         return usages.stream()
-                .map(usage -> VacationServiceDto.builder()
-                        .id(usage.getId())
-                        .user(usage.getUser())
-                        .desc(usage.getDesc())
-                        .timeType(usage.getType())
-                        .startDate(usage.getStartDate())
-                        .endDate(usage.getEndDate())
-                        .usedTime(usage.getUsedTime())
-                        .build())
+                .map(usage -> {
+                    // VacationUsageDeduction에서 첫 번째 grant의 type 조회
+                    List<VacationUsageDeduction> deductions = vacationUsageDeductionRepository.findByUsageId(usage.getId());
+                    VacationType vacationType = null;
+                    if (!deductions.isEmpty()) {
+                        vacationType = deductions.get(0).getGrant().getType();
+                    }
+
+                    return VacationServiceDto.builder()
+                            .id(usage.getId())
+                            .user(usage.getUser())
+                            .desc(usage.getDesc())
+                            .timeType(usage.getType())
+                            .startDate(usage.getStartDate())
+                            .endDate(usage.getEndDate())
+                            .usedTime(usage.getUsedTime())
+                            .type(vacationType)
+                            .build();
+                })
                 .toList();
     }
 

@@ -156,6 +156,29 @@ public class VacationApiController {
     }
 
     /**
+     * 휴가 사용 내역 수정
+     * PUT /api/v1/vacation-usages/{id}
+     */
+    @PutMapping("/api/v1/vacation-usages/{id}")
+    public ApiResponse updateVacationUsage(
+            @PathVariable("id") Long vacationUsageId,
+            @RequestBody VacationApiDto.UpdateVacationUsageReq data) {
+        Long newVacationUsageId = vacationService.updateVacationUsage(
+                vacationUsageId,
+                VacationServiceDto.builder()
+                        .userId(data.getUserId())
+                        .type(data.getVacationType())
+                        .desc(data.getVacationDesc())
+                        .timeType(data.getVacationTimeType())
+                        .startDate(data.getStartDate())
+                        .endDate(data.getEndDate())
+                        .build()
+        );
+
+        return ApiResponse.success(new VacationApiDto.UpdateVacationUsageResp(newVacationUsageId));
+    }
+
+    /**
      * 휴가 사용 내역 삭제
      * DELETE /api/v1/vacation-usages/{id}
      */

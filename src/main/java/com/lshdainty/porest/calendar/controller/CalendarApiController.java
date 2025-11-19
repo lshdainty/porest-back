@@ -42,6 +42,7 @@ public class CalendarApiController {
                         s.getStartDate(),
                         s.getEndDate(),
                         "schedule",
+                        null,
                         s.getId()
                 ))
                 .toList());
@@ -57,6 +58,7 @@ public class CalendarApiController {
                         v.getStartDate(),
                         v.getEndDate(),
                         "vacation",
+                        v.getType(),
                         v.getId()
                 ))
                 .toList());

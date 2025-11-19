@@ -35,6 +35,25 @@ public class VacationApiDto {
     @Getter
     @AllArgsConstructor
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class UpdateVacationUsageReq {
+        private String userId;
+        private VacationType vacationType;
+        private String vacationDesc;
+        private VacationTimeType vacationTimeType;
+        private LocalDateTime startDate;
+        private LocalDateTime endDate;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class UpdateVacationUsageResp {
+        private Long vacationUsageId;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class GetUserVacationHistoryResp {
         private List<VacationGrantInfo> grants;  // 부여받은 내역
         private List<VacationUsageInfo> usages;  // 사용한 내역
