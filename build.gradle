@@ -62,8 +62,8 @@ dependencies {
 }
 
 tasks.named('test') {
-    enabled = false
-//    useJUnitPlatform()
+    enabled = true
+    useJUnitPlatform()
 //    finalizedBy jacocoTestReport
 }
 
@@ -79,9 +79,9 @@ def jacocoExcludes = [
     '**/lib/**',
     '**/type/**',
     '**/api/dto/**',
+    '**/service/**',    // 추후 제외대상
     '**/service/dto/**',
     '**/repository/dto/**',
-    '**/repository/*Custom*',
     '**/SessionConst*'
 ]
 
