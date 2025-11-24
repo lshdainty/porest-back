@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.stream.Collectors;
+import com.lshdainty.porest.permission.domain.Role;
 import java.util.Optional;
 
 @Service
@@ -35,7 +37,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
 
         User user = userOptional.get();
-        log.info("User found: {}, Role: {}", user.getId(), user.getRole());
+        log.info("User found: {}, Roles: {}", user.getId(), user.getRoles().stream().map(Role::getName).collect(Collectors.joining(", ")));
 
         return new CustomUserDetails(user);
     }
@@ -50,9 +52,9 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         @Override
         public Collection<? extends GrantedAuthority> getAuthorities() {
-            return Collections.singletonList(
-                new SimpleGrantedAuthority("ROLE_" + user.getRole().name())
-            );
+            return user.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
+                .collect(Collectors.toList());
         }
 
         @Override

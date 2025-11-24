@@ -6,6 +6,8 @@ import com.lshdainty.porest.user.repository.UserRepositoryImpl;
 import com.lshdainty.porest.user.service.dto.UserServiceDto;
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.common.util.PorestFile;
+import com.lshdainty.porest.permission.domain.Role;
+import com.lshdainty.porest.permission.repository.RoleRepository;
 import com.lshdainty.porest.user.type.StatusType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +32,7 @@ import java.util.stream.Collectors;
 public class UserService {
     private final MessageSource ms;
     private final UserRepositoryImpl userRepositoryImpl;
+    private final RoleRepository roleRepository;
     private final EmailService emailService;
     private final DepartmentCustomRepositoryImpl departmentRepository;
 
@@ -84,7 +87,7 @@ public class UserService {
                 .pwd(user.getPwd())
                 .name(user.getName())
                 .email(user.getEmail())
-                .role(user.getRole())
+                .roleNames(user.getRoles().stream().map(Role::getName).collect(Collectors.toList()))
                 .birth(user.getBirth())
                 .workTime(user.getWorkTime())
                 .joinDate(user.getJoinDate())
@@ -122,7 +125,7 @@ public class UserService {
                             .pwd(user.getPwd())
                             .name(user.getName())
                             .email(user.getEmail())
-                            .role(user.getRole())
+                            .roleNames(user.getRoles().stream().map(Role::getName).collect(Collectors.toList()))
                             .birth(user.getBirth())
                             .workTime(user.getWorkTime())
                             .joinDate(user.getJoinDate())
@@ -153,11 +156,14 @@ public class UserService {
             profileDto = copyTempProfileToOrigin(data);
         }
 
-        user.updateUser(
-                data.getName(),
-                data.getEmail(),
-                data.getRole(),
-                data.getBirth(),
+        List<Role> roles = null;
+        if (data.getRoleNames() != null) {
+            roles = data.getRoleNames().stream()
+                    .map(name -> roleRepository.findById(name).orElseThrow(() -> new IllegalArgumentException("Role not found: " + name)))
+                    .collect(Collectors.toList());
+        }
+
+        user.updateUser(data.getName(), data.getEmail(), roles, data.getBirth(),
                 data.getCompany(),
                 data.getWorkTime(),
                 data.getLunarYN(),
@@ -285,7 +291,7 @@ public class UserService {
                 .company(user.getCompany())
                 .workTime(user.getWorkTime())
                 .joinDate(user.getJoinDate())
-                .role(user.getRole())
+                .roleNames(user.getRoles().stream().map(Role::getName).collect(Collectors.toList()))
                 .invitationSentAt(user.getInvitationSentAt())
                 .invitationExpiresAt(user.getInvitationExpiresAt())
                 .invitationStatus(user.getInvitationStatus())
@@ -309,7 +315,7 @@ public class UserService {
                 .email(user.getEmail())
                 .company(user.getCompany())
                 .workTime(user.getWorkTime())
-                .role(user.getRole())
+                .roleNames(user.getRoles().stream().map(Role::getName).collect(Collectors.toList()))
                 .invitationSentAt(user.getInvitationSentAt())
                 .invitationExpiresAt(user.getInvitationExpiresAt())
                 .invitationStatus(user.getInvitationStatus())
@@ -352,7 +358,7 @@ public class UserService {
                 .company(user.getCompany())
                 .workTime(user.getWorkTime())
                 .joinDate(user.getJoinDate())
-                .role(user.getRole())
+                .roleNames(user.getRoles().stream().map(Role::getName).collect(Collectors.toList()))
                 .invitationSentAt(user.getInvitationSentAt())
                 .invitationExpiresAt(user.getInvitationExpiresAt())
                 .invitationStatus(user.getInvitationStatus())
@@ -449,7 +455,7 @@ public class UserService {
                             .id(approver.getId())
                             .name(approver.getName())
                             .email(approver.getEmail())
-                            .role(approver.getRole())
+                            .roleNames(approver.getRoles().stream().map(Role::getName).collect(Collectors.toList()))
                             .departmentId(dept.getId())
                             .departmentName(dept.getName())
                             .departmentNameKR(dept.getNameKR())

@@ -8,6 +8,7 @@ import com.lshdainty.porest.department.controller.dto.DepartmentApiDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequiredArgsConstructor
@@ -16,6 +17,7 @@ public class CompanyApiController {
     private final CompanyService companyService;
 
     @PostMapping("/api/v1/company")
+    @PreAuthorize("hasAuthority('COMPANY_MANAGE')")
     public ApiResponse registCompany(@RequestBody CompanyApiDto.RegistCompanyReq data) {
         String companyId = companyService.regist(CompanyServiceDto.builder()
                 .id(data.getCompanyId())
@@ -28,6 +30,7 @@ public class CompanyApiController {
     }
 
     @GetMapping("/api/v1/company")
+    @PreAuthorize("hasAuthority('COMPANY_READ')")
     public ApiResponse searchCompany() {
         CompanyServiceDto company = companyService.searchCompany();
 
@@ -43,6 +46,7 @@ public class CompanyApiController {
     }
 
     @PutMapping("/api/v1/company/{id}")
+    @PreAuthorize("hasAuthority('COMPANY_MANAGE')")
     public ApiResponse editCompany(@PathVariable("id") String companyId, @RequestBody CompanyApiDto.EditCompanyReq data) {
         companyService.edit(CompanyServiceDto.builder()
                 .id(companyId)
@@ -54,12 +58,14 @@ public class CompanyApiController {
     }
 
     @DeleteMapping("/api/v1/company/{id}")
+    @PreAuthorize("hasAuthority('COMPANY_MANAGE')")
     public ApiResponse deleteCompany(@PathVariable("id") String companyId) {
         companyService.delete(companyId);
         return ApiResponse.success();
     }
 
     @GetMapping("/api/v1/company/{id}/departments")
+    @PreAuthorize("hasAuthority('COMPANY_READ')")
     public ApiResponse searchCompanyWithDepartments(@PathVariable("id") String companyId) {
         CompanyServiceDto company = companyService.searchCompanyWithDepartments(companyId);
 

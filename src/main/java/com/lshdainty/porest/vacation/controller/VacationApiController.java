@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,6 +31,7 @@ public class VacationApiController {
      * POST /api/v1/vacation-usages
      */
     @PostMapping("/api/v1/vacation-usages")
+    @PreAuthorize("hasAuthority('VACATION_REQUEST')")
     public ApiResponse useVacation(@RequestBody VacationApiDto.UseVacationReq data) {
         Long vacationUsageId = vacationService.useVacation(VacationServiceDto.builder()
                         .userId(data.getUserId())
@@ -49,6 +51,7 @@ public class VacationApiController {
      * GET /api/v1/users/{userId}/vacations
      */
     @GetMapping("/api/v1/users/{userId}/vacations")
+    @PreAuthorize("hasAuthority('VACATION_READ')")
     public ApiResponse getUserVacationHistory(@PathVariable("userId") String userId) {
         VacationServiceDto vacationInfo = vacationService.getUserVacationHistory(userId);
 
@@ -90,6 +93,7 @@ public class VacationApiController {
      * GET /api/v1/vacations
      */
     @GetMapping("/api/v1/vacations")
+    @PreAuthorize("hasAuthority('VACATION_MANAGE')")
     public ApiResponse getAllUsersVacationHistory() {
         List<VacationServiceDto> usersVacations = vacationService.getAllUsersVacationHistory();
 
@@ -145,6 +149,7 @@ public class VacationApiController {
      */
     @GetMapping("/api/v1/users/{userId}/vacations/available")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @PreAuthorize("hasAuthority('VACATION_READ')")
     public ApiResponse getAvailableVacations(@PathVariable("userId") String userId,
                                                 @RequestParam("startDate") LocalDateTime startDate) {
         List<VacationServiceDto> availableVacations = vacationService.getAvailableVacations(userId, startDate);
@@ -166,6 +171,7 @@ public class VacationApiController {
      * PUT /api/v1/vacation-usages/{id}
      */
     @PutMapping("/api/v1/vacation-usages/{id}")
+    @PreAuthorize("hasAuthority('VACATION_REQUEST')")
     public ApiResponse updateVacationUsage(
             @PathVariable("id") Long vacationUsageId,
             @RequestBody VacationApiDto.UpdateVacationUsageReq data) {
@@ -189,6 +195,7 @@ public class VacationApiController {
      * DELETE /api/v1/vacation-usages/{id}
      */
     @DeleteMapping("/api/v1/vacation-usages/{id}")
+    @PreAuthorize("hasAuthority('VACATION_CANCEL')")
     public ApiResponse cancelVacationUsage(@PathVariable("id") Long vacationUsageId) {
         vacationService.cancelVacationUsage(vacationUsageId);
         return ApiResponse.success();
@@ -200,6 +207,7 @@ public class VacationApiController {
      */
     @GetMapping("/api/v1/vacation-usages")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @PreAuthorize("hasAuthority('VACATION_MANAGE')")
     public ApiResponse getVacationUsagesByPeriod(
             @RequestParam("startDate") LocalDateTime startDate,
             @RequestParam("endDate") LocalDateTime endDate) {
@@ -228,6 +236,7 @@ public class VacationApiController {
      */
     @GetMapping("/api/v1/users/{userId}/vacation-usages")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @PreAuthorize("hasAuthority('VACATION_READ')")
     public ApiResponse getUserVacationUsagesByPeriod(
             @PathVariable("userId") String userId,
             @RequestParam("startDate") LocalDateTime startDate,
@@ -254,6 +263,7 @@ public class VacationApiController {
      * GET /api/v1/users/{userId}/vacation-usages/monthly-stats
      */
     @GetMapping("/api/v1/users/{userId}/vacation-usages/monthly-stats")
+    @PreAuthorize("hasAuthority('VACATION_READ')")
     public ApiResponse getUserMonthlyVacationStats(
             @PathVariable("userId") String userId,
             @RequestParam("year") String year) {
@@ -276,6 +286,7 @@ public class VacationApiController {
      */
     @GetMapping("/api/v1/users/{userId}/vacations/stats")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @PreAuthorize("hasAuthority('VACATION_READ')")
     public ApiResponse getUserVacationStats(
             @PathVariable("userId") String userId,
             @RequestParam("baseDate") LocalDateTime baseDate) {
@@ -306,6 +317,7 @@ public class VacationApiController {
      * POST /api/v1/vacation-policies
      */
     @PostMapping("/api/v1/vacation-policies")
+    @PreAuthorize("hasAuthority('VACATION_POLICY_MANAGE')")
     public ApiResponse createVacationPolicy(@RequestBody VacationApiDto.CreateVacationPolicyReq data) {
         Long vacationPolicyId = vacationService.createVacationPolicy(VacationPolicyServiceDto.builder()
                 .name(data.getVacationPolicyName())
@@ -336,6 +348,7 @@ public class VacationApiController {
      * GET /api/v1/vacation-policies/{id}
      */
     @GetMapping("/api/v1/vacation-policies/{id}")
+    @PreAuthorize("hasAuthority('VACATION_READ')")
     public ApiResponse getVacationPolicy(@PathVariable("id") Long vacationPolicyId) {
         VacationPolicyServiceDto policy = vacationService.getVacationPolicy(vacationPolicyId);
 
@@ -364,6 +377,7 @@ public class VacationApiController {
      * GET /api/v1/vacation-policies
      */
     @GetMapping("/api/v1/vacation-policies")
+    @PreAuthorize("hasAuthority('VACATION_READ')")
     public ApiResponse getVacationPolicies() {
         List<VacationPolicyServiceDto> policies = vacationService.getVacationPolicies();
 
@@ -396,6 +410,7 @@ public class VacationApiController {
      * DELETE /api/v1/vacation-policies/{id}
      */
     @DeleteMapping("/api/v1/vacation-policies/{id}")
+    @PreAuthorize("hasAuthority('VACATION_POLICY_MANAGE')")
     public ApiResponse deleteVacationPolicy(@PathVariable("id") Long vacationPolicyId) {
         Long deletedPolicyId = vacationService.deleteVacationPolicy(vacationPolicyId);
 
@@ -407,6 +422,7 @@ public class VacationApiController {
      * POST /api/v1/users/{userId}/vacation-policies
      */
     @PostMapping("/api/v1/users/{userId}/vacation-policies")
+    @PreAuthorize("hasAuthority('VACATION_POLICY_MANAGE')")
     public ApiResponse assignVacationPoliciesToUser(
             @PathVariable("userId") String userId,
             @RequestBody VacationApiDto.AssignVacationPoliciesToUserReq data) {
@@ -423,6 +439,7 @@ public class VacationApiController {
      * GET /api/v1/users/{userId}/vacation-policies
      */
     @GetMapping("/api/v1/users/{userId}/vacation-policies")
+    @PreAuthorize("hasAuthority('VACATION_READ')")
     public ApiResponse getUserAssignedVacationPolicies(
             @PathVariable("userId") String userId,
             @RequestParam(value = "grantMethod", required = false) GrantMethod grantMethod) {
@@ -462,6 +479,7 @@ public class VacationApiController {
      * GET /api/v1/users/{userId}/vacation-policies/assigned
      */
     @GetMapping("/api/v1/users/{userId}/vacation-policies/assigned")
+    @PreAuthorize("hasAuthority('VACATION_READ')")
     public ApiResponse getUserAssignedVacationPoliciesWithFilters(
             @PathVariable("userId") String userId,
             @RequestParam(value = "vacationType", required = false) VacationType vacationType,
@@ -498,6 +516,7 @@ public class VacationApiController {
      * DELETE /api/v1/users/{userId}/vacation-policies/{vacationPolicyId}
      */
     @DeleteMapping("/api/v1/users/{userId}/vacation-policies/{vacationPolicyId}")
+    @PreAuthorize("hasAuthority('VACATION_POLICY_MANAGE')")
     public ApiResponse revokeVacationPolicyFromUser(
             @PathVariable("userId") String userId,
             @PathVariable("vacationPolicyId") Long vacationPolicyId) {
@@ -515,6 +534,7 @@ public class VacationApiController {
      * DELETE /api/v1/users/{userId}/vacation-policies
      */
     @DeleteMapping("/api/v1/users/{userId}/vacation-policies")
+    @PreAuthorize("hasAuthority('VACATION_POLICY_MANAGE')")
     public ApiResponse revokeVacationPoliciesFromUser(
             @PathVariable("userId") String userId,
             @RequestBody VacationApiDto.RevokeVacationPoliciesFromUserReq data) {
@@ -531,6 +551,7 @@ public class VacationApiController {
      * POST /api/v1/users/{userId}/vacation-grants
      */
     @PostMapping("/api/v1/users/{userId}/vacation-grants")
+    @PreAuthorize("hasAuthority('VACATION_GRANT')")
     public ApiResponse manualGrantVacation(
             @PathVariable("userId") String userId,
             @RequestBody VacationApiDto.ManualGrantVacationReq data) {
@@ -561,6 +582,7 @@ public class VacationApiController {
      * DELETE /api/v1/vacation-grants/{vacationGrantId}
      */
     @DeleteMapping("/api/v1/vacation-grants/{vacationGrantId}")
+    @PreAuthorize("hasAuthority('VACATION_GRANT')")
     public ApiResponse revokeVacationGrant(@PathVariable("vacationGrantId") Long vacationGrantId) {
         VacationGrant grant = vacationService.revokeVacationGrant(vacationGrantId);
 
@@ -575,6 +597,7 @@ public class VacationApiController {
      * POST /api/v1/users/{userId}/vacation-requests
      */
     @PostMapping("/api/v1/users/{userId}/vacation-requests")
+    @PreAuthorize("hasAuthority('VACATION_REQUEST')")
     public ApiResponse requestVacation(
             @PathVariable("userId") String userId,
             @RequestBody VacationApiDto.RequestVacationReq data) {
@@ -597,6 +620,7 @@ public class VacationApiController {
      * POST /api/v1/vacation-approvals/{approvalId}/approve
      */
     @PostMapping("/api/v1/vacation-approvals/{approvalId}/approve")
+    @PreAuthorize("hasAuthority('VACATION_APPROVE')")
     public ApiResponse approveVacation(
             @PathVariable("approvalId") Long approvalId,
             @RequestParam("approverId") String approverId) {
@@ -611,6 +635,7 @@ public class VacationApiController {
      * POST /api/v1/vacation-approvals/{approvalId}/reject
      */
     @PostMapping("/api/v1/vacation-approvals/{approvalId}/reject")
+    @PreAuthorize("hasAuthority('VACATION_APPROVE')")
     public ApiResponse rejectVacation(
             @PathVariable("approvalId") Long approvalId,
             @RequestParam("approverId") String approverId,
@@ -632,6 +657,7 @@ public class VacationApiController {
      * POST /api/v1/vacation-requests/{vacationGrantId}/cancel
      */
     @PostMapping("/api/v1/vacation-requests/{vacationGrantId}/cancel")
+    @PreAuthorize("hasAuthority('VACATION_CANCEL')")
     public ApiResponse cancelVacationRequest(
             @PathVariable("vacationGrantId") Long vacationGrantId,
             @RequestParam("userId") String userId) {
@@ -646,6 +672,7 @@ public class VacationApiController {
      * GET /api/v1/users/{approverId}/vacation-approvals
      */
     @GetMapping("/api/v1/users/{approverId}/vacation-approvals")
+    @PreAuthorize("hasAuthority('VACATION_APPROVE')")
     public ApiResponse getAllVacationsByApprover(
             @PathVariable("approverId") String approverId,
             @RequestParam(value = "status", required = false) GrantStatus status) {
@@ -706,6 +733,7 @@ public class VacationApiController {
      * GET /api/v1/users/{userId}/vacation-requests
      */
     @GetMapping("/api/v1/users/{userId}/vacation-requests")
+    @PreAuthorize("hasAuthority('VACATION_READ')")
     public ApiResponse getUserRequestedVacations(@PathVariable("userId") String userId) {
         List<VacationServiceDto> requestedVacations = vacationService.getAllRequestedVacationsByUserId(userId);
 
@@ -764,6 +792,7 @@ public class VacationApiController {
      * GET /api/v1/users/{userId}/vacation-requests/stats
      */
     @GetMapping("/api/v1/users/{userId}/vacation-requests/stats")
+    @PreAuthorize("hasAuthority('VACATION_READ')")
     public ApiResponse getUserRequestedVacationStats(@PathVariable("userId") String userId) {
         VacationServiceDto stats = vacationService.getRequestedVacationStatsByUserId(userId);
 
@@ -788,6 +817,7 @@ public class VacationApiController {
      * GET /api/v1/users/{userId}/vacation-policies/assignment-status
      */
     @GetMapping("/api/v1/users/{userId}/vacation-policies/assignment-status")
+    @PreAuthorize("hasAuthority('VACATION_MANAGE')")
     public ApiResponse getVacationPolicyAssignmentStatus(@PathVariable("userId") String userId) {
         VacationServiceDto result = vacationService.getVacationPolicyAssignmentStatus(userId);
 

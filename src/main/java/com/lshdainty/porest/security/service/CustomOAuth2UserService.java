@@ -21,6 +21,9 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import com.lshdainty.porest.permission.domain.Role;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -54,7 +57,9 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         return new CustomOAuth2User(
                 user,
                 attributes.getAttributes(),
-                Collections.singleton(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())),
+                user.getRoles().stream()
+                        .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
+                        .collect(Collectors.toSet()),
                 attributes.getNameAttributeKey());
     }
 

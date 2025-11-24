@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.company.type.OriginCompanyType;
 import com.lshdainty.porest.user.type.StatusType;
-import com.lshdainty.porest.user.type.RoleType;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.web.multipart.MultipartFile;
@@ -47,7 +47,7 @@ public class UserApiDto {
         private LocalDate userBirth;
         private String userWorkTime;
         private LocalDate joinDate;
-        private RoleType userRoleType;
+        private List<String> userRoles;
         private String userRoleName;
         private OriginCompanyType userOriginCompanyType;
         private String userOriginCompanyName;
@@ -70,7 +70,7 @@ public class UserApiDto {
         private String userName;
         private String userEmail;
         private LocalDate userBirth;
-        private RoleType userRoleType;
+        private List<String> userRoles;
         private OriginCompanyType userOriginCompanyType;
         private String userWorkTime;
         private YNType lunarYn;
@@ -89,7 +89,7 @@ public class UserApiDto {
         private String userEmail;
         private LocalDate userBirth;
         private String userWorkTime;
-        private RoleType userRoleType;
+        private List<String> userRoles;
         private String userRoleName;
         private OriginCompanyType userOriginCompanyType;
         private String userOriginCompanyName;
@@ -136,7 +136,7 @@ public class UserApiDto {
         private OriginCompanyType userOriginCompanyType;
         private String userWorkTime;
         private LocalDate joinDate;
-        private RoleType userRoleType;
+        private List<String> userRoles;
         private LocalDateTime invitationSentAt;
         private LocalDateTime invitationExpiresAt;
         private StatusType invitationStatus;
@@ -152,7 +152,7 @@ public class UserApiDto {
         private OriginCompanyType userOriginCompanyType;
         private String userWorkTime;
         private LocalDate joinDate;
-        private RoleType userRoleType;
+        private List<String> userRoles;
         private LocalDateTime invitationSentAt;
         private LocalDateTime invitationExpiresAt;
         private StatusType invitationStatus;
@@ -179,7 +179,7 @@ public class UserApiDto {
         private OriginCompanyType userOriginCompanyType;
         private String userWorkTime;
         private LocalDate joinDate;
-        private RoleType userRoleType;
+        private List<String> userRoles;
         private LocalDateTime invitationSentAt;
         private LocalDateTime invitationExpiresAt;
         private StatusType invitationStatus;
@@ -206,7 +206,7 @@ public class UserApiDto {
         private String userId;
         private String userName;
         private String userEmail;
-        private RoleType userRoleType;
+        private List<String> userRoles;
         private String userRoleName;
         private Long departmentId;
         private String departmentName;

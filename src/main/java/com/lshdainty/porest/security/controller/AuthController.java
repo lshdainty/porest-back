@@ -16,6 +16,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.util.StringUtils;
+import java.util.stream.Collectors;
+import com.lshdainty.porest.permission.domain.Role;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -54,14 +56,14 @@ public class AuthController {
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
-                user.getRole(),
-                user.getRole().name(),
+                user.getRoles().stream().map(Role::getName).collect(Collectors.toList()),
+                user.getRoles().isEmpty() ? null : user.getRoles().get(0).getName(),
                 YNType.Y,
                 StringUtils.hasText(user.getProfileName()) && StringUtils.hasText(user.getProfileUUID()) ?
                         userService.generateProfileUrl(user.getProfileName(), user.getProfileUUID()) : null
         );
 
-        log.info("user info : {}, {}, {}, {}, {}, {}", result.getUserId(), result.getUserName(), result.getUserEmail(), result.getUserRoleType(), result.getUserRoleName(), result.getProfileUrl());
+        log.info("user info : {}, {}, {}, {}, {}, {}", result.getUserId(), result.getUserName(), result.getUserEmail(), result.getUserRoles(), result.getUserRoleName(), result.getProfileUrl());
 
         return ApiResponse.success(result);
     }
@@ -102,7 +104,7 @@ public class AuthController {
                 user.getCompany(),
                 user.getWorkTime(),
                 user.getJoinDate(),
-                user.getRole(),
+                user.getRoleNames(),
                 user.getInvitationSentAt(),
                 user.getInvitationExpiresAt(),
                 user.getInvitationStatus()

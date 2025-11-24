@@ -27,6 +27,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 import com.lshdainty.porest.department.domain.Department;
 import com.lshdainty.porest.department.domain.UserDepartment;
 import com.lshdainty.porest.company.domain.Company;
+import com.lshdainty.porest.permission.domain.Role;
+import com.lshdainty.porest.permission.repository.RoleRepository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -51,6 +53,8 @@ class UserServiceTest {
     private EmailService emailService;
     @Mock
     private DepartmentCustomRepositoryImpl departmentRepository;
+    @Mock
+    private RoleRepository roleRepository;
 
     @InjectMocks
     private UserService userService;
@@ -408,6 +412,32 @@ class UserServiceTest {
             // then
             then(userRepositoryImpl).should().findById(userId);
             assertThat(user.getDashboard()).isEqualTo("{\"layout\": []}");
+        }
+
+        @Test
+        @DisplayName("성공 - 유저 권한이 수정된다")
+        void editUserRolesSuccess() {
+            // given
+            String userId = "user1";
+            User user = User.createUser(userId, "", "이서준", "", LocalDate.now(),
+                    OriginCompanyType.SKAX, "9 ~ 6", YNType.N, null, null);
+            given(userRepositoryImpl.findById(userId)).willReturn(Optional.of(user));
+
+            Role role = Role.createRole("ADMIN", "관리자");
+            given(roleRepository.findById("ADMIN")).willReturn(Optional.of(role));
+
+            UserServiceDto data = UserServiceDto.builder()
+                    .id(userId)
+                    .roleNames(List.of("ADMIN"))
+                    .build();
+
+            // when
+            userService.editUser(data);
+
+            // then
+            then(userRepositoryImpl).should().findById(userId);
+            then(roleRepository).should().findById("ADMIN");
+            assertThat(user.getRoles()).contains(role);
         }
     }
 

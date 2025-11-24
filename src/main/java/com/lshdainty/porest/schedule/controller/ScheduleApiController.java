@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,6 +22,7 @@ public class ScheduleApiController {
     private final ScheduleService scheduleService;
 
     @PostMapping("/api/v1/schedule")
+    @PreAuthorize("hasAuthority('SCHEDULE_CREATE')")
     public ApiResponse registSchedule(@RequestBody ScheduleApiDto.RegistScheduleReq data, HttpServletRequest req) {
         Long scheduleId = scheduleService.registSchedule(ScheduleServiceDto.builder()
                 .userId(data.getUserId())
@@ -35,6 +37,7 @@ public class ScheduleApiController {
     }
 
     @PutMapping("/api/v1/schedule/{id}")
+    @PreAuthorize("hasAuthority('SCHEDULE_UPDATE')")
     public ApiResponse updateSchedule(
             @PathVariable("id") Long scheduleId,
             @RequestBody ScheduleApiDto.UpdateScheduleReq data) {
@@ -53,12 +56,14 @@ public class ScheduleApiController {
     }
 
     @DeleteMapping("/api/v1/schedule/{id}")
+    @PreAuthorize("hasAuthority('SCHEDULE_DELETE')")
     public ApiResponse deleteSchedule(@PathVariable("id") Long scheduleId) {
         scheduleService.deleteSchedule(scheduleId);
         return ApiResponse.success();
     }
 
     @GetMapping("/api/v1/schedules/user/{userNo}")
+    @PreAuthorize("hasAuthority('SCHEDULE_READ')")
     public ApiResponse searchSchedulesByUser(@PathVariable("userNo") String userId) {
         List<Schedule> schedules = scheduleService.searchSchedulesByUser(userId);
 
@@ -78,6 +83,7 @@ public class ScheduleApiController {
 
     @GetMapping("/api/v1/schedules/period")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @PreAuthorize("hasAuthority('SCHEDULE_READ')")
     public ApiResponse searchSchedulesByPeriod(
             @RequestParam("startDate") LocalDateTime startDate,
             @RequestParam("endDate") LocalDateTime endDate) {

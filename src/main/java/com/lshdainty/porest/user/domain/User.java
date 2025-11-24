@@ -3,7 +3,7 @@ package com.lshdainty.porest.user.domain;
 import com.lshdainty.porest.common.domain.AuditingFields;
 import com.lshdainty.porest.company.type.OriginCompanyType;
 import com.lshdainty.porest.department.domain.UserDepartment;
-import com.lshdainty.porest.user.type.RoleType;
+import com.lshdainty.porest.permission.domain.Role;
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.user.type.StatusType;
 import com.lshdainty.porest.vacation.domain.UserVacationPolicy;
@@ -42,9 +42,13 @@ public class User extends AuditingFields {
     @Column(name = "user_email")
     private String email; // 유저 이메일
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "user_role")
-    private RoleType role; //
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_name")
+    )
+    private List<Role> roles = new ArrayList<>();
 
     @Column(name = "user_birth")
     private LocalDate birth; // 유저 생일
@@ -132,7 +136,6 @@ public class User extends AuditingFields {
         user.pwd = pwd;
         user.name = name;
         user.email = email;
-        user.role = RoleType.USER;
         user.birth = birth;
         user.company = company;
         user.workTime = workTime;
@@ -163,7 +166,6 @@ public class User extends AuditingFields {
         user.name = name;
         user.email = email;
         user.company = company;
-        user.role = RoleType.USER;
         user.workTime = workTime;
         user.joinDate = joinDate;
         user.invitationStatus = StatusType.PENDING; // 초대 상태로 설정
@@ -227,12 +229,12 @@ public class User extends AuditingFields {
      * Entity의 경우 Setter없이 Getter만 사용<br>
      * 해당 메소드를 통해 유저 수정할 것
      */
-    public void updateUser(String name, String email, RoleType role, LocalDate birth,
+    public void updateUser(String name, String email, List<Role> roles, LocalDate birth,
                            OriginCompanyType company, String workTime,
                            YNType lunarYN, String profileName, String profileUUID, String dashboard) {
         if (!Objects.isNull(name)) { this.name = name; }
         if (!Objects.isNull(email)) { this.email = email; }
-        if (!Objects.isNull(role)) { this.role = role; }
+        if (!Objects.isNull(roles)) { this.roles = roles; }
         if (!Objects.isNull(birth)) { this.birth = birth; }
         if (!Objects.isNull(company)) { this.company = company; }
         if (!Objects.isNull(workTime)) { this.workTime = workTime; }

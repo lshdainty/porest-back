@@ -23,6 +23,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
+import java.util.stream.Collectors;
+import com.lshdainty.porest.permission.domain.Role;
 
 @Slf4j
 @Component
@@ -98,8 +100,8 @@ public class CustomOAuth2AuthenticationSuccessHandler implements AuthenticationS
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
-                user.getRole(),
-                user.getRole().name(),
+                user.getRoles().stream().map(Role::getName).collect(Collectors.toList()),
+                user.getRoles().isEmpty() ? null : user.getRoles().get(0).getName(),
                 YNType.Y,
                 StringUtils.hasText(user.getProfileName()) && StringUtils.hasText(user.getProfileUUID()) ?
                         userService.generateProfileUrl(user.getProfileName(), user.getProfileUUID()) : null

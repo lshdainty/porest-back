@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -39,6 +40,7 @@ public class UserApiController {
     }
 
     @GetMapping("/api/v1/users/{id}")
+    @PreAuthorize("hasAuthority('USER_READ')")
     public ApiResponse searchUser(@PathVariable("id") String userId) {
         UserServiceDto user = userService.searchUser(userId);
 
@@ -49,8 +51,8 @@ public class UserApiController {
                 user.getBirth(),
                 user.getWorkTime(),
                 user.getJoinDate(),
-                user.getRole(),
-                user.getRole().name(),
+                user.getRoleNames(),
+                user.getRoleNames().isEmpty() ? null : user.getRoleNames().get(0),
                 user.getCompany(),
                 user.getCompany().getCompanyName(),
                 user.getLunarYN(),
@@ -72,6 +74,7 @@ public class UserApiController {
     }
 
     @GetMapping("/api/v1/users")
+    @PreAuthorize("hasAuthority('USER_READ')")
     public ApiResponse searchUsers() {
         List<UserServiceDto> users = userService.searchUsers();
 
@@ -83,8 +86,8 @@ public class UserApiController {
                         u.getBirth(),
                         u.getWorkTime(),
                         u.getJoinDate(),
-                        u.getRole(),
-                        u.getRole().name(),
+                        u.getRoleNames(),
+                        u.getRoleNames().isEmpty() ? null : u.getRoleNames().get(0),
                         u.getCompany(),
                         u.getCompany().getCompanyName(),
                         u.getLunarYN(),
@@ -103,13 +106,14 @@ public class UserApiController {
     }
 
     @PutMapping("/api/v1/users/{id}")
+    @PreAuthorize("hasAuthority('USER_UPDATE')")
     public ApiResponse editUser(@PathVariable("id") String userId, @RequestBody UserApiDto.EditUserReq data) {
         userService.editUser(UserServiceDto.builder()
                 .id(userId)
                 .name(data.getUserName())
                 .email(data.getUserEmail())
                 .birth(data.getUserBirth())
-                .role(data.getUserRoleType())
+                .roleNames(data.getUserRoles())
                 .company(data.getUserOriginCompanyType())
                 .workTime(data.getUserWorkTime())
                 .lunarYN(data.getLunarYn())
@@ -127,8 +131,8 @@ public class UserApiController {
                 findUser.getEmail(),
                 findUser.getBirth(),
                 findUser.getWorkTime(),
-                findUser.getRole(),
-                findUser.getRole().name(),
+                findUser.getRoleNames(),
+                findUser.getRoleNames().isEmpty() ? null : findUser.getRoleNames().get(0),
                 findUser.getCompany(),
                 findUser.getCompany().getCompanyName(),
                 findUser.getLunarYN(),
@@ -138,6 +142,7 @@ public class UserApiController {
     }
 
     @DeleteMapping("/api/v1/users/{id}")
+    @PreAuthorize("hasAuthority('USER_DELETE')")
     public ApiResponse deleteUser(@PathVariable("id") String userId) {
         userService.deleteUser(userId);
         return ApiResponse.success();
@@ -156,6 +161,7 @@ public class UserApiController {
      * 관리자가 사용자 초대
      */
     @PostMapping("/api/v1/users/invitations")
+    @PreAuthorize("hasAuthority('USER_CREATE')")
     public ApiResponse inviteUser(@RequestBody UserApiDto.InviteUserReq data) {
         UserServiceDto result = userService.inviteUser(UserServiceDto.builder()
                 .id(data.getUserId())
@@ -174,7 +180,7 @@ public class UserApiController {
                 result.getCompany(),
                 result.getWorkTime(),
                 result.getJoinDate(),
-                result.getRole(),
+                result.getRoleNames(),
                 result.getInvitationSentAt(),
                 result.getInvitationExpiresAt(),
                 result.getInvitationStatus()
@@ -185,6 +191,7 @@ public class UserApiController {
      * 초대된 사용자 정보 수정
      */
     @PutMapping("/api/v1/users/{id}/invitations")
+    @PreAuthorize("hasAuthority('USER_UPDATE')")
     public ApiResponse editInvitedUser(@PathVariable("id") String userId, @RequestBody UserApiDto.EditInvitedUserReq data) {
         UserServiceDto result = userService.editInvitedUser(userId, UserServiceDto.builder()
                 .name(data.getUserName())
@@ -202,7 +209,7 @@ public class UserApiController {
                 result.getCompany(),
                 result.getWorkTime(),
                 result.getJoinDate(),
-                result.getRole(),
+                result.getRoleNames(),
                 result.getInvitationSentAt(),
                 result.getInvitationExpiresAt(),
                 result.getInvitationStatus()
@@ -213,6 +220,7 @@ public class UserApiController {
      * 초대 이메일 재전송
      */
     @PostMapping("/api/v1/users/{id}/invitations/resend")
+    @PreAuthorize("hasAuthority('USER_CREATE')")
     public ApiResponse resendInvitation(@PathVariable("id") String userId) {
         UserServiceDto result = userService.resendInvitation(userId);
 
@@ -223,7 +231,7 @@ public class UserApiController {
                 result.getCompany(),
                 result.getWorkTime(),
                 result.getJoinDate(),
-                result.getRole(),
+                result.getRoleNames(),
                 result.getInvitationSentAt(),
                 result.getInvitationExpiresAt(),
                 result.getInvitationStatus()
@@ -244,6 +252,7 @@ public class UserApiController {
      * PATCH /api/v1/users/{userId}/dashboard
      */
     @PatchMapping("/api/v1/users/{userId}/dashboard")
+    @PreAuthorize("hasAuthority('USER_UPDATE')")
     public ApiResponse updateDashboard(@PathVariable("userId") String userId, @RequestBody UserApiDto.UpdateDashboardReq data) {
         UserServiceDto result = userService.updateDashboard(userId, data.getDashboard());
 
@@ -266,8 +275,8 @@ public class UserApiController {
                         approver.getId(),
                         approver.getName(),
                         approver.getEmail(),
-                        approver.getRole(),
-                        approver.getRole().name(),
+                        approver.getRoleNames(),
+                        approver.getRoleNames().isEmpty() ? null : approver.getRoleNames().get(0),
                         approver.getDepartmentId(),
                         approver.getDepartmentName(),
                         approver.getDepartmentNameKR(),

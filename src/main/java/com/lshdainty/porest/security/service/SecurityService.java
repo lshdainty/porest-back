@@ -9,6 +9,8 @@ import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.stream.Collectors;
+import com.lshdainty.porest.permission.domain.Role;
 import java.util.Optional;
 
 @Service
@@ -39,7 +41,7 @@ public class SecurityService {
                 .email(user.getEmail())
                 .company(user.getCompany())
                 .workTime(user.getWorkTime())
-                .role(user.getRole())
+                .roleNames(user.getRoles().stream().map(Role::getName).collect(Collectors.toList()))
                 .invitationSentAt(user.getInvitationSentAt())
                 .invitationExpiresAt(user.getInvitationExpiresAt())
                 .invitationStatus(user.getInvitationStatus())

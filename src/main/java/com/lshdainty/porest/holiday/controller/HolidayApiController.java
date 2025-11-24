@@ -10,6 +10,7 @@ import com.lshdainty.porest.holiday.service.dto.HolidayServiceDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,6 +22,7 @@ public class HolidayApiController {
     private final HolidayService holidayService;
 
     @PostMapping("api/v1/holiday")
+    @PreAuthorize("hasAuthority('HOLIDAY_MANAGE')")
     public ApiResponse registHoliday(@RequestBody HolidayApiDto.RegistHolidayReq data) {
         Long holidaySeq = holidayService.registHoliday(HolidayServiceDto.builder()
                 .name(data.getHolidayName())
@@ -37,6 +39,7 @@ public class HolidayApiController {
     }
 
     @GetMapping("api/v1/holidays/date")
+    @PreAuthorize("hasAuthority('HOLIDAY_READ')")
     public ApiResponse searchHolidaysByStartEndDate(@RequestParam("start") String start, @RequestParam("end") String end, @RequestParam("country_code") CountryCode countryCode) {
         List<Holiday> holidays = holidayService.searchHolidaysByStartEndDate(start, end, countryCode);
 
@@ -58,6 +61,7 @@ public class HolidayApiController {
     }
 
     @GetMapping("api/v1/holidays/type/{type}")
+    @PreAuthorize("hasAuthority('HOLIDAY_READ')")
     public ApiResponse searchHolidaysByType(@PathVariable("type") HolidayType type) {
         List<Holiday> holidays = holidayService.searchHolidaysByType(type);
 
@@ -79,6 +83,7 @@ public class HolidayApiController {
     }
 
     @PutMapping("/api/v1/holiday/{seq}")
+    @PreAuthorize("hasAuthority('HOLIDAY_MANAGE')")
     public ApiResponse editHoliday(@PathVariable("seq") Long seq, @RequestBody HolidayApiDto.EditHolidayReq data) {
         holidayService.editHoliday(HolidayServiceDto.builder()
                 .seq(seq)
@@ -108,6 +113,7 @@ public class HolidayApiController {
     }
 
     @DeleteMapping("/api/v1/holiday/{seq}")
+    @PreAuthorize("hasAuthority('HOLIDAY_MANAGE')")
     public ApiResponse deleteHoliday(@PathVariable("seq") Long seq) {
         holidayService.deleteHoliday(seq);
         return ApiResponse.success();

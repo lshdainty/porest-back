@@ -11,6 +11,7 @@ import com.lshdainty.porest.work.type.CodeType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,6 +26,7 @@ public class WorkHistoryApiController {
     private final WorkCodeService workCodeService;
 
     @PostMapping("/api/v1/work-histories")
+    @PreAuthorize("hasAuthority('WORK_CREATE')")
     public ApiResponse createWorkHistory(@RequestBody WorkHistoryApiDto.CreateWorkHistoryReq data) {
         Long workHistorySeq = workHistoryService.createWorkHistory(WorkHistoryServiceDto.builder()
                 .date(data.getWorkDate())
@@ -39,6 +41,7 @@ public class WorkHistoryApiController {
     }
 
     @PostMapping("/api/v1/work-histories/bulk")
+    @PreAuthorize("hasAuthority('WORK_CREATE')")
     public ApiResponse createWorkHistories(@RequestBody WorkHistoryApiDto.BulkCreateWorkHistoryReq data) {
         List<WorkHistoryServiceDto> dtos = data.getWorkHistories().stream()
                 .map(req -> WorkHistoryServiceDto.builder()
@@ -57,6 +60,7 @@ public class WorkHistoryApiController {
     }
 
     @GetMapping("/api/v1/work-histories")
+    @PreAuthorize("hasAuthority('WORK_MANAGE')")
     public ApiResponse findAllWorkHistories(@ModelAttribute WorkHistorySearchCondition condition) {
         List<WorkHistoryServiceDto> dtos = workHistoryService.findAllWorkHistories(condition);
         return ApiResponse.success(dtos.stream()
@@ -74,6 +78,7 @@ public class WorkHistoryApiController {
     }
 
     @GetMapping("/api/v1/work-histories/{seq}")
+    @PreAuthorize("hasAuthority('WORK_READ')")
     public ApiResponse findWorkHistory(@PathVariable("seq") Long seq) {
         WorkHistoryServiceDto w = workHistoryService.findWorkHistory(seq);
         return ApiResponse.success(new WorkHistoryApiDto.WorkHistoryResp(
@@ -89,6 +94,7 @@ public class WorkHistoryApiController {
     }
 
     @PutMapping("/api/v1/work-histories/{seq}")
+    @PreAuthorize("hasAuthority('WORK_UPDATE')")
     public ApiResponse updateWorkHistory(@PathVariable("seq") Long seq,
             @RequestBody WorkHistoryApiDto.UpdateWorkHistoryReq data) {
         workHistoryService.updateWorkHistory(WorkHistoryServiceDto.builder()
@@ -105,6 +111,7 @@ public class WorkHistoryApiController {
     }
 
     @DeleteMapping("/api/v1/work-histories/{seq}")
+    @PreAuthorize("hasAuthority('WORK_UPDATE')")
     public ApiResponse deleteWorkHistory(@PathVariable("seq") Long seq) {
         workHistoryService.deleteWorkHistory(seq);
         return ApiResponse.success();
@@ -115,6 +122,7 @@ public class WorkHistoryApiController {
      * GET /api/v1/work-codes
      */
     @GetMapping("/api/v1/work-codes")
+    @PreAuthorize("hasAuthority('WORK_READ')")
     public ApiResponse getWorkCodes(
             @RequestParam(value = "parent_work_code", required = false) String parentWorkCode,
             @RequestParam(value = "parent_work_code_seq", required = false) Long parentWorkCodeSeq,
@@ -141,6 +149,7 @@ public class WorkHistoryApiController {
     }
 
     @GetMapping("/api/v1/work-histories/excel/download")
+    @PreAuthorize("hasAuthority('WORK_MANAGE')")
     public void downloadWorkHistoryExcel(HttpServletResponse response,
             @ModelAttribute WorkHistorySearchCondition condition) throws IOException {
         workHistoryService.downloadWorkHistoryExcel(response, condition);

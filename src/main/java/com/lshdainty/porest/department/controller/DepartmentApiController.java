@@ -8,6 +8,7 @@ import com.lshdainty.porest.department.service.dto.UserDepartmentServiceDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
@@ -18,6 +19,7 @@ public class DepartmentApiController {
     private final DepartmentService departmentService;
 
     @PostMapping("/api/v1/departments")
+    @PreAuthorize("hasAuthority('DEPARTMENT_MANAGE')")
     public ApiResponse registDepartment(@RequestBody DepartmentApiDto.RegistDepartmentReq data) {
         Long departmentId = departmentService.regist(DepartmentServiceDto.builder()
                 .name(data.getDepartmentName())
@@ -34,6 +36,7 @@ public class DepartmentApiController {
     }
 
     @PutMapping("/api/v1/departments/{id}")
+    @PreAuthorize("hasAuthority('DEPARTMENT_MANAGE')")
     public ApiResponse editDepartment(@PathVariable("id") Long departmentId, @RequestBody DepartmentApiDto.EditDepartmentReq data) {
         departmentService.edit(DepartmentServiceDto.builder()
                 .id(departmentId)
@@ -50,12 +53,14 @@ public class DepartmentApiController {
     }
 
     @DeleteMapping("/api/v1/departments/{id}")
+    @PreAuthorize("hasAuthority('DEPARTMENT_MANAGE')")
     public ApiResponse deleteDepartment(@PathVariable("id") Long departmentId) {
         departmentService.delete(departmentId);
         return ApiResponse.success();
     }
 
     @GetMapping("/api/v1/departments/{id}")
+    @PreAuthorize("hasAuthority('DEPARTMENT_READ')")
     public ApiResponse searchDepartmentById(@PathVariable("id") Long departmentId) {
         DepartmentServiceDto serviceDto = departmentService.searchDepartmentById(departmentId);
 
@@ -73,6 +78,7 @@ public class DepartmentApiController {
     }
 
     @GetMapping("/api/v1/departments/{id}/children")
+    @PreAuthorize("hasAuthority('DEPARTMENT_READ')")
     public ApiResponse searchDepartmentByIdWithChildren(@PathVariable("id") Long departmentId) {
         DepartmentServiceDto serviceDto = departmentService.searchDepartmentByIdWithChildren(departmentId);
         DepartmentApiDto.SearchDepartmentWithChildrenResp responseDto =
@@ -81,6 +87,7 @@ public class DepartmentApiController {
     }
 
     @PostMapping("/api/v1/departments/{departmentId}/users")
+    @PreAuthorize("hasAuthority('DEPARTMENT_MANAGE')")
     public ApiResponse registDepartmentUsers(
             @PathVariable("departmentId") Long departmentId,
             @RequestBody DepartmentApiDto.RegistDepartmentUserReq data) {
@@ -97,6 +104,7 @@ public class DepartmentApiController {
     }
 
     @DeleteMapping("/api/v1/departments/{departmentId}/users")
+    @PreAuthorize("hasAuthority('DEPARTMENT_MANAGE')")
     public ApiResponse deleteDepartmentUsers(
             @PathVariable("departmentId") Long departmentId,
             @RequestBody DepartmentApiDto.DeleteDepartmentUserReq data) {
@@ -105,6 +113,7 @@ public class DepartmentApiController {
     }
 
     @GetMapping("/api/v1/departments/{departmentId}/users")
+    @PreAuthorize("hasAuthority('DEPARTMENT_READ')")
     public ApiResponse getDepartmentUsers(@PathVariable("departmentId") Long departmentId) {
         DepartmentServiceDto serviceDto = departmentService.getUsersInAndNotInDepartment(departmentId);
 

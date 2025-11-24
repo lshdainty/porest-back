@@ -7,6 +7,7 @@ import com.lshdainty.porest.vacation.domain.VacationPolicy;
 import com.lshdainty.porest.vacation.repository.VacationGrantCustomRepositoryImpl;
 import com.lshdainty.porest.vacation.type.EffectiveType;
 import com.lshdainty.porest.vacation.type.ExpirationType;
+import com.lshdainty.porest.vacation.type.GrantMethod;
 import com.lshdainty.porest.vacation.type.VacationType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -246,5 +247,126 @@ class VacationGrantRepositoryImplTest {
         // then - 차감 확인
         VacationGrant deductedGrant = vacationGrantRepository.findById(grant.getId()).orElseThrow();
         assertThat(deductedGrant.getRemainTime()).isEqualByComparingTo(new BigDecimal("4.0"));
+    }
+
+    @Test
+    @DisplayName("유저별 타입별 날짜별 사용가능한 휴가부여 조회")
+    void findAvailableGrantsByUserIdAndTypeAndDate() {
+        // given
+        vacationGrantRepository.save(VacationGrant.createVacationGrant(
+                user, policy, "연차", VacationType.ANNUAL, new BigDecimal("8.0"),
+                LocalDateTime.of(2025, 1, 1, 0, 0, 0), LocalDateTime.of(2025, 12, 31, 23, 59, 59)
+        ));
+        em.flush();
+        em.clear();
+
+        // when
+        List<VacationGrant> grants = vacationGrantRepository.findAvailableGrantsByUserIdAndTypeAndDate(
+                "user1", VacationType.ANNUAL, LocalDateTime.of(2025, 6, 1, 0, 0)
+        );
+
+        // then
+        assertThat(grants).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("유저별 날짜별 사용가능한 휴가부여 조회")
+    void findAvailableGrantsByUserIdAndDate() {
+        // given
+        vacationGrantRepository.save(VacationGrant.createVacationGrant(
+                user, policy, "연차", VacationType.ANNUAL, new BigDecimal("8.0"),
+                LocalDateTime.of(2025, 1, 1, 0, 0, 0), LocalDateTime.of(2025, 12, 31, 23, 59, 59)
+        ));
+        em.flush();
+        em.clear();
+
+        // when
+        List<VacationGrant> grants = vacationGrantRepository.findAvailableGrantsByUserIdAndDate(
+                "user1", LocalDateTime.of(2025, 6, 1, 0, 0)
+        );
+
+        // then
+        assertThat(grants).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("유저별 기준시간 기준 유효한 휴가부여 조회")
+    void findValidGrantsByUserIdAndBaseTime() {
+        // given
+        vacationGrantRepository.save(VacationGrant.createVacationGrant(
+                user, policy, "연차", VacationType.ANNUAL, new BigDecimal("8.0"),
+                LocalDateTime.of(2025, 1, 1, 0, 0, 0), LocalDateTime.of(2025, 12, 31, 23, 59, 59)
+        ));
+        em.flush();
+        em.clear();
+
+        // when
+        List<VacationGrant> grants = vacationGrantRepository.findValidGrantsByUserIdAndBaseTime(
+                "user1", LocalDateTime.of(2025, 6, 1, 0, 0)
+        );
+
+        // then
+        assertThat(grants).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("유저별 신청 휴가 목록 조회")
+    void findAllRequestedVacationsByUserId() {
+        // given
+        VacationPolicy onRequestPolicy = VacationPolicy.createOnRequestPolicy(
+                "신청연차", "신청 정책", VacationType.ANNUAL, new BigDecimal("1.0"),
+                YNType.N, YNType.N, 1, EffectiveType.IMMEDIATELY, ExpirationType.END_OF_YEAR
+        );
+        em.persist(onRequestPolicy);
+
+        VacationGrant pendingGrant = VacationGrant.createPendingVacationGrant(
+                user, onRequestPolicy, "연차 신청", VacationType.ANNUAL, new BigDecimal("1.0"),
+                LocalDateTime.of(2025, 6, 1, 9, 0), LocalDateTime.of(2025, 6, 1, 18, 0), "개인 사유"
+        );
+        em.persist(pendingGrant);
+        em.flush();
+        em.clear();
+
+        // when
+        List<VacationGrant> grants = vacationGrantRepository.findAllRequestedVacationsByUserId("user1");
+
+        // then
+        assertThat(grants).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("ID 목록으로 휴가부여 조회")
+    void findByIdsWithUserAndPolicy() {
+        // given
+        VacationGrant grant1 = VacationGrant.createVacationGrant(
+                user, policy, "연차1", VacationType.ANNUAL, new BigDecimal("8.0"),
+                LocalDateTime.of(2025, 1, 1, 0, 0, 0), LocalDateTime.of(2025, 12, 31, 23, 59, 59)
+        );
+        VacationGrant grant2 = VacationGrant.createVacationGrant(
+                user, policy, "연차2", VacationType.ANNUAL, new BigDecimal("8.0"),
+                LocalDateTime.of(2025, 1, 1, 0, 0, 0), LocalDateTime.of(2025, 12, 31, 23, 59, 59)
+        );
+        vacationGrantRepository.save(grant1);
+        vacationGrantRepository.save(grant2);
+        em.flush();
+        em.clear();
+
+        // when
+        List<VacationGrant> grants = vacationGrantRepository.findByIdsWithUserAndPolicy(
+                List.of(grant1.getId(), grant2.getId())
+        );
+
+        // then
+        assertThat(grants).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("빈 ID 목록으로 조회시 빈 리스트 반환")
+    void findByIdsWithUserAndPolicyEmpty() {
+        // when
+        List<VacationGrant> grants = vacationGrantRepository.findByIdsWithUserAndPolicy(List.of());
+
+        // then
+        assertThat(grants).isEmpty();
     }
 }

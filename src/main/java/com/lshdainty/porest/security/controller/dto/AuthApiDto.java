@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.company.type.OriginCompanyType;
-import com.lshdainty.porest.user.type.RoleType;
+import java.util.List;
 import com.lshdainty.porest.user.type.StatusType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,7 +20,7 @@ public class AuthApiDto {
         private String userId;
         private String userName;
         private String userEmail;
-        private RoleType userRoleType;
+        private List<String> userRoles;
         private String userRoleName;
         private YNType isLogin;
         private String profileUrl;
@@ -51,7 +51,7 @@ public class AuthApiDto {
         private OriginCompanyType userOriginCompanyType;
         private String userWorkTime;
         private LocalDate joinDate;
-        private RoleType userRoleType;
+        private List<String> userRoles;
         private LocalDateTime invitationSentAt;
         private LocalDateTime invitationExpiresAt;
         private StatusType invitationStatus;

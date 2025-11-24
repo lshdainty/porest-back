@@ -1,7 +1,7 @@
 package com.lshdainty.porest.user.service.dto;
 
 import com.lshdainty.porest.company.type.OriginCompanyType;
-import com.lshdainty.porest.user.type.RoleType;
+import java.util.List;
 import com.lshdainty.porest.user.type.StatusType;
 import com.lshdainty.porest.common.type.YNType;
 import lombok.Builder;
@@ -18,7 +18,7 @@ public class UserServiceDto {
     private String pwd;
     private String name;
     private String email;
-    private RoleType role;
+    private List<String> roleNames;
     private LocalDate birth;
     private String workTime;
     private LocalDate joinDate; // 입사일

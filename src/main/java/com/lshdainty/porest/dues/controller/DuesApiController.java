@@ -7,6 +7,7 @@ import com.lshdainty.porest.dues.service.dto.DuesServiceDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,6 +23,7 @@ public class DuesApiController {
     private final DuesService duesService;
 
     @PostMapping("/api/v1/dues")
+    @PreAuthorize("hasAuthority('DUES_MANAGE')")
     public ApiResponse registDues(@RequestBody DuesApiDto.RegistDuesReq data) {
         Long duesSeq = duesService.registDues(DuesServiceDto.builder()
                 .userName(data.getDuesUserName())
@@ -36,6 +38,7 @@ public class DuesApiController {
     }
 
     @GetMapping("/api/v1/dues")
+    @PreAuthorize("hasAuthority('DUES_READ')")
     public ApiResponse searchYearDues(@RequestParam("year") String year) {
         List<DuesServiceDto> dtos = duesService.searchYearDues(year);
         return ApiResponse.success(dtos.stream()
@@ -53,6 +56,7 @@ public class DuesApiController {
     }
 
     @GetMapping("/api/v1/dues/operation")
+    @PreAuthorize("hasAuthority('DUES_READ')")
     public ApiResponse searchYearOperationDues(@RequestParam("year") String year) {
         DuesServiceDto serviceDto = duesService.searchYearOperationDues(year);
         return ApiResponse.success(new DuesApiDto.SearchYearOperationDuesResp(
@@ -63,12 +67,14 @@ public class DuesApiController {
     }
 
     @GetMapping("/api/v1/dues/birth/month")
+    @PreAuthorize("hasAuthority('DUES_READ')")
     public ApiResponse searchMonthBirthDues(@RequestParam("year") String year, @RequestParam("month") String month) {
         Long birthDues = duesService.searchMonthBirthDues(year, month);
         return ApiResponse.success(new DuesApiDto.SearchMonthBirthDuesResp(birthDues));
     }
 
     @GetMapping("/api/v1/dues/users/birth/month")
+    @PreAuthorize("hasAuthority('DUES_READ')")
     public ApiResponse searchUsersMonthBirthDues(@RequestParam("year") String year) {
         List<DuesServiceDto> serviceDtos = duesService.searchUsersMonthBirthDues(year);
 
@@ -96,6 +102,7 @@ public class DuesApiController {
     }
 
     @PutMapping("/api/v1/dues/{seq}")
+    @PreAuthorize("hasAuthority('DUES_MANAGE')")
     public ApiResponse editDues(@PathVariable("seq") Long seq, @RequestBody DuesApiDto.EditDuesReq data) {
         duesService.editDues(DuesServiceDto.builder()
                 .seq(seq)
@@ -111,6 +118,7 @@ public class DuesApiController {
     }
 
     @DeleteMapping("/api/v1/dues/{seq}")
+    @PreAuthorize("hasAuthority('DUES_MANAGE')")
     public ApiResponse deleteDues(@PathVariable("seq") Long seq) {
         duesService.deleteDues(seq);
         return ApiResponse.success();
