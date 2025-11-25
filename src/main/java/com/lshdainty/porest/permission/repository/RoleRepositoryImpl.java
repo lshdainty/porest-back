@@ -1,9 +1,7 @@
 package com.lshdainty.porest.permission.repository;
 
 import com.lshdainty.porest.common.type.YNType;
-import com.lshdainty.porest.permission.domain.QPermission;
-import com.lshdainty.porest.permission.domain.QRole;
-import com.lshdainty.porest.permission.domain.Role;
+import com.lshdainty.porest.permission.domain.*;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
@@ -45,14 +43,17 @@ public class RoleRepositoryImpl implements RoleRepository {
     @Override
     public Optional<Role> findByNameWithPermissions(String name) {
         QRole role = QRole.role;
+        QRolePermission rolePermission = QRolePermission.rolePermission;
         QPermission permission = QPermission.permission;
 
         Role result = queryFactory
                 .selectFrom(role)
-                .leftJoin(role.permissions, permission).fetchJoin()
+                .leftJoin(role.rolePermissions, rolePermission).fetchJoin()
+                .leftJoin(rolePermission.permission, permission).fetchJoin()
                 .where(
                         role.name.eq(name),
-                        role.isDeleted.eq(YNType.N)
+                        role.isDeleted.eq(YNType.N),
+                        rolePermission.isDeleted.eq(YNType.N).or(rolePermission.isNull())
                 )
                 .fetchOne();
 
@@ -73,13 +74,18 @@ public class RoleRepositoryImpl implements RoleRepository {
     @Override
     public List<Role> findAllRolesWithPermissions() {
         QRole role = QRole.role;
+        QRolePermission rolePermission = QRolePermission.rolePermission;
         QPermission permission = QPermission.permission;
 
         return queryFactory
                 .selectFrom(role)
                 .distinct()
-                .leftJoin(role.permissions, permission).fetchJoin()
-                .where(role.isDeleted.eq(YNType.N))
+                .leftJoin(role.rolePermissions, rolePermission).fetchJoin()
+                .leftJoin(rolePermission.permission, permission).fetchJoin()
+                .where(
+                        role.isDeleted.eq(YNType.N),
+                        rolePermission.isDeleted.eq(YNType.N).or(rolePermission.isNull())
+                )
                 .orderBy(role.name.asc())
                 .fetch();
     }

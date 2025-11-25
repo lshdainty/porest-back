@@ -40,18 +40,13 @@ public class Role extends AuditingFields {
     private String description;
 
     /**
-     * 권한 목록<br>
-     * 해당 역할이 가진 권한들의 리스트<br>
-     * EAGER 전략으로 권한 정보를 함께 로드
+     * 역할-권한 매핑 목록<br>
+     * 해당 역할이 가진 권한 매핑 리스트<br>
+     * 중간 엔티티를 통해 생성/수정 이력 추적 가능
      */
     @BatchSize(size = 100)
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "role_permissions",
-            joinColumns = @JoinColumn(name = "role_name"),
-            inverseJoinColumns = @JoinColumn(name = "permission_name")
-    )
-    private List<Permission> permissions = new ArrayList<>();
+    @OneToMany(mappedBy = "role", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RolePermission> rolePermissions = new ArrayList<>();
 
     /**
      * 삭제 여부<br>
@@ -74,7 +69,7 @@ public class Role extends AuditingFields {
         Role role = new Role();
         role.name = name;
         role.description = description;
-        role.permissions = new ArrayList<>();
+        role.rolePermissions = new ArrayList<>();
         role.isDeleted = YNType.N;
         return role;
     }
@@ -92,8 +87,15 @@ public class Role extends AuditingFields {
         Role role = new Role();
         role.name = name;
         role.description = description;
-        role.permissions = permissions != null ? new ArrayList<>(permissions) : new ArrayList<>();
+        role.rolePermissions = new ArrayList<>();
         role.isDeleted = YNType.N;
+
+        if (permissions != null) {
+            for (Permission permission : permissions) {
+                RolePermission rolePermission = RolePermission.createRolePermission(role, permission);
+                role.rolePermissions.add(rolePermission);
+            }
+        }
         return role;
     }
 
@@ -107,7 +109,13 @@ public class Role extends AuditingFields {
      */
     public void updateRole(String description, List<Permission> permissions) {
         if (!Objects.isNull(description)) { this.description = description; }
-        if (!Objects.isNull(permissions)) { this.permissions = new ArrayList<>(permissions); }
+        if (!Objects.isNull(permissions)) {
+            this.rolePermissions.clear();
+            for (Permission permission : permissions) {
+                RolePermission rolePermission = RolePermission.createRolePermission(this, permission);
+                this.rolePermissions.add(rolePermission);
+            }
+        }
     }
 
     /**
@@ -122,25 +130,46 @@ public class Role extends AuditingFields {
     /* 비즈니스 편의 메소드 */
 
     /**
+     * 권한 목록 조회<br>
+     * RolePermission에서 Permission만 추출하여 반환
+     *
+     * @return 권한 리스트
+     */
+    public List<Permission> getPermissions() {
+        return this.rolePermissions.stream()
+                .filter(rp -> rp.getIsDeleted() == YNType.N)
+                .map(RolePermission::getPermission)
+                .toList();
+    }
+
+    /**
      * 권한 추가<br>
      * 역할에 새로운 권한을 추가
      *
      * @param permission 추가할 권한
      */
     public void addPermission(Permission permission) {
-        if (!this.permissions.contains(permission)) {
-            this.permissions.add(permission);
+        boolean exists = this.rolePermissions.stream()
+                .anyMatch(rp -> rp.getPermission().getId().equals(permission.getId())
+                        && rp.getIsDeleted() == YNType.N);
+
+        if (!exists) {
+            RolePermission rolePermission = RolePermission.createRolePermission(this, permission);
+            this.rolePermissions.add(rolePermission);
         }
     }
 
     /**
      * 권한 제거<br>
-     * 역할에서 특정 권한을 제거
+     * 역할에서 특정 권한을 제거 (Soft Delete)
      *
      * @param permission 제거할 권한
      */
     public void removePermission(Permission permission) {
-        this.permissions.remove(permission);
+        this.rolePermissions.stream()
+                .filter(rp -> rp.getPermission().getId().equals(permission.getId())
+                        && rp.getIsDeleted() == YNType.N)
+                .forEach(RolePermission::deleteRolePermission);
     }
 
     /**
@@ -148,18 +177,19 @@ public class Role extends AuditingFields {
      * 역할의 모든 권한을 제거
      */
     public void clearPermissions() {
-        this.permissions.clear();
+        this.rolePermissions.clear();
     }
 
     /**
      * 특정 권한 보유 여부 확인<br>
      * 역할이 특정 권한을 가지고 있는지 확인
      *
-     * @param permissionName 확인할 권한 이름
+     * @param permissionId 확인할 권한 ID
      * @return 권한 보유 여부
      */
-    public boolean hasPermission(String permissionName) {
-        return this.permissions.stream()
-                .anyMatch(p -> p.getName().equals(permissionName));
+    public boolean hasPermission(String permissionId) {
+        return this.rolePermissions.stream()
+                .filter(rp -> rp.getIsDeleted() == YNType.N)
+                .anyMatch(rp -> rp.getPermission().getId().equals(permissionId));
     }
 }
