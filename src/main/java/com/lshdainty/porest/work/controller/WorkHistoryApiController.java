@@ -154,4 +154,12 @@ public class WorkHistoryApiController {
             @ModelAttribute WorkHistorySearchCondition condition) throws IOException {
         workHistoryService.downloadWorkHistoryExcel(response, condition);
     }
+
+    @GetMapping("/api/v1/work-histories/unregistered-hours/download")
+    @PreAuthorize("hasAuthority('WORK_MANAGE')")
+    public void downloadUnregisteredWorkHistoryExcel(HttpServletResponse response,
+            @RequestParam("year") Integer year,
+            @RequestParam("month") Integer month) throws IOException {
+        workHistoryService.downloadUnregisteredWorkHistoryExcel(response, year, month);
+    }
 }

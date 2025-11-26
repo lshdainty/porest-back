@@ -72,6 +72,19 @@ public class UserRepositoryImpl implements UserRepository {
                 .getResultList();
         return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
     }
+
+    @Override
+    public List<User> findDeletedUsersByModifyDateBetween(java.time.LocalDateTime startDate, java.time.LocalDateTime endDate) {
+        return em.createQuery(
+                "select u from User u " +
+                "where u.isDeleted = :isDeleted " +
+                "and u.modifyDate >= :startDate " +
+                "and u.modifyDate < :endDate", User.class)
+                .setParameter("isDeleted", YNType.Y)
+                .setParameter("startDate", startDate)
+                .setParameter("endDate", endDate)
+                .getResultList();
+    }
 }
 
 

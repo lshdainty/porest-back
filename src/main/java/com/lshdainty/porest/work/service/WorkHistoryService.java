@@ -9,14 +9,24 @@ import com.lshdainty.porest.work.repository.WorkHistoryCustomRepositoryImpl;
 import com.lshdainty.porest.work.repository.dto.WorkHistorySearchCondition;
 import com.lshdainty.porest.work.service.dto.WorkCodeServiceDto;
 import com.lshdainty.porest.work.service.dto.WorkHistoryServiceDto;
+import com.lshdainty.porest.holiday.service.HolidayService;
+import com.lshdainty.porest.holiday.domain.Holiday;
+import com.lshdainty.porest.common.type.YNType;
+import com.lshdainty.porest.user.repository.UserRepositoryImpl;
+import com.lshdainty.porest.vacation.domain.VacationUsage;
+import com.lshdainty.porest.vacation.repository.VacationUsageCustomRepositoryImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
+import java.math.BigDecimal;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -37,6 +47,9 @@ public class WorkHistoryService {
     private final WorkHistoryCustomRepositoryImpl workHistoryRepository;
     private final WorkCodeRepositoryImpl workCodeRepository;
     private final UserService userService;
+    private final HolidayService holidayService;
+    private final UserRepositoryImpl userRepository;
+    private final VacationUsageCustomRepositoryImpl vacationUsageRepository;
 
     @Transactional
     public Long createWorkHistory(WorkHistoryServiceDto data) {
@@ -237,5 +250,179 @@ public class WorkHistoryService {
             // Dispose of temporary files
             workbook.dispose();
         }
+    }
+
+    @Transactional(readOnly = true)
+    public void downloadUnregisteredWorkHistoryExcel(HttpServletResponse response, Integer year, Integer month)
+            throws IOException {
+        // 년월 유효성 검증
+        if (year == null || month == null) {
+            throw new IllegalArgumentException(ms.getMessage("error.validate.year.month.required", null, null));
+        }
+
+        // 해당 년월의 시작일과 마지막일 계산
+        YearMonth yearMonth = YearMonth.of(year, month);
+        LocalDate startDate = yearMonth.atDay(1);
+        LocalDate endDate = yearMonth.atEndOfMonth();
+
+        // 해당 기간의 공휴일 조회
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        String startDateStr = startDate.format(formatter);
+        String endDateStr = endDate.format(formatter);
+        List<Holiday> holidays = holidayService.searchHolidaysByStartEndDate(startDateStr, endDateStr, null);
+        Set<LocalDate> holidayDates = holidays.stream()
+                .map(h -> LocalDate.parse(h.getDate(), formatter))
+                .collect(Collectors.toSet());
+
+        // 주말과 공휴일을 제외한 근무일 리스트 생성
+        List<LocalDate> workingDays = new ArrayList<>();
+        LocalDate currentDate = startDate;
+        while (!currentDate.isAfter(endDate)) {
+            DayOfWeek dayOfWeek = currentDate.getDayOfWeek();
+            if (dayOfWeek != DayOfWeek.SATURDAY && dayOfWeek != DayOfWeek.SUNDAY
+                    && !holidayDates.contains(currentDate)) {
+                workingDays.add(currentDate);
+            }
+            currentDate = currentDate.plusDays(1);
+        }
+
+        // 대상 유저 조회: 삭제되지 않은 유저 + 삭제됐지만 modifyDate가 해당 년월인 유저
+        List<User> users = userRepository.findUsers(); // 삭제되지 않은 유저
+
+        // 삭제됐지만 modifyDate가 해당 년월인 유저 추가
+        List<User> deletedUsersInMonth = findDeletedUsersInYearMonth(year, month);
+        users.addAll(deletedUsersInMonth);
+
+        // 미등록 이력 데이터 수집
+        List<UnregisteredWorkData> unregisteredList = new ArrayList<>();
+
+        for (User user : users) {
+            for (LocalDate workDate : workingDays) {
+                // 해당 유저의 해당 날짜 업무 이력 조회
+                WorkHistorySearchCondition condition = new WorkHistorySearchCondition();
+                condition.setUserId(user.getId());
+                condition.setStartDate(workDate);
+                condition.setEndDate(workDate);
+
+                List<WorkHistory> histories = workHistoryRepository.findAll(condition);
+
+                // 해당 날짜의 총 업무 시간 계산
+                BigDecimal totalWorkHours = histories.stream()
+                        .map(WorkHistory::getHours)
+                        .filter(Objects::nonNull)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                // 해당 유저의 해당 날짜 휴가 사용 내역 조회
+                java.time.LocalDateTime dayStart = workDate.atStartOfDay();
+                java.time.LocalDateTime dayEnd = workDate.plusDays(1).atStartOfDay();
+                List<VacationUsage> vacationUsages = vacationUsageRepository
+                        .findByUserIdAndPeriodWithUser(user.getId(), dayStart, dayEnd);
+
+                // 해당 날짜의 총 휴가 사용 시간 계산 (usedTime * 8시간)
+                BigDecimal totalVacationHours = vacationUsages.stream()
+                        .map(VacationUsage::getUsedTime)
+                        .filter(Objects::nonNull)
+                        .map(usedTime -> usedTime.multiply(new BigDecimal("8.0")))
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                // 업무 시간 + 휴가 시간
+                BigDecimal totalHours = totalWorkHours.add(totalVacationHours);
+
+                // 8시간 미만인 경우 미등록 리스트에 추가
+                BigDecimal requiredHours = new BigDecimal("8.0");
+                if (totalHours.compareTo(requiredHours) < 0) {
+                    BigDecimal missingHours = requiredHours.subtract(totalHours);
+                    unregisteredList.add(new UnregisteredWorkData(
+                            user.getId(),
+                            user.getName(),
+                            workDate,
+                            totalWorkHours,
+                            totalVacationHours,
+                            missingHours
+                    ));
+                }
+            }
+        }
+
+        // 엑셀 파일 생성
+        try (SXSSFWorkbook workbook = new SXSSFWorkbook(100)) {
+            Sheet sheet = workbook.createSheet("업무 이력 미등록 리스트");
+
+            // Header
+            Row headerRow = sheet.createRow(0);
+            String[] headers = { "No", "유저 ID", "유저명", "일자", "업무 등록 시간", "휴가 사용 시간", "총 등록 시간", "미등록 시간" };
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+            }
+
+            // Data
+            int rowNum = 1;
+            for (UnregisteredWorkData data : unregisteredList) {
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(rowNum - 1);
+                row.createCell(1).setCellValue(data.getUserId());
+                row.createCell(2).setCellValue(data.getUserName());
+                row.createCell(3).setCellValue(data.getWorkDate().toString());
+                row.createCell(4).setCellValue(data.getWorkHours().toString());
+                row.createCell(5).setCellValue(data.getVacationHours().toString());
+                row.createCell(6).setCellValue(data.getWorkHours().add(data.getVacationHours()).toString());
+                row.createCell(7).setCellValue(data.getMissingHours().toString());
+            }
+
+            // Response Header Setting
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition",
+                    "attachment; filename=unregistered_work_history_" + year + "_" + month + ".xlsx");
+
+            // Write to Output Stream
+            workbook.write(response.getOutputStream());
+
+            // Dispose of temporary files
+            workbook.dispose();
+        }
+    }
+
+    /**
+     * 삭제됐지만 modifyDate가 해당 년월인 유저 조회
+     */
+    private List<User> findDeletedUsersInYearMonth(Integer year, Integer month) {
+        YearMonth yearMonth = YearMonth.of(year, month);
+        LocalDate startDate = yearMonth.atDay(1);
+        LocalDate endDate = yearMonth.atEndOfMonth().plusDays(1); // 마지막 날 포함을 위해 +1일
+
+        java.time.LocalDateTime startDateTime = startDate.atStartOfDay();
+        java.time.LocalDateTime endDateTime = endDate.atStartOfDay();
+
+        return userRepository.findDeletedUsersByModifyDateBetween(startDateTime, endDateTime);
+    }
+
+    /**
+     * 미등록 업무 데이터 내부 클래스
+     */
+    private static class UnregisteredWorkData {
+        private final String userId;
+        private final String userName;
+        private final LocalDate workDate;
+        private final BigDecimal workHours;
+        private final BigDecimal vacationHours;
+        private final BigDecimal missingHours;
+
+        public UnregisteredWorkData(String userId, String userName, LocalDate workDate,
+                                   BigDecimal workHours, BigDecimal vacationHours, BigDecimal missingHours) {
+            this.userId = userId;
+            this.userName = userName;
+            this.workDate = workDate;
+            this.workHours = workHours;
+            this.vacationHours = vacationHours;
+            this.missingHours = missingHours;
+        }
+
+        public String getUserId() { return userId; }
+        public String getUserName() { return userName; }
+        public LocalDate getWorkDate() { return workDate; }
+        public BigDecimal getWorkHours() { return workHours; }
+        public BigDecimal getVacationHours() { return vacationHours; }
+        public BigDecimal getMissingHours() { return missingHours; }
     }
 }
