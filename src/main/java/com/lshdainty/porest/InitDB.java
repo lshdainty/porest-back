@@ -320,6 +320,11 @@ public class InitDB {
 						ResourceType.DUES, ActionType.MANAGE);
 				permissionRepository.save(duesManage);
 
+                // 8. 사규 관리
+                Permission regulationRead = Permission.createPermission("REGULATION:READ", "사규 조회", "사규 조회", ResourceType.REGULATION,
+                        ActionType.READ);
+                permissionRepository.save(regulationRead);
+
 				// 8. 권한 관리
 				Permission roleManage = Permission.createPermission("ROLE:MANAGE", "권한 관리", "역할 및 권한 설정",
 						ResourceType.ROLE, ActionType.MANAGE);
@@ -349,6 +354,7 @@ public class InitDB {
 				adminRole.addPermission(holidayManage);
 				adminRole.addPermission(duesRead);
 				adminRole.addPermission(duesManage);
+                adminRole.addPermission(regulationRead);
 				adminRole.addPermission(roleManage);
 				roleRepository.save(adminRole);
 
@@ -365,6 +371,7 @@ public class InitDB {
 				managerRole.addPermission(scheduleWrite);
 				adminRole.addPermission(scheduleManage);
 				managerRole.addPermission(duesRead);
+                managerRole.addPermission(regulationRead);
 				roleRepository.save(managerRole);
 
 				// USER Role (일반 사용자 권한)
@@ -378,6 +385,7 @@ public class InitDB {
 				userRole.addPermission(scheduleRead);
 				userRole.addPermission(scheduleWrite);
 				userRole.addPermission(duesRead);
+                userRole.addPermission(regulationRead);
 				roleRepository.save(userRole);
 			}
 		}

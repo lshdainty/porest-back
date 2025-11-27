@@ -15,6 +15,7 @@ public enum ResourceType {
     COMPANY("회사/부서"),
     HOLIDAY("공휴일"),
     DUES("회비"),
+    REGULATION("회비"),
     ROLE("권한");
 
     private final String description;
