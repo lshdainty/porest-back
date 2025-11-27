@@ -6,6 +6,7 @@ import com.lshdainty.porest.company.type.OriginCompanyType;
 import com.lshdainty.porest.holiday.type.HolidayType;
 import com.lshdainty.porest.schedule.type.ScheduleType;
 import com.lshdainty.porest.vacation.type.*;
+import com.lshdainty.porest.work.type.SystemType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
@@ -34,7 +35,8 @@ public class TypesApiController {
             Map.entry("grant-status", GrantStatus.class),
             Map.entry("schedule-type", ScheduleType.class),
             Map.entry("holiday-type", HolidayType.class),
-            Map.entry("origin-company-type", OriginCompanyType.class)
+            Map.entry("origin-company-type", OriginCompanyType.class),
+            Map.entry("system-type", SystemType.class)
     );
 
     @GetMapping("/api/v1/types/{enumName}")
@@ -49,6 +51,7 @@ public class TypesApiController {
                 .map(enumConstant -> TypesDto.builder()
                         .code(((Enum<?>) enumConstant).name())
                         .name(((DisplayType) enumConstant).getViewName())
+                        .orderSeq(((DisplayType) enumConstant).getOrderSeq())
                         .build()
                 )
                 .toList();

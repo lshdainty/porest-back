@@ -14,4 +14,5 @@ import lombok.Setter;
 public class TypesDto {
     private String code;
     private String name;
+    private Long orderSeq;
 }
