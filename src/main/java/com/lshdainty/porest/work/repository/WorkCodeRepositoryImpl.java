@@ -5,6 +5,7 @@ import com.lshdainty.porest.work.domain.WorkCode;
 import com.lshdainty.porest.work.type.CodeType;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -16,7 +17,13 @@ import static com.lshdainty.porest.work.domain.QWorkCode.workCode;
 @Repository
 @RequiredArgsConstructor
 public class WorkCodeRepositoryImpl implements WorkCodeRepository {
+    private final EntityManager em;
     private final JPAQueryFactory query;
+
+    @Override
+    public void save(WorkCode workCode) {
+        em.persist(workCode);
+    }
 
     @Override
     public Optional<WorkCode> findByCode(String code) {

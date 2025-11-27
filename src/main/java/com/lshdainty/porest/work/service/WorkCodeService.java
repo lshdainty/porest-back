@@ -5,6 +5,8 @@ import com.lshdainty.porest.work.repository.WorkCodeRepository;
 import com.lshdainty.porest.work.service.dto.WorkCodeServiceDto;
 import com.lshdainty.porest.work.type.CodeType;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,8 +16,10 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class WorkCodeService {
     private final WorkCodeRepository workCodeRepository;
+    private final MessageSource ms;
 
     /**
      * 동적 조건으로 업무 코드 목록 조회
@@ -45,5 +49,99 @@ public class WorkCodeService {
                         .parentSeq(wc.getParent() != null ? wc.getParent().getSeq() : null)
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 업무 코드 생성
+     *
+     * @param code 코드 값
+     * @param name 코드명
+     * @param type 코드 타입 (LABEL/OPTION)
+     * @param parentSeq 부모 코드 seq (null 가능)
+     * @param orderSeq 정렬 순서
+     * @return 생성된 업무 코드 seq
+     */
+    @Transactional
+    public Long createWorkCode(String code, String name, CodeType type, Long parentSeq, Integer orderSeq) {
+        // 부모 코드 조회 (parentSeq가 있는 경우)
+        WorkCode parent = null;
+        if (parentSeq != null) {
+            parent = workCodeRepository.findBySeq(parentSeq)
+                    .orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.workcode", null, null)));
+        }
+
+        // 코드 중복 체크
+        workCodeRepository.findByCode(code).ifPresent(wc -> {
+            throw new IllegalArgumentException(ms.getMessage("error.duplicate.workcode", null, null));
+        });
+
+        // 업무 코드 생성
+        WorkCode workCode = WorkCode.createWorkCode(code, name, type, parent, orderSeq);
+        workCodeRepository.save(workCode);
+
+        log.info("업무 코드 생성 완료: code={}, name={}, type={}, parentSeq={}, orderSeq={}",
+                code, name, type, parentSeq, orderSeq);
+
+        return workCode.getSeq();
+    }
+
+    /**
+     * 업무 코드 수정
+     *
+     * @param seq 수정할 업무 코드 seq
+     * @param code 코드 값
+     * @param name 코드명
+     * @param parentSeq 부모 코드 seq (null 가능)
+     * @param orderSeq 정렬 순서
+     */
+    @Transactional
+    public void updateWorkCode(Long seq, String code, String name, Long parentSeq, Integer orderSeq) {
+        // 업무 코드 조회
+        WorkCode workCode = workCodeRepository.findBySeq(seq)
+                .orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.workcode", null, null)));
+
+        // 부모 코드 조회 (parentSeq가 있는 경우)
+        WorkCode parent = null;
+        if (parentSeq != null) {
+            parent = workCodeRepository.findBySeq(parentSeq)
+                    .orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.workcode.parent", null, null)));
+
+            // 자기 자신을 부모로 설정하는 것 방지
+            if (seq.equals(parentSeq)) {
+                throw new IllegalArgumentException(ms.getMessage("error.invalid.workcode.parent.self", null, null));
+            }
+        }
+
+        // 코드 중복 체크 (자신 제외)
+        if (code != null) {
+            workCodeRepository.findByCode(code).ifPresent(wc -> {
+                if (!wc.getSeq().equals(seq)) {
+                    throw new IllegalArgumentException(ms.getMessage("error.duplicate.workcode", null, null));
+                }
+            });
+        }
+
+        // 업무 코드 수정
+        workCode.updateWorkCode(code, name, parent, orderSeq);
+
+        log.info("업무 코드 수정 완료: seq={}, code={}, name={}, parentSeq={}, orderSeq={}",
+                seq, code, name, parentSeq, orderSeq);
+    }
+
+    /**
+     * 업무 코드 삭제 (Soft Delete)
+     *
+     * @param seq 삭제할 업무 코드 seq
+     */
+    @Transactional
+    public void deleteWorkCode(Long seq) {
+        // 업무 코드 조회
+        WorkCode workCode = workCodeRepository.findBySeq(seq)
+                .orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.workcode", null, null)));
+
+        // 업무 코드 삭제 (Soft Delete)
+        workCode.deleteWorkCode();
+
+        log.info("업무 코드 삭제 완료: seq={}, code={}", seq, workCode.getCode());
     }
 }

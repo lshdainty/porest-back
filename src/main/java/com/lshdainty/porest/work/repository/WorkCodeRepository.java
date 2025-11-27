@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface WorkCodeRepository {
+    // 업무 코드 저장
+    void save(WorkCode workCode);
+
     // 코드로 업무 코드 조회
     Optional<WorkCode> findByCode(String code);
 
