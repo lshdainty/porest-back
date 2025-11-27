@@ -76,4 +76,12 @@ public class UserRole extends AuditingFields {
     public void deleteUserRole() {
         this.isDeleted = YNType.Y;
     }
+
+    /**
+     * 사용자-역할 매핑 복구 함수 (Soft Delete 복구)<br>
+     * Soft Delete된 매핑을 다시 활성화
+     */
+    public void restoreUserRole() {
+        this.isDeleted = YNType.N;
+    }
 }

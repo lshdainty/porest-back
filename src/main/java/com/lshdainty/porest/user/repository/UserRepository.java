@@ -14,6 +14,8 @@ public interface UserRepository {
     Optional<User> findByIdWithRolesAndPermissions(String userId);
     // 전체 유저 목록 조회
     List<User> findUsers();
+    // 전체 유저 목록 조회 (역할과 권한 정보 포함)
+    List<User> findUsersWithRolesAndPermissions();
     // 초대 토큰으로 유저 검색
     Optional<User> findByInvitationToken(String token);
     // 삭제된 유저 중 modifyDate가 특정 기간 내인 유저 조회

@@ -44,6 +44,28 @@ public class UserApiController {
     public ApiResponse searchUser(@PathVariable("id") String userId) {
         UserServiceDto user = userService.searchUser(userId);
 
+        // 역할 상세 정보 변환 (null 체크)
+        List<UserApiDto.RoleDetailResp> roleDetails = user.getRoles() != null
+                ? user.getRoles().stream()
+                    .map(role -> new UserApiDto.RoleDetailResp(
+                            role.getRoleCode(),
+                            role.getRoleName(),
+                            role.getPermissions() != null
+                                ? role.getPermissions().stream()
+                                    .map(perm -> new UserApiDto.PermissionDetailResp(
+                                            perm.getPermissionCode(),
+                                            perm.getPermissionName()
+                                    ))
+                                    .collect(Collectors.toList())
+                                : List.of()
+                    ))
+                    .collect(Collectors.toList())
+                : List.of();
+
+        // roleNames null 체크
+        List<String> roleNames = user.getRoleNames() != null ? user.getRoleNames() : List.of();
+        List<String> allPermissions = user.getAllPermissions() != null ? user.getAllPermissions() : List.of();
+
         return ApiResponse.success(new UserApiDto.SearchUserResp(
                 user.getId(),
                 user.getName(),
@@ -51,8 +73,10 @@ public class UserApiController {
                 user.getBirth(),
                 user.getWorkTime(),
                 user.getJoinDate(),
-                user.getRoleNames(),
-                user.getRoleNames().isEmpty() ? null : user.getRoleNames().get(0),
+                roleDetails,
+                roleNames,
+                roleNames.isEmpty() ? null : roleNames.get(0),
+                allPermissions,
                 user.getCompany(),
                 user.getCompany().getCompanyName(),
                 user.getLunarYN(),
@@ -79,27 +103,53 @@ public class UserApiController {
         List<UserServiceDto> users = userService.searchUsers();
 
         List<UserApiDto.SearchUserResp> resps = users.stream()
-                .map(u -> new UserApiDto.SearchUserResp(
-                        u.getId(),
-                        u.getName(),
-                        u.getEmail(),
-                        u.getBirth(),
-                        u.getWorkTime(),
-                        u.getJoinDate(),
-                        u.getRoleNames(),
-                        u.getRoleNames().isEmpty() ? null : u.getRoleNames().get(0),
-                        u.getCompany(),
-                        u.getCompany().getCompanyName(),
-                        u.getLunarYN(),
-                        u.getProfileUrl(),
-                        u.getInvitationToken(),
-                        u.getInvitationSentAt(),
-                        u.getInvitationExpiresAt(),
-                        u.getInvitationStatus(),
-                        u.getRegisteredAt(),
-                        u.getMainDepartmentNameKR(),
-                        u.getDashboard()
-                ))
+                .map(u -> {
+                    // 역할 상세 정보 변환 (null 체크)
+                    List<UserApiDto.RoleDetailResp> roleDetails = u.getRoles() != null
+                            ? u.getRoles().stream()
+                                .map(role -> new UserApiDto.RoleDetailResp(
+                                        role.getRoleCode(),
+                                        role.getRoleName(),
+                                        role.getPermissions() != null
+                                            ? role.getPermissions().stream()
+                                                .map(perm -> new UserApiDto.PermissionDetailResp(
+                                                        perm.getPermissionCode(),
+                                                        perm.getPermissionName()
+                                                ))
+                                                .collect(Collectors.toList())
+                                            : List.of()
+                                ))
+                                .collect(Collectors.toList())
+                            : List.of();
+
+                    // roleNames null 체크
+                    List<String> roleNames = u.getRoleNames() != null ? u.getRoleNames() : List.of();
+                    List<String> allPermissions = u.getAllPermissions() != null ? u.getAllPermissions() : List.of();
+
+                    return new UserApiDto.SearchUserResp(
+                            u.getId(),
+                            u.getName(),
+                            u.getEmail(),
+                            u.getBirth(),
+                            u.getWorkTime(),
+                            u.getJoinDate(),
+                            roleDetails,
+                            roleNames,
+                            roleNames.isEmpty() ? null : roleNames.get(0),
+                            allPermissions,
+                            u.getCompany(),
+                            u.getCompany().getCompanyName(),
+                            u.getLunarYN(),
+                            u.getProfileUrl(),
+                            u.getInvitationToken(),
+                            u.getInvitationSentAt(),
+                            u.getInvitationExpiresAt(),
+                            u.getInvitationStatus(),
+                            u.getRegisteredAt(),
+                            u.getMainDepartmentNameKR(),
+                            u.getDashboard()
+                    );
+                })
                 .collect(Collectors.toList());
 
         return ApiResponse.success(resps);
@@ -125,14 +175,38 @@ public class UserApiController {
 
         UserServiceDto findUser = userService.searchUser(userId);
 
+        // 역할 상세 정보 변환 (null 체크)
+        List<UserApiDto.RoleDetailResp> roleDetails = findUser.getRoles() != null
+                ? findUser.getRoles().stream()
+                    .map(role -> new UserApiDto.RoleDetailResp(
+                            role.getRoleCode(),
+                            role.getRoleName(),
+                            role.getPermissions() != null
+                                ? role.getPermissions().stream()
+                                    .map(perm -> new UserApiDto.PermissionDetailResp(
+                                            perm.getPermissionCode(),
+                                            perm.getPermissionName()
+                                    ))
+                                    .collect(Collectors.toList())
+                                : List.of()
+                    ))
+                    .collect(Collectors.toList())
+                : List.of();
+
+        // roleNames null 체크
+        List<String> roleNames = findUser.getRoleNames() != null ? findUser.getRoleNames() : List.of();
+        List<String> allPermissions = findUser.getAllPermissions() != null ? findUser.getAllPermissions() : List.of();
+
         return ApiResponse.success(new UserApiDto.EditUserResp(
                 findUser.getId(),
                 findUser.getName(),
                 findUser.getEmail(),
                 findUser.getBirth(),
                 findUser.getWorkTime(),
-                findUser.getRoleNames(),
-                findUser.getRoleNames().isEmpty() ? null : findUser.getRoleNames().get(0),
+                roleDetails,
+                roleNames,
+                roleNames.isEmpty() ? null : roleNames.get(0),
+                allPermissions,
                 findUser.getCompany(),
                 findUser.getCompany().getCompanyName(),
                 findUser.getLunarYN(),
@@ -271,17 +345,43 @@ public class UserApiController {
         List<UserServiceDto> approvers = userService.getUserApprovers(userId);
 
         List<UserApiDto.GetApproversResp> resp = approvers.stream()
-                .map(approver -> new UserApiDto.GetApproversResp(
-                        approver.getId(),
-                        approver.getName(),
-                        approver.getEmail(),
-                        approver.getRoleNames(),
-                        approver.getRoleNames().isEmpty() ? null : approver.getRoleNames().get(0),
-                        approver.getDepartmentId(),
-                        approver.getDepartmentName(),
-                        approver.getDepartmentNameKR(),
-                        approver.getDepartmentLevel()
-                ))
+                .map(approver -> {
+                    // 역할 상세 정보 변환 (null 체크)
+                    List<UserApiDto.RoleDetailResp> roleDetails = approver.getRoles() != null
+                            ? approver.getRoles().stream()
+                                .map(role -> new UserApiDto.RoleDetailResp(
+                                        role.getRoleCode(),
+                                        role.getRoleName(),
+                                        role.getPermissions() != null
+                                            ? role.getPermissions().stream()
+                                                .map(perm -> new UserApiDto.PermissionDetailResp(
+                                                        perm.getPermissionCode(),
+                                                        perm.getPermissionName()
+                                                ))
+                                                .collect(Collectors.toList())
+                                            : List.of()
+                                ))
+                                .collect(Collectors.toList())
+                            : List.of();
+
+                    // roleNames null 체크
+                    List<String> roleNames = approver.getRoleNames() != null ? approver.getRoleNames() : List.of();
+                    List<String> allPermissions = approver.getAllPermissions() != null ? approver.getAllPermissions() : List.of();
+
+                    return new UserApiDto.GetApproversResp(
+                            approver.getId(),
+                            approver.getName(),
+                            approver.getEmail(),
+                            roleDetails,
+                            roleNames,
+                            roleNames.isEmpty() ? null : roleNames.get(0),
+                            allPermissions,
+                            approver.getDepartmentId(),
+                            approver.getDepartmentName(),
+                            approver.getDepartmentNameKR(),
+                            approver.getDepartmentLevel()
+                    );
+                })
                 .collect(Collectors.toList());
 
         return ApiResponse.success(resp);

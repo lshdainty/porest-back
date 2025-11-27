@@ -232,10 +232,29 @@ public class User extends AuditingFields {
         if (!Objects.isNull(name)) { this.name = name; }
         if (!Objects.isNull(email)) { this.email = email; }
         if (!Objects.isNull(roles)) {
-            this.userRoles.clear();
+            // 새로운 역할 코드 Set 생성 (중복 제거)
+            java.util.Set<String> newRoleCodes = roles.stream()
+                    .map(Role::getCode)
+                    .collect(java.util.stream.Collectors.toSet());
+
+            // 1. 기존 활성화된 역할 중 새로운 목록에 없는 것은 soft delete
+            this.userRoles.stream()
+                    .filter(ur -> ur.getIsDeleted() == YNType.N)
+                    .filter(ur -> !newRoleCodes.contains(ur.getRole().getCode()))
+                    .forEach(UserRole::deleteUserRole);
+
+            // 2. 새로운 역할들을 추가 (중복 방지)
             for (Role role : roles) {
-                UserRole userRole = UserRole.createUserRole(this, role);
-                this.userRoles.add(userRole);
+                // 이미 활성화된 역할인지 확인 (soft delete된 것은 무시)
+                boolean exists = this.userRoles.stream()
+                        .anyMatch(ur -> ur.getRole().getCode().equals(role.getCode())
+                                && ur.getIsDeleted() == YNType.N);
+
+                // 활성화된 역할이 없으면 새로 생성
+                if (!exists) {
+                    UserRole userRole = UserRole.createUserRole(this, role);
+                    this.userRoles.add(userRole);
+                }
             }
         }
         if (!Objects.isNull(birth)) { this.birth = birth; }

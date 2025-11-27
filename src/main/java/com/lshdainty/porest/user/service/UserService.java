@@ -75,7 +75,8 @@ public class UserService {
     }
 
     public UserServiceDto searchUser(String userId) {
-        User user = checkUserExist(userId);
+        // 역할 및 권한 정보를 포함하여 조회
+        User user = findUserById(userId);
 
         // 메인 부서의 한글명 조회
         String mainDepartmentNameKR = user.getUserDepartments().stream()
@@ -84,12 +85,28 @@ public class UserService {
                 .map(ud -> ud.getDepartment().getNameKR())
                 .orElse(null);
 
+        // 역할 상세 정보 생성
+        List<UserServiceDto.RoleDetailDto> roleDetails = user.getRoles().stream()
+                .map(role -> UserServiceDto.RoleDetailDto.builder()
+                        .roleCode(role.getCode())
+                        .roleName(role.getName())
+                        .permissions(role.getPermissions().stream()
+                                .map(permission -> UserServiceDto.PermissionDetailDto.builder()
+                                        .permissionCode(permission.getCode())
+                                        .permissionName(permission.getName())
+                                        .build())
+                                .collect(Collectors.toList()))
+                        .build())
+                .collect(Collectors.toList());
+
         return UserServiceDto.builder()
                 .id(user.getId())
                 .pwd(user.getPwd())
                 .name(user.getName())
                 .email(user.getEmail())
+                .roles(roleDetails)
                 .roleNames(user.getRoles().stream().map(Role::getName).collect(Collectors.toList()))
+                .allPermissions(user.getAllAuthorities())
                 .birth(user.getBirth())
                 .workTime(user.getWorkTime())
                 .joinDate(user.getJoinDate())
@@ -111,7 +128,8 @@ public class UserService {
 
 
     public List<UserServiceDto> searchUsers() {
-        List<User> users = userRepositoryImpl.findUsers();
+        // 역할 및 권한 정보를 포함하여 조회
+        List<User> users = userRepositoryImpl.findUsersWithRolesAndPermissions();
 
         return users.stream()
                 .map(user -> {
@@ -122,12 +140,28 @@ public class UserService {
                             .map(ud -> ud.getDepartment().getNameKR())
                             .orElse(null);
 
+                    // 역할 상세 정보 생성
+                    List<UserServiceDto.RoleDetailDto> roleDetails = user.getRoles().stream()
+                            .map(role -> UserServiceDto.RoleDetailDto.builder()
+                                    .roleCode(role.getCode())
+                                    .roleName(role.getName())
+                                    .permissions(role.getPermissions().stream()
+                                            .map(permission -> UserServiceDto.PermissionDetailDto.builder()
+                                                    .permissionCode(permission.getCode())
+                                                    .permissionName(permission.getName())
+                                                    .build())
+                                            .collect(Collectors.toList()))
+                                    .build())
+                            .collect(Collectors.toList());
+
                     return UserServiceDto.builder()
                             .id(user.getId())
                             .pwd(user.getPwd())
                             .name(user.getName())
                             .email(user.getEmail())
+                            .roles(roleDetails)
                             .roleNames(user.getRoles().stream().map(Role::getName).collect(Collectors.toList()))
+                            .allPermissions(user.getAllAuthorities())
                             .birth(user.getBirth())
                             .workTime(user.getWorkTime())
                             .joinDate(user.getJoinDate())
@@ -160,8 +194,9 @@ public class UserService {
 
         List<Role> roles = null;
         if (data.getRoleNames() != null) {
+            // 역할 코드로 조회 (프론트에서 역할 코드를 전송)
             roles = data.getRoleNames().stream()
-                    .map(name -> roleRepository.findByName(name).orElseThrow(() -> new IllegalArgumentException("Role not found: " + name)))
+                    .map(code -> roleRepository.findByCode(code).orElseThrow(() -> new IllegalArgumentException("Role not found: " + code)))
                     .collect(Collectors.toList());
         }
 
@@ -460,19 +495,35 @@ public class UserService {
         // Department 정보를 UserServiceDto로 변환
         return approverDepartments.stream()
                 .map(dept -> {
-                    // headUserId로 User 조회
-                    User approver = userRepositoryImpl.findById(dept.getHeadUserId())
+                    // headUserId로 User 조회 (역할 및 권한 정보 포함)
+                    User approver = userRepositoryImpl.findByIdWithRolesAndPermissions(dept.getHeadUserId())
                             .orElse(null);
 
                     if (approver == null || approver.getIsDeleted() == YNType.Y) {
                         return null;
                     }
 
+                    // 역할 상세 정보 생성
+                    List<UserServiceDto.RoleDetailDto> roleDetails = approver.getRoles().stream()
+                            .map(role -> UserServiceDto.RoleDetailDto.builder()
+                                    .roleCode(role.getCode())
+                                    .roleName(role.getName())
+                                    .permissions(role.getPermissions().stream()
+                                            .map(permission -> UserServiceDto.PermissionDetailDto.builder()
+                                                    .permissionCode(permission.getCode())
+                                                    .permissionName(permission.getName())
+                                                    .build())
+                                            .collect(Collectors.toList()))
+                                    .build())
+                            .collect(Collectors.toList());
+
                     return UserServiceDto.builder()
                             .id(approver.getId())
                             .name(approver.getName())
                             .email(approver.getEmail())
+                            .roles(roleDetails)
                             .roleNames(approver.getRoles().stream().map(Role::getName).collect(Collectors.toList()))
+                            .allPermissions(approver.getAllAuthorities())
                             .departmentId(dept.getId())
                             .departmentName(dept.getName())
                             .departmentNameKR(dept.getNameKR())

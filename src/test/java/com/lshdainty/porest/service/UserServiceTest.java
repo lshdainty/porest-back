@@ -423,8 +423,8 @@ class UserServiceTest {
                     OriginCompanyType.SKAX, "9 ~ 6", YNType.N, null, null);
             given(userRepositoryImpl.findById(userId)).willReturn(Optional.of(user));
 
-            Role role = Role.createRole("ADMIN", "관리자");
-            given(roleRepository.findByName("ADMIN")).willReturn(Optional.of(role));
+            Role role = Role.createRole("ADMIN", "관리자", "관리자 역할");
+            given(roleRepository.findByCode("ADMIN")).willReturn(Optional.of(role));
 
             UserServiceDto data = UserServiceDto.builder()
                     .id(userId)
@@ -436,7 +436,7 @@ class UserServiceTest {
 
             // then
             then(userRepositoryImpl).should().findById(userId);
-            then(roleRepository).should().findByName("ADMIN");
+            then(roleRepository).should().findByCode("ADMIN");
             assertThat(user.getRoles()).contains(role);
         }
     }

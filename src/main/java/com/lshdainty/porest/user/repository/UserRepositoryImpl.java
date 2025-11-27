@@ -74,6 +74,41 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    public List<User> findUsersWithRolesAndPermissions() {
+        // 1단계: User + UserRole + Role 조회
+        List<User> users = em.createQuery(
+                "select distinct u from User u " +
+                "left join fetch u.userRoles ur " +
+                "left join fetch ur.role r " +
+                "where u.isDeleted = :isDeleted", User.class)
+                .setParameter("isDeleted", YNType.N)
+                .getResultList();
+
+        if (users.isEmpty()) {
+            return users;
+        }
+
+        // 2단계: 모든 사용자의 Role들에 대한 RolePermission + Permission 조회
+        // 각 사용자의 역할 목록을 수집
+        List<com.lshdainty.porest.permission.domain.Role> allRoles = users.stream()
+                .flatMap(u -> u.getRoles().stream())
+                .distinct()
+                .collect(java.util.stream.Collectors.toList());
+
+        if (!allRoles.isEmpty()) {
+            em.createQuery(
+                "select distinct r from Role r " +
+                "left join fetch r.rolePermissions rp " +
+                "left join fetch rp.permission p " +
+                "where r in :roles", com.lshdainty.porest.permission.domain.Role.class)
+                .setParameter("roles", allRoles)
+                .getResultList();
+        }
+
+        return users;
+    }
+
+    @Override
     public List<User> findDeletedUsersByModifyDateBetween(java.time.LocalDateTime startDate, java.time.LocalDateTime endDate) {
         return em.createQuery(
                 "select u from User u " +

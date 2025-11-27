@@ -45,4 +45,29 @@ public class UserServiceDto {
     private String departmentName; // 부서명
     private String departmentNameKR; // 부서 한글명
     private Long departmentLevel; // 부서 레벨
+
+    // 역할 및 권한 상세 정보
+    private List<RoleDetailDto> roles; // 역할 상세 정보 (역할 코드, 이름, 권한 목록)
+    private List<String> allPermissions; // 모든 권한 코드 목록
+
+    /**
+     * 역할 상세 정보 DTO
+     */
+    @Getter
+    @Builder
+    public static class RoleDetailDto {
+        private String roleCode;
+        private String roleName;
+        private List<PermissionDetailDto> permissions;
+    }
+
+    /**
+     * 권한 상세 정보 DTO
+     */
+    @Getter
+    @Builder
+    public static class PermissionDetailDto {
+        private String permissionCode;
+        private String permissionName;
+    }
 }

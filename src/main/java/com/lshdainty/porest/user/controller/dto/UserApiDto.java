@@ -47,8 +47,10 @@ public class UserApiDto {
         private LocalDate userBirth;
         private String userWorkTime;
         private LocalDate joinDate;
-        private List<String> userRoles;
-        private String userRoleName;
+        private List<RoleDetailResp> roles;          // 역할 상세 정보 (역할 코드, 이름, 권한 목록)
+        private List<String> userRoles;              // 역할 이름 목록 (기존 호환성)
+        private String userRoleName;                 // 첫 번째 역할 이름 (기존 호환성)
+        private List<String> permissions;            // 모든 권한 코드 목록
         private OriginCompanyType userOriginCompanyType;
         private String userOriginCompanyName;
         private YNType lunarYn;
@@ -89,8 +91,10 @@ public class UserApiDto {
         private String userEmail;
         private LocalDate userBirth;
         private String userWorkTime;
-        private List<String> userRoles;
-        private String userRoleName;
+        private List<RoleDetailResp> roles;          // 역할 상세 정보 (역할 코드, 이름, 권한 목록)
+        private List<String> userRoles;              // 역할 이름 목록 (기존 호환성)
+        private String userRoleName;                 // 첫 번째 역할 이름 (기존 호환성)
+        private List<String> permissions;            // 모든 권한 코드 목록
         private OriginCompanyType userOriginCompanyType;
         private String userOriginCompanyName;
         private YNType lunarYn;
@@ -206,8 +210,10 @@ public class UserApiDto {
         private String userId;
         private String userName;
         private String userEmail;
-        private List<String> userRoles;
-        private String userRoleName;
+        private List<RoleDetailResp> roles;          // 역할 상세 정보 (역할 코드, 이름, 권한 목록)
+        private List<String> userRoles;              // 역할 이름 목록 (기존 호환성)
+        private String userRoleName;                 // 첫 번째 역할 이름 (기존 호환성)
+        private List<String> permissions;            // 모든 권한 코드 목록
         private Long departmentId;
         private String departmentName;
         private String departmentNameKr;
@@ -227,5 +233,28 @@ public class UserApiDto {
     public static class UpdateDashboardResp {
         private String userId;
         private String dashboard;
+    }
+
+    /**
+     * 역할 상세 정보 DTO
+     */
+    @Getter
+    @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class RoleDetailResp {
+        private String roleCode;                     // 역할 코드 (예: ADMIN, MANAGER)
+        private String roleName;                     // 역할 이름 (예: 관리자, 매니저)
+        private List<PermissionDetailResp> permissions; // 해당 역할의 권한 목록
+    }
+
+    /**
+     * 권한 상세 정보 DTO
+     */
+    @Getter
+    @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class PermissionDetailResp {
+        private String permissionCode;               // 권한 코드 (예: USER:READ, VACATION:APPROVE)
+        private String permissionName;               // 권한 이름 (예: 사용자 조회, 휴가 승인)
     }
 }
