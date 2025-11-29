@@ -33,7 +33,6 @@ public class SecurityConfig {
     private final CustomOAuth2AuthenticationFailureHandler customOAuth2AuthenticationFailureHandler;
     private final CustomLogoutSuccessHandler customLogoutSuccessHandler;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
-    private final RequestLoggingFilter requestLoggingFilter;
     private final AppProperties appProperties;
 
     // password 암호화를 위한 bean 등록
@@ -117,9 +116,6 @@ public class SecurityConfig {
         http.exceptionHandling(exception -> exception
                 .authenticationEntryPoint(customAuthenticationEntryPoint)
         );
-
-        // 요청 로깅 필터 추가 (Security Filter Chain 앞에 추가)
-        http.addFilterBefore(requestLoggingFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
