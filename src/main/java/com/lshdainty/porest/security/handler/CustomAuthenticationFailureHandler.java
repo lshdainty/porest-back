@@ -2,6 +2,7 @@ package com.lshdainty.porest.security.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lshdainty.porest.common.controller.ApiResponse;
+import com.lshdainty.porest.common.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,10 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
-        ApiResponse<Void> apiResponse = ApiResponse.fail(401, "로그인 실패: " + exception.getMessage());
+        ApiResponse<Void> apiResponse = ApiResponse.error(
+                ErrorCode.UNAUTHORIZED.getCode(),
+                "로그인 실패: " + exception.getMessage()
+        );
         String jsonResponse = objectMapper.writeValueAsString(apiResponse);
         response.getWriter().write(jsonResponse);
     }

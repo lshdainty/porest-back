@@ -1,39 +1,180 @@
 package com.lshdainty.porest.common.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
-import lombok.Builder;
-import lombok.Getter;
+import com.lshdainty.porest.common.exception.BusinessException;
+import com.lshdainty.porest.common.exception.ErrorCode;
+import com.lshdainty.porest.common.exception.UnauthorizedException;
+import com.lshdainty.porest.common.util.ErrorMessageResolver;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.validation.BindException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.util.stream.Collectors;
+
+/**
+ * 전역 예외 처리 핸들러
+ * 모든 예외를 ApiResponse 포맷으로 통일하여 반환
+ * MessageSource를 통해 다국어 지원
+ */
 @Slf4j
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class GlobalExceptionHandler {
 
-    @Builder @Getter
-    static class ErrorData {
-        int code;
-        String message;
-        String url;
+    private final ErrorMessageResolver messageResolver;
+
+    /**
+     * BusinessException 처리
+     * 비즈니스 로직 상의 예외 (가장 많이 사용됨)
+     */
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<ApiResponse<Void>> handleBusinessException(BusinessException e) {
+        log.warn("BusinessException: code={}, message={}", e.getErrorCode().getCode(), e.getMessage());
+
+        ErrorCode errorCode = e.getErrorCode();
+
+        // 커스텀 메시지가 있으면 사용, 없으면 MessageSource에서 가져오기
+        String message = e.getMessage() != null && !e.getMessage().equals(errorCode.getMessageKey())
+                ? e.getMessage()
+                : messageResolver.getMessage(errorCode);
+
+        ApiResponse<Void> response = ApiResponse.error(errorCode.getCode(), message);
+
+        return ResponseEntity
+                .status(errorCode.getHttpStatus())
+                .body(response);
     }
 
+    /**
+     * UnauthorizedException 처리 (인증 실패)
+     */
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleUnauthorizedException(UnauthorizedException e) {
+        log.warn("UnauthorizedException: {}", e.getMessage());
+
+        String message = e.getMessage() != null && !e.getMessage().isEmpty()
+                ? e.getMessage()
+                : messageResolver.getMessage(ErrorCode.UNAUTHORIZED);
+
+        ApiResponse<Void> response = ApiResponse.error(ErrorCode.UNAUTHORIZED.getCode(), message);
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(response);
+    }
+
+    /**
+     * AccessDeniedException 처리 (권한 없음)
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAccessDeniedException(AccessDeniedException e) {
+        log.warn("AccessDeniedException: {}", e.getMessage());
+
+        String message = messageResolver.getMessage(ErrorCode.FORBIDDEN);
+        ApiResponse<Void> response = ApiResponse.error(ErrorCode.FORBIDDEN.getCode(), message);
+
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(response);
+    }
+
+    /**
+     * IllegalArgumentException 처리 (잘못된 인자)
+     */
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiResponse> illegalArgumentException(IllegalArgumentException le, HttpServletRequest req) {
-        ErrorData errorData = ErrorData.builder()
-                .code(0)
-                .message(le.getMessage())
-                .url(req.getRequestURI())
-                .build();
+    public ResponseEntity<ApiResponse<Void>> handleIllegalArgumentException(IllegalArgumentException e) {
+        log.warn("IllegalArgumentException: {}", e.getMessage());
 
-        ApiResponse<Object> response = ApiResponse.builder()
-                .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .message(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
-                .data(errorData)
-                .build();
+        String message = e.getMessage() != null && !e.getMessage().isEmpty()
+                ? e.getMessage()
+                : messageResolver.getMessage(ErrorCode.INVALID_INPUT);
 
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        ApiResponse<Void> response = ApiResponse.error(ErrorCode.INVALID_INPUT.getCode(), message);
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(response);
+    }
+
+    /**
+     * MethodArgumentNotValidException 처리 (@Valid 검증 실패)
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        String errorMessage = e.getBindingResult().getFieldErrors().stream()
+                .map(FieldError::getDefaultMessage)
+                .collect(Collectors.joining(", "));
+
+        log.warn("MethodArgumentNotValidException: {}", errorMessage);
+
+        ApiResponse<Void> response = ApiResponse.error(
+                ErrorCode.INVALID_INPUT.getCode(),
+                errorMessage
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(response);
+    }
+
+    /**
+     * BindException 처리 (바인딩 실패)
+     */
+    @ExceptionHandler(BindException.class)
+    public ResponseEntity<ApiResponse<Void>> handleBindException(BindException e) {
+        String errorMessage = e.getBindingResult().getFieldErrors().stream()
+                .map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage())
+                .collect(Collectors.joining(", "));
+
+        log.warn("BindException: {}", errorMessage);
+
+        ApiResponse<Void> response = ApiResponse.error(
+                ErrorCode.INVALID_INPUT.getCode(),
+                errorMessage
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(response);
+    }
+
+    /**
+     * MethodArgumentTypeMismatchException 처리 (타입 불일치)
+     */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
+        String errorMessage = String.format("'%s' 파라미터의 값이 유효하지 않습니다.", e.getName());
+        log.warn("MethodArgumentTypeMismatchException: {}", errorMessage);
+
+        ApiResponse<Void> response = ApiResponse.error(
+                ErrorCode.INVALID_INPUT.getCode(),
+                errorMessage
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(response);
+    }
+
+    /**
+     * 그 외 모든 예외 처리 (최종 fallback)
+     */
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse<Void>> handleGeneralException(Exception e) {
+        log.error("Unexpected Exception", e);
+
+        String message = messageResolver.getMessage(ErrorCode.INTERNAL_SERVER_ERROR);
+        ApiResponse<Void> response = ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR.getCode(), message);
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(response);
     }
 }
