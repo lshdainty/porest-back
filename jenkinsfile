@@ -54,11 +54,17 @@ pipeline {
 
                     // IP 블랙리스트 파일이 존재하지 않으면 빈 파일 생성
                     sh """
-                        if [ ! -f ${CONFIG_PATH}/${IP_BLACKLIST_FILE} ]; then
-                            echo "# IP Blacklist File (Auto-generated)" | sudo tee ${CONFIG_PATH}/${IP_BLACKLIST_FILE}
-                            echo "# Add one IP address or CIDR notation per line" | sudo tee -a ${CONFIG_PATH}/${IP_BLACKLIST_FILE}
-                            echo "# Example: 192.168.1.100 or 10.0.0.0/8" | sudo tee -a ${CONFIG_PATH}/${IP_BLACKLIST_FILE}
-                            sudo chown porest:porest ${CONFIG_PATH}/${IP_BLACKLIST_FILE}
+                        # 변수 확인용 로그 (디버깅)
+                        echo "Checking file: ${CONFIG_PATH}/${IP_BLACKLIST_FILE}"
+                        ls -la ${CONFIG_PATH} || echo "Directory not found or not accessible"
+
+                        if [ ! -f "${CONFIG_PATH}/${IP_BLACKLIST_FILE}" ]; then
+                            echo "File not found. Creating new one..."
+
+                            echo "# IP Blacklist File (Auto-generated)" > "${CONFIG_PATH}/${IP_BLACKLIST_FILE}"
+                            echo "# Add one IP address or CIDR notation per line" >> "${CONFIG_PATH}/${IP_BLACKLIST_FILE}"
+                            echo "# Example: 192.168.1.100 or 10.0.0.0/8" >> "${CONFIG_PATH}/${IP_BLACKLIST_FILE}"
+
                             echo "✅ Created empty IP blacklist file: ${CONFIG_PATH}/${IP_BLACKLIST_FILE}"
                         else
                             echo "✅ IP blacklist file already exists: ${CONFIG_PATH}/${IP_BLACKLIST_FILE}"
