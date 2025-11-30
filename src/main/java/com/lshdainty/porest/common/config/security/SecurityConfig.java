@@ -1,6 +1,7 @@
 package com.lshdainty.porest.common.config.security;
 
 import com.lshdainty.porest.common.config.properties.AppProperties;
+import com.lshdainty.porest.security.filter.CsrfCookieFilter;
 import com.lshdainty.porest.security.filter.IpBlockFilter;
 import com.lshdainty.porest.security.handler.*;
 import com.lshdainty.porest.security.service.CustomOAuth2UserService;
@@ -15,6 +16,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -50,11 +52,14 @@ public class SecurityConfig {
         org.springframework.security.web.csrf.CookieCsrfTokenRepository tokenRepository =
                 org.springframework.security.web.csrf.CookieCsrfTokenRepository.withHttpOnlyFalse();
 
-        // Spring Security 6 호환성을 위한 CSRF 토큰 핸들러 설정
-        org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler requestHandler =
-                new org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler();
-        // SPA 방식을 위해 헤더 이름 설정 (기본값이지만 명시적으로 설정)
-        requestHandler.setCsrfRequestAttributeName("_csrf");
+        // Spring Security 6.1+ 권장: XorCsrfTokenRequestAttributeHandler 사용
+        // 헤더와 파라미터 양쪽 모두 지원 (폼 로그인 + SPA 호환)
+        org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler delegate =
+                new org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler();
+        delegate.setCsrfRequestAttributeName("_csrf");
+
+        // SpaCsrfTokenRequestHandler: 첫 요청 시 CSRF 토큰을 자동으로 로드
+        org.springframework.security.web.csrf.CsrfTokenRequestHandler requestHandler = delegate::handle;
 
         http.csrf(csrf -> csrf
                 .csrfTokenRepository(tokenRepository)
@@ -242,6 +247,10 @@ public class SecurityConfig {
         // IP 블랙리스트 필터 추가
         // UsernamePasswordAuthenticationFilter 앞에서 실행하여 인증 전에 IP 차단
         http.addFilterBefore(ipBlockFilter, UsernamePasswordAuthenticationFilter.class);
+
+        // CSRF 토큰을 즉시 로드하는 필터 추가
+        // CsrfFilter 이후에 실행하여 토큰을 즉시 쿠키에 저장
+        http.addFilterAfter(new CsrfCookieFilter(), CsrfFilter.class);
 
         return http.build();
     }
