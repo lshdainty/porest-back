@@ -234,12 +234,21 @@ public class WorkApiDto {
     @Getter
     @AllArgsConstructor
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    @Schema(description = "시스템 체크 상태 조회 응답")
+    @Schema(description = "시스템 체크 상태 조회 응답 (단일)")
     public static class CheckSystemStatusResp {
         @Schema(description = "시스템 코드", example = "ERP")
         private SystemType systemCode;
 
         @Schema(description = "오늘 체크 여부", example = "true")
         private boolean checked;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    @Schema(description = "시스템 체크 상태 조회 응답 (배치)")
+    public static class CheckSystemStatusBatchResp {
+        @Schema(description = "시스템 체크 상태 목록")
+        private List<CheckSystemStatusResp> statuses;
     }
 }

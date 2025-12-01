@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.List;
 
 @Tag(name = "Work", description = "업무 관리 API")
 public interface WorkApi {
@@ -341,19 +342,19 @@ public interface WorkApi {
     );
 
     @Operation(
-            summary = "오늘 시스템 체크 상태 조회",
-            description = "특정 시스템의 오늘 체크 상태를 조회합니다."
+            summary = "오늘 시스템 체크 상태 조회 (배치)",
+            description = "여러 시스템의 오늘 체크 상태를 한 번에 조회합니다. 시스템 코드를 배열로 받아 각각의 상태를 반환합니다."
     )
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "200",
                     description = "시스템 체크 상태 조회 성공",
-                    content = @Content(schema = @Schema(implementation = WorkApiDto.CheckSystemStatusResp.class))
+                    content = @Content(schema = @Schema(implementation = WorkApiDto.CheckSystemStatusBatchResp.class))
             )
     })
     @GetMapping("/api/v1/work/system-logs/status")
     ApiResponse checkSystemStatus(
-            @Parameter(description = "시스템 코드", example = "ERP", required = true)
-            @RequestParam("system_code") SystemType systemCode
+            @Parameter(description = "시스템 코드 목록", example = "ERP,MES,WMS", required = true)
+            @RequestParam("system_codes") List<SystemType> systemCodes
     );
 }

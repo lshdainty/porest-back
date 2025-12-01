@@ -10,7 +10,10 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.lshdainty.porest.work.domain.QWorkSystemLog.*;
 
@@ -47,6 +50,33 @@ public class WorkSystemLogRepositoryImpl implements WorkSystemLogRepository {
                 .fetchOne();
 
         return Optional.ofNullable(result);
+    }
+
+    @Override
+    public Map<SystemType, Boolean> findTodayLogsByCodes(LocalDate today, List<SystemType> codes) {
+        QWorkSystemLog workSystemLog = QWorkSystemLog.workSystemLog;
+
+        // createDate가 오늘 날짜인지 확인 (시간 무시하고 날짜만 비교)
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
+
+        // 오늘 날짜에 해당하는 코드들 조회
+        List<SystemType> checkedCodes = query
+                .select(workSystemLog.code)
+                .from(workSystemLog)
+                .where(
+                        workSystemLog.createDate.goe(startOfDay),
+                        workSystemLog.createDate.lt(endOfDay),
+                        workSystemLog.code.in(codes)
+                )
+                .fetch();
+
+        // 요청한 모든 코드에 대해 체크 여부를 Map으로 변환
+        return codes.stream()
+                .collect(Collectors.toMap(
+                        code -> code,
+                        code -> checkedCodes.contains(code)
+                ));
     }
 
     @Override

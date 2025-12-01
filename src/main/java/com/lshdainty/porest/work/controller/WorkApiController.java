@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -187,9 +188,14 @@ public class WorkApiController implements WorkApi {
     }
 
     @Override
-    public ApiResponse checkSystemStatus(SystemType systemCode) {
-        boolean checked = workSystemLogService.isCheckedToday(systemCode);
-        return ApiResponse.success(new WorkApiDto.CheckSystemStatusResp(systemCode, checked));
+    public ApiResponse checkSystemStatus(List<SystemType> systemCodes) {
+        Map<SystemType, Boolean> statusMap = workSystemLogService.checkSystemStatusBatch(systemCodes);
+
+        List<WorkApiDto.CheckSystemStatusResp> statuses = statusMap.entrySet().stream()
+                .map(entry -> new WorkApiDto.CheckSystemStatusResp(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
+
+        return ApiResponse.success(new WorkApiDto.CheckSystemStatusBatchResp(statuses));
     }
 
     // ========== Private Helper Methods ==========

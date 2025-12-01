@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -66,5 +68,19 @@ public class WorkSystemLogService {
         return workSystemLogRepository
                 .findTodayLogByCode(today, code)
                 .isPresent();
+    }
+
+    /**
+     * 오늘 날짜 여러 시스템의 체크 여부를 배치 확인<br>
+     * 누가 체크했는지는 무관
+     *
+     * @param codes 시스템 코드 목록
+     * @return Map<SystemType, Boolean> - 시스템 코드별 체크 여부
+     */
+    public Map<SystemType, Boolean> checkSystemStatusBatch(List<SystemType> codes) {
+        LocalDate today = LocalDate.now();
+        Map<SystemType, Boolean> result = workSystemLogRepository.findTodayLogsByCodes(today, codes);
+        log.info("Batch system status checked - codes: {}, result: {}", codes, result);
+        return result;
     }
 }

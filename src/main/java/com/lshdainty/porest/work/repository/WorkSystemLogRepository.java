@@ -4,6 +4,8 @@ import com.lshdainty.porest.work.domain.WorkSystemLog;
 import com.lshdainty.porest.work.type.SystemType;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -27,6 +29,16 @@ public interface WorkSystemLogRepository {
      * @return Optional<WorkSystemLog>
      */
     Optional<WorkSystemLog> findTodayLogByCode(LocalDate today, SystemType code);
+
+    /**
+     * 오늘 여러 시스템 코드의 로그를 배치 조회<br>
+     * createDate(오늘 날짜)와 code 목록으로 조회 (누가 체크했는지 무관)
+     *
+     * @param today 오늘 날짜
+     * @param codes 시스템 코드 목록
+     * @return Map<SystemType, Boolean> - 시스템 코드별 체크 여부
+     */
+    Map<SystemType, Boolean> findTodayLogsByCodes(LocalDate today, List<SystemType> codes);
 
     /**
      * 시스템 로그 삭제
