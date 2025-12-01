@@ -1,6 +1,7 @@
 package com.lshdainty.porest.common.config.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lshdainty.porest.common.util.PorestIP;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -113,7 +114,7 @@ public class RequestResponseLoggingFilter extends OncePerRequestFilter {
             }
 
             // Client IP
-            logData.put("clientIp", getClientIp(request));
+            logData.put("clientIp", PorestIP.getClientIp());
 
             // User ID (인증된 경우)
             String userId = getCurrentUserId();
@@ -168,33 +169,6 @@ public class RequestResponseLoggingFilter extends OncePerRequestFilter {
             return new String(content, StandardCharsets.UTF_8);
         }
         return null;
-    }
-
-    /**
-     * 실제 Client IP 추출 (프록시 환경 고려)
-     */
-    private String getClientIp(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("Proxy-Client-IP");
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("WL-Proxy-Client-IP");
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("HTTP_CLIENT_IP");
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("HTTP_X_FORWARDED_FOR");
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getRemoteAddr();
-        }
-        // X-Forwarded-For는 콤마로 구분된 IP 리스트일 수 있음 (첫 번째가 실제 클라이언트)
-        if (ip != null && ip.contains(",")) {
-            ip = ip.split(",")[0].trim();
-        }
-        return ip;
     }
 
     /**

@@ -16,7 +16,10 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfFilter;
+import org.springframework.security.web.csrf.CsrfTokenRequestHandler;
+import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -49,17 +52,15 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource) throws Exception {
         // CSRF 활성화 및 Double Submit Cookie 패턴 설정
         // HttpOnly를 false로 설정하여 React(JavaScript)가 쿠키에서 토큰을 읽을 수 있도록 함
-        org.springframework.security.web.csrf.CookieCsrfTokenRepository tokenRepository =
-                org.springframework.security.web.csrf.CookieCsrfTokenRepository.withHttpOnlyFalse();
+        CookieCsrfTokenRepository tokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
 
         // Spring Security 6.1+ 권장: XorCsrfTokenRequestAttributeHandler 사용
         // 헤더와 파라미터 양쪽 모두 지원 (폼 로그인 + SPA 호환)
-        org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler delegate =
-                new org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler();
+        XorCsrfTokenRequestAttributeHandler delegate = new XorCsrfTokenRequestAttributeHandler();
         delegate.setCsrfRequestAttributeName("_csrf");
 
         // SpaCsrfTokenRequestHandler: 첫 요청 시 CSRF 토큰을 자동으로 로드
-        org.springframework.security.web.csrf.CsrfTokenRequestHandler requestHandler = delegate::handle;
+        CsrfTokenRequestHandler requestHandler = delegate::handle;
 
         http.csrf(csrf -> csrf
                 .csrfTokenRepository(tokenRepository)
@@ -183,16 +184,16 @@ public class SecurityConfig {
                 // 인증 없이 접근 가능한 경로들
                 .requestMatchers(
                         "/",
-                        "/api/v1/csrf-token",           // CSRF 토큰 발급 (React 앱 시작 시 필요)
-                        "/api/v1/login",                // 로그인
-                        "/api/v1/login/check",          // 현재 로그인된 유저정보
-                        "/api/v1/logout",               // 로그아웃
-                        "/oauth2/**",            // OAuth2 시작 URL
-                        "/login/oauth2/**",      // OAuth2 콜백 URL (중요!)
-                        "/css/**",               // css
-                        "/images/**",            // images
-                        "/js/**",                // js
-                        "/actuator/health"       // Health check (liveness/readiness probe용)
+                        "/api/v1/csrf-token",   // CSRF 토큰 발급 (React 앱 시작 시 필요)
+                        "/api/v1/login",        // 로그인
+                        "/api/v1/login/check",  // 현재 로그인된 유저정보
+                        "/api/v1/logout",       // 로그아웃
+                        "/oauth2/**",           // OAuth2 시작 URL
+                        "/login/oauth2/**",     // OAuth2 콜백 URL (중요!)
+                        "/css/**",              // css
+                        "/images/**",           // images
+                        "/js/**",               // js
+                        "/actuator/health"      // Health check (liveness/readiness probe용)
                 ).permitAll() // 해당 URL 패턴들은 모든 사용자가 접근 가능
 
                 // Prometheus 메트릭스는 인증 필요 (모니터링 시스템 계정으로 접근)
