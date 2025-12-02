@@ -1,12 +1,10 @@
 package com.lshdainty.porest.common.config.security;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lshdainty.porest.common.util.PorestIP;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.security.core.Authentication;
@@ -18,29 +16,30 @@ import org.springframework.web.util.ContentCachingResponseWrapper;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * 모든 HTTP 요청/응답에 대한 포괄적인 로깅을 수행하는 필터
  * - Trace ID (UUID) 생성 및 MDC 설정
  * - Request/Response Body 캡처
  * - 실행 시간 측정
- * - User ID, Client IP 수집
- * - JSON 형태로 구조화된 로그 출력
+ * - User ID, Client IP, User-Agent 수집
+ * - 가독성 좋은 한 줄 포맷으로 로그 출력
  */
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class RequestResponseLoggingFilter extends OncePerRequestFilter {
 
     private static final String TRACE_ID_KEY = "requestId";
+    private static final int MAX_BODY_LENGTH = 500;
+    private static final int MAX_USER_AGENT_LENGTH = 50;
     private static final List<String> EXCLUDED_PATHS = Arrays.asList(
             "/actuator/health",
             "/actuator/prometheus",
             "/favicon.ico"
     );
-
-    private final ObjectMapper objectMapper;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -94,57 +93,122 @@ public class RequestResponseLoggingFilter extends OncePerRequestFilter {
     }
 
     /**
-     * 요청/응답 정보를 JSON 형태로 로깅
+     * 요청/응답 정보를 가독성 좋은 한 줄 포맷으로 로깅
+     * 포맷: [traceId] | status | time | METHOD URI | IP:ip | User:user | Agent:agent | Req:body | Res:body
+     * Body가 길 경우 요약본은 INFO/WARN/ERROR로, 전체 원본은 DEBUG로 별도 출력
      */
     private void logRequestResponse(ContentCachingRequestWrapper request,
                                      ContentCachingResponseWrapper response,
                                      String traceId,
                                      long executionTime) {
         try {
-            Map<String, Object> logData = new LinkedHashMap<>();
-
-            // Trace ID
-            logData.put("traceId", traceId);
-
-            // HTTP Method & URI
-            logData.put("method", request.getMethod());
-            logData.put("uri", request.getRequestURI());
-            if (request.getQueryString() != null) {
-                logData.put("queryString", request.getQueryString());
-            }
-
-            // Client IP
-            logData.put("clientIp", PorestIP.getClientIp());
-
-            // User ID (인증된 경우)
+            int status = response.getStatus();
+            String method = request.getMethod();
+            String uri = request.getRequestURI();
+            String queryString = request.getQueryString();
+            String clientIp = PorestIP.getClientIp();
             String userId = getCurrentUserId();
-            if (userId != null) {
-                logData.put("userId", userId);
-            }
-
-            // Request Body
+            String userAgent = getUserAgent(request);
             String requestBody = getRequestBody(request);
-            if (requestBody != null && !requestBody.isEmpty()) {
-                logData.put("requestBody", requestBody);
-            }
-
-            // Response Status & Body
-            logData.put("responseStatus", response.getStatus());
             String responseBody = getResponseBody(response);
-            if (responseBody != null && !responseBody.isEmpty()) {
-                logData.put("responseBody", responseBody);
+
+            // URI에 쿼리스트링 포함
+            String fullUri = queryString != null ? uri + "?" + queryString : uri;
+
+            // Body 잘림 여부 확인
+            boolean requestBodyTruncated = requestBody != null && requestBody.length() > MAX_BODY_LENGTH;
+            boolean responseBodyTruncated = responseBody != null && responseBody.length() > MAX_BODY_LENGTH;
+
+            // 로그 메시지 구성
+            StringBuilder logMessage = new StringBuilder();
+            logMessage.append(String.format("[%s] | %d | %4dms | %s %s",
+                    traceId, status, executionTime, method, fullUri));
+
+            // IP 정보
+            logMessage.append(" | IP:").append(clientIp != null ? clientIp : "-");
+
+            // 사용자 정보
+            logMessage.append(" | User:").append(userId != null ? userId : "anonymous");
+
+            // User-Agent 정보
+            logMessage.append(" | Agent:").append(userAgent != null ? userAgent : "-");
+
+            // Request Body (있는 경우만)
+            if (requestBody != null && !requestBody.isEmpty()) {
+                logMessage.append(" | Req:").append(truncate(requestBody, MAX_BODY_LENGTH));
             }
 
-            // Execution Time
-            logData.put("executionTimeMs", executionTime);
+            // Response Body (있는 경우만)
+            if (responseBody != null && !responseBody.isEmpty()) {
+                logMessage.append(" | Res:").append(truncate(responseBody, MAX_BODY_LENGTH));
+            }
 
-            // JSON 형태로 로그 출력
-            String logJson = objectMapper.writeValueAsString(logData);
-            log.info("HTTP Request/Response: {}", logJson);
+            // 상태 코드에 따라 로그 레벨 분리
+            if (status >= 500) {
+                log.error("{}", logMessage);
+            } else if (status >= 400) {
+                log.warn("{}", logMessage);
+            } else {
+                log.info("{}", logMessage);
+            }
+
+            // Body가 잘린 경우 DEBUG 레벨로 전체 원본 출력
+            if (requestBodyTruncated || responseBodyTruncated) {
+                logFullBody(traceId, requestBody, responseBody, requestBodyTruncated, responseBodyTruncated);
+            }
 
         } catch (Exception e) {
             log.error("Failed to log request/response", e);
         }
+    }
+
+    /**
+     * 잘린 Body의 전체 원본을 DEBUG 레벨로 출력
+     */
+    private void logFullBody(String traceId, String requestBody, String responseBody,
+                              boolean requestBodyTruncated, boolean responseBodyTruncated) {
+        if (requestBodyTruncated && requestBody != null) {
+            log.debug("[{}] Full Request Body: {}", traceId, sanitizeForLog(requestBody));
+        }
+        if (responseBodyTruncated && responseBody != null) {
+            log.debug("[{}] Full Response Body: {}", traceId, sanitizeForLog(responseBody));
+        }
+    }
+
+    /**
+     * 로그 출력을 위해 줄바꿈 제거
+     */
+    private String sanitizeForLog(String str) {
+        if (str == null) {
+            return null;
+        }
+        return str.replace("\n", " ").replace("\r", "");
+    }
+
+    /**
+     * User-Agent 헤더 추출 (길이 제한 적용)
+     */
+    private String getUserAgent(HttpServletRequest request) {
+        String userAgent = request.getHeader("User-Agent");
+        if (userAgent != null && !userAgent.isEmpty()) {
+            return truncate(userAgent, MAX_USER_AGENT_LENGTH);
+        }
+        return null;
+    }
+
+    /**
+     * 문자열을 최대 길이로 자르고 말줄임표 추가
+     */
+    private String truncate(String str, int maxLength) {
+        if (str == null) {
+            return null;
+        }
+        // 줄바꿈 제거하여 한 줄로 만듦
+        str = str.replace("\n", " ").replace("\r", "");
+        if (str.length() <= maxLength) {
+            return str;
+        }
+        return str.substring(0, maxLength) + "...";
     }
 
     /**

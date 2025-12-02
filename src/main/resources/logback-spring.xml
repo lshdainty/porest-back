@@ -5,7 +5,7 @@
     <!-- 로컬 콘솔에도 로그 출력 -->
     <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>[%highlight(%-5level)][%yellow(%d{yyyy.MM.dd HH:mm:ss.SSS})][%magenta(%-8(%X{requestId}))] - [%cyan(%logger{0}.%M\(%L\))] - %msg%n</pattern>
+            <pattern>%highlight(%-5level) %yellow(%d{yyyy-MM-dd HH:mm:ss.SSS}) %magenta(%-8(%X{requestId})) %cyan(%logger{0}) %msg%n</pattern>
         </encoder>
     </appender>
 
@@ -20,7 +20,7 @@
                     <pattern>app=porest,host=${HOSTNAME},level=%level,env=prod</pattern>
                 </label>
                 <message>
-                    <pattern>[%-5level][%d{yyyy.MM.dd HH:mm:ss.SSS}][%-8(%X{requestId})] - [%logger{0}.%M\(%L\)] - %msg%n</pattern>
+                    <pattern>%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} %-8(%X{requestId}) %logger{0} %msg%n</pattern>
                 </message>
             </format>
         </appender>
