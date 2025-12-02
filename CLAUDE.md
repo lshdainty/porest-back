@@ -14,6 +14,9 @@
 - Controller: DTO 변환 철저, 엔티티 노출 금지 [web:26]
 - Service: 트랜잭션 경계 @Transactional, 읽기 전용 readOnly=true [web:26]
 - Repository: QueryDSL [web:26]
+  - Repository는 순수 데이터 접근만 담당 (비즈니스 로직 금지)
+  - 날짜 변환, 값 계산 등은 Service에서 처리 후 파라미터로 전달
+  - 재사용성과 테스트 용이성을 위해 계산된 값을 받도록 설계
 - 예외: 전역 @RestControllerAdvice로 에러 응답 표준화 [web:26]
 - 로깅: slf4j 사용 [web:26]
 - Import 규칙:
@@ -63,11 +66,16 @@
 - 트랜잭션: 서비스 계층에서만 시작, 중첩 금지 [web:26]
 
 ## Testing Strategy
-- Unit: JUnit 5 + Mockito/MockK, 빠른 실행 [web:26]
-- Integration: @SpringBootTest + Testcontainers(Postgres) [web:26]
-- Web: @WebMvcTest로 컨트롤러 슬라이스 테스트 [web:26]
-- 커버리지 목표: line 80%+, critical path 90%+ [web:26]
-- 테스트 데이터: Fixture/Factory 패턴, 임의 값은 Instancio/JavaFaker [web:26]
+- 테스트 대상: Repository, Service 레이어만 테스트 (Controller 테스트 제외)
+- Unit: JUnit 5 + Mockito, 빠른 실행
+- Integration: @SpringBootTest + Testcontainers(Postgres)
+- 테스트 데이터: Fixture/Factory 패턴, 임의 값은 Instancio/JavaFaker
+- Repository/Service 변경 시 관련 테스트 코드도 반드시 함께 생성/수정/삭제
+- **Jacoco 커버리지 목표: 90% 이상 달성 필수**
+  - 모든 public 메서드에 대한 테스트 케이스 작성
+  - 정상 케이스 + 예외 케이스(Exception 발생 경로) 모두 커버
+  - 분기문(if/else, switch)의 모든 경로 테스트
+  - 경계값 테스트 포함 (null, empty, 최대/최소값 등)
 
 ## Build & Run
 - Gradle

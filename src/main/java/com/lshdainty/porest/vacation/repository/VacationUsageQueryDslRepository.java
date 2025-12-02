@@ -8,12 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static com.lshdainty.porest.vacation.domain.QVacationUsage.vacationUsage;
@@ -125,11 +121,8 @@ public class VacationUsageQueryDslRepository implements VacationUsageRepository 
     }
 
     @Override
-    public Map<LocalDate, BigDecimal> findDailyVacationHoursByUserAndPeriod(String userId, LocalDate startDate, LocalDate endDate) {
-        LocalDateTime startDateTime = startDate.atStartOfDay();
-        LocalDateTime endDateTime = endDate.plusDays(1).atStartOfDay();
-
-        List<VacationUsage> usages = query
+    public List<VacationUsage> findByUserIdAndPeriodForDaily(String userId, LocalDateTime startDateTime, LocalDateTime endDateTime) {
+        return query
                 .selectFrom(vacationUsage)
                 .where(
                         vacationUsage.user.id.eq(userId),
@@ -138,26 +131,15 @@ public class VacationUsageQueryDslRepository implements VacationUsageRepository 
                         vacationUsage.isDeleted.eq(YNType.N)
                 )
                 .fetch();
-
-        Map<LocalDate, BigDecimal> dailyHoursMap = new HashMap<>();
-        for (VacationUsage usage : usages) {
-            LocalDate date = usage.getStartDate().toLocalDate();
-            BigDecimal usedTime = usage.getUsedTime() != null ? usage.getUsedTime() : BigDecimal.ZERO;
-            dailyHoursMap.merge(date, usedTime, BigDecimal::add);
-        }
-        return dailyHoursMap;
     }
 
     @Override
-    public Map<String, Map<LocalDate, BigDecimal>> findDailyVacationHoursByUsersAndPeriod(List<String> userIds, LocalDate startDate, LocalDate endDate) {
+    public List<VacationUsage> findByUserIdsAndPeriodForDaily(List<String> userIds, LocalDateTime startDateTime, LocalDateTime endDateTime) {
         if (userIds == null || userIds.isEmpty()) {
-            return new HashMap<>();
+            return List.of();
         }
 
-        LocalDateTime startDateTime = startDate.atStartOfDay();
-        LocalDateTime endDateTime = endDate.plusDays(1).atStartOfDay();
-
-        List<VacationUsage> usages = query
+        return query
                 .selectFrom(vacationUsage)
                 .where(
                         vacationUsage.user.id.in(userIds),
@@ -166,16 +148,5 @@ public class VacationUsageQueryDslRepository implements VacationUsageRepository 
                         vacationUsage.isDeleted.eq(YNType.N)
                 )
                 .fetch();
-
-        Map<String, Map<LocalDate, BigDecimal>> result = new HashMap<>();
-        for (VacationUsage usage : usages) {
-            String usrId = usage.getUser().getId();
-            LocalDate date = usage.getStartDate().toLocalDate();
-            BigDecimal usedTime = usage.getUsedTime() != null ? usage.getUsedTime() : BigDecimal.ZERO;
-
-            result.computeIfAbsent(usrId, k -> new HashMap<>())
-                    .merge(date, usedTime, BigDecimal::add);
-        }
-        return result;
     }
 }

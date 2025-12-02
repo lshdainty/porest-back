@@ -3,9 +3,8 @@ package com.lshdainty.porest.work.repository;
 import com.lshdainty.porest.work.domain.WorkSystemLog;
 import com.lshdainty.porest.work.type.SystemType;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -21,24 +20,26 @@ public interface WorkSystemLogRepository {
     void save(WorkSystemLog log);
 
     /**
-     * 오늘 특정 시스템 코드 로그 조회<br>
-     * createDate(오늘 날짜)와 code로 조회 (누가 체크했는지 무관)
+     * 특정 기간 내 시스템 코드 로그 조회<br>
+     * createDate가 startDateTime 이상, endDateTime 미만인 로그 조회
      *
-     * @param today 오늘 날짜
+     * @param startDateTime 조회 시작일시
+     * @param endDateTime 조회 종료일시
      * @param code 시스템 코드
      * @return Optional<WorkSystemLog>
      */
-    Optional<WorkSystemLog> findTodayLogByCode(LocalDate today, SystemType code);
+    Optional<WorkSystemLog> findByPeriodAndCode(LocalDateTime startDateTime, LocalDateTime endDateTime, SystemType code);
 
     /**
-     * 오늘 여러 시스템 코드의 로그를 배치 조회<br>
-     * createDate(오늘 날짜)와 code 목록으로 조회 (누가 체크했는지 무관)
+     * 특정 기간 내 여러 시스템 코드의 로그를 배치 조회<br>
+     * createDate가 startDateTime 이상, endDateTime 미만인 로그 조회
      *
-     * @param today 오늘 날짜
+     * @param startDateTime 조회 시작일시
+     * @param endDateTime 조회 종료일시
      * @param codes 시스템 코드 목록
-     * @return Map<SystemType, Boolean> - 시스템 코드별 체크 여부
+     * @return 해당 기간에 존재하는 시스템 코드 목록
      */
-    Map<SystemType, Boolean> findTodayLogsByCodes(LocalDate today, List<SystemType> codes);
+    List<SystemType> findCodesByPeriodAndCodes(LocalDateTime startDateTime, LocalDateTime endDateTime, List<SystemType> codes);
 
     /**
      * 시스템 로그 삭제

@@ -2,11 +2,8 @@ package com.lshdainty.porest.vacation.repository;
 
 import com.lshdainty.porest.vacation.domain.VacationUsage;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 public interface VacationUsageRepository {
@@ -91,24 +88,22 @@ public interface VacationUsageRepository {
     List<VacationUsage> findByUserIdAndPeriod(String userId, LocalDateTime startOfPeriod, LocalDateTime endOfPeriod);
 
     /**
-     * 특정 사용자의 기간 내 날짜별 휴가 사용 시간 합계 조회
-     * startDate의 날짜 부분을 기준으로 그룹핑하여 usedTime 합계 반환
+     * 특정 사용자의 기간 내 VacationUsage 조회 (일별 집계용)
      *
      * @param userId 사용자 ID
-     * @param startDate 조회 기간 시작일
-     * @param endDate 조회 기간 종료일
-     * @return 날짜별 휴가 사용 시간 Map (key: 날짜, value: usedTime 합계)
+     * @param startDateTime 조회 기간 시작일시
+     * @param endDateTime 조회 기간 종료일시
+     * @return VacationUsage 리스트
      */
-    Map<LocalDate, BigDecimal> findDailyVacationHoursByUserAndPeriod(String userId, LocalDate startDate, LocalDate endDate);
+    List<VacationUsage> findByUserIdAndPeriodForDaily(String userId, LocalDateTime startDateTime, LocalDateTime endDateTime);
 
     /**
-     * 여러 사용자의 기간 내 (사용자ID, 날짜)별 휴가 사용 시간 합계 조회 (벌크 조회)
-     * startDate의 날짜 부분을 기준으로 그룹핑하여 usedTime 합계 반환
+     * 여러 사용자의 기간 내 VacationUsage 조회 (일별 집계용, 벌크 조회)
      *
      * @param userIds 사용자 ID 리스트
-     * @param startDate 조회 기간 시작일
-     * @param endDate 조회 기간 종료일
-     * @return 사용자ID별, 날짜별 휴가 사용 시간 Map (key: 사용자ID, value: Map(key: 날짜, value: usedTime 합계))
+     * @param startDateTime 조회 기간 시작일시
+     * @param endDateTime 조회 기간 종료일시
+     * @return VacationUsage 리스트
      */
-    Map<String, Map<LocalDate, BigDecimal>> findDailyVacationHoursByUsersAndPeriod(List<String> userIds, LocalDate startDate, LocalDate endDate);
+    List<VacationUsage> findByUserIdsAndPeriodForDaily(List<String> userIds, LocalDateTime startDateTime, LocalDateTime endDateTime);
 }

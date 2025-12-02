@@ -9,9 +9,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * 업무 시스템 로그 서비스<br>
@@ -38,9 +40,11 @@ public class WorkSystemLogService {
     @Transactional
     public boolean toggleSystemCheck(SystemType code) {
         LocalDate today = LocalDate.now();
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
 
         Optional<WorkSystemLog> existingLog = workSystemLogRepository
-                .findTodayLogByCode(today, code);
+                .findByPeriodAndCode(startOfDay, endOfDay, code);
 
         if (existingLog.isPresent()) {
             // 이미 체크된 로그가 있으면 삭제
@@ -65,8 +69,11 @@ public class WorkSystemLogService {
      */
     public boolean isCheckedToday(SystemType code) {
         LocalDate today = LocalDate.now();
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
+
         return workSystemLogRepository
-                .findTodayLogByCode(today, code)
+                .findByPeriodAndCode(startOfDay, endOfDay, code)
                 .isPresent();
     }
 
@@ -79,7 +86,18 @@ public class WorkSystemLogService {
      */
     public Map<SystemType, Boolean> checkSystemStatusBatch(List<SystemType> codes) {
         LocalDate today = LocalDate.now();
-        Map<SystemType, Boolean> result = workSystemLogRepository.findTodayLogsByCodes(today, codes);
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
+
+        List<SystemType> checkedCodes = workSystemLogRepository
+                .findCodesByPeriodAndCodes(startOfDay, endOfDay, codes);
+
+        Map<SystemType, Boolean> result = codes.stream()
+                .collect(Collectors.toMap(
+                        code -> code,
+                        checkedCodes::contains
+                ));
+
         log.info("Batch system status checked - codes: {}, result: {}", codes, result);
         return result;
     }

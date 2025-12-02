@@ -9,6 +9,7 @@ import com.lshdainty.porest.holiday.type.HolidayType;
 import com.lshdainty.porest.user.domain.User;
 import com.lshdainty.porest.user.repository.UserRepository;
 import com.lshdainty.porest.user.service.UserService;
+import com.lshdainty.porest.vacation.domain.VacationUsage;
 import com.lshdainty.porest.vacation.repository.VacationUsageRepository;
 import com.lshdainty.porest.work.domain.WorkCode;
 import com.lshdainty.porest.work.domain.WorkHistory;
@@ -321,8 +322,11 @@ public class WorkHistoryService {
                 .findDailyWorkHoursByUsersAndPeriod(userIds, startDate, endDate);
 
         // 벌크 조회: 모든 유저의 해당 기간 휴가 사용 시간 (단일 쿼리)
-        Map<String, Map<LocalDate, BigDecimal>> vacationUsedTimeMap = vacationUsageRepository
-                .findDailyVacationHoursByUsersAndPeriod(userIds, startDate, endDate);
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.plusDays(1).atStartOfDay();
+        Map<String, Map<LocalDate, BigDecimal>> vacationUsedTimeMap = aggregateVacationUsageByUsersAndDate(
+                vacationUsageRepository.findByUserIdsAndPeriodForDaily(userIds, startDateTime, endDateTime)
+        );
 
         // 유저 정보 Map 생성 (스트림 처리 시 사용)
         Map<String, User> userMap = users.stream()
@@ -524,8 +528,11 @@ public class WorkHistoryService {
                 .findDailyWorkHoursByUserAndPeriod(user.getId(), startDate, endDate);
 
         // 기간 내 날짜별 휴가 사용 시간 합계 조회 (단일 쿼리)
-        Map<LocalDate, BigDecimal> dailyVacationMap = vacationUsageRepository
-                .findDailyVacationHoursByUserAndPeriod(user.getId(), startDate, endDate);
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.plusDays(1).atStartOfDay();
+        Map<LocalDate, BigDecimal> dailyVacationMap = aggregateVacationUsageByDate(
+                vacationUsageRepository.findByUserIdAndPeriodForDaily(user.getId(), startDateTime, endDateTime)
+        );
 
         // 미작성 날짜 필터링
         BigDecimal requiredHours = new BigDecimal("8.0");
@@ -545,6 +552,35 @@ public class WorkHistoryService {
                 userId, year, month, unregisteredDates.size());
 
         return unregisteredDates;
+    }
+
+    /**
+     * VacationUsage 리스트를 날짜별로 집계하여 Map으로 반환
+     */
+    private Map<LocalDate, BigDecimal> aggregateVacationUsageByDate(List<VacationUsage> usages) {
+        Map<LocalDate, BigDecimal> dailyHoursMap = new HashMap<>();
+        for (VacationUsage usage : usages) {
+            LocalDate date = usage.getStartDate().toLocalDate();
+            BigDecimal usedTime = usage.getUsedTime() != null ? usage.getUsedTime() : BigDecimal.ZERO;
+            dailyHoursMap.merge(date, usedTime, BigDecimal::add);
+        }
+        return dailyHoursMap;
+    }
+
+    /**
+     * VacationUsage 리스트를 사용자별, 날짜별로 집계하여 Map으로 반환
+     */
+    private Map<String, Map<LocalDate, BigDecimal>> aggregateVacationUsageByUsersAndDate(List<VacationUsage> usages) {
+        Map<String, Map<LocalDate, BigDecimal>> result = new HashMap<>();
+        for (VacationUsage usage : usages) {
+            String userId = usage.getUser().getId();
+            LocalDate date = usage.getStartDate().toLocalDate();
+            BigDecimal usedTime = usage.getUsedTime() != null ? usage.getUsedTime() : BigDecimal.ZERO;
+
+            result.computeIfAbsent(userId, k -> new HashMap<>())
+                    .merge(date, usedTime, BigDecimal::add);
+        }
+        return result;
     }
 
     /**
