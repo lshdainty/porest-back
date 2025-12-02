@@ -10,6 +10,7 @@ import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -194,7 +195,7 @@ public class DepartmentCustomRepositoryImpl implements DepartmentCustomRepositor
         }
 
         // 2. 상위 부서들을 재귀적으로 조회
-        List<Department> approverDepartments = new java.util.ArrayList<>();
+        List<Department> approverDepartments = new ArrayList<>();
         Department currentDept = userDept.getDepartment();
 
         // 현재 부서의 parent부터 시작하여 최상위 부서까지 조회

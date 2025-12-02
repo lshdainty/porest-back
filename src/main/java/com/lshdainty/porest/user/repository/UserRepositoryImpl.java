@@ -6,6 +6,7 @@ import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -109,7 +110,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public List<User> findDeletedUsersByModifyDateBetween(java.time.LocalDateTime startDate, java.time.LocalDateTime endDate) {
+    public List<User> findDeletedUsersByModifyDateBetween(LocalDateTime startDate, LocalDateTime endDate) {
         return em.createQuery(
                 "select u from User u " +
                 "where u.isDeleted = :isDeleted " +

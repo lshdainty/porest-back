@@ -23,7 +23,9 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -233,9 +235,9 @@ public class User extends AuditingFields {
         if (!Objects.isNull(email)) { this.email = email; }
         if (!Objects.isNull(roles)) {
             // 새로운 역할 코드 Set 생성 (중복 제거)
-            java.util.Set<String> newRoleCodes = roles.stream()
+            Set<String> newRoleCodes = roles.stream()
                     .map(Role::getCode)
-                    .collect(java.util.stream.Collectors.toSet());
+                    .collect(Collectors.toSet());
 
             // 1. 기존 활성화된 역할 중 새로운 목록에 없는 것은 soft delete
             this.userRoles.stream()
@@ -403,7 +405,7 @@ public class User extends AuditingFields {
         return this.userRoles.stream()
                 .filter(ur -> ur.getIsDeleted() == YNType.N)
                 .flatMap(ur -> {
-                    List<String> authorities = new java.util.ArrayList<>();
+                    List<String> authorities = new ArrayList<>();
                     // 1. 역할 코드 추가 (예: "ADMIN", "MANAGER", "USER")
                     authorities.add(ur.getRole().getCode());
 

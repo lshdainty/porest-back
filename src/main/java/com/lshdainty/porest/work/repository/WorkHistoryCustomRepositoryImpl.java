@@ -3,7 +3,6 @@ package com.lshdainty.porest.work.repository;
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.work.domain.WorkHistory;
 import com.lshdainty.porest.work.repository.dto.WorkHistorySearchCondition;
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
@@ -102,7 +101,7 @@ public class WorkHistoryCustomRepositoryImpl implements WorkHistoryCustomReposit
                 .stream();
     }
 
-    private BooleanExpression dateBetween(java.time.LocalDate startDate, java.time.LocalDate endDate) {
+    private BooleanExpression dateBetween(LocalDate startDate, LocalDate endDate) {
         if (startDate == null && endDate == null) {
             return null;
         }

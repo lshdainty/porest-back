@@ -25,6 +25,7 @@ public class CompanyService {
 
     @Transactional
     public String regist(CompanyServiceDto data) {
+        log.debug("회사 생성 시작: id={}, name={}", data.getId(), data.getName());
         checkAlreadyCompanyId(data.getId());
 
         Company company = Company.createCompany(
@@ -34,31 +35,38 @@ public class CompanyService {
         );
 
         companyRepository.save(company);
+        log.info("회사 생성 완료: id={}", company.getId());
         return company.getId();
     }
 
     @Transactional
     public void edit(CompanyServiceDto data) {
+        log.debug("회사 수정 시작: id={}", data.getId());
         Company company = checkCompanyExists(data.getId());
 
         company.updateCompany(
                 data.getName(),
                 data.getDesc()
         );
+        log.info("회사 수정 완료: id={}", data.getId());
     }
 
     @Transactional
     public void delete(String id) {
+        log.debug("회사 삭제 시작: id={}", id);
         Company company = checkCompanyExists(id);
 
         if (!company.getDepartments().isEmpty()) {
+            log.warn("회사 삭제 실패 - 부서 존재: id={}", id);
             throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_DEPARTMENT_EXISTS));
         }
 
         company.deleteCompany();
+        log.info("회사 삭제 완료: id={}", id);
     }
 
     public CompanyServiceDto searchCompany() {
+        log.debug("회사 조회");
         Optional<Company> OCompany = companyRepository.find();
         if (OCompany.isPresent()) {
             Company company = OCompany.get();
@@ -73,8 +81,10 @@ public class CompanyService {
     }
 
     public CompanyServiceDto searchCompanyWithDepartments(String id) {
+        log.debug("회사 조회 (부서 포함): id={}", id);
         Optional<Company> OCompany = companyRepository.findByIdWithDepartments(id);
         if (OCompany.isEmpty()) {
+            log.warn("회사 조회 실패 - 존재하지 않는 회사: id={}", id);
             throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_COMPANY));
         }
 
@@ -97,6 +107,7 @@ public class CompanyService {
     public void checkAlreadyCompanyId(String id) {
         Optional<Company> company = companyRepository.findById(id);
         if (company.isPresent()) {
+            log.warn("회사 ID 중복: id={}", id);
             throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_DUPLICATE_COMPANY));
         }
     }
@@ -104,6 +115,7 @@ public class CompanyService {
     public Company checkCompanyExists(String companyId) {
         Optional<Company> company = companyRepository.findById(companyId);
         if ((company.isEmpty()) || (company.get().getIsDeleted().equals(YNType.Y))) {
+            log.warn("회사 조회 실패 - 존재하지 않거나 삭제된 회사: id={}", companyId);
             throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_COMPANY));
         }
         return company.get();

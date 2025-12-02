@@ -53,8 +53,11 @@ public class UserService {
 
     @Transactional
     public String joinUser(UserServiceDto data) {
+        log.debug("사용자 생성 시작: id={}, name={}, email={}", data.getId(), data.getName(), data.getEmail());
+
         UserServiceDto profileDto = UserServiceDto.builder().build();
         if (StringUtils.hasText(data.getProfileUUID()) && StringUtils.hasText(data.getProfileUrl())) {
+            log.debug("프로필 이미지 복사 진행: uuid={}", data.getProfileUUID());
             profileDto = copyTempProfileToOrigin(data);
         }
 
@@ -72,10 +75,12 @@ public class UserService {
         );
 
         userRepositoryImpl.save(user);
+        log.info("사용자 생성 완료: id={}", user.getId());
         return user.getId();
     }
 
     public UserServiceDto searchUser(String userId) {
+        log.debug("사용자 조회: userId={}", userId);
         // 역할 및 권한 정보를 포함하여 조회
         User user = findUserById(userId);
 
@@ -129,8 +134,10 @@ public class UserService {
 
 
     public List<UserServiceDto> searchUsers() {
+        log.debug("전체 사용자 목록 조회 시작");
         // 역할 및 권한 정보를 포함하여 조회
         List<User> users = userRepositoryImpl.findUsersWithRolesAndPermissions();
+        log.debug("전체 사용자 목록 조회 완료: count={}", users.size());
 
         return users.stream()
                 .map(user -> {
@@ -186,10 +193,12 @@ public class UserService {
 
     @Transactional
     public void editUser(UserServiceDto data) {
+        log.debug("사용자 수정 시작: id={}", data.getId());
         User user = checkUserExist(data.getId());
 
         UserServiceDto profileDto = UserServiceDto.builder().build();
         if (StringUtils.hasText(data.getProfileUUID()) && !data.getProfileUUID().equals(user.getProfileUUID())) {
+            log.debug("프로필 이미지 변경: uuid={}", data.getProfileUUID());
             profileDto = copyTempProfileToOrigin(data);
         }
 
@@ -209,15 +218,19 @@ public class UserService {
                 profileDto.getProfileUUID(),
                 data.getDashboard()
         );
+        log.info("사용자 수정 완료: id={}", data.getId());
     }
 
     @Transactional
     public void deleteUser(String userId) {
+        log.debug("사용자 삭제 시작: userId={}", userId);
         User user = checkUserExist(userId);
         user.deleteUser();
+        log.info("사용자 삭제 완료: userId={}", userId);
     }
 
     public UserServiceDto saveProfileImgInTempFolder(MultipartFile file) {
+        log.debug("프로필 이미지 임시 저장 시작: filename={}", file.getOriginalFilename());
         // 원본 파일명 추출
         String originalFilename = StringUtils.cleanPath(file.getOriginalFilename());
 
@@ -232,6 +245,7 @@ public class UserService {
         // 저장된 파일의 절대 경로 생성 (물리적 파일명 기준)
         String absolutePath = Paths.get(tempPath, physicalFilename).toString();
 
+        log.debug("프로필 이미지 임시 저장 완료: uuid={}, path={}", uuid, absolutePath);
         return UserServiceDto.builder()
                 .profileUrl(absolutePath.replace(fileRootPath, webUrlPrefix))
                 .profileUUID(uuid)
@@ -241,6 +255,7 @@ public class UserService {
     public User checkUserExist(String userId) {
         Optional<User> findUser = userRepositoryImpl.findById(userId);
         if ((findUser.isEmpty()) || findUser.get().getIsDeleted().equals(YNType.Y)) {
+            log.warn("사용자 조회 실패 - 존재하지 않거나 삭제된 사용자: userId={}", userId);
             throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_USER));
         }
         return findUser.get();
@@ -256,6 +271,7 @@ public class UserService {
     public User findUserById(String userId) {
         Optional<User> findUser = userRepositoryImpl.findByIdWithRolesAndPermissions(userId);
         if ((findUser.isEmpty()) || findUser.get().getIsDeleted().equals(YNType.Y)) {
+            log.warn("사용자 조회 실패 - 존재하지 않거나 삭제된 사용자: userId={}", userId);
             throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_USER));
         }
         return findUser.get();
@@ -318,8 +334,10 @@ public class UserService {
      */
     @Transactional
     public UserServiceDto inviteUser(UserServiceDto data) {
+        log.debug("사용자 초대 시작: id={}, name={}, email={}", data.getId(), data.getName(), data.getEmail());
         // 아이디 중복 체크
         if (checkUserIdDuplicate(data.getId())) {
+            log.warn("사용자 초대 실패 - 중복 아이디: id={}", data.getId());
             throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_DUPLICATE_USER_ID));
         }
 
@@ -336,6 +354,7 @@ public class UserService {
 
         // 초대 이메일 발송
         emailService.sendInvitationEmail(user.getEmail(), user.getName(), user.getInvitationToken());
+        log.info("사용자 초대 완료: id={}, email={}", user.getId(), user.getEmail());
 
         return UserServiceDto.builder()
                 .id(user.getId())
@@ -356,11 +375,13 @@ public class UserService {
      */
     @Transactional
     public UserServiceDto resendInvitation(String userId) {
+        log.debug("초대 이메일 재전송 시작: userId={}", userId);
         User user = checkUserExist(userId);
         user.renewInvitationToken();
 
         // 초대 이메일 재발송
         emailService.sendInvitationEmail(user.getEmail(), user.getName(), user.getInvitationToken());
+        log.info("초대 이메일 재전송 완료: userId={}, email={}", userId, user.getEmail());
 
         return UserServiceDto.builder()
                 .id(user.getId())
@@ -380,10 +401,12 @@ public class UserService {
      */
     @Transactional
     public UserServiceDto editInvitedUser(String userId, UserServiceDto data) {
+        log.debug("초대된 사용자 정보 수정 시작: userId={}", userId);
         User user = checkUserExist(userId);
 
         // PENDING 상태인지 확인
         if (user.getInvitationStatus() != StatusType.PENDING) {
+            log.warn("초대된 사용자 수정 실패 - PENDING 상태가 아님: userId={}, status={}", userId, user.getInvitationStatus());
             throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_NOT_PENDING_USER));
         }
 
@@ -401,8 +424,10 @@ public class UserService {
 
         // 이메일이 변경된 경우 초대 이메일 재전송
         if (emailChanged) {
+            log.debug("이메일 변경으로 초대 이메일 재전송: userId={}, oldEmail={}, newEmail={}", userId, oldEmail, data.getEmail());
             emailService.sendInvitationEmail(user.getEmail(), user.getName(), user.getInvitationToken());
         }
+        log.info("초대된 사용자 정보 수정 완료: userId={}", userId);
 
         return UserServiceDto.builder()
                 .id(user.getId())
@@ -423,13 +448,16 @@ public class UserService {
      */
     @Transactional
     public String completeInvitedUserRegistration(UserServiceDto data) {
+        log.debug("초대 수락 및 회원가입 시작: token={}", data.getInvitationToken());
         Optional<User> findUser = userRepositoryImpl.findByInvitationToken(data.getInvitationToken());
         if (findUser.isEmpty()) {
+            log.warn("회원가입 실패 - 초대 토큰 없음: token={}", data.getInvitationToken());
             throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_INVITATION));
         }
 
         User user = findUser.get();
         if (!user.isInvitationValid()) {
+            log.warn("회원가입 실패 - 초대 만료: userId={}", user.getId());
             throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_EXPIRED_INVITATION));
         }
 
@@ -437,6 +465,7 @@ public class UserService {
                 data.getBirth(),
                 data.getLunarYN()
         );
+        log.info("회원가입 완료: userId={}", user.getId());
 
         return user.getId();
     }
@@ -468,8 +497,10 @@ public class UserService {
      */
     @Transactional
     public UserServiceDto updateDashboard(String userId, String dashboard) {
+        log.debug("대시보드 수정 시작: userId={}", userId);
         User user = checkUserExist(userId);
         user.updateDashboard(dashboard);
+        log.info("대시보드 수정 완료: userId={}", userId);
 
         return UserServiceDto.builder()
                 .id(user.getId())
@@ -486,12 +517,14 @@ public class UserService {
      * @return 승인권자 목록 (상위 부서장들)
      */
     public List<UserServiceDto> getUserApprovers(String userId) {
+        log.debug("승인권자 목록 조회 시작: userId={}", userId);
         // 유저 존재 확인
         checkUserExist(userId);
 
         // 상위 부서장 목록 조회
         List<com.lshdainty.porest.department.domain.Department> approverDepartments =
                 departmentRepository.findApproversByUserId(userId);
+        log.debug("승인권자 목록 조회 완료: userId={}, count={}", userId, approverDepartments.size());
 
         // Department 정보를 UserServiceDto로 변환
         return approverDepartments.stream()

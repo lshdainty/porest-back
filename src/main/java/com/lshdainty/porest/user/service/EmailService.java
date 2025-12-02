@@ -47,6 +47,7 @@ public class EmailService {
      * @param invitationToken 초대 토큰
      */
     public void sendInvitationEmail(String toEmail, String userName, String invitationToken) {
+        log.debug("초대 이메일 발송 시작: toEmail={}, userName={}", toEmail, userName);
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");

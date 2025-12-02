@@ -9,6 +9,7 @@ import com.lshdainty.porest.permission.repository.RoleRepository;
 import com.lshdainty.porest.permission.type.ActionType;
 import com.lshdainty.porest.permission.type.ResourceType;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 @Transactional(readOnly = true)
 public class RoleService {
     private final MessageResolver messageResolver;
@@ -35,6 +37,7 @@ public class RoleService {
      * @return List<Role>
      */
     public List<Role> getAllRoles() {
+        log.debug("전체 역할 목록 조회");
         return roleRepository.findAllRolesWithPermissions();
     }
 
@@ -45,8 +48,12 @@ public class RoleService {
      * @return Role
      */
     public Role getRole(String roleCode) {
+        log.debug("역할 조회: roleCode={}", roleCode);
         return roleRepository.findByCodeWithPermissions(roleCode)
-                .orElseThrow(() -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_ROLE)));
+                .orElseThrow(() -> {
+                    log.warn("역할 조회 실패 - 존재하지 않는 역할: roleCode={}", roleCode);
+                    return new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_ROLE));
+                });
     }
 
     /**
@@ -59,11 +66,14 @@ public class RoleService {
      */
     @Transactional
     public Role createRole(String roleCode, String roleName, String description) {
+        log.debug("역할 생성 시작: roleCode={}, roleName={}", roleCode, roleName);
         if (roleRepository.findByCode(roleCode).isPresent()) {
+            log.warn("역할 생성 실패 - 중복 코드: roleCode={}", roleCode);
             throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.ROLE_ALREADY_EXISTS));
         }
         Role role = Role.createRole(roleCode, roleName, description);
         roleRepository.save(role);
+        log.info("역할 생성 완료: roleCode={}", roleCode);
         return role;
     }
 
@@ -78,17 +88,23 @@ public class RoleService {
      */
     @Transactional
     public Role createRoleWithPermissions(String roleCode, String roleName, String description, List<String> permissionCodes) {
+        log.debug("역할 생성 (권한 포함) 시작: roleCode={}, roleName={}, permissionCount={}", roleCode, roleName, permissionCodes.size());
         if (roleRepository.findByCode(roleCode).isPresent()) {
+            log.warn("역할 생성 실패 - 중복 코드: roleCode={}", roleCode);
             throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.ROLE_ALREADY_EXISTS));
         }
 
         List<Permission> permissions = permissionCodes.stream()
                 .map(code -> permissionRepository.findByCode(code)
-                        .orElseThrow(() -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_PERMISSION))))
+                        .orElseThrow(() -> {
+                            log.warn("역할 생성 실패 - 존재하지 않는 권한: permissionCode={}", code);
+                            return new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_PERMISSION));
+                        }))
                 .collect(Collectors.toList());
 
         Role role = Role.createRoleWithPermissions(roleCode, roleName, description, permissions);
         roleRepository.save(role);
+        log.info("역할 생성 (권한 포함) 완료: roleCode={}, permissionCount={}", roleCode, permissions.size());
         return role;
     }
 
@@ -100,9 +116,14 @@ public class RoleService {
      */
     @Transactional
     public void updateRole(String roleCode, String description) {
+        log.debug("역할 수정 시작: roleCode={}", roleCode);
         Role role = roleRepository.findByCode(roleCode)
-                .orElseThrow(() -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_ROLE)));
+                .orElseThrow(() -> {
+                    log.warn("역할 수정 실패 - 존재하지 않는 역할: roleCode={}", roleCode);
+                    return new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_ROLE));
+                });
         role.updateRole(null, description, null);
+        log.info("역할 수정 완료: roleCode={}", roleCode);
     }
 
     /**
@@ -114,14 +135,19 @@ public class RoleService {
      */
     @Transactional
     public void updateRoleWithPermissions(String roleCode, String description, List<String> permissionCodes) {
+        log.debug("역할 수정 (권한 포함) 시작: roleCode={}", roleCode);
         Role role = getRole(roleCode);
 
         List<Permission> permissions = permissionCodes.stream()
                 .map(code -> permissionRepository.findByCode(code)
-                        .orElseThrow(() -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_PERMISSION))))
+                        .orElseThrow(() -> {
+                            log.warn("역할 수정 실패 - 존재하지 않는 권한: permissionCode={}", code);
+                            return new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_PERMISSION));
+                        }))
                 .collect(Collectors.toList());
 
         role.updateRole(null, description, permissions);
+        log.info("역할 수정 (권한 포함) 완료: roleCode={}", roleCode);
     }
 
     /**
@@ -132,15 +158,20 @@ public class RoleService {
      */
     @Transactional
     public void updateRolePermissions(String roleCode, List<String> permissionCodes) {
+        log.debug("역할 권한 수정 시작: roleCode={}", roleCode);
         Role role = getRole(roleCode);
 
         List<Permission> permissions = permissionCodes.stream()
                 .map(code -> permissionRepository.findByCode(code)
-                        .orElseThrow(() -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_PERMISSION))))
+                        .orElseThrow(() -> {
+                            log.warn("역할 권한 수정 실패 - 존재하지 않는 권한: permissionCode={}", code);
+                            return new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_PERMISSION));
+                        }))
                 .collect(Collectors.toList());
 
         role.clearPermissions();
         permissions.forEach(role::addPermission);
+        log.info("역할 권한 수정 완료: roleCode={}, permissionCount={}", roleCode, permissions.size());
     }
 
     /**
@@ -151,10 +182,15 @@ public class RoleService {
      */
     @Transactional
     public void addPermissionToRole(String roleCode, String permissionCode) {
+        log.debug("역할에 권한 추가 시작: roleCode={}, permissionCode={}", roleCode, permissionCode);
         Role role = getRole(roleCode);
         Permission permission = permissionRepository.findByCode(permissionCode)
-                .orElseThrow(() -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_PERMISSION)));
+                .orElseThrow(() -> {
+                    log.warn("권한 추가 실패 - 존재하지 않는 권한: permissionCode={}", permissionCode);
+                    return new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_PERMISSION));
+                });
         role.addPermission(permission);
+        log.info("역할에 권한 추가 완료: roleCode={}, permissionCode={}", roleCode, permissionCode);
     }
 
     /**
@@ -165,10 +201,15 @@ public class RoleService {
      */
     @Transactional
     public void removePermissionFromRole(String roleCode, String permissionCode) {
+        log.debug("역할에서 권한 제거 시작: roleCode={}, permissionCode={}", roleCode, permissionCode);
         Role role = getRole(roleCode);
         Permission permission = permissionRepository.findByCode(permissionCode)
-                .orElseThrow(() -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_PERMISSION)));
+                .orElseThrow(() -> {
+                    log.warn("권한 제거 실패 - 존재하지 않는 권한: permissionCode={}", permissionCode);
+                    return new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_PERMISSION));
+                });
         role.removePermission(permission);
+        log.info("역할에서 권한 제거 완료: roleCode={}, permissionCode={}", roleCode, permissionCode);
     }
 
     /**
@@ -178,9 +219,14 @@ public class RoleService {
      */
     @Transactional
     public void deleteRole(String roleCode) {
+        log.debug("역할 삭제 시작: roleCode={}", roleCode);
         Role role = roleRepository.findByCode(roleCode)
-                .orElseThrow(() -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_ROLE)));
+                .orElseThrow(() -> {
+                    log.warn("역할 삭제 실패 - 존재하지 않는 역할: roleCode={}", roleCode);
+                    return new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_ROLE));
+                });
         role.deleteRole();
+        log.info("역할 삭제 완료: roleCode={}", roleCode);
     }
 
     /* ==================== Permission 관련 메서드 ==================== */
@@ -191,6 +237,7 @@ public class RoleService {
      * @return List<Permission>
      */
     public List<Permission> getAllPermissions() {
+        log.debug("전체 권한 목록 조회");
         return permissionRepository.findAllPermissions();
     }
 
@@ -201,8 +248,12 @@ public class RoleService {
      * @return Permission
      */
     public Permission getPermission(String permissionCode) {
+        log.debug("권한 조회: permissionCode={}", permissionCode);
         return permissionRepository.findByCode(permissionCode)
-                .orElseThrow(() -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_PERMISSION)));
+                .orElseThrow(() -> {
+                    log.warn("권한 조회 실패 - 존재하지 않는 권한: permissionCode={}", permissionCode);
+                    return new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_PERMISSION));
+                });
     }
 
     /**
@@ -212,6 +263,7 @@ public class RoleService {
      * @return List<Permission>
      */
     public List<Permission> getPermissionsByResource(String resource) {
+        log.debug("리소스별 권한 목록 조회: resource={}", resource);
         return permissionRepository.findByResource(resource);
     }
 
@@ -227,13 +279,16 @@ public class RoleService {
      */
     @Transactional
     public Permission createPermission(String code, String name, String description, String resource, String action) {
+        log.debug("권한 생성 시작: code={}, name={}", code, name);
         if (permissionRepository.findByCode(code).isPresent()) {
+            log.warn("권한 생성 실패 - 중복 코드: code={}", code);
             throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.PERMISSION_ALREADY_EXISTS));
         }
         ResourceType resourceType = ResourceType.valueOf(resource);
         ActionType actionType = ActionType.valueOf(action);
         Permission permission = Permission.createPermission(code, name, description, resourceType, actionType);
         permissionRepository.save(permission);
+        log.info("권한 생성 완료: code={}", code);
         return permission;
     }
 
@@ -248,10 +303,12 @@ public class RoleService {
      */
     @Transactional
     public void updatePermission(String code, String name, String description, String resource, String action) {
+        log.debug("권한 수정 시작: code={}", code);
         Permission permission = getPermission(code);
         ResourceType resourceType = resource != null ? ResourceType.valueOf(resource) : null;
         ActionType actionType = action != null ? ActionType.valueOf(action) : null;
         permission.updatePermission(name, description, resourceType, actionType);
+        log.info("권한 수정 완료: code={}", code);
     }
 
     /**
@@ -261,8 +318,13 @@ public class RoleService {
      */
     @Transactional
     public void deletePermission(String permissionCode) {
+        log.debug("권한 삭제 시작: permissionCode={}", permissionCode);
         Permission permission = permissionRepository.findByCode(permissionCode)
-                .orElseThrow(() -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_PERMISSION)));
+                .orElseThrow(() -> {
+                    log.warn("권한 삭제 실패 - 존재하지 않는 권한: permissionCode={}", permissionCode);
+                    return new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_PERMISSION));
+                });
         permission.deletePermission();
+        log.info("권한 삭제 완료: permissionCode={}", permissionCode);
     }
 }

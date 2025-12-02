@@ -26,6 +26,7 @@ public class DuesService {
 
     @Transactional
     public Long registDues(DuesServiceDto data) {
+        log.debug("회비 등록 시작: userName={}, amount={}, type={}", data.getUserName(), data.getAmount(), data.getType());
         Dues dues = Dues.createDues(
                 data.getUserName(),
                 data.getAmount(),
@@ -35,10 +36,12 @@ public class DuesService {
                 data.getDetail()
         );
         duesRepositoryImpl.save(dues);
+        log.info("회비 등록 완료: duesSeq={}", dues.getSeq());
         return dues.getSeq();
     }
 
     public List<DuesServiceDto> searchDues() {
+        log.debug("전체 회비 목록 조회");
         List<Dues> dues = duesRepositoryImpl.findDues();
 
         List<DuesServiceDto> dtos = dues.stream()
@@ -62,6 +65,7 @@ public class DuesService {
     }
 
     public List<DuesServiceDto> searchYearDues(int year) {
+        log.debug("연도별 회비 목록 조회: year={}", year);
         List<Dues> dues = duesRepositoryImpl.findDuesByYear(year);
 
         List<DuesServiceDto> dtos = dues.stream()
@@ -85,6 +89,7 @@ public class DuesService {
     }
 
     public DuesServiceDto searchYearOperationDues(int year) {
+        log.debug("연도별 운영 회비 조회: year={}", year);
         List<Dues> dues = duesRepositoryImpl.findOperatingDuesByYear(year);
         Long total = 0L;
         Long deposit = 0L;
@@ -123,6 +128,7 @@ public class DuesService {
 
     @Transactional
     public void editDues(DuesServiceDto data) {
+        log.debug("회비 수정 시작: duesSeq={}", data.getSeq());
         Dues dues = checkDuesExist(data.getSeq());
         dues.updateDues(
                 data.getUserName(),
@@ -132,17 +138,23 @@ public class DuesService {
                 data.getDate(),
                 data.getDetail()
         );
+        log.info("회비 수정 완료: duesSeq={}", data.getSeq());
     }
 
     @Transactional
     public void deleteDues(Long duesSeq) {
+        log.debug("회비 삭제 시작: duesSeq={}", duesSeq);
         Dues findDues = checkDuesExist(duesSeq);
         duesRepositoryImpl.delete(findDues);
+        log.info("회비 삭제 완료: duesSeq={}", duesSeq);
     }
 
     public Dues checkDuesExist(Long duesSeq) {
         Optional<Dues> dues = duesRepositoryImpl.findById(duesSeq);
-        dues.orElseThrow(() -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_DUES)));
+        dues.orElseThrow(() -> {
+            log.warn("회비 조회 실패 - 존재하지 않는 회비: duesSeq={}", duesSeq);
+            return new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_DUES));
+        });
         return dues.get();
     }
 }

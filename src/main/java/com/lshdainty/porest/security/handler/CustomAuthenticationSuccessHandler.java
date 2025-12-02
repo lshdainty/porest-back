@@ -10,12 +10,14 @@ import com.lshdainty.porest.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.stream.Collectors;
 import com.lshdainty.porest.permission.domain.Role;
 
@@ -24,12 +26,14 @@ import com.lshdainty.porest.permission.domain.Role;
  */
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
     private final UserService userService;
     private final ObjectMapper objectMapper;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
+        log.info("로그인 성공: username={}", authentication.getName());
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
@@ -39,7 +43,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         User user = userDetails.getUser();
 
         // 역할 상세 정보 생성
-        java.util.List<AuthApiDto.RoleInfo> roleInfos = user.getRoles().stream()
+        List<AuthApiDto.RoleInfo> roleInfos = user.getRoles().stream()
                 .map(role -> new AuthApiDto.RoleInfo(
                         role.getCode(),
                         role.getName(),
@@ -53,7 +57,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
                 .collect(Collectors.toList());
 
         // 모든 권한 코드 목록 (중복 제거)
-        java.util.List<String> allPermissions = user.getAllAuthorities();
+        List<String> allPermissions = user.getAllAuthorities();
 
         ApiResponse<AuthApiDto.LoginUserInfo> apiResponse = ApiResponse.success(new AuthApiDto.LoginUserInfo(
                 user.getId(),

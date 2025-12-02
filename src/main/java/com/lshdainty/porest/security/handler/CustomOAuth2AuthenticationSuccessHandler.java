@@ -1,11 +1,8 @@
 package com.lshdainty.porest.security.handler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lshdainty.porest.common.controller.ApiResponse;
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.security.controller.dto.AuthApiDto;
 import com.lshdainty.porest.security.principal.CustomOAuth2User;
-import com.lshdainty.porest.security.service.CustomOAuth2UserService;
 import com.lshdainty.porest.user.domain.User;
 import com.lshdainty.porest.user.service.UserService;
 import jakarta.servlet.ServletException;
@@ -17,12 +14,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.stream.Collectors;
 import com.lshdainty.porest.permission.domain.Role;
 
@@ -32,7 +29,6 @@ import com.lshdainty.porest.permission.domain.Role;
 public class CustomOAuth2AuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
     private final UserService userService;
-    private final ObjectMapper objectMapper;
 
     @Value("${app.frontend.base-url:http://localhost:3000}")
     private String frontendBaseUrl;
@@ -94,7 +90,7 @@ public class CustomOAuth2AuthenticationSuccessHandler implements AuthenticationS
         User user = customOAuth2User.getUser();
 
         // 역할 상세 정보 생성
-        java.util.List<AuthApiDto.RoleInfo> roleInfos = user.getRoles().stream()
+        List<AuthApiDto.RoleInfo> roleInfos = user.getRoles().stream()
                 .map(role -> new AuthApiDto.RoleInfo(
                         role.getCode(),
                         role.getName(),
@@ -108,7 +104,7 @@ public class CustomOAuth2AuthenticationSuccessHandler implements AuthenticationS
                 .collect(Collectors.toList());
 
         // 모든 권한 코드 목록 (중복 제거)
-        java.util.List<String> allPermissions = user.getAllAuthorities();
+        List<String> allPermissions = user.getAllAuthorities();
 
         // 세션에 사용자 정보 저장
         HttpSession session = request.getSession();

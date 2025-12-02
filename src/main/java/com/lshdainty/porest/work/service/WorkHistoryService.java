@@ -2,7 +2,6 @@ package com.lshdainty.porest.work.service;
 
 import com.lshdainty.porest.common.message.MessageKey;
 import com.lshdainty.porest.common.type.CountryCode;
-import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.common.util.MessageResolver;
 import com.lshdainty.porest.holiday.domain.Holiday;
 import com.lshdainty.porest.holiday.service.HolidayService;
@@ -18,28 +17,26 @@ import com.lshdainty.porest.work.repository.WorkHistoryCustomRepositoryImpl;
 import com.lshdainty.porest.work.repository.dto.WorkHistorySearchCondition;
 import com.lshdainty.porest.work.service.dto.WorkCodeServiceDto;
 import com.lshdainty.porest.work.service.dto.WorkHistoryServiceDto;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.io.IOException;
-
-import jakarta.servlet.http.HttpServletResponse;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 
 @Service
 @RequiredArgsConstructor
@@ -56,6 +53,7 @@ public class WorkHistoryService {
 
     @Transactional
     public Long createWorkHistory(WorkHistoryServiceDto data) {
+        log.debug("업무 이력 생성 시작: userId={}, date={}", data.getUserId(), data.getDate());
         User user = userService.checkUserExist(data.getUserId());
         WorkCode group = checkWorkCodeExist(data.getGroupCode());
         WorkCode part = checkWorkCodeExist(data.getPartCode());
@@ -70,11 +68,13 @@ public class WorkHistoryService {
                 data.getHours(),
                 data.getContent());
         workHistoryRepository.save(workHistory);
+        log.info("업무 이력 생성 완료: seq={}, userId={}, hours={}", workHistory.getSeq(), data.getUserId(), data.getHours());
         return workHistory.getSeq();
     }
 
     @Transactional
     public List<Long> createWorkHistories(List<WorkHistoryServiceDto> dataList) {
+        log.debug("업무 이력 일괄 생성 시작: count={}", dataList.size());
         List<WorkHistory> workHistories = dataList.stream().map(data -> {
             User user = userService.checkUserExist(data.getUserId());
             WorkCode group = checkWorkCodeExist(data.getGroupCode());
@@ -92,6 +92,7 @@ public class WorkHistoryService {
         }).collect(Collectors.toList());
 
         workHistoryRepository.saveAll(workHistories);
+        log.info("업무 이력 일괄 생성 완료: count={}", workHistories.size());
 
         return workHistories.stream()
                 .map(WorkHistory::getSeq)
@@ -99,6 +100,7 @@ public class WorkHistoryService {
     }
 
     public List<WorkHistoryServiceDto> findAllWorkHistories(WorkHistorySearchCondition condition) {
+        log.debug("업무 이력 목록 조회: condition={}", condition);
         List<WorkHistory> workHistories = workHistoryRepository.findAll(condition);
 
         return workHistories.stream()
@@ -120,6 +122,7 @@ public class WorkHistoryService {
     }
 
     public WorkHistoryServiceDto findWorkHistory(Long seq) {
+        log.debug("업무 이력 조회: seq={}", seq);
         WorkHistory w = checkWorkHistoryExist(seq);
 
         return WorkHistoryServiceDto.builder()
@@ -140,6 +143,7 @@ public class WorkHistoryService {
 
     @Transactional
     public void updateWorkHistory(WorkHistoryServiceDto data) {
+        log.debug("업무 이력 수정 시작: seq={}", data.getSeq());
         WorkHistory workHistory = checkWorkHistoryExist(data.getSeq());
         User user = userService.checkUserExist(data.getUserId());
         WorkCode group = checkWorkCodeExist(data.getGroupCode());
@@ -154,27 +158,36 @@ public class WorkHistoryService {
                 classes,
                 data.getHours(),
                 data.getContent());
+        log.info("업무 이력 수정 완료: seq={}", data.getSeq());
     }
 
     @Transactional
     public void deleteWorkHistory(Long seq) {
+        log.debug("업무 이력 삭제 시작: seq={}", seq);
         WorkHistory workHistory = checkWorkHistoryExist(seq);
         workHistoryRepository.delete(workHistory);
+        log.info("업무 이력 삭제 완료: seq={}", seq);
     }
 
     private WorkHistory checkWorkHistoryExist(Long seq) {
         Optional<WorkHistory> workHistory = workHistoryRepository.findById(seq);
-        workHistory.orElseThrow(
-                () -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_WORK_HISTORY)));
+        workHistory.orElseThrow(() -> {
+            log.warn("업무 이력 조회 실패 - 존재하지 않는 이력: seq={}", seq);
+            return new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_WORK_HISTORY));
+        });
         return workHistory.get();
     }
 
     private WorkCode checkWorkCodeExist(String code) {
         if (code == null) {
+            log.warn("업무 코드 검증 실패 - 코드 미입력");
             throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_WORK_CODE_REQUIRED));
         }
         Optional<WorkCode> workCode = workCodeRepository.findByCode(code);
-        workCode.orElseThrow(() -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_WORK_CODE)));
+        workCode.orElseThrow(() -> {
+            log.warn("업무 코드 조회 실패 - 존재하지 않는 코드: code={}", code);
+            return new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_WORK_CODE));
+        });
         return workCode.get();
     }
 
@@ -194,6 +207,7 @@ public class WorkHistoryService {
     @Transactional(readOnly = true)
     public void downloadWorkHistoryExcel(HttpServletResponse response, WorkHistorySearchCondition condition)
             throws IOException {
+        log.debug("업무 이력 엑셀 다운로드 시작: condition={}", condition);
         try (SXSSFWorkbook workbook = new SXSSFWorkbook(100)) { // keep 100 rows in memory
             Sheet sheet = workbook.createSheet("업무 이력");
 
@@ -249,6 +263,7 @@ public class WorkHistoryService {
 
             // Write to Output Stream
             workbook.write(response.getOutputStream());
+            log.info("업무 이력 엑셀 다운로드 완료");
 
             // Dispose of temporary files
             workbook.dispose();
@@ -258,8 +273,10 @@ public class WorkHistoryService {
     @Transactional(readOnly = true)
     public void downloadUnregisteredWorkHistoryExcel(HttpServletResponse response, Integer year, Integer month)
             throws IOException {
+        log.debug("업무 미등록 리스트 엑셀 다운로드 시작: year={}, month={}", year, month);
         // 년월 유효성 검증
         if (year == null || month == null) {
+            log.warn("업무 미등록 리스트 다운로드 실패 - 년월 미입력");
             throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_YEAR_MONTH_REQUIRED));
         }
 
@@ -380,6 +397,7 @@ public class WorkHistoryService {
 
             // Write to Output Stream
             workbook.write(response.getOutputStream());
+            log.info("업무 미등록 리스트 엑셀 다운로드 완료: year={}, month={}", year, month);
 
             // Dispose of temporary files
             workbook.dispose();
@@ -437,6 +455,7 @@ public class WorkHistoryService {
      * @return 업무 시간 정보 (총 업무 시간, 8시간 달성 여부)
      */
     public TodayWorkStatus checkTodayWorkStatus(String userId) {
+        log.debug("오늘 업무 상태 확인: userId={}", userId);
         LocalDate today = LocalDate.now();
 
         // 오늘 날짜의 업무 내역 리스트 조회
@@ -466,8 +485,10 @@ public class WorkHistoryService {
      * @return 미작성 업무 날짜 목록
      */
     public List<LocalDate> getUnregisteredWorkDates(String userId, Integer year, Integer month) {
+        log.debug("업무 미등록 날짜 조회 시작: userId={}, year={}, month={}", userId, year, month);
         // 년월 유효성 검증
         if (year == null || month == null) {
+            log.warn("업무 미등록 날짜 조회 실패 - 년월 미입력");
             throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_YEAR_MONTH_REQUIRED));
         }
 

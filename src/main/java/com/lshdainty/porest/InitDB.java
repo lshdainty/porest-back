@@ -37,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -50,18 +51,18 @@ public class InitDB {
 
 	@PostConstruct
 	public void init() {
-//		initService.initSetRole();
-//		initService.initSetDepartment();
-//		initService.initSetMember();
-//		initService.initSetUserDepartment();
-//		initService.initSetSchedule();
-//		initService.initSetDues();
-//		initService.initSetVacationPolicy();
-//		initService.initSetUserVacationPolicy();
-//		initService.initSetVacationGrant();
-//		initService.initSetHoliday();
-//		initService.initSetWorkCode();
-//		initService.initSetWorkHistory();
+		initService.initSetRole();
+		initService.initSetDepartment();
+		initService.initSetMember();
+		initService.initSetUserDepartment();
+		initService.initSetSchedule();
+		initService.initSetDues();
+		initService.initSetVacationPolicy();
+		initService.initSetUserVacationPolicy();
+		initService.initSetVacationGrant();
+		initService.initSetHoliday();
+		initService.initSetWorkCode();
+		initService.initSetWorkHistory();
 	}
 
 	@Component
@@ -76,7 +77,7 @@ public class InitDB {
 		// 멤버 변수로 저장하여 다른 init 메서드에서 재사용
 		private User user1, user2, user3, user4, user5, user6;
 		private Department dept, GMESJ, GMESM, DT, myDATA, tableau;
-		private final java.util.Map<String, java.util.List<VacationPolicy>> policyMap = new java.util.HashMap<>();
+		private final Map<String, List<VacationPolicy>> policyMap = new HashMap<>();
 		private final Map<String, WorkCode> workCodeMap = new HashMap<>();
 
 		public void initSetMember() {
@@ -678,13 +679,13 @@ public class InitDB {
 			VacationPolicy otPolicy = policyMap.get("OT(관리자용)").get(0);
 			VacationPolicy maternityPolicy = policyMap.get("출산(관리자용)").get(0);
 
-			List<VacationGrant> user1Grants = new java.util.ArrayList<>();
-			List<VacationGrant> user1MaternityGrants = new java.util.ArrayList<>();
-			List<VacationGrant> user2Grants = new java.util.ArrayList<>();
-			List<VacationGrant> user3Grants = new java.util.ArrayList<>();
-			List<VacationGrant> user4Grants = new java.util.ArrayList<>();
-			List<VacationGrant> user5Grants = new java.util.ArrayList<>();
-			List<VacationGrant> user6Grants = new java.util.ArrayList<>();
+			List<VacationGrant> user1Grants = new ArrayList<>();
+			List<VacationGrant> user1MaternityGrants = new ArrayList<>();
+			List<VacationGrant> user2Grants = new ArrayList<>();
+			List<VacationGrant> user3Grants = new ArrayList<>();
+			List<VacationGrant> user4Grants = new ArrayList<>();
+			List<VacationGrant> user5Grants = new ArrayList<>();
+			List<VacationGrant> user6Grants = new ArrayList<>();
 
 			// ===== user1 연차 부여 (현재 연도) =====
 			user1Grants.add(saveVacationGrant(user1, q1Policy, VacationType.ANNUAL, "1분기 연차에 의한 휴가 부여",
@@ -1074,7 +1075,7 @@ public class InitDB {
 				policy.updateCanDeleted();
 			}
 
-			policyMap.computeIfAbsent(name, k -> new java.util.ArrayList<>()).add(policy);
+			policyMap.computeIfAbsent(name, k -> new ArrayList<>()).add(policy);
 
 			return policy;
 		}

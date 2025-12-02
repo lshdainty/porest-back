@@ -81,14 +81,19 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
             // 회원 가입 부분
             // 2-1. 초대 토큰으로 사용자 찾기
             User user = userRepository.findByInvitationToken(invitationToken)
-                    .orElseThrow(() -> new OAuth2AuthenticationException("유효하지 않은 초대 토큰입니다."));
+                    .orElseThrow(() -> {
+                        log.warn("OAuth2 회원가입 실패 - 유효하지 않은 초대 토큰: token={}", invitationToken);
+                        return new OAuth2AuthenticationException("유효하지 않은 초대 토큰입니다.");
+                    });
 
             // 2-2. 토큰 재검증
             if (!user.isInvitationValid()) {
+                log.warn("OAuth2 회원가입 실패 - 만료된 초대 토큰: userId={}, expiresAt={}", user.getId(), user.getInvitationExpiresAt());
                 throw new OAuth2AuthenticationException("초대 토큰이 만료되었거나 유효하지 않습니다.");
             }
 
             if (!user.getId().equals(invitedUserId)) {
+                log.warn("OAuth2 회원가입 실패 - 사용자 ID 불일치: invitedUserId={}, actualUserId={}", invitedUserId, user.getId());
                 throw new OAuth2AuthenticationException("초대된 사용자 정보가 일치하지 않습니다.");
             }
 
@@ -107,12 +112,18 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
             // 기존 소셜 로그인 연결 확인
             UserProvider userProvider = userProviderRepository
                     .findByProviderTypeAndProviderId(attributes.getProvider(), attributes.getProviderId())
-                    .orElseThrow(() -> new OAuth2AuthenticationException("등록되지 않은 소셜 계정입니다. 먼저 회원가입을 진행해주세요."));
+                    .orElseThrow(() -> {
+                        log.warn("OAuth2 로그인 실패 - 등록되지 않은 소셜 계정: provider={}, providerId={}", attributes.getProvider(), attributes.getProviderId());
+                        return new OAuth2AuthenticationException("등록되지 않은 소셜 계정입니다. 먼저 회원가입을 진행해주세요.");
+                    });
 
             // 사용자 id를 기반으로 한 유저 권한 정보 및 역할 조회 (역할 및 권한 정보 포함)
             String userId = userProvider.getUser().getId();
             User user = userRepository.findByIdWithRolesAndPermissions(userId)
-                    .orElseThrow(() -> new OAuth2AuthenticationException("사용자 정보를 찾을 수 없습니다."));
+                    .orElseThrow(() -> {
+                        log.warn("OAuth2 로그인 실패 - 사용자 정보 없음: userId={}", userId);
+                        return new OAuth2AuthenticationException("사용자 정보를 찾을 수 없습니다.");
+                    });
 
             log.info("OAuth2 로그인 성공: userId={}, provider={}", user.getId(), attributes.getProvider());
             return user;

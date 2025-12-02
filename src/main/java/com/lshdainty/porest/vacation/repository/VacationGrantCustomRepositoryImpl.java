@@ -9,6 +9,7 @@ import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -65,7 +66,7 @@ public class VacationGrantCustomRepositoryImpl implements VacationGrantCustomRep
                 .where(vacationGrant.user.id.eq(userId)
                         .and(vacationGrant.isDeleted.eq(YNType.N))
                         .and(vacationGrant.status.eq(GrantStatus.ACTIVE))
-                        .and(vacationGrant.remainTime.gt(java.math.BigDecimal.ZERO)))
+                        .and(vacationGrant.remainTime.gt(BigDecimal.ZERO)))
                 .orderBy(vacationGrant.expiryDate.asc(), vacationGrant.grantDate.asc())
                 .fetch();
     }
@@ -80,7 +81,7 @@ public class VacationGrantCustomRepositoryImpl implements VacationGrantCustomRep
                         .and(vacationGrant.isDeleted.eq(YNType.N))
                         .and(vacationGrant.status.eq(GrantStatus.ACTIVE))
                         .and(vacationGrant.type.eq(vacationType))
-                        .and(vacationGrant.remainTime.gt(java.math.BigDecimal.ZERO))
+                        .and(vacationGrant.remainTime.gt(BigDecimal.ZERO))
                         .and(vacationGrant.grantDate.loe(usageStartDate))
                         .and(vacationGrant.expiryDate.goe(usageStartDate)))
                 .orderBy(vacationGrant.expiryDate.asc(), vacationGrant.grantDate.asc())
@@ -108,7 +109,7 @@ public class VacationGrantCustomRepositoryImpl implements VacationGrantCustomRep
                 .where(vacationGrant.user.id.eq(userId)
                         .and(vacationGrant.isDeleted.eq(YNType.N))
                         .and(vacationGrant.status.eq(GrantStatus.ACTIVE))
-                        .and(vacationGrant.remainTime.gt(java.math.BigDecimal.ZERO))
+                        .and(vacationGrant.remainTime.gt(BigDecimal.ZERO))
                         .and(vacationGrant.grantDate.loe(usageStartDate))
                         .and(vacationGrant.expiryDate.goe(usageStartDate)))
                 .orderBy(vacationGrant.expiryDate.asc(), vacationGrant.grantDate.asc())
@@ -181,7 +182,7 @@ public class VacationGrantCustomRepositoryImpl implements VacationGrantCustomRep
     }
 
     @Override
-    public List<VacationGrant> findByUserIdAndValidPeriod(String userId, java.time.LocalDateTime startOfPeriod, java.time.LocalDateTime endOfPeriod) {
+    public List<VacationGrant> findByUserIdAndValidPeriod(String userId, LocalDateTime startOfPeriod, LocalDateTime endOfPeriod) {
         return query
                 .selectFrom(vacationGrant)
                 .where(vacationGrant.user.id.eq(userId)
@@ -193,7 +194,7 @@ public class VacationGrantCustomRepositoryImpl implements VacationGrantCustomRep
     }
 
     @Override
-    public List<VacationGrant> findByUserIdAndStatusesAndPeriod(String userId, List<GrantStatus> statuses, java.time.LocalDateTime startOfPeriod, java.time.LocalDateTime endOfPeriod) {
+    public List<VacationGrant> findByUserIdAndStatusesAndPeriod(String userId, List<GrantStatus> statuses, LocalDateTime startOfPeriod, LocalDateTime endOfPeriod) {
         return query
                 .selectFrom(vacationGrant)
                 .where(vacationGrant.user.id.eq(userId)

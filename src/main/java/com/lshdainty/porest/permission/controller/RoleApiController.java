@@ -6,6 +6,7 @@ import com.lshdainty.porest.permission.domain.Permission;
 import com.lshdainty.porest.permission.domain.Role;
 import com.lshdainty.porest.permission.service.RoleService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 public class RoleApiController implements RoleApi {
     private final RoleService roleService;
 

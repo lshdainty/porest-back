@@ -2,6 +2,7 @@ package com.lshdainty.porest.user.repository;
 
 import com.lshdainty.porest.user.domain.User;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,5 +20,5 @@ public interface UserRepository {
     // 초대 토큰으로 유저 검색
     Optional<User> findByInvitationToken(String token);
     // 삭제된 유저 중 modifyDate가 특정 기간 내인 유저 조회
-    List<User> findDeletedUsersByModifyDateBetween(java.time.LocalDateTime startDate, java.time.LocalDateTime endDate);
+    List<User> findDeletedUsersByModifyDateBetween(LocalDateTime startDate, LocalDateTime endDate);
 }

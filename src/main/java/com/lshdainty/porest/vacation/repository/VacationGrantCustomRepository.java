@@ -1,8 +1,12 @@
 package com.lshdainty.porest.vacation.repository;
 
 import com.lshdainty.porest.vacation.domain.VacationGrant;
+import com.lshdainty.porest.vacation.type.GrantStatus;
+import com.lshdainty.porest.vacation.type.VacationType;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface VacationGrantCustomRepository {
     /**
@@ -46,7 +50,7 @@ public interface VacationGrantCustomRepository {
      * @param usageStartDate 사용자가 사용하려는 휴가 시작일
      * @return 만료일 오름차순으로 정렬된 VacationGrant 리스트
      */
-    List<VacationGrant> findAvailableGrantsByUserIdAndTypeAndDate(String userId, com.lshdainty.porest.vacation.type.VacationType vacationType, java.time.LocalDateTime usageStartDate);
+    List<VacationGrant> findAvailableGrantsByUserIdAndTypeAndDate(String userId, VacationType vacationType, LocalDateTime usageStartDate);
 
     /**
      * 모든 VacationGrant 조회 (User 정보 포함)
@@ -66,7 +70,7 @@ public interface VacationGrantCustomRepository {
      * @param usageStartDate 사용자가 사용하려는 휴가 시작일
      * @return 만료일 오름차순으로 정렬된 VacationGrant 리스트
      */
-    List<VacationGrant> findAvailableGrantsByUserIdAndDate(String userId, java.time.LocalDateTime usageStartDate);
+    List<VacationGrant> findAvailableGrantsByUserIdAndDate(String userId, LocalDateTime usageStartDate);
 
     /**
      * baseTime 기준으로 유효한 VacationGrant 조회
@@ -77,7 +81,7 @@ public interface VacationGrantCustomRepository {
      * @param baseTime 기준 시간
      * @return baseTime 기준 유효한 VacationGrant 리스트
      */
-    List<VacationGrant> findValidGrantsByUserIdAndBaseTime(String userId, java.time.LocalDateTime baseTime);
+    List<VacationGrant> findValidGrantsByUserIdAndBaseTime(String userId, LocalDateTime baseTime);
 
     /**
      * 만료 대상 VacationGrant 조회
@@ -88,7 +92,7 @@ public interface VacationGrantCustomRepository {
      * @param currentDate 현재 날짜
      * @return 만료 대상 VacationGrant 리스트
      */
-    List<VacationGrant> findExpiredTargets(java.time.LocalDateTime currentDate);
+    List<VacationGrant> findExpiredTargets(LocalDateTime currentDate);
 
     /**
      * ID로 VacationGrant 조회
@@ -96,7 +100,7 @@ public interface VacationGrantCustomRepository {
      * @param id VacationGrant ID
      * @return VacationGrant Optional
      */
-    java.util.Optional<VacationGrant> findById(Long id);
+    Optional<VacationGrant> findById(Long id);
 
     /**
      * 사용자 ID로 ON_REQUEST 방식의 모든 VacationGrant 조회 (모든 상태 포함)
@@ -130,7 +134,7 @@ public interface VacationGrantCustomRepository {
      * @param endOfPeriod 조회 기간 종료일
      * @return 해당 기간 내 유효한 VacationGrant 리스트
      */
-    List<VacationGrant> findByUserIdAndValidPeriod(String userId, java.time.LocalDateTime startOfPeriod, java.time.LocalDateTime endOfPeriod);
+    List<VacationGrant> findByUserIdAndValidPeriod(String userId, LocalDateTime startOfPeriod, LocalDateTime endOfPeriod);
 
     /**
      * 특정 사용자의 특정 상태들 & 특정 기간 내 VacationGrant 조회
@@ -144,5 +148,5 @@ public interface VacationGrantCustomRepository {
      * @param endOfPeriod 조회 기간 종료일
      * @return 조건에 맞는 VacationGrant 리스트
      */
-    List<VacationGrant> findByUserIdAndStatusesAndPeriod(String userId, List<com.lshdainty.porest.vacation.type.GrantStatus> statuses, java.time.LocalDateTime startOfPeriod, java.time.LocalDateTime endOfPeriod);
+    List<VacationGrant> findByUserIdAndStatusesAndPeriod(String userId, List<GrantStatus> statuses, LocalDateTime startOfPeriod, LocalDateTime endOfPeriod);
 }
