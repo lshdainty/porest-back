@@ -1,8 +1,9 @@
 package com.lshdainty.porest.service.policy;
 
+import com.lshdainty.porest.common.exception.InvalidValueException;
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.vacation.domain.VacationPolicy;
-import com.lshdainty.porest.vacation.repository.VacationPolicyCustomRepositoryImpl;
+import com.lshdainty.porest.vacation.repository.VacationPolicyRepository;
 import com.lshdainty.porest.vacation.service.dto.VacationPolicyServiceDto;
 import com.lshdainty.porest.vacation.service.policy.OnRequest;
 import com.lshdainty.porest.vacation.type.*;
@@ -13,7 +14,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.MessageSource;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
@@ -21,7 +21,6 @@ import java.math.BigDecimal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -29,10 +28,7 @@ import static org.mockito.BDDMockito.*;
 class OnRequestTest {
 
     @Mock
-    private MessageSource ms;
-
-    @Mock
-    private VacationPolicyCustomRepositoryImpl vacationPolicyRepository;
+    private VacationPolicyRepository vacationPolicyRepository;
 
     @InjectMocks
     private OnRequest onRequest;
@@ -79,12 +75,9 @@ class OnRequestTest {
                     .vacationType(VacationType.ANNUAL)
                     .build();
 
-            given(ms.getMessage(eq("vacation.policy.name.required"), any(), any()))
-                    .willReturn("정책명은 필수입니다");
-
             // when & then
             assertThatThrownBy(() -> onRequest.registVacationPolicy(dto))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(InvalidValueException.class);
         }
 
         @Test
@@ -97,12 +90,10 @@ class OnRequestTest {
                     .build();
 
             given(vacationPolicyRepository.existsByName("연차")).willReturn(true);
-            given(ms.getMessage(eq("vacation.policy.name.duplicate"), any(), any()))
-                    .willReturn("중복된 정책명입니다");
 
             // when & then
             assertThatThrownBy(() -> onRequest.registVacationPolicy(dto))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(InvalidValueException.class);
         }
 
         @Test
@@ -115,12 +106,10 @@ class OnRequestTest {
                     .build();
 
             given(vacationPolicyRepository.existsByName("연차")).willReturn(false);
-            given(ms.getMessage(eq("vacation.policy.isFlexibleGrant.required"), any(), any()))
-                    .willReturn("isFlexibleGrant는 필수입니다");
 
             // when & then
             assertThatThrownBy(() -> onRequest.registVacationPolicy(dto))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(InvalidValueException.class);
         }
     }
 
@@ -173,12 +162,9 @@ class OnRequestTest {
             );
             ReflectionTestUtils.setField(policy, "isFlexibleGrant", YNType.N);
 
-            given(ms.getMessage(eq("error.validate.vacation.grantTimeNotDefined"), any(), any()))
-                    .willReturn("부여 시간이 정의되지 않았습니다");
-
             // when & then
             assertThatThrownBy(() -> onRequest.calculateGrantTime(policy, null))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(InvalidValueException.class);
         }
 
         @Test
@@ -191,12 +177,9 @@ class OnRequestTest {
                     EffectiveType.IMMEDIATELY, ExpirationType.ONE_MONTHS_AFTER_GRANT
             );
 
-            given(ms.getMessage(eq("error.validate.vacation.userGrantTimeRequired"), any(), any()))
-                    .willReturn("사용자 입력 시간이 필요합니다");
-
             // when & then
             assertThatThrownBy(() -> onRequest.calculateGrantTime(policy, null))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(InvalidValueException.class);
         }
 
         @Test
@@ -209,12 +192,9 @@ class OnRequestTest {
                     EffectiveType.IMMEDIATELY, ExpirationType.ONE_MONTHS_AFTER_GRANT
             );
 
-            given(ms.getMessage(eq("error.validate.vacation.userGrantTimePositive"), any(), any()))
-                    .willReturn("사용자 입력 시간은 양수여야 합니다");
-
             // when & then
             assertThatThrownBy(() -> onRequest.calculateGrantTime(policy, BigDecimal.ZERO))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(InvalidValueException.class);
         }
     }
 }

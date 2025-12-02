@@ -1,6 +1,9 @@
 package com.lshdainty.porest.user.service;
 
-import com.lshdainty.porest.common.message.MessageKey;
+import com.lshdainty.porest.common.exception.BusinessRuleViolationException;
+import com.lshdainty.porest.common.exception.DuplicateException;
+import com.lshdainty.porest.common.exception.EntityNotFoundException;
+import com.lshdainty.porest.common.exception.ErrorCode;
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.common.util.MessageResolver;
 import com.lshdainty.porest.common.util.PorestFile;
@@ -256,7 +259,7 @@ public class UserService {
         Optional<User> findUser = userRepository.findById(userId);
         if ((findUser.isEmpty()) || YNType.isY(findUser.get().getIsDeleted())) {
             log.warn("사용자 조회 실패 - 존재하지 않거나 삭제된 사용자: userId={}", userId);
-            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_USER));
+            throw new EntityNotFoundException(ErrorCode.USER_NOT_FOUND);
         }
         return findUser.get();
     }
@@ -272,7 +275,7 @@ public class UserService {
         Optional<User> findUser = userRepository.findByIdWithRolesAndPermissions(userId);
         if ((findUser.isEmpty()) || YNType.isY(findUser.get().getIsDeleted())) {
             log.warn("사용자 조회 실패 - 존재하지 않거나 삭제된 사용자: userId={}", userId);
-            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_USER));
+            throw new EntityNotFoundException(ErrorCode.USER_NOT_FOUND);
         }
         return findUser.get();
     }
@@ -338,7 +341,7 @@ public class UserService {
         // 아이디 중복 체크
         if (checkUserIdDuplicate(data.getId())) {
             log.warn("사용자 초대 실패 - 중복 아이디: id={}", data.getId());
-            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_DUPLICATE_USER_ID));
+            throw new DuplicateException(ErrorCode.USER_ALREADY_EXISTS);
         }
 
         User user = User.createInvitedUser(
@@ -407,7 +410,7 @@ public class UserService {
         // PENDING 상태인지 확인
         if (user.getInvitationStatus() != StatusType.PENDING) {
             log.warn("초대된 사용자 수정 실패 - PENDING 상태가 아님: userId={}, status={}", userId, user.getInvitationStatus());
-            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_NOT_PENDING_USER));
+            throw new BusinessRuleViolationException(ErrorCode.USER_INACTIVE);
         }
 
         // 이메일 변경 여부 확인
@@ -452,13 +455,13 @@ public class UserService {
         Optional<User> findUser = userRepository.findByInvitationToken(data.getInvitationToken());
         if (findUser.isEmpty()) {
             log.warn("회원가입 실패 - 초대 토큰 없음: token={}", data.getInvitationToken());
-            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_INVITATION));
+            throw new EntityNotFoundException(ErrorCode.INVITATION_NOT_FOUND);
         }
 
         User user = findUser.get();
         if (!user.isInvitationValid()) {
             log.warn("회원가입 실패 - 초대 만료: userId={}", user.getId());
-            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_EXPIRED_INVITATION));
+            throw new BusinessRuleViolationException(ErrorCode.INVITATION_EXPIRED);
         }
 
         user.completeRegistration(

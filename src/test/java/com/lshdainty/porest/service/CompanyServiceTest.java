@@ -1,5 +1,8 @@
 package com.lshdainty.porest.service;
 
+import com.lshdainty.porest.common.exception.BusinessRuleViolationException;
+import com.lshdainty.porest.common.exception.DuplicateException;
+import com.lshdainty.porest.common.exception.EntityNotFoundException;
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.company.domain.Company;
 import com.lshdainty.porest.company.repository.CompanyRepository;
@@ -14,22 +17,18 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.MessageSource;
 
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.*;
 
 @Slf4j
 @ExtendWith(MockitoExtension.class)
 @DisplayName("회사 서비스 테스트")
 class CompanyServiceTest {
-    @Mock
-    private MessageSource ms;
     @Mock
     private CompanyRepository companyRepository;
 
@@ -70,12 +69,10 @@ class CompanyServiceTest {
                     .build();
             Company existingCompany = Company.createCompany("COMPANY001", "기존 회사", "기존 설명");
             given(companyRepository.findById("COMPANY001")).willReturn(Optional.of(existingCompany));
-            given(ms.getMessage(eq("error.validate.duplicate.company"), any(), any()))
-                    .willReturn("이미 존재하는 회사입니다");
 
             // when & then
             assertThatThrownBy(() -> companyService.regist(data))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(DuplicateException.class);
         }
     }
 
@@ -113,12 +110,10 @@ class CompanyServiceTest {
                     .name("회사")
                     .build();
             given(companyRepository.findById("NOTEXIST")).willReturn(Optional.empty());
-            given(ms.getMessage(eq("error.notfound.company"), any(), any()))
-                    .willReturn("회사를 찾을 수 없습니다");
 
             // when & then
             assertThatThrownBy(() -> companyService.edit(data))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
         }
 
         @Test
@@ -128,8 +123,6 @@ class CompanyServiceTest {
             Company company = Company.createCompany("COMPANY001", "회사", "설명");
             company.deleteCompany();
             given(companyRepository.findById("COMPANY001")).willReturn(Optional.of(company));
-            given(ms.getMessage(eq("error.notfound.company"), any(), any()))
-                    .willReturn("회사를 찾을 수 없습니다");
 
             CompanyServiceDto data = CompanyServiceDto.builder()
                     .id("COMPANY001")
@@ -138,7 +131,7 @@ class CompanyServiceTest {
 
             // when & then
             assertThatThrownBy(() -> companyService.edit(data))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
         }
     }
 
@@ -168,12 +161,10 @@ class CompanyServiceTest {
             Department department = Department.createDepartment("개발팀", "개발팀", null, "user1", 1L, "설명", "#FF0000", company);
 
             given(companyRepository.findById("COMPANY001")).willReturn(Optional.of(company));
-            given(ms.getMessage(eq("error.validate.notnull.department"), any(), any()))
-                    .willReturn("부서가 있는 회사는 삭제할 수 없습니다");
 
             // when & then
             assertThatThrownBy(() -> companyService.delete("COMPANY001"))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(BusinessRuleViolationException.class);
         }
 
         @Test
@@ -181,12 +172,10 @@ class CompanyServiceTest {
         void deleteFailNotFound() {
             // given
             given(companyRepository.findById("NOTEXIST")).willReturn(Optional.empty());
-            given(ms.getMessage(eq("error.notfound.company"), any(), any()))
-                    .willReturn("회사를 찾을 수 없습니다");
 
             // when & then
             assertThatThrownBy(() -> companyService.delete("NOTEXIST"))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
         }
     }
 
@@ -247,12 +236,10 @@ class CompanyServiceTest {
         void searchCompanyWithDepartmentsFailNotFound() {
             // given
             given(companyRepository.findByIdWithDepartments("NOTEXIST")).willReturn(Optional.empty());
-            given(ms.getMessage(eq("error.notfound.company"), any(), any()))
-                    .willReturn("회사를 찾을 수 없습니다");
 
             // when & then
             assertThatThrownBy(() -> companyService.searchCompanyWithDepartments("NOTEXIST"))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
         }
     }
 
@@ -276,12 +263,10 @@ class CompanyServiceTest {
             // given
             Company company = Company.createCompany("COMPANY001", "회사", "설명");
             given(companyRepository.findById("COMPANY001")).willReturn(Optional.of(company));
-            given(ms.getMessage(eq("error.validate.duplicate.company"), any(), any()))
-                    .willReturn("이미 존재하는 회사입니다");
 
             // when & then
             assertThatThrownBy(() -> companyService.checkAlreadyCompanyId("COMPANY001"))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(DuplicateException.class);
         }
     }
 
@@ -307,12 +292,10 @@ class CompanyServiceTest {
         void checkCompanyExistsFailNotFound() {
             // given
             given(companyRepository.findById("NOTEXIST")).willReturn(Optional.empty());
-            given(ms.getMessage(eq("error.notfound.company"), any(), any()))
-                    .willReturn("회사를 찾을 수 없습니다");
 
             // when & then
             assertThatThrownBy(() -> companyService.checkCompanyExists("NOTEXIST"))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
         }
 
         @Test
@@ -322,12 +305,10 @@ class CompanyServiceTest {
             Company company = Company.createCompany("COMPANY001", "회사", "설명");
             company.deleteCompany();
             given(companyRepository.findById("COMPANY001")).willReturn(Optional.of(company));
-            given(ms.getMessage(eq("error.notfound.company"), any(), any()))
-                    .willReturn("회사를 찾을 수 없습니다");
 
             // when & then
             assertThatThrownBy(() -> companyService.checkCompanyExists("COMPANY001"))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
         }
     }
 }

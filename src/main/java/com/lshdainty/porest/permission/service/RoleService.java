@@ -1,7 +1,8 @@
 package com.lshdainty.porest.permission.service;
 
-import com.lshdainty.porest.common.message.MessageKey;
-import com.lshdainty.porest.common.util.MessageResolver;
+import com.lshdainty.porest.common.exception.DuplicateException;
+import com.lshdainty.porest.common.exception.EntityNotFoundException;
+import com.lshdainty.porest.common.exception.ErrorCode;
 import com.lshdainty.porest.permission.domain.Permission;
 import com.lshdainty.porest.permission.domain.Role;
 import com.lshdainty.porest.permission.repository.PermissionRepository;
@@ -25,7 +26,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @Transactional(readOnly = true)
 public class RoleService {
-    private final MessageResolver messageResolver;
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
 
@@ -52,7 +52,7 @@ public class RoleService {
         return roleRepository.findByCodeWithPermissions(roleCode)
                 .orElseThrow(() -> {
                     log.warn("역할 조회 실패 - 존재하지 않는 역할: roleCode={}", roleCode);
-                    return new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_ROLE));
+                    return new EntityNotFoundException(ErrorCode.ROLE_NOT_FOUND);
                 });
     }
 
@@ -69,7 +69,7 @@ public class RoleService {
         log.debug("역할 생성 시작: roleCode={}, roleName={}", roleCode, roleName);
         if (roleRepository.findByCode(roleCode).isPresent()) {
             log.warn("역할 생성 실패 - 중복 코드: roleCode={}", roleCode);
-            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.ROLE_ALREADY_EXISTS));
+            throw new DuplicateException(ErrorCode.ROLE_ALREADY_EXISTS);
         }
         Role role = Role.createRole(roleCode, roleName, description);
         roleRepository.save(role);
@@ -91,14 +91,14 @@ public class RoleService {
         log.debug("역할 생성 (권한 포함) 시작: roleCode={}, roleName={}, permissionCount={}", roleCode, roleName, permissionCodes.size());
         if (roleRepository.findByCode(roleCode).isPresent()) {
             log.warn("역할 생성 실패 - 중복 코드: roleCode={}", roleCode);
-            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.ROLE_ALREADY_EXISTS));
+            throw new DuplicateException(ErrorCode.ROLE_ALREADY_EXISTS);
         }
 
         List<Permission> permissions = permissionCodes.stream()
                 .map(code -> permissionRepository.findByCode(code)
                         .orElseThrow(() -> {
                             log.warn("역할 생성 실패 - 존재하지 않는 권한: permissionCode={}", code);
-                            return new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_PERMISSION));
+                            return new EntityNotFoundException(ErrorCode.PERMISSION_NOT_FOUND);
                         }))
                 .collect(Collectors.toList());
 
@@ -120,7 +120,7 @@ public class RoleService {
         Role role = roleRepository.findByCode(roleCode)
                 .orElseThrow(() -> {
                     log.warn("역할 수정 실패 - 존재하지 않는 역할: roleCode={}", roleCode);
-                    return new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_ROLE));
+                    return new EntityNotFoundException(ErrorCode.ROLE_NOT_FOUND);
                 });
         role.updateRole(null, description, null);
         log.info("역할 수정 완료: roleCode={}", roleCode);
@@ -142,7 +142,7 @@ public class RoleService {
                 .map(code -> permissionRepository.findByCode(code)
                         .orElseThrow(() -> {
                             log.warn("역할 수정 실패 - 존재하지 않는 권한: permissionCode={}", code);
-                            return new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_PERMISSION));
+                            return new EntityNotFoundException(ErrorCode.PERMISSION_NOT_FOUND);
                         }))
                 .collect(Collectors.toList());
 
@@ -165,7 +165,7 @@ public class RoleService {
                 .map(code -> permissionRepository.findByCode(code)
                         .orElseThrow(() -> {
                             log.warn("역할 권한 수정 실패 - 존재하지 않는 권한: permissionCode={}", code);
-                            return new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_PERMISSION));
+                            return new EntityNotFoundException(ErrorCode.PERMISSION_NOT_FOUND);
                         }))
                 .collect(Collectors.toList());
 
@@ -187,7 +187,7 @@ public class RoleService {
         Permission permission = permissionRepository.findByCode(permissionCode)
                 .orElseThrow(() -> {
                     log.warn("권한 추가 실패 - 존재하지 않는 권한: permissionCode={}", permissionCode);
-                    return new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_PERMISSION));
+                    return new EntityNotFoundException(ErrorCode.PERMISSION_NOT_FOUND);
                 });
         role.addPermission(permission);
         log.info("역할에 권한 추가 완료: roleCode={}, permissionCode={}", roleCode, permissionCode);
@@ -206,7 +206,7 @@ public class RoleService {
         Permission permission = permissionRepository.findByCode(permissionCode)
                 .orElseThrow(() -> {
                     log.warn("권한 제거 실패 - 존재하지 않는 권한: permissionCode={}", permissionCode);
-                    return new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_PERMISSION));
+                    return new EntityNotFoundException(ErrorCode.PERMISSION_NOT_FOUND);
                 });
         role.removePermission(permission);
         log.info("역할에서 권한 제거 완료: roleCode={}, permissionCode={}", roleCode, permissionCode);
@@ -223,7 +223,7 @@ public class RoleService {
         Role role = roleRepository.findByCode(roleCode)
                 .orElseThrow(() -> {
                     log.warn("역할 삭제 실패 - 존재하지 않는 역할: roleCode={}", roleCode);
-                    return new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_ROLE));
+                    return new EntityNotFoundException(ErrorCode.ROLE_NOT_FOUND);
                 });
         role.deleteRole();
         log.info("역할 삭제 완료: roleCode={}", roleCode);
@@ -252,7 +252,7 @@ public class RoleService {
         return permissionRepository.findByCode(permissionCode)
                 .orElseThrow(() -> {
                     log.warn("권한 조회 실패 - 존재하지 않는 권한: permissionCode={}", permissionCode);
-                    return new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_PERMISSION));
+                    return new EntityNotFoundException(ErrorCode.PERMISSION_NOT_FOUND);
                 });
     }
 
@@ -282,7 +282,7 @@ public class RoleService {
         log.debug("권한 생성 시작: code={}, name={}", code, name);
         if (permissionRepository.findByCode(code).isPresent()) {
             log.warn("권한 생성 실패 - 중복 코드: code={}", code);
-            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.PERMISSION_ALREADY_EXISTS));
+            throw new DuplicateException(ErrorCode.PERMISSION_ALREADY_EXISTS);
         }
         ResourceType resourceType = ResourceType.valueOf(resource);
         ActionType actionType = ActionType.valueOf(action);
@@ -322,7 +322,7 @@ public class RoleService {
         Permission permission = permissionRepository.findByCode(permissionCode)
                 .orElseThrow(() -> {
                     log.warn("권한 삭제 실패 - 존재하지 않는 권한: permissionCode={}", permissionCode);
-                    return new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_PERMISSION));
+                    return new EntityNotFoundException(ErrorCode.PERMISSION_NOT_FOUND);
                 });
         permission.deletePermission();
         log.info("권한 삭제 완료: permissionCode={}", permissionCode);

@@ -1,5 +1,7 @@
 package com.lshdainty.porest.security.oauth2.factory;
 
+import com.lshdainty.porest.common.exception.ErrorCode;
+import com.lshdainty.porest.common.exception.InvalidValueException;
 import com.lshdainty.porest.security.oauth2.provider.GoogleOAuth2UserInfo;
 import com.lshdainty.porest.security.oauth2.provider.KakaoOAuth2UserInfo;
 import com.lshdainty.porest.security.oauth2.provider.NaverOAuth2UserInfo;
@@ -17,7 +19,7 @@ public class OAuth2UserInfoFactory {
             case "kakao":
                 return new KakaoOAuth2UserInfo(attributes);
             default:
-                throw new IllegalArgumentException("지원하지 않는 로그인 서비스입니다: " + registrationId);
+                throw new InvalidValueException(ErrorCode.UNSUPPORTED_OAUTH_PROVIDER);
         }
     }
 }

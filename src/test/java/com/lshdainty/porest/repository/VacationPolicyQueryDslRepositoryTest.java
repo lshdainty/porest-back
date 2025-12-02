@@ -2,7 +2,7 @@ package com.lshdainty.porest.repository;
 
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.vacation.domain.VacationPolicy;
-import com.lshdainty.porest.vacation.repository.VacationPolicyCustomRepositoryImpl;
+import com.lshdainty.porest.vacation.repository.VacationPolicyQueryDslRepository;
 import com.lshdainty.porest.vacation.type.EffectiveType;
 import com.lshdainty.porest.vacation.type.ExpirationType;
 import com.lshdainty.porest.vacation.type.VacationType;
@@ -18,15 +18,15 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@Import({VacationPolicyCustomRepositoryImpl.class, TestQuerydslConfig.class})
+@Import({VacationPolicyQueryDslRepository.class, TestQuerydslConfig.class})
 @Transactional
-@DisplayName("JPA 휴가정책 레포지토리 테스트")
-class VacationPolicyRepositoryImplTest {
+@DisplayName("QueryDSL 휴가정책 레포지토리 테스트")
+class VacationPolicyQueryDslRepositoryTest {
     @Autowired
-    private VacationPolicyCustomRepositoryImpl vacationPolicyRepository;
+    private VacationPolicyQueryDslRepository vacationPolicyRepository;
 
     @Autowired
     private TestEntityManager em;
@@ -86,6 +86,32 @@ class VacationPolicyRepositoryImplTest {
     }
 
     @Test
+    @DisplayName("전체 휴가정책 조회 시 삭제된 정책 제외")
+    void findVacationPoliciesExcludesDeleted() {
+        // given
+        VacationPolicy activePolicy = VacationPolicy.createManualGrantPolicy(
+                "활성 정책", "활성", VacationType.ANNUAL, new BigDecimal("8.0"),
+                YNType.N, YNType.N, EffectiveType.IMMEDIATELY, ExpirationType.END_OF_YEAR
+        );
+        VacationPolicy deletedPolicy = VacationPolicy.createManualGrantPolicy(
+                "삭제 정책", "삭제", VacationType.HEALTH, new BigDecimal("4.0"),
+                YNType.N, YNType.N, EffectiveType.IMMEDIATELY, ExpirationType.END_OF_YEAR
+        );
+        vacationPolicyRepository.save(activePolicy);
+        vacationPolicyRepository.save(deletedPolicy);
+        deletedPolicy.deleteVacationPolicy();
+        em.flush();
+        em.clear();
+
+        // when
+        List<VacationPolicy> policies = vacationPolicyRepository.findVacationPolicies();
+
+        // then
+        assertThat(policies).hasSize(1);
+        assertThat(policies.get(0).getName()).isEqualTo("활성 정책");
+    }
+
+    @Test
     @DisplayName("전체 휴가정책이 없어도 Null이 반환되면 안된다.")
     void findVacationPoliciesEmpty() {
         // given & when
@@ -118,6 +144,26 @@ class VacationPolicyRepositoryImplTest {
     void existsByNameFalse() {
         // given & when
         boolean exists = vacationPolicyRepository.existsByName("존재하지 않는 정책");
+
+        // then
+        assertThat(exists).isFalse();
+    }
+
+    @Test
+    @DisplayName("삭제된 정책명은 존재하지 않음으로 처리")
+    void existsByNameDeletedPolicy() {
+        // given
+        VacationPolicy policy = VacationPolicy.createManualGrantPolicy(
+                "삭제정책", "삭제", VacationType.ANNUAL, new BigDecimal("8.0"),
+                YNType.N, YNType.N, EffectiveType.IMMEDIATELY, ExpirationType.END_OF_YEAR
+        );
+        vacationPolicyRepository.save(policy);
+        policy.deleteVacationPolicy();
+        em.flush();
+        em.clear();
+
+        // when
+        boolean exists = vacationPolicyRepository.existsByName("삭제정책");
 
         // then
         assertThat(exists).isFalse();

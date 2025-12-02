@@ -1,9 +1,10 @@
 package com.lshdainty.porest.service;
 
+import com.lshdainty.porest.common.exception.EntityNotFoundException;
 import com.lshdainty.porest.common.type.CountryCode;
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.holiday.domain.Holiday;
-import com.lshdainty.porest.holiday.repository.HolidayRepositoryImpl;
+import com.lshdainty.porest.holiday.repository.HolidayRepository;
 import com.lshdainty.porest.holiday.service.HolidayService;
 import com.lshdainty.porest.holiday.service.dto.HolidayServiceDto;
 import com.lshdainty.porest.holiday.type.HolidayType;
@@ -15,15 +16,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.MessageSource;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.*;
 
 @Slf4j
@@ -31,9 +30,7 @@ import static org.mockito.BDDMockito.*;
 @DisplayName("공휴일 서비스 테스트")
 class HolidayServiceTest {
     @Mock
-    private MessageSource ms;
-    @Mock
-    private HolidayRepositoryImpl holidayRepositoryImpl;
+    private HolidayRepository holidayRepository;
 
     @InjectMocks
     private HolidayService holidayService;
@@ -47,21 +44,21 @@ class HolidayServiceTest {
             // given
             HolidayServiceDto data = HolidayServiceDto.builder()
                     .name("설날")
-                    .date("20250129")
+                    .date(LocalDate.of(2025, 1, 29))
                     .type(HolidayType.PUBLIC)
                     .countryCode(CountryCode.KR)
                     .lunarYN(YNType.Y)
-                    .lunarDate("0101")
+                    .lunarDate(LocalDate.of(2025, 1, 1))
                     .isRecurring(YNType.Y)
                     .icon("🎉")
                     .build();
-            willDoNothing().given(holidayRepositoryImpl).save(any(Holiday.class));
+            willDoNothing().given(holidayRepository).save(any(Holiday.class));
 
             // when
             holidayService.registHoliday(data);
 
             // then
-            then(holidayRepositoryImpl).should().save(any(Holiday.class));
+            then(holidayRepository).should().save(any(Holiday.class));
         }
     }
 
@@ -73,15 +70,15 @@ class HolidayServiceTest {
         void findByIdSuccess() {
             // given
             Long seq = 1L;
-            Holiday holiday = Holiday.createHoliday("설날", "20250129", HolidayType.PUBLIC, CountryCode.KR, YNType.Y, "0101", YNType.Y, "🎉");
+            Holiday holiday = Holiday.createHoliday("설날", LocalDate.of(2025, 1, 29), HolidayType.PUBLIC, CountryCode.KR, YNType.Y, LocalDate.of(2025, 1, 1), YNType.Y, "🎉");
             setHolidaySeq(holiday, seq);
-            given(holidayRepositoryImpl.findById(seq)).willReturn(Optional.of(holiday));
+            given(holidayRepository.findById(seq)).willReturn(Optional.of(holiday));
 
             // when
             Holiday result = holidayService.findById(seq);
 
             // then
-            then(holidayRepositoryImpl).should().findById(seq);
+            then(holidayRepository).should().findById(seq);
             assertThat(result.getName()).isEqualTo("설날");
         }
 
@@ -90,12 +87,11 @@ class HolidayServiceTest {
         void findByIdFailNotFound() {
             // given
             Long seq = 999L;
-            given(holidayRepositoryImpl.findById(seq)).willReturn(Optional.empty());
-            given(ms.getMessage(eq("error.notfound.holiday"), any(), any())).willReturn("공휴일을 찾을 수 없습니다");
+            given(holidayRepository.findById(seq)).willReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> holidayService.findById(seq))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
         }
     }
 
@@ -108,16 +104,16 @@ class HolidayServiceTest {
             // given
             CountryCode countryCode = CountryCode.KR;
             List<Holiday> holidays = List.of(
-                    Holiday.createHoliday("설날", "20250129", HolidayType.PUBLIC, CountryCode.KR, YNType.Y, "0101", YNType.Y, "🎉"),
-                    Holiday.createHoliday("추석", "20251006", HolidayType.PUBLIC, CountryCode.KR, YNType.Y, "0815", YNType.Y, "🌕")
+                    Holiday.createHoliday("설날", LocalDate.of(2025, 1, 29), HolidayType.PUBLIC, CountryCode.KR, YNType.Y, LocalDate.of(2025, 1, 1), YNType.Y, "🎉"),
+                    Holiday.createHoliday("추석", LocalDate.of(2025, 10, 6), HolidayType.PUBLIC, CountryCode.KR, YNType.Y, LocalDate.of(2025, 8, 15), YNType.Y, "🌕")
             );
-            given(holidayRepositoryImpl.findHolidays(countryCode)).willReturn(holidays);
+            given(holidayRepository.findHolidays(countryCode)).willReturn(holidays);
 
             // when
             List<Holiday> result = holidayService.findHolidays(countryCode);
 
             // then
-            then(holidayRepositoryImpl).should().findHolidays(countryCode);
+            then(holidayRepository).should().findHolidays(countryCode);
             assertThat(result).hasSize(2);
         }
 
@@ -126,13 +122,13 @@ class HolidayServiceTest {
         void findHolidaysEmptyList() {
             // given
             CountryCode countryCode = CountryCode.US;
-            given(holidayRepositoryImpl.findHolidays(countryCode)).willReturn(List.of());
+            given(holidayRepository.findHolidays(countryCode)).willReturn(List.of());
 
             // when
             List<Holiday> result = holidayService.findHolidays(countryCode);
 
             // then
-            then(holidayRepositoryImpl).should().findHolidays(countryCode);
+            then(holidayRepository).should().findHolidays(countryCode);
             assertThat(result).isEmpty();
         }
     }
@@ -144,19 +140,19 @@ class HolidayServiceTest {
         @DisplayName("성공 - 시작일과 종료일 사이의 공휴일을 조회한다")
         void searchHolidaysByStartEndDateSuccess() {
             // given
-            String startDate = "20250101";
-            String endDate = "20251231";
+            LocalDate startDate = LocalDate.of(2025, 1, 1);
+            LocalDate endDate = LocalDate.of(2025, 12, 31);
             CountryCode countryCode = CountryCode.KR;
             List<Holiday> holidays = List.of(
-                    Holiday.createHoliday("설날", "20250129", HolidayType.PUBLIC, CountryCode.KR, YNType.Y, "0101", YNType.Y, "🎉")
+                    Holiday.createHoliday("설날", LocalDate.of(2025, 1, 29), HolidayType.PUBLIC, CountryCode.KR, YNType.Y, LocalDate.of(2025, 1, 1), YNType.Y, "🎉")
             );
-            given(holidayRepositoryImpl.findHolidaysByStartEndDate(startDate, endDate, countryCode)).willReturn(holidays);
+            given(holidayRepository.findHolidaysByStartEndDate(startDate, endDate, countryCode)).willReturn(holidays);
 
             // when
             List<Holiday> result = holidayService.searchHolidaysByStartEndDate(startDate, endDate, countryCode);
 
             // then
-            then(holidayRepositoryImpl).should().findHolidaysByStartEndDate(startDate, endDate, countryCode);
+            then(holidayRepository).should().findHolidaysByStartEndDate(startDate, endDate, countryCode);
             assertThat(result).hasSize(1);
         }
     }
@@ -170,15 +166,15 @@ class HolidayServiceTest {
             // given
             HolidayType type = HolidayType.PUBLIC;
             List<Holiday> holidays = List.of(
-                    Holiday.createHoliday("설날", "20250129", HolidayType.PUBLIC, CountryCode.KR, YNType.Y, "0101", YNType.Y, "🎉")
+                    Holiday.createHoliday("설날", LocalDate.of(2025, 1, 29), HolidayType.PUBLIC, CountryCode.KR, YNType.Y, LocalDate.of(2025, 1, 1), YNType.Y, "🎉")
             );
-            given(holidayRepositoryImpl.findHolidaysByType(type)).willReturn(holidays);
+            given(holidayRepository.findHolidaysByType(type)).willReturn(holidays);
 
             // when
             List<Holiday> result = holidayService.searchHolidaysByType(type);
 
             // then
-            then(holidayRepositoryImpl).should().findHolidaysByType(type);
+            then(holidayRepository).should().findHolidaysByType(type);
             assertThat(result).hasSize(1);
         }
     }
@@ -191,23 +187,23 @@ class HolidayServiceTest {
         void editHolidaySuccess() {
             // given
             Long seq = 1L;
-            Holiday holiday = Holiday.createHoliday("설날", "20250129", HolidayType.PUBLIC, CountryCode.KR, YNType.Y, "0101", YNType.Y, "🎉");
+            Holiday holiday = Holiday.createHoliday("설날", LocalDate.of(2025, 1, 29), HolidayType.PUBLIC, CountryCode.KR, YNType.Y, LocalDate.of(2025, 1, 1), YNType.Y, "🎉");
             setHolidaySeq(holiday, seq);
-            given(holidayRepositoryImpl.findById(seq)).willReturn(Optional.of(holiday));
+            given(holidayRepository.findById(seq)).willReturn(Optional.of(holiday));
 
             HolidayServiceDto data = HolidayServiceDto.builder()
                     .seq(seq)
                     .name("설날 연휴")
-                    .date("20250130")
+                    .date(LocalDate.of(2025, 1, 30))
                     .build();
 
             // when
             holidayService.editHoliday(data);
 
             // then
-            then(holidayRepositoryImpl).should().findById(seq);
+            then(holidayRepository).should().findById(seq);
             assertThat(holiday.getName()).isEqualTo("설날 연휴");
-            assertThat(holiday.getDate()).isEqualTo("20250130");
+            assertThat(holiday.getDate()).isEqualTo(LocalDate.of(2025, 1, 30));
         }
 
         @Test
@@ -216,12 +212,11 @@ class HolidayServiceTest {
             // given
             Long seq = 999L;
             HolidayServiceDto data = HolidayServiceDto.builder().seq(seq).build();
-            given(holidayRepositoryImpl.findById(seq)).willReturn(Optional.empty());
-            given(ms.getMessage(eq("error.notfound.holiday"), any(), any())).willReturn("공휴일을 찾을 수 없습니다");
+            given(holidayRepository.findById(seq)).willReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> holidayService.editHoliday(data))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
         }
     }
 
@@ -233,16 +228,16 @@ class HolidayServiceTest {
         void deleteHolidaySuccess() {
             // given
             Long seq = 1L;
-            Holiday holiday = Holiday.createHoliday("설날", "20250129", HolidayType.PUBLIC, CountryCode.KR, YNType.Y, "0101", YNType.Y, "🎉");
-            given(holidayRepositoryImpl.findById(seq)).willReturn(Optional.of(holiday));
-            willDoNothing().given(holidayRepositoryImpl).delete(holiday);
+            Holiday holiday = Holiday.createHoliday("설날", LocalDate.of(2025, 1, 29), HolidayType.PUBLIC, CountryCode.KR, YNType.Y, LocalDate.of(2025, 1, 1), YNType.Y, "🎉");
+            given(holidayRepository.findById(seq)).willReturn(Optional.of(holiday));
+            willDoNothing().given(holidayRepository).delete(holiday);
 
             // when
             holidayService.deleteHoliday(seq);
 
             // then
-            then(holidayRepositoryImpl).should().findById(seq);
-            then(holidayRepositoryImpl).should().delete(holiday);
+            then(holidayRepository).should().findById(seq);
+            then(holidayRepository).should().delete(holiday);
         }
 
         @Test
@@ -250,13 +245,12 @@ class HolidayServiceTest {
         void deleteHolidayFailNotFound() {
             // given
             Long seq = 999L;
-            given(holidayRepositoryImpl.findById(seq)).willReturn(Optional.empty());
-            given(ms.getMessage(eq("error.notfound.holiday"), any(), any())).willReturn("공휴일을 찾을 수 없습니다");
+            given(holidayRepository.findById(seq)).willReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> holidayService.deleteHoliday(seq))
-                    .isInstanceOf(IllegalArgumentException.class);
-            then(holidayRepositoryImpl).should(never()).delete(any(Holiday.class));
+                    .isInstanceOf(EntityNotFoundException.class);
+            then(holidayRepository).should(never()).delete(any(Holiday.class));
         }
     }
 
@@ -268,8 +262,8 @@ class HolidayServiceTest {
         void checkHolidayExistSuccess() {
             // given
             Long seq = 1L;
-            Holiday holiday = Holiday.createHoliday("설날", "20250129", HolidayType.PUBLIC, CountryCode.KR, YNType.Y, "0101", YNType.Y, "🎉");
-            given(holidayRepositoryImpl.findById(seq)).willReturn(Optional.of(holiday));
+            Holiday holiday = Holiday.createHoliday("설날", LocalDate.of(2025, 1, 29), HolidayType.PUBLIC, CountryCode.KR, YNType.Y, LocalDate.of(2025, 1, 1), YNType.Y, "🎉");
+            given(holidayRepository.findById(seq)).willReturn(Optional.of(holiday));
 
             // when
             Holiday result = holidayService.checkHolidayExist(seq);
@@ -283,12 +277,11 @@ class HolidayServiceTest {
         void checkHolidayExistFailNotFound() {
             // given
             Long seq = 999L;
-            given(holidayRepositoryImpl.findById(seq)).willReturn(Optional.empty());
-            given(ms.getMessage(eq("error.notfound.holiday"), any(), any())).willReturn("공휴일을 찾을 수 없습니다");
+            given(holidayRepository.findById(seq)).willReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> holidayService.checkHolidayExist(seq))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
         }
     }
 

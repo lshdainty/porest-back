@@ -1,7 +1,8 @@
 package com.lshdainty.porest.security.service;
 
-import com.lshdainty.porest.common.message.MessageKey;
-import com.lshdainty.porest.common.util.MessageResolver;
+import com.lshdainty.porest.common.exception.BusinessRuleViolationException;
+import com.lshdainty.porest.common.exception.EntityNotFoundException;
+import com.lshdainty.porest.common.exception.ErrorCode;
 import com.lshdainty.porest.permission.domain.Role;
 import com.lshdainty.porest.user.domain.User;
 import com.lshdainty.porest.user.repository.UserRepository;
@@ -19,7 +20,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @Transactional(readOnly = true)
 public class SecurityService {
-    private final MessageResolver messageResolver;
     private final UserRepository userRepository;
 
     /**
@@ -30,13 +30,13 @@ public class SecurityService {
         Optional<User> findUser = userRepository.findByInvitationToken(token);
         if (findUser.isEmpty()) {
             log.warn("초대 토큰 검증 실패 - 토큰 없음: token={}", token);
-            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_INVITATION));
+            throw new EntityNotFoundException(ErrorCode.INVITATION_NOT_FOUND);
         }
 
         User user = findUser.get();
         if (!user.isInvitationValid()) {
             log.warn("초대 토큰 검증 실패 - 만료된 토큰: userId={}, expiresAt={}", user.getId(), user.getInvitationExpiresAt());
-            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_EXPIRED_INVITATION));
+            throw new BusinessRuleViolationException(ErrorCode.INVITATION_EXPIRED);
         }
 
         log.info("초대 토큰 검증 성공: userId={}", user.getId());

@@ -1,7 +1,7 @@
 package com.lshdainty.porest.dues.service;
 
-import com.lshdainty.porest.common.message.MessageKey;
-import com.lshdainty.porest.common.util.MessageResolver;
+import com.lshdainty.porest.common.exception.EntityNotFoundException;
+import com.lshdainty.porest.common.exception.ErrorCode;
 import com.lshdainty.porest.dues.domain.Dues;
 import com.lshdainty.porest.dues.type.DuesCalcType;
 import com.lshdainty.porest.dues.repository.DuesRepository;
@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,7 +20,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @Transactional(readOnly = true)
 public class DuesService {
-    private final MessageResolver messageResolver;
     private final DuesRepository duesRepository;
 
     @Transactional
@@ -150,11 +148,10 @@ public class DuesService {
     }
 
     public Dues checkDuesExist(Long duesSeq) {
-        Optional<Dues> dues = duesRepository.findById(duesSeq);
-        dues.orElseThrow(() -> {
-            log.warn("회비 조회 실패 - 존재하지 않는 회비: duesSeq={}", duesSeq);
-            return new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_DUES));
-        });
-        return dues.get();
+        return duesRepository.findById(duesSeq)
+                .orElseThrow(() -> {
+                    log.warn("회비 조회 실패 - 존재하지 않는 회비: duesSeq={}", duesSeq);
+                    return new EntityNotFoundException(ErrorCode.DUES_NOT_FOUND);
+                });
     }
 }

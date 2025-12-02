@@ -1,5 +1,6 @@
 package com.lshdainty.porest.security.resolver;
 
+import com.lshdainty.porest.common.exception.ErrorCode;
 import com.lshdainty.porest.common.exception.UnauthorizedException;
 import com.lshdainty.porest.security.annotation.LoginUser;
 import com.lshdainty.porest.security.principal.UserPrincipal;
@@ -40,12 +41,12 @@ public class LoginUserArgumentResolver implements HandlerMethodArgumentResolver 
 
         if (authentication == null || !authentication.isAuthenticated() ||
                 "anonymousUser".equals(authentication.getPrincipal())) {
-            throw new UnauthorizedException("인증이 필요합니다.");
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
         }
 
         Object principal = authentication.getPrincipal();
         if (!(principal instanceof UserPrincipal)) {
-            throw new UnauthorizedException("지원하지 않는 인증 타입입니다.");
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
         }
 
         UserPrincipal userPrincipal = (UserPrincipal) principal;

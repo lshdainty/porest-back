@@ -1,9 +1,9 @@
 package com.lshdainty.porest.common.controller;
 
 import com.lshdainty.porest.common.controller.dto.TypesDto;
-import com.lshdainty.porest.common.message.MessageKey;
+import com.lshdainty.porest.common.exception.EntityNotFoundException;
+import com.lshdainty.porest.common.exception.ErrorCode;
 import com.lshdainty.porest.common.type.DisplayType;
-import com.lshdainty.porest.common.util.MessageResolver;
 import com.lshdainty.porest.company.type.OriginCompanyType;
 import com.lshdainty.porest.holiday.type.HolidayType;
 import com.lshdainty.porest.schedule.type.ScheduleType;
@@ -21,8 +21,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Slf4j
 public class TypesApiController implements TypesApi {
-    private final MessageResolver messageResolver;
-
     private final Map<String, Class<? extends DisplayType>> enumMap = Map.ofEntries(
             Map.entry("grant-method", GrantMethod.class),
             Map.entry("repeat-unit", RepeatUnit.class),
@@ -43,7 +41,7 @@ public class TypesApiController implements TypesApi {
         Class<? extends DisplayType> enumClass = enumMap.get(enumName.toLowerCase());
 
         if (enumClass == null) {
-            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_TYPE));
+            throw new EntityNotFoundException(ErrorCode.UNSUPPORTED_TYPE);
         }
 
         List<TypesDto> enumValues = Arrays.stream(enumClass.getEnumConstants())

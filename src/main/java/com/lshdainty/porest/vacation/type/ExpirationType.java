@@ -1,5 +1,7 @@
 package com.lshdainty.porest.vacation.type;
 
+import com.lshdainty.porest.common.exception.ErrorCode;
+import com.lshdainty.porest.common.exception.InvalidValueException;
 import com.lshdainty.porest.common.type.DisplayType;
 
 import java.time.LocalDateTime;
@@ -55,7 +57,7 @@ public enum ExpirationType implements DisplayType {
                 // 당해년도 12월 31일 23:59:59
                 return LocalDateTime.of(grantDate.getYear(), 12, 31, 23, 59, 59);
             default:
-                throw new IllegalArgumentException("지원하지 않는 ExpirationType입니다: " + this);
+                throw new InvalidValueException(ErrorCode.UNSUPPORTED_TYPE);
         }
     }
 }

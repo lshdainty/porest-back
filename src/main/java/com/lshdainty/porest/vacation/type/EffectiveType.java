@@ -1,5 +1,7 @@
 package com.lshdainty.porest.vacation.type;
 
+import com.lshdainty.porest.common.exception.ErrorCode;
+import com.lshdainty.porest.common.exception.InvalidValueException;
 import com.lshdainty.porest.common.type.DisplayType;
 
 import java.time.LocalDateTime;
@@ -41,7 +43,7 @@ public enum EffectiveType implements DisplayType {
                 // 당해년도 1월 1일 00:00:00
                 return LocalDateTime.of(baseTime.getYear(), 1, 1, 0, 0, 0);
             default:
-                throw new IllegalArgumentException("지원하지 않는 EffectiveType입니다: " + this);
+                throw new InvalidValueException(ErrorCode.UNSUPPORTED_TYPE);
         }
     }
 }

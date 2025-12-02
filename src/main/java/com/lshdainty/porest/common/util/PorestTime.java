@@ -1,6 +1,7 @@
 package com.lshdainty.porest.common.util;
 
-import com.lshdainty.porest.common.message.MessageKey;
+import com.lshdainty.porest.common.exception.ErrorCode;
+import com.lshdainty.porest.common.exception.InvalidValueException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,10 +40,10 @@ public class PorestTime {
      * @param messageResolver MessageResolver
      * @return start ~ end 사이의 모든 날짜들
      */
-    public static List<LocalDate> getBetweenDates(LocalDateTime start, LocalDateTime end, MessageResolver messageResolver) {
+    public static List<LocalDate> getBetweenDates(LocalDateTime start, LocalDateTime end) {
         if (start.isAfter(end)) {
             log.warn("Start date is after end date. start: {}, end: {}", start, end);
-            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_START_AFTER_END));
+            throw new InvalidValueException(ErrorCode.INVALID_DATE_RANGE);
         }
         log.debug("Getting dates between {} and {}", start, end);
         return start.toLocalDate().datesUntil(end.toLocalDate().plusDays(1))
@@ -59,13 +60,13 @@ public class PorestTime {
      * @param messageResolver MessageResolver
      * @return 요일에 해당하는 모든 날짜들
      */
-    public static List<LocalDate> getBetweenDatesByDayOfWeek(LocalDateTime start, LocalDateTime end, int[] daysOfWeek, MessageResolver messageResolver) {
+    public static List<LocalDate> getBetweenDatesByDayOfWeek(LocalDateTime start, LocalDateTime end, int[] daysOfWeek) {
         log.debug("Getting dates between {} and {} for days of week: {}", start, end, daysOfWeek);
         List<DayOfWeek> targetDays = new ArrayList<>();
         for (int day : daysOfWeek) {
             if (day < 1 || day > 7) {
                 log.warn("Invalid day of week: {}", day);
-                throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_DAY_OF_WEEK));
+                throw new InvalidValueException(ErrorCode.INVALID_PARAMETER);
             }
             targetDays.add(DayOfWeek.of(day));
         }
@@ -124,10 +125,10 @@ public class PorestTime {
      * @param messageResolver MessageResolver
      * @return LocalDateTime 타입의 가장 큰 시간
      */
-    public static LocalDateTime findMaxDateTime(List<LocalDateTime> dateTimes, MessageResolver messageResolver) {
+    public static LocalDateTime findMaxDateTime(List<LocalDateTime> dateTimes) {
         if (dateTimes == null || dateTimes.isEmpty()) {
             log.warn("DateTime list is null or empty");
-            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_PARAMETER_NULL));
+            throw new InvalidValueException(ErrorCode.INVALID_PARAMETER);
         }
 
         log.debug("Finding max datetime from {} entries", dateTimes.size());
@@ -135,7 +136,7 @@ public class PorestTime {
                 .max(LocalDateTime::compareTo)
                 .orElseThrow(() -> {
                     log.error("Failed to find max datetime");
-                    return new NoSuchElementException(messageResolver.getMessage(MessageKey.NOT_FOUND_MAX));
+                    return new InvalidValueException(ErrorCode.INVALID_PARAMETER);
                 });
     }
 
@@ -147,10 +148,10 @@ public class PorestTime {
      * @param messageResolver MessageResolver
      * @return LocalDateTime 타입의 가장 작은 시간
      */
-    public static LocalDateTime findMinDateTime(List<LocalDateTime> dateTimes, MessageResolver messageResolver) {
+    public static LocalDateTime findMinDateTime(List<LocalDateTime> dateTimes) {
         if (dateTimes == null || dateTimes.isEmpty()) {
             log.warn("DateTime list is null or empty");
-            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_PARAMETER_NULL));
+            throw new InvalidValueException(ErrorCode.INVALID_PARAMETER);
         }
 
         log.debug("Finding min datetime from {} entries", dateTimes.size());
@@ -158,7 +159,7 @@ public class PorestTime {
                 .min(LocalDateTime::compareTo)
                 .orElseThrow(() -> {
                     log.error("Failed to find min datetime");
-                    return new NoSuchElementException(messageResolver.getMessage(MessageKey.NOT_FOUND_MIN));
+                    return new InvalidValueException(ErrorCode.INVALID_PARAMETER);
                 });
     }
 }

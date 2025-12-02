@@ -1,8 +1,9 @@
 package com.lshdainty.porest.service.policy;
 
+import com.lshdainty.porest.common.exception.InvalidValueException;
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.vacation.domain.VacationPolicy;
-import com.lshdainty.porest.vacation.repository.VacationPolicyCustomRepositoryImpl;
+import com.lshdainty.porest.vacation.repository.VacationPolicyRepository;
 import com.lshdainty.porest.vacation.service.dto.VacationPolicyServiceDto;
 import com.lshdainty.porest.vacation.service.policy.ManualGrant;
 import com.lshdainty.porest.vacation.type.*;
@@ -13,7 +14,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.MessageSource;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
@@ -21,7 +21,6 @@ import java.math.BigDecimal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -29,10 +28,7 @@ import static org.mockito.BDDMockito.*;
 class ManualGrantTest {
 
     @Mock
-    private MessageSource ms;
-
-    @Mock
-    private VacationPolicyCustomRepositoryImpl vacationPolicyRepository;
+    private VacationPolicyRepository vacationPolicyRepository;
 
     @InjectMocks
     private ManualGrant manualGrant;
@@ -106,12 +102,9 @@ class ManualGrantTest {
                     .vacationType(VacationType.ANNUAL)
                     .build();
 
-            given(ms.getMessage(eq("vacation.policy.name.required"), any(), any()))
-                    .willReturn("정책명은 필수입니다");
-
             // when & then
             assertThatThrownBy(() -> manualGrant.registVacationPolicy(dto))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(InvalidValueException.class);
         }
 
         @Test
@@ -124,12 +117,10 @@ class ManualGrantTest {
                     .build();
 
             given(vacationPolicyRepository.existsByName("연차")).willReturn(true);
-            given(ms.getMessage(eq("vacation.policy.name.duplicate"), any(), any()))
-                    .willReturn("중복된 정책명입니다");
 
             // when & then
             assertThatThrownBy(() -> manualGrant.registVacationPolicy(dto))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(InvalidValueException.class);
         }
 
         @Test
@@ -143,12 +134,10 @@ class ManualGrantTest {
                     .build();
 
             given(vacationPolicyRepository.existsByName("연차")).willReturn(false);
-            given(ms.getMessage(eq("vacation.policy.manual.schedule.unnecessary"), any(), any()))
-                    .willReturn("스케줄 필드는 불필요합니다");
 
             // when & then
             assertThatThrownBy(() -> manualGrant.registVacationPolicy(dto))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(InvalidValueException.class);
         }
 
         @Test
@@ -161,12 +150,10 @@ class ManualGrantTest {
                     .build();
 
             given(vacationPolicyRepository.existsByName("연차")).willReturn(false);
-            given(ms.getMessage(eq("vacation.policy.isFlexibleGrant.required"), any(), any()))
-                    .willReturn("isFlexibleGrant는 필수입니다");
 
             // when & then
             assertThatThrownBy(() -> manualGrant.registVacationPolicy(dto))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(InvalidValueException.class);
         }
 
         @Test
@@ -181,12 +168,10 @@ class ManualGrantTest {
                     .build();
 
             given(vacationPolicyRepository.existsByName("연차")).willReturn(false);
-            given(ms.getMessage(eq("vacation.policy.grantTime.unnecessary"), any(), any()))
-                    .willReturn("가변 부여시 grantTime은 불필요합니다");
 
             // when & then
             assertThatThrownBy(() -> manualGrant.registVacationPolicy(dto))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(InvalidValueException.class);
         }
 
         @Test
@@ -200,12 +185,10 @@ class ManualGrantTest {
                     .build();
 
             given(vacationPolicyRepository.existsByName("연차")).willReturn(false);
-            given(ms.getMessage(eq("vacation.policy.grantTime.required"), any(), any()))
-                    .willReturn("고정 부여시 grantTime은 필수입니다");
 
             // when & then
             assertThatThrownBy(() -> manualGrant.registVacationPolicy(dto))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(InvalidValueException.class);
         }
 
         @Test
@@ -220,12 +203,10 @@ class ManualGrantTest {
                     .build();
 
             given(vacationPolicyRepository.existsByName("연차")).willReturn(false);
-            given(ms.getMessage(eq("vacation.policy.grantTime.positive"), any(), any()))
-                    .willReturn("grantTime은 양수여야 합니다");
 
             // when & then
             assertThatThrownBy(() -> manualGrant.registVacationPolicy(dto))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(InvalidValueException.class);
         }
 
         @Test
@@ -240,12 +221,10 @@ class ManualGrantTest {
                     .build();
 
             given(vacationPolicyRepository.existsByName("연차")).willReturn(false);
-            given(ms.getMessage(eq("vacation.policy.minuteGrantYn.required"), any(), any()))
-                    .willReturn("minuteGrantYn은 필수입니다");
 
             // when & then
             assertThatThrownBy(() -> manualGrant.registVacationPolicy(dto))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(InvalidValueException.class);
         }
 
         @Test
@@ -261,12 +240,10 @@ class ManualGrantTest {
                     .build();
 
             given(vacationPolicyRepository.existsByName("연차")).willReturn(false);
-            given(ms.getMessage(eq("vacation.policy.effectiveType.required"), any(), any()))
-                    .willReturn("effectiveType은 필수입니다");
 
             // when & then
             assertThatThrownBy(() -> manualGrant.registVacationPolicy(dto))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(InvalidValueException.class);
         }
 
         @Test
@@ -283,12 +260,10 @@ class ManualGrantTest {
                     .build();
 
             given(vacationPolicyRepository.existsByName("연차")).willReturn(false);
-            given(ms.getMessage(eq("vacation.policy.expirationType.required"), any(), any()))
-                    .willReturn("expirationType은 필수입니다");
 
             // when & then
             assertThatThrownBy(() -> manualGrant.registVacationPolicy(dto))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(InvalidValueException.class);
         }
     }
 }

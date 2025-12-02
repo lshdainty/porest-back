@@ -1,8 +1,9 @@
 package com.lshdainty.porest.work.service;
 
-import com.lshdainty.porest.common.message.MessageKey;
+import com.lshdainty.porest.common.exception.EntityNotFoundException;
+import com.lshdainty.porest.common.exception.ErrorCode;
+import com.lshdainty.porest.common.exception.InvalidValueException;
 import com.lshdainty.porest.common.type.CountryCode;
-import com.lshdainty.porest.common.util.MessageResolver;
 import com.lshdainty.porest.holiday.domain.Holiday;
 import com.lshdainty.porest.holiday.service.HolidayService;
 import com.lshdainty.porest.holiday.type.HolidayType;
@@ -44,7 +45,6 @@ import java.util.stream.Stream;
 @Slf4j
 @Transactional(readOnly = true)
 public class WorkHistoryService {
-    private final MessageResolver messageResolver;
     private final WorkHistoryRepository workHistoryRepository;
     private final WorkCodeRepository workCodeRepository;
     private final UserService userService;
@@ -174,7 +174,7 @@ public class WorkHistoryService {
         Optional<WorkHistory> workHistory = workHistoryRepository.findById(seq);
         workHistory.orElseThrow(() -> {
             log.warn("업무 이력 조회 실패 - 존재하지 않는 이력: seq={}", seq);
-            return new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_WORK_HISTORY));
+            return new EntityNotFoundException(ErrorCode.WORK_NOT_FOUND);
         });
         return workHistory.get();
     }
@@ -182,12 +182,12 @@ public class WorkHistoryService {
     private WorkCode checkWorkCodeExist(String code) {
         if (code == null) {
             log.warn("업무 코드 검증 실패 - 코드 미입력");
-            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_WORK_CODE_REQUIRED));
+            throw new InvalidValueException(ErrorCode.WORK_CODE_REQUIRED);
         }
         Optional<WorkCode> workCode = workCodeRepository.findByCode(code);
         workCode.orElseThrow(() -> {
             log.warn("업무 코드 조회 실패 - 존재하지 않는 코드: code={}", code);
-            return new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_WORK_CODE));
+            return new EntityNotFoundException(ErrorCode.WORK_CODE_NOT_FOUND);
         });
         return workCode.get();
     }
@@ -278,7 +278,7 @@ public class WorkHistoryService {
         // 년월 유효성 검증
         if (year == null || month == null) {
             log.warn("업무 미등록 리스트 다운로드 실패 - 년월 미입력");
-            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_YEAR_MONTH_REQUIRED));
+            throw new InvalidValueException(ErrorCode.WORK_YEAR_MONTH_REQUIRED);
         }
 
         // 해당 년월의 시작일과 마지막일 계산
@@ -493,7 +493,7 @@ public class WorkHistoryService {
         // 년월 유효성 검증
         if (year == null || month == null) {
             log.warn("업무 미등록 날짜 조회 실패 - 년월 미입력");
-            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_YEAR_MONTH_REQUIRED));
+            throw new InvalidValueException(ErrorCode.WORK_YEAR_MONTH_REQUIRED);
         }
 
         // 사용자 존재 확인

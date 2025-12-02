@@ -1,8 +1,8 @@
 package com.lshdainty.porest.holiday.service;
 
-import com.lshdainty.porest.common.message.MessageKey;
+import com.lshdainty.porest.common.exception.EntityNotFoundException;
+import com.lshdainty.porest.common.exception.ErrorCode;
 import com.lshdainty.porest.common.type.CountryCode;
-import com.lshdainty.porest.common.util.MessageResolver;
 import com.lshdainty.porest.holiday.domain.Holiday;
 import com.lshdainty.porest.holiday.repository.HolidayRepository;
 import com.lshdainty.porest.holiday.service.dto.HolidayServiceDto;
@@ -14,14 +14,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
 public class HolidayService {
-    private final MessageResolver messageResolver;
     private final HolidayRepository holidayRepository;
 
     @Transactional
@@ -88,11 +86,10 @@ public class HolidayService {
     }
 
     public Holiday checkHolidayExist(Long holidaySeq) {
-        Optional<Holiday> holiday = holidayRepository.findById(holidaySeq);
-        holiday.orElseThrow(() -> {
-            log.warn("공휴일 조회 실패 - 존재하지 않는 공휴일: holidaySeq={}", holidaySeq);
-            return new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_HOLIDAY));
-        });
-        return holiday.get();
+        return holidayRepository.findById(holidaySeq)
+                .orElseThrow(() -> {
+                    log.warn("공휴일 조회 실패 - 존재하지 않는 공휴일: holidaySeq={}", holidaySeq);
+                    return new EntityNotFoundException(ErrorCode.HOLIDAY_NOT_FOUND);
+                });
     }
 }

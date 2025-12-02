@@ -23,8 +23,8 @@ import static org.assertj.core.api.Assertions.*;
 @DataJpaTest
 @Import({DepartmentQueryDslRepository.class, TestQuerydslConfig.class})
 @Transactional
-@DisplayName("JPA 부서 레포지토리 테스트")
-class DepartmentRepositoryImplTest {
+@DisplayName("QueryDSL 부서 레포지토리 테스트")
+class DepartmentQueryDslRepositoryTest {
     @Autowired
     private DepartmentQueryDslRepository departmentRepository;
 

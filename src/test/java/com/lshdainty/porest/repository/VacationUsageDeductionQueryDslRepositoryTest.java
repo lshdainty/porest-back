@@ -6,7 +6,7 @@ import com.lshdainty.porest.vacation.domain.VacationGrant;
 import com.lshdainty.porest.vacation.domain.VacationPolicy;
 import com.lshdainty.porest.vacation.domain.VacationUsage;
 import com.lshdainty.porest.vacation.domain.VacationUsageDeduction;
-import com.lshdainty.porest.vacation.repository.VacationUsageDeductionCustomRepositoryImpl;
+import com.lshdainty.porest.vacation.repository.VacationUsageDeductionQueryDslRepository;
 import com.lshdainty.porest.vacation.type.EffectiveType;
 import com.lshdainty.porest.vacation.type.ExpirationType;
 import com.lshdainty.porest.vacation.type.VacationTimeType;
@@ -24,15 +24,15 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@Import({VacationUsageDeductionCustomRepositoryImpl.class, TestQuerydslConfig.class})
+@Import({VacationUsageDeductionQueryDslRepository.class, TestQuerydslConfig.class})
 @Transactional
-@DisplayName("JPA 휴가사용차감 레포지토리 테스트")
-class VacationUsageDeductionRepositoryImplTest {
+@DisplayName("QueryDSL 휴가사용차감 레포지토리 테스트")
+class VacationUsageDeductionQueryDslRepositoryTest {
     @Autowired
-    private VacationUsageDeductionCustomRepositoryImpl deductionRepository;
+    private VacationUsageDeductionQueryDslRepository deductionRepository;
 
     @Autowired
     private TestEntityManager em;
@@ -126,6 +126,8 @@ class VacationUsageDeductionRepositoryImplTest {
 
         // then
         assertThat(result).hasSize(1);
+        assertThat(result.get(0).getUsage()).isNotNull();
+        assertThat(result.get(0).getGrant()).isNotNull();
     }
 
     @Test
@@ -143,6 +145,8 @@ class VacationUsageDeductionRepositoryImplTest {
 
         // then
         assertThat(result).hasSize(1);
+        assertThat(result.get(0).getUsage()).isNotNull();
+        assertThat(result.get(0).getGrant()).isNotNull();
     }
 
     @Test
@@ -153,5 +157,46 @@ class VacationUsageDeductionRepositoryImplTest {
 
         // then
         assertThat(result).isEmpty();
+    }
+
+    @Test
+    @DisplayName("부여 ID로 조회 시 없으면 빈 리스트 반환")
+    void findByGrantIdEmpty() {
+        // when
+        List<VacationUsageDeduction> result = deductionRepository.findByGrantId(999L);
+
+        // then
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    @DisplayName("여러 사용에 대한 차감 저장 및 조회")
+    void saveMultipleUsageDeductions() {
+        // given
+        VacationUsage usage2 = VacationUsage.createVacationUsage(
+                user, "연차 사용2", VacationTimeType.MORNINGOFF,
+                LocalDateTime.of(2025, 6, 2, 9, 0), LocalDateTime.of(2025, 6, 2, 13, 0),
+                new BigDecimal("0.5000")
+        );
+        em.persist(usage2);
+
+        deductionRepository.save(VacationUsageDeduction.createVacationUsageDeduction(
+                usage, grant, new BigDecimal("1.0000")
+        ));
+        deductionRepository.save(VacationUsageDeduction.createVacationUsageDeduction(
+                usage2, grant, new BigDecimal("0.5000")
+        ));
+        em.flush();
+        em.clear();
+
+        // when
+        List<VacationUsageDeduction> resultByGrant = deductionRepository.findByGrantId(grant.getId());
+        List<VacationUsageDeduction> resultByUsage1 = deductionRepository.findByUsageId(usage.getId());
+        List<VacationUsageDeduction> resultByUsage2 = deductionRepository.findByUsageId(usage2.getId());
+
+        // then
+        assertThat(resultByGrant).hasSize(2);
+        assertThat(resultByUsage1).hasSize(1);
+        assertThat(resultByUsage2).hasSize(1);
     }
 }

@@ -1,8 +1,10 @@
 package com.lshdainty.porest.vacation.service;
 
-import com.lshdainty.porest.common.message.MessageKey;
+import com.lshdainty.porest.common.exception.BusinessRuleViolationException;
+import com.lshdainty.porest.common.exception.EntityNotFoundException;
+import com.lshdainty.porest.common.exception.ErrorCode;
+import com.lshdainty.porest.common.exception.InvalidValueException;
 import com.lshdainty.porest.common.type.YNType;
-import com.lshdainty.porest.common.util.MessageResolver;
 import com.lshdainty.porest.common.util.PorestTime;
 import com.lshdainty.porest.department.domain.Department;
 import com.lshdainty.porest.department.repository.DepartmentRepository;
@@ -38,7 +40,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @Transactional(readOnly = true)
 public class VacationService {
-    private final MessageResolver messageResolver;
     private final VacationPolicyRepository vacationPolicyRepository;
     private final UserVacationPolicyRepository userVacationPolicyRepository;
     private final HolidayRepository holidayRepository;
@@ -59,19 +60,19 @@ public class VacationService {
         // 2. 시작, 종료시간 비교
         if (PorestTime.isAfterThanEndDate(data.getStartDate(), data.getEndDate())) {
             log.warn("휴가 사용 실패 - 시작일이 종료일보다 이후: startDate={}, endDate={}", data.getStartDate(), data.getEndDate());
-            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_START_AFTER_END));
+            throw new InvalidValueException(ErrorCode.VACATION_INVALID_DATE);
         }
 
         // 3. 연차가 아닌 시간단위 휴가인 경우 유연근무제 시간 체크
         if (!(data.getTimeType().equals(VacationTimeType.DAYOFF) || !data.getTimeType().equals(VacationTimeType.DEFENSE))) {
             if (!user.isBetweenWorkTime(data.getStartDate().toLocalTime(), data.getEndDate().toLocalTime())) {
                 log.warn("휴가 사용 실패 - 유연근무 시간 범위 초과: userId={}, startTime={}, endTime={}", data.getUserId(), data.getStartDate().toLocalTime(), data.getEndDate().toLocalTime());
-                throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_WORKTIME_START_END));
+                throw new InvalidValueException(ErrorCode.WORK_INVALID_TIME);
             }
         }
 
         // 4. 주말 리스트 조회
-        List<LocalDate> weekDays = PorestTime.getBetweenDatesByDayOfWeek(data.getStartDate(), data.getEndDate(), new int[]{6, 7}, messageResolver);
+        List<LocalDate> weekDays = PorestTime.getBetweenDatesByDayOfWeek(data.getStartDate(), data.getEndDate(), new int[]{6, 7});
 
         // 5. 공휴일 리스트 조회
         List<LocalDate> holidays = holidayRepository.findHolidaysByStartEndDateWithType(
@@ -85,7 +86,7 @@ public class VacationService {
         weekDays = PorestTime.addAllDates(weekDays, holidays);
 
         // 6. 두 날짜 간 모든 날짜 가져오기
-        List<LocalDate> betweenDates = PorestTime.getBetweenDates(data.getStartDate(), data.getEndDate(), messageResolver);
+        List<LocalDate> betweenDates = PorestTime.getBetweenDates(data.getStartDate(), data.getEndDate());
         log.info("betweenDates : {}, weekDays : {}", betweenDates, weekDays);
 
         // 7. 사용자가 캘린더에서 선택한 날짜 중 휴일, 공휴일 제거
@@ -109,7 +110,7 @@ public class VacationService {
 
         if (totalRemainTime.compareTo(totalUseTime) < 0) {
             log.warn("휴가 사용 실패 - 잔여 시간 부족: userId={}, remainTime={}, requestTime={}", data.getUserId(), totalRemainTime, totalUseTime);
-            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_NOT_ENOUGH_REMAIN_TIME));
+            throw new BusinessRuleViolationException(ErrorCode.VACATION_INSUFFICIENT_BALANCE);
         }
 
         // 11. 통합 기간 휴가 사용 내역 생성
@@ -153,7 +154,7 @@ public class VacationService {
         // 차감이 완료되지 않았다면 예외 (이론적으로는 발생하지 않아야 함)
         if (remainingNeedTime.compareTo(BigDecimal.ZERO) > 0) {
             log.error("휴가 차감 로직 오류 - 차감 미완료: userId={}, remainingNeedTime={}", data.getUserId(), remainingNeedTime);
-            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_NOT_ENOUGH_REMAIN_TIME));
+            throw new BusinessRuleViolationException(ErrorCode.VACATION_INSUFFICIENT_BALANCE);
         }
 
         // 13. 저장
@@ -287,19 +288,19 @@ public class VacationService {
         VacationUsage usage = vacationUsageRepository.findById(vacationUsageId)
                 .orElseThrow(() -> {
                     log.warn("휴가 사용 취소 실패 - 휴가 사용 내역 없음: vacationUsageId={}", vacationUsageId);
-                    return new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_VACATION_USAGE));
+                    return new EntityNotFoundException(ErrorCode.VACATION_NOT_FOUND);
                 });
 
         // 2. 이미 삭제된 경우 예외 처리
         if (YNType.isY(usage.getIsDeleted())) {
             log.warn("휴가 사용 취소 실패 - 이미 삭제됨: vacationUsageId={}", vacationUsageId);
-            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_ALREADY_DELETED_VACATION_USAGE));
+            throw new BusinessRuleViolationException(ErrorCode.VACATION_ALREADY_APPROVED);
         }
 
         // 3. 삭제 가능 시점 체크 (현재 시간이 사용 시작일 이전인지 확인)
         if (PorestTime.isAfterThanEndDate(LocalDateTime.now(), usage.getStartDate())) {
             log.warn("휴가 사용 취소 실패 - 시작일 이후 취소 불가: vacationUsageId={}, startDate={}", vacationUsageId, usage.getStartDate());
-            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_DELETE_BEFORE_NOW));
+            throw new BusinessRuleViolationException(ErrorCode.VACATION_CANNOT_CANCEL);
         }
 
         // 4. VacationUsageDeduction 조회 (차감 내역들)
@@ -505,7 +506,7 @@ public class VacationService {
         Optional<VacationUsage> usage = vacationUsageRepository.findById(vacationUsageId);
         usage.orElseThrow(() -> {
             log.warn("휴가 사용 내역 조회 실패 - 존재하지 않음: vacationUsageId={}", vacationUsageId);
-            return new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_VACATION_USAGE));
+            return new EntityNotFoundException(ErrorCode.VACATION_NOT_FOUND);
         });
         return usage.get();
     }
@@ -584,7 +585,7 @@ public class VacationService {
         Optional<VacationPolicy> policy = vacationPolicyRepository.findVacationPolicyById(vacationPolicyId);
         policy.orElseThrow(() -> {
             log.warn("휴가 정책 조회 실패 - 존재하지 않는 정책: vacationPolicyId={}", vacationPolicyId);
-            return new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_VACATION_POLICY));
+            return new EntityNotFoundException(ErrorCode.VACATION_POLICY_NOT_FOUND);
         });
         return policy.get();
     }
@@ -607,13 +608,13 @@ public class VacationService {
         // 2. 이미 삭제된 정책인지 확인
         if (YNType.isY(vacationPolicy.getIsDeleted())) {
             log.warn("휴가 정책 삭제 실패 - 이미 삭제됨: vacationPolicyId={}", vacationPolicyId);
-            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_ALREADY_DELETED_VACATION_POLICY));
+            throw new BusinessRuleViolationException(ErrorCode.VACATION_ALREADY_APPROVED);
         }
 
         // 3. 삭제 가능 여부 확인
         if (YNType.isN(vacationPolicy.getCanDeleted())) {
             log.warn("휴가 정책 삭제 실패 - 삭제 불가 정책: vacationPolicyId={}", vacationPolicyId);
-            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_CANNOT_DELETE_VACATION_POLICY));
+            throw new BusinessRuleViolationException(ErrorCode.VACATION_CANNOT_CANCEL);
         }
 
         // 4. 휴가 정책 소프트 삭제
@@ -779,14 +780,13 @@ public class VacationService {
                 .findByUserIdAndVacationPolicyId(userId, vacationPolicyId)
                 .orElseThrow(() -> {
                     log.warn("유저 휴가 정책 조회 실패 - 존재하지 않음: userId={}, policyId={}", userId, vacationPolicyId);
-                    return new IllegalArgumentException(
-                        messageResolver.getMessage(MessageKey.NOT_FOUND_USER_VACATION_POLICY));
+                    return new EntityNotFoundException(ErrorCode.VACATION_POLICY_NOT_FOUND);
                 });
 
         // 4. 이미 삭제된 경우 예외 처리
         if (YNType.isY(userVacationPolicy.getIsDeleted())) {
             log.warn("유저 휴가 정책 회수 실패 - 이미 삭제됨: userId={}, policyId={}", userId, vacationPolicyId);
-            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_ALREADY_DELETED_USER_VACATION_POLICY));
+            throw new BusinessRuleViolationException(ErrorCode.VACATION_ALREADY_APPROVED);
         }
 
         // 5. 소프트 삭제 수행
@@ -904,9 +904,7 @@ public class VacationService {
         // 3. 휴가 정책의 부여 방식이 MANUAL_GRANT인지 확인
         if (policy.getGrantMethod() != GrantMethod.MANUAL_GRANT) {
             log.warn("휴가 수동 부여 실패 - MANUAL_GRANT 정책이 아님: policyId={}, grantMethod={}", data.getPolicyId(), policy.getGrantMethod());
-            throw new IllegalArgumentException(
-                    messageResolver.getMessage(MessageKey.VACATION_NOT_MANUAL_GRANT_POLICY)
-            );
+            throw new BusinessRuleViolationException(ErrorCode.VACATION_POLICY_NOT_FOUND);
         }
 
         // 4. 부여 시간 결정 (가변 부여 여부에 따라 분기)
@@ -916,18 +914,14 @@ public class VacationService {
             grantTime = policy.getGrantTime();
             if (grantTime == null || grantTime.compareTo(BigDecimal.ZERO) <= 0) {
                 log.warn("휴가 수동 부여 실패 - 정책에 부여 시간 없음: policyId={}", data.getPolicyId());
-                throw new IllegalArgumentException(
-                        messageResolver.getMessage(MessageKey.VACATION_GRANT_TIME_REQUIRED)
-                );
+                throw new InvalidValueException(ErrorCode.INVALID_PARAMETER);
             }
         } else {
             // 가변 부여 여부가 Y인 경우: 사용자가 DTO로 넘긴 grantTime 사용
             grantTime = data.getGrantTime();
             if (grantTime == null || grantTime.compareTo(BigDecimal.ZERO) <= 0) {
                 log.warn("휴가 수동 부여 실패 - 부여 시간 미입력: userId={}", userId);
-                throw new IllegalArgumentException(
-                        messageResolver.getMessage(MessageKey.VACATION_GRANT_TIME_REQUIRED)
-                );
+                throw new InvalidValueException(ErrorCode.INVALID_PARAMETER);
             }
         }
 
@@ -951,9 +945,7 @@ public class VacationService {
         // 6. 부여일과 만료일 검증 (부여일 < 만료일)
         if (PorestTime.isAfterThanEndDate(grantDate, expiryDate)) {
             log.warn("휴가 수동 부여 실패 - 부여일이 만료일보다 이후: grantDate={}, expiryDate={}", grantDate, expiryDate);
-            throw new IllegalArgumentException(
-                    messageResolver.getMessage(MessageKey.VACATION_GRANT_DATE_AFTER_EXPIRY)
-            );
+            throw new InvalidValueException(ErrorCode.VACATION_INVALID_DATE);
         }
 
         // 7. VacationGrant 생성
@@ -989,33 +981,25 @@ public class VacationService {
         VacationGrant grant = vacationGrantRepository.findById(vacationGrantId)
                 .orElseThrow(() -> {
                     log.warn("휴가 부여 회수 실패 - 존재하지 않음: vacationGrantId={}", vacationGrantId);
-                    return new IllegalArgumentException(
-                        messageResolver.getMessage(MessageKey.NOT_FOUND_VACATION_GRANT)
-                    );
+                    return new EntityNotFoundException(ErrorCode.VACATION_GRANT_NOT_FOUND);
                 });
 
         // 2. 이미 삭제된 경우
         if (YNType.isY(grant.getIsDeleted())) {
             log.warn("휴가 부여 회수 실패 - 이미 삭제됨: vacationGrantId={}", vacationGrantId);
-            throw new IllegalArgumentException(
-                    messageResolver.getMessage(MessageKey.VACATION_ALREADY_DELETED)
-            );
+            throw new BusinessRuleViolationException(ErrorCode.VACATION_ALREADY_APPROVED);
         }
 
         // 3. ACTIVE 상태인 경우에만 회수 가능
         if (grant.getStatus() != GrantStatus.ACTIVE) {
             log.warn("휴가 부여 회수 실패 - ACTIVE 상태 아님: vacationGrantId={}, status={}", vacationGrantId, grant.getStatus());
-            throw new IllegalArgumentException(
-                    messageResolver.getMessage(MessageKey.VACATION_NOT_ACTIVE_GRANT)
-            );
+            throw new BusinessRuleViolationException(ErrorCode.VACATION_CANNOT_CANCEL);
         }
 
         // 4. 일부라도 사용된 경우 회수 불가
         if (grant.getRemainTime().compareTo(grant.getGrantTime()) < 0) {
             log.warn("휴가 부여 회수 실패 - 일부 사용됨: vacationGrantId={}, grantTime={}, remainTime={}", vacationGrantId, grant.getGrantTime(), grant.getRemainTime());
-            throw new IllegalArgumentException(
-                    messageResolver.getMessage(MessageKey.VACATION_PARTIALLY_USED_GRANT)
-            );
+            throw new BusinessRuleViolationException(ErrorCode.VACATION_CANNOT_CANCEL);
         }
 
         // 5. 회수 처리
@@ -1045,26 +1029,20 @@ public class VacationService {
         // 3. 정책이 ON_REQUEST 방식인지 확인
         if (policy.getGrantMethod() != GrantMethod.ON_REQUEST) {
             log.warn("휴가 신청 실패 - ON_REQUEST 정책이 아님: userId={}, policyId={}, grantMethod={}", userId, data.getPolicyId(), policy.getGrantMethod());
-            throw new IllegalArgumentException(
-                    messageResolver.getMessage(MessageKey.VACATION_NOT_ON_REQUEST_POLICY)
-            );
+            throw new BusinessRuleViolationException(ErrorCode.VACATION_POLICY_NOT_FOUND);
         }
 
         // 4. 사용자에게 해당 정책이 할당되어 있는지 확인
         boolean hasPolicy = userVacationPolicyRepository.existsByUserIdAndVacationPolicyId(userId, data.getPolicyId());
         if (!hasPolicy) {
             log.warn("휴가 신청 실패 - 정책 미할당: userId={}, policyId={}", userId, data.getPolicyId());
-            throw new IllegalArgumentException(
-                    messageResolver.getMessage(MessageKey.VACATION_POLICY_NOT_ASSIGNED)
-            );
+            throw new BusinessRuleViolationException(ErrorCode.VACATION_POLICY_NOT_FOUND);
         }
 
         // 5. 신청 사유 필수 검증
         if (data.getDesc() == null || data.getDesc().trim().isEmpty()) {
             log.warn("휴가 신청 실패 - 신청 사유 미입력: userId={}, policyId={}", userId, data.getPolicyId());
-            throw new IllegalArgumentException(
-                    messageResolver.getMessage(MessageKey.VACATION_REQUEST_REASON_REQUIRED)
-            );
+            throw new InvalidValueException(ErrorCode.INVALID_PARAMETER);
         }
 
         // 6. 승인자 목록 검증
@@ -1074,26 +1052,19 @@ public class VacationService {
         if (requiredCount != null && requiredCount > 0) {
             if (approverIds == null || approverIds.isEmpty()) {
                 log.warn("휴가 신청 실패 - 승인자 미지정: userId={}, requiredCount={}", userId, requiredCount);
-                throw new IllegalArgumentException(
-                        messageResolver.getMessage(MessageKey.VACATION_APPROVER_REQUIRED)
-                );
+                throw new InvalidValueException(ErrorCode.INVALID_PARAMETER);
             }
 
             if (approverIds.size() != requiredCount) {
                 log.warn("휴가 신청 실패 - 승인자 수 불일치: userId={}, requiredCount={}, actualCount={}", userId, requiredCount, approverIds.size());
-                throw new IllegalArgumentException(
-                        messageResolver.getMessage(MessageKey.VACATION_APPROVER_COUNT_MISMATCH,
-                                requiredCount, approverIds.size())
-                );
+                throw new InvalidValueException(ErrorCode.INVALID_PARAMETER);
             }
 
             // 6-1. 승인자 중복 체크
             Set<String> uniqueApproverIds = new HashSet<>(approverIds);
             if (uniqueApproverIds.size() != approverIds.size()) {
                 log.warn("휴가 신청 실패 - 중복된 승인자: userId={}, approverIds={}", userId, approverIds);
-                throw new IllegalArgumentException(
-                        messageResolver.getMessage(MessageKey.VACATION_DUPLICATE_APPROVER)
-                );
+                throw new InvalidValueException(ErrorCode.INVALID_PARAMETER);
             }
 
             // 6-2. 승인자 모두 존재하는지 확인
@@ -1115,10 +1086,7 @@ public class VacationService {
 
             if (!nonHeadApprovers.isEmpty()) {
                 log.warn("휴가 신청 실패 - 부서장이 아닌 승인자: userId={}, nonHeadApprovers={}", userId, nonHeadApprovers);
-                throw new IllegalArgumentException(
-                        messageResolver.getMessage(MessageKey.VACATION_APPROVER_NOT_DEPARTMENT_HEAD,
-                                String.join(", ", nonHeadApprovers))
-                );
+                throw new InvalidValueException(ErrorCode.INVALID_PARAMETER);
             }
 
             // 6-4. 승인자를 부서 레벨 순서로 정렬 (레벨 오름차순: 하위 부서장 먼저)
@@ -1193,25 +1161,19 @@ public class VacationService {
         VacationApproval approval = vacationApprovalRepository.findByIdWithVacationGrantAndUser(approvalId)
                 .orElseThrow(() -> {
                     log.warn("휴가 승인 실패 - 승인 내역 없음: approvalId={}", approvalId);
-                    return new IllegalArgumentException(
-                            messageResolver.getMessage(MessageKey.NOT_FOUND_VACATION_APPROVAL)
-                    );
+                    return new EntityNotFoundException(ErrorCode.VACATION_NOT_FOUND);
                 });
 
         // 2. 승인자 권한 검증
         if (!approval.getApprover().getId().equals(approverId)) {
             log.warn("휴가 승인 실패 - 권한 없음: approvalId={}, approverId={}, actualApproverId={}", approvalId, approverId, approval.getApprover().getId());
-            throw new IllegalArgumentException(
-                    messageResolver.getMessage(MessageKey.VACATION_NOT_AUTHORIZED_APPROVER)
-            );
+            throw new BusinessRuleViolationException(ErrorCode.PERMISSION_DENIED);
         }
 
         // 3. 이미 처리된 승인인지 확인
         if (!approval.isPending()) {
             log.warn("휴가 승인 실패 - 이미 처리됨: approvalId={}, status={}", approvalId, approval.getApprovalStatus());
-            throw new IllegalArgumentException(
-                    messageResolver.getMessage(MessageKey.VACATION_ALREADY_PROCESSED)
-            );
+            throw new BusinessRuleViolationException(ErrorCode.VACATION_ALREADY_APPROVED);
         }
 
         // 4. 순차 승인 검증: 이전 순서의 승인자들이 모두 승인했는지 확인
@@ -1227,9 +1189,7 @@ public class VacationService {
 
         if (hasPendingPreviousApprovals) {
             log.warn("휴가 승인 실패 - 이전 순서 승인 미완료: approvalId={}, currentOrder={}", approvalId, currentOrder);
-            throw new IllegalArgumentException(
-                    messageResolver.getMessage(MessageKey.VACATION_PREVIOUS_APPROVAL_REQUIRED)
-            );
+            throw new BusinessRuleViolationException(ErrorCode.VACATION_CANNOT_CANCEL);
         }
 
         // 5. 승인 처리
@@ -1280,33 +1240,25 @@ public class VacationService {
         VacationApproval approval = vacationApprovalRepository.findByIdWithVacationGrantAndUser(approvalId)
                 .orElseThrow(() -> {
                     log.warn("휴가 거부 실패 - 승인 내역 없음: approvalId={}", approvalId);
-                    return new IllegalArgumentException(
-                            messageResolver.getMessage(MessageKey.NOT_FOUND_VACATION_APPROVAL)
-                    );
+                    return new EntityNotFoundException(ErrorCode.VACATION_NOT_FOUND);
                 });
 
         // 2. 승인자 권한 검증
         if (!approval.getApprover().getId().equals(approverId)) {
             log.warn("휴가 거부 실패 - 권한 없음: approvalId={}, approverId={}, actualApproverId={}", approvalId, approverId, approval.getApprover().getId());
-            throw new IllegalArgumentException(
-                    messageResolver.getMessage(MessageKey.VACATION_NOT_AUTHORIZED_APPROVER)
-            );
+            throw new BusinessRuleViolationException(ErrorCode.PERMISSION_DENIED);
         }
 
         // 3. 이미 처리된 승인인지 확인
         if (!approval.isPending()) {
             log.warn("휴가 거부 실패 - 이미 처리됨: approvalId={}, status={}", approvalId, approval.getApprovalStatus());
-            throw new IllegalArgumentException(
-                    messageResolver.getMessage(MessageKey.VACATION_ALREADY_PROCESSED)
-            );
+            throw new BusinessRuleViolationException(ErrorCode.VACATION_ALREADY_APPROVED);
         }
 
         // 4. 거부 사유 필수 검증
         if (data.getRejectionReason() == null || data.getRejectionReason().trim().isEmpty()) {
             log.warn("휴가 거부 실패 - 거부 사유 미입력: approvalId={}", approvalId);
-            throw new IllegalArgumentException(
-                    messageResolver.getMessage(MessageKey.VACATION_REJECTION_REASON_REQUIRED)
-            );
+            throw new InvalidValueException(ErrorCode.INVALID_PARAMETER);
         }
 
         // 5. 거부 처리
@@ -1335,25 +1287,19 @@ public class VacationService {
         VacationGrant vacationGrant = vacationGrantRepository.findById(vacationGrantId)
                 .orElseThrow(() -> {
                     log.warn("휴가 신청 취소 실패 - 휴가 부여 내역 없음: vacationGrantId={}", vacationGrantId);
-                    return new IllegalArgumentException(
-                            messageResolver.getMessage(MessageKey.NOT_FOUND_VACATION_GRANT)
-                    );
+                    return new EntityNotFoundException(ErrorCode.VACATION_GRANT_NOT_FOUND);
                 });
 
         // 2. 신청자 권한 검증 (신청자만 취소 가능)
         if (!vacationGrant.getUser().getId().equals(userId)) {
             log.warn("휴가 신청 취소 실패 - 권한 없음: vacationGrantId={}, userId={}, actualUserId={}", vacationGrantId, userId, vacationGrant.getUser().getId());
-            throw new IllegalArgumentException(
-                    messageResolver.getMessage(MessageKey.VACATION_NOT_AUTHORIZED_REQUESTER)
-            );
+            throw new BusinessRuleViolationException(ErrorCode.PERMISSION_DENIED);
         }
 
         // 3. PENDING 상태인지 확인 (한 명도 승인하지 않은 상태에서만 취소 가능)
         if (vacationGrant.getStatus() != GrantStatus.PENDING) {
             log.warn("휴가 신청 취소 실패 - PENDING 상태 아님: vacationGrantId={}, status={}", vacationGrantId, vacationGrant.getStatus());
-            throw new IllegalArgumentException(
-                    messageResolver.getMessage(MessageKey.VACATION_CANNOT_CANCEL_AFTER_APPROVAL)
-            );
+            throw new BusinessRuleViolationException(ErrorCode.VACATION_CANNOT_CANCEL);
         }
 
         // 4. 취소 처리
@@ -1751,7 +1697,7 @@ public class VacationService {
         // 년도 유효성 검증
         if (year == null) {
             log.warn("휴가 통계 조회 실패 - 년도 미입력");
-            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_YEAR_REQUIRED));
+            throw new InvalidValueException(ErrorCode.INVALID_PARAMETER);
         }
 
         // 해당 년도의 시작일과 종료일 계산

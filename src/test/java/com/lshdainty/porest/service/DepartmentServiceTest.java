@@ -1,5 +1,9 @@
 package com.lshdainty.porest.service;
 
+import com.lshdainty.porest.common.exception.BusinessRuleViolationException;
+import com.lshdainty.porest.common.exception.DuplicateException;
+import com.lshdainty.porest.common.exception.EntityNotFoundException;
+import com.lshdainty.porest.common.exception.InvalidValueException;
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.company.domain.Company;
 import com.lshdainty.porest.company.service.CompanyService;
@@ -19,7 +23,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.MessageSource;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,15 +30,12 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.*;
 
 @Slf4j
 @ExtendWith(MockitoExtension.class)
 @DisplayName("부서 서비스 테스트")
 class DepartmentServiceTest {
-    @Mock
-    private MessageSource ms;
     @Mock
     private DepartmentRepository departmentRepository;
     @Mock
@@ -123,12 +123,10 @@ class DepartmentServiceTest {
 
             given(companyService.checkCompanyExists("COMPANY001")).willReturn(company1);
             given(departmentRepository.findById(1L)).willReturn(Optional.of(parent));
-            given(ms.getMessage(eq("error.validate.different.company"), any(), any()))
-                    .willReturn("다른 회사의 부서입니다");
 
             // when & then
             assertThatThrownBy(() -> departmentService.regist(data))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(InvalidValueException.class);
         }
     }
 
@@ -171,8 +169,6 @@ class DepartmentServiceTest {
 
             // 자기 자신을 부모로 설정: findById가 두 번 호출됨 (department, newParent)
             given(departmentRepository.findById(1L)).willReturn(Optional.of(department));
-            given(ms.getMessage(eq("error.validate.self.parent"), any(), any()))
-                    .willReturn("자기 자신을 부모로 설정할 수 없습니다");
 
             DepartmentServiceDto data = DepartmentServiceDto.builder()
                     .id(1L)
@@ -182,7 +178,7 @@ class DepartmentServiceTest {
 
             // when & then
             assertThatThrownBy(() -> departmentService.edit(data))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(InvalidValueException.class);
         }
 
         @Test
@@ -198,8 +194,6 @@ class DepartmentServiceTest {
             // 부모(1L)를 수정할 때 자식(2L)을 부모로 설정하려고 함
             given(departmentRepository.findById(1L)).willReturn(Optional.of(parent));
             given(departmentRepository.findById(2L)).willReturn(Optional.of(child));
-            given(ms.getMessage(eq("error.validate.circular.reference"), any(), any()))
-                    .willReturn("순환 참조가 발생합니다");
 
             DepartmentServiceDto data = DepartmentServiceDto.builder()
                     .id(1L)
@@ -209,7 +203,7 @@ class DepartmentServiceTest {
 
             // when & then
             assertThatThrownBy(() -> departmentService.edit(data))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(InvalidValueException.class);
         }
 
         @Test
@@ -226,8 +220,6 @@ class DepartmentServiceTest {
 
             given(departmentRepository.findById(1L)).willReturn(Optional.of(department));
             given(departmentRepository.findById(2L)).willReturn(Optional.of(otherDept));
-            given(ms.getMessage(eq("error.validate.different.company"), any(), any()))
-                    .willReturn("다른 회사의 부서입니다");
 
             DepartmentServiceDto data = DepartmentServiceDto.builder()
                     .id(1L)
@@ -237,7 +229,7 @@ class DepartmentServiceTest {
 
             // when & then
             assertThatThrownBy(() -> departmentService.edit(data))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(InvalidValueException.class);
         }
 
         @Test
@@ -272,8 +264,6 @@ class DepartmentServiceTest {
         void editFailNotFound() {
             // given
             given(departmentRepository.findById(999L)).willReturn(Optional.empty());
-            given(ms.getMessage(eq("error.notfound.department"), any(), any()))
-                    .willReturn("부서를 찾을 수 없습니다");
 
             DepartmentServiceDto data = DepartmentServiceDto.builder()
                     .id(999L)
@@ -282,7 +272,7 @@ class DepartmentServiceTest {
 
             // when & then
             assertThatThrownBy(() -> departmentService.edit(data))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
         }
     }
 
@@ -317,12 +307,10 @@ class DepartmentServiceTest {
             Department child = Department.createDepartment("Backend", "백엔드팀", parent, "user2", 2L, "설명", "#00FF00", company);
 
             given(departmentRepository.findById(1L)).willReturn(Optional.of(parent));
-            given(ms.getMessage(eq("error.validate.has.children.department"), any(), any()))
-                    .willReturn("하위 부서가 있습니다");
 
             // when & then
             assertThatThrownBy(() -> departmentService.delete(1L))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(BusinessRuleViolationException.class);
         }
 
         @Test
@@ -444,12 +432,10 @@ class DepartmentServiceTest {
             given(departmentRepository.findById(1L)).willReturn(Optional.of(department));
             given(userService.checkUserExist("user1")).willReturn(user);
             given(departmentRepository.findMainDepartmentByUserId("user1")).willReturn(Optional.of(existingMain));
-            given(ms.getMessage(eq("error.validate.main.department.already.exists"), any(), any()))
-                    .willReturn("이미 메인 부서가 있습니다");
 
             // when & then
             assertThatThrownBy(() -> departmentService.registUserDepartments(userDataList, 1L))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(BusinessRuleViolationException.class);
         }
 
         @Test
@@ -513,12 +499,10 @@ class DepartmentServiceTest {
         void deleteUserDepartmentsFailNotFound() {
             // given
             given(departmentRepository.findUserDepartment("user1", 1L)).willReturn(Optional.empty());
-            given(ms.getMessage(eq("error.notfound.user.department"), any(), any()))
-                    .willReturn("사용자 부서를 찾을 수 없습니다");
 
             // when & then
             assertThatThrownBy(() -> departmentService.deleteUserDepartments(List.of("user1"), 1L))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
         }
     }
 
@@ -601,12 +585,10 @@ class DepartmentServiceTest {
         void checkDepartmentExistsFailNotFound() {
             // given
             given(departmentRepository.findById(999L)).willReturn(Optional.empty());
-            given(ms.getMessage(eq("error.notfound.department"), any(), any()))
-                    .willReturn("부서를 찾을 수 없습니다");
 
             // when & then
             assertThatThrownBy(() -> departmentService.checkDepartmentExists(999L))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
         }
 
         @Test
@@ -618,12 +600,10 @@ class DepartmentServiceTest {
             department.deleteDepartment();
 
             given(departmentRepository.findById(1L)).willReturn(Optional.of(department));
-            given(ms.getMessage(eq("error.notfound.department"), any(), any()))
-                    .willReturn("부서를 찾을 수 없습니다");
 
             // when & then
             assertThatThrownBy(() -> departmentService.checkDepartmentExists(1L))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
         }
     }
 

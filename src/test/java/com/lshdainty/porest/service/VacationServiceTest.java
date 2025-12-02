@@ -1,5 +1,8 @@
 package com.lshdainty.porest.service;
 
+import com.lshdainty.porest.common.exception.BusinessRuleViolationException;
+import com.lshdainty.porest.common.exception.EntityNotFoundException;
+import com.lshdainty.porest.common.exception.ForbiddenException;
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.company.type.OriginCompanyType;
 import com.lshdainty.porest.department.repository.DepartmentRepository;
@@ -22,13 +25,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.MessageSource;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,9 +43,6 @@ import static org.mockito.Mockito.mock;
 @ExtendWith(MockitoExtension.class)
 @DisplayName("휴가 서비스 테스트")
 class VacationServiceTest {
-
-    @Mock
-    private MessageSource ms;
 
     @Mock
     private VacationPolicyRepository vacationPolicyRepository;
@@ -247,12 +245,10 @@ class VacationServiceTest {
             // given
             Long usageId = 999L;
             given(vacationUsageRepository.findById(usageId)).willReturn(Optional.empty());
-            given(ms.getMessage(eq("error.notfound.vacation.usage"), any(), any()))
-                    .willReturn("휴가 사용 내역을 찾을 수 없습니다");
 
             // when & then
             assertThatThrownBy(() -> vacationService.cancelVacationUsage(usageId))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
         }
 
         @Test
@@ -266,12 +262,10 @@ class VacationServiceTest {
             usage.deleteVacationUsage();
 
             given(vacationUsageRepository.findById(usageId)).willReturn(Optional.of(usage));
-            given(ms.getMessage(eq("error.validate.already.deleted.vacation.usage"), any(), any()))
-                    .willReturn("이미 삭제된 휴가 사용 내역입니다");
 
             // when & then
             assertThatThrownBy(() -> vacationService.cancelVacationUsage(usageId))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(BusinessRuleViolationException.class);
         }
     }
 
@@ -304,12 +298,10 @@ class VacationServiceTest {
             Long policyId = 999L;
             given(vacationPolicyRepository.findVacationPolicyById(policyId))
                     .willReturn(Optional.empty());
-            given(ms.getMessage(eq("error.notfound.vacation.policy"), any(), any()))
-                    .willReturn("휴가 정책을 찾을 수 없습니다");
 
             // when & then
             assertThatThrownBy(() -> vacationService.getVacationPolicy(policyId))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
         }
     }
 
@@ -386,12 +378,10 @@ class VacationServiceTest {
 
             given(vacationPolicyRepository.findVacationPolicyById(policyId))
                     .willReturn(Optional.of(policy));
-            given(ms.getMessage(eq("error.validate.already.deleted.vacation.policy"), any(), any()))
-                    .willReturn("이미 삭제된 휴가 정책입니다");
 
             // when & then
             assertThatThrownBy(() -> vacationService.deleteVacationPolicy(policyId))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(BusinessRuleViolationException.class);
         }
 
         @Test
@@ -405,12 +395,10 @@ class VacationServiceTest {
 
             given(vacationPolicyRepository.findVacationPolicyById(policyId))
                     .willReturn(Optional.of(policy));
-            given(ms.getMessage(eq("error.validate.cannot.delete.vacation.policy"), any(), any()))
-                    .willReturn("삭제할 수 없는 휴가 정책입니다");
 
             // when & then
             assertThatThrownBy(() -> vacationService.deleteVacationPolicy(policyId))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(BusinessRuleViolationException.class);
         }
     }
 
@@ -556,12 +544,10 @@ class VacationServiceTest {
                     .willReturn(Optional.of(policy));
             given(userVacationPolicyRepository.findByUserIdAndVacationPolicyId(userId, policyId))
                     .willReturn(Optional.empty());
-            given(ms.getMessage(eq("error.notfound.user.vacation.policy"), any(), any()))
-                    .willReturn("유저 휴가 정책을 찾을 수 없습니다");
 
             // when & then
             assertThatThrownBy(() -> vacationService.revokeVacationPolicyFromUser(userId, policyId))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
         }
     }
 
@@ -592,12 +578,10 @@ class VacationServiceTest {
             // given
             Long grantId = 999L;
             given(vacationGrantRepository.findById(grantId)).willReturn(Optional.empty());
-            given(ms.getMessage(eq("error.notFound.vacationGrant"), any(), any()))
-                    .willReturn("휴가 부여를 찾을 수 없습니다");
 
             // when & then
             assertThatThrownBy(() -> vacationService.revokeVacationGrant(grantId))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
         }
 
         @Test
@@ -611,12 +595,10 @@ class VacationServiceTest {
             grant.revoke(); // REVOKED 상태로 변경
 
             given(vacationGrantRepository.findById(grantId)).willReturn(Optional.of(grant));
-            given(ms.getMessage(eq("error.validate.vacation.notActiveGrant"), any(), any()))
-                    .willReturn("활성 상태가 아닌 휴가 부여입니다");
 
             // when & then
             assertThatThrownBy(() -> vacationService.revokeVacationGrant(grantId))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(BusinessRuleViolationException.class);
         }
 
         @Test
@@ -630,12 +612,10 @@ class VacationServiceTest {
             grant.deduct(new BigDecimal("1.0000")); // 일부 사용
 
             given(vacationGrantRepository.findById(grantId)).willReturn(Optional.of(grant));
-            given(ms.getMessage(eq("error.validate.vacation.partiallyUsedGrant"), any(), any()))
-                    .willReturn("일부 사용된 휴가 부여입니다");
 
             // when & then
             assertThatThrownBy(() -> vacationService.revokeVacationGrant(grantId))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(BusinessRuleViolationException.class);
         }
     }
 
@@ -690,12 +670,10 @@ class VacationServiceTest {
             ReflectionTestUtils.setField(grant, "id", grantId);
 
             given(vacationGrantRepository.findById(grantId)).willReturn(Optional.of(grant));
-            given(ms.getMessage(eq("error.validate.vacation.notAuthorizedRequester"), any(), any()))
-                    .willReturn("신청자만 취소할 수 있습니다");
 
             // when & then
             assertThatThrownBy(() -> vacationService.cancelVacationRequest(grantId, anotherUserId))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(BusinessRuleViolationException.class);
         }
     }
 
@@ -1016,12 +994,10 @@ class VacationServiceTest {
 
             given(userService.checkUserExist(userId)).willReturn(user);
             given(vacationPolicyRepository.findVacationPolicyById(999L)).willReturn(Optional.empty());
-            given(ms.getMessage(eq("error.notfound.vacation.policy"), any(), any()))
-                    .willReturn("휴가 정책을 찾을 수 없습니다");
 
             // when & then
             assertThatThrownBy(() -> vacationService.assignVacationPoliciesToUser(userId, policyIds))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
         }
     }
 
@@ -1037,12 +1013,10 @@ class VacationServiceTest {
 
             given(vacationApprovalRepository.findByIdWithVacationGrantAndUser(approvalId))
                     .willReturn(Optional.empty());
-            given(ms.getMessage(eq("error.notfound.vacation.approval"), any(), any()))
-                    .willReturn("승인을 찾을 수 없습니다");
 
             // when & then
             assertThatThrownBy(() -> vacationService.approveVacation(approvalId, approverId))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
         }
     }
 
@@ -1058,8 +1032,6 @@ class VacationServiceTest {
 
             given(vacationApprovalRepository.findByIdWithVacationGrantAndUser(approvalId))
                     .willReturn(Optional.empty());
-            given(ms.getMessage(eq("error.notfound.vacation.approval"), any(), any()))
-                    .willReturn("승인을 찾을 수 없습니다");
 
             VacationApprovalServiceDto data = VacationApprovalServiceDto.builder()
                     .rejectionReason("거부 사유")
@@ -1067,7 +1039,7 @@ class VacationServiceTest {
 
             // when & then
             assertThatThrownBy(() -> vacationService.rejectVacation(approvalId, approverId, data))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
         }
     }
 
@@ -1109,8 +1081,8 @@ class VacationServiceTest {
     @DisplayName("정책에서 유저 제거")
     class RevokeVacationPoliciesFromUserTest {
         @Test
-        @DisplayName("실패 - 정책에 할당되지 않은 유저면 예외가 발생한다")
-        void revokeVacationPoliciesFailNotAssigned() {
+        @DisplayName("성공 - 정책에 할당되지 않은 유저면 스킵한다")
+        void revokeVacationPoliciesSkipNotAssigned() {
             // given
             String userId = "user1";
             User user = createTestUser(userId);
@@ -1122,12 +1094,12 @@ class VacationServiceTest {
             given(vacationPolicyRepository.findVacationPolicyById(policyId)).willReturn(Optional.of(policy));
             given(userVacationPolicyRepository.findByUserIdAndVacationPolicyId(userId, policyId))
                     .willReturn(Optional.empty());
-            given(ms.getMessage(eq("error.notfound.user.vacation.policy"), any(), any()))
-                    .willReturn("유저에게 할당되지 않은 정책입니다");
 
-            // when & then
-            assertThatThrownBy(() -> vacationService.revokeVacationPoliciesFromUser(userId, List.of(policyId)))
-                    .isInstanceOf(IllegalArgumentException.class);
+            // when
+            List<Long> result = vacationService.revokeVacationPoliciesFromUser(userId, List.of(policyId));
+
+            // then
+            assertThat(result).isEmpty();
         }
     }
 

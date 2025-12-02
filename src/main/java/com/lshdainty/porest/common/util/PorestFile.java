@@ -1,5 +1,7 @@
 package com.lshdainty.porest.common.util;
 
+import com.lshdainty.porest.common.exception.ErrorCode;
+import com.lshdainty.porest.common.exception.ResourceNotFoundException;
 import com.lshdainty.porest.common.message.MessageKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,7 +12,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.NoSuchElementException;
 
 public class PorestFile {
 
@@ -89,7 +90,7 @@ public class PorestFile {
                 return fileBytes;
             } else {
                 log.warn("File not found or not readable. fullPath: {}", fullPath);
-                throw new NoSuchElementException(messageResolver.getMessage(MessageKey.FILE_NOT_FOUND, fullPath));
+                throw new ResourceNotFoundException(ErrorCode.FILE_NOT_FOUND);
             }
         } catch (IOException e) {
             log.error("File read failed. fullPath: {}", fullPath, e);
@@ -114,7 +115,7 @@ public class PorestFile {
             // 원본 파일이 존재하는지 확인
             if (!Files.exists(source)) {
                 log.warn("Source file not found for copy: {}", sourcePath);
-                throw new NoSuchElementException(messageResolver.getMessage(MessageKey.FILE_NOT_FOUND, sourcePath));
+                throw new ResourceNotFoundException(ErrorCode.FILE_NOT_FOUND);
             }
 
             // 복사할 경로의 부모 디렉토리가 없으면 생성
@@ -150,7 +151,7 @@ public class PorestFile {
             // 원본 파일이 존재하는지 확인
             if (!Files.exists(source)) {
                 log.warn("Source file not found for move: {}", sourcePath);
-                throw new NoSuchElementException(messageResolver.getMessage(MessageKey.FILE_NOT_FOUND, sourcePath));
+                throw new ResourceNotFoundException(ErrorCode.FILE_NOT_FOUND);
             }
 
             // 이동할 경로의 부모 디렉토리가 없으면 생성

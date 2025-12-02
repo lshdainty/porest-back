@@ -1,5 +1,8 @@
 package com.lshdainty.porest.service;
 
+import com.lshdainty.porest.common.exception.BusinessRuleViolationException;
+import com.lshdainty.porest.common.exception.DuplicateException;
+import com.lshdainty.porest.common.exception.EntityNotFoundException;
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.common.util.PorestFile;
 import com.lshdainty.porest.company.type.OriginCompanyType;
@@ -20,7 +23,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.MessageSource;
+import com.lshdainty.porest.common.util.MessageResolver;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -46,7 +49,7 @@ import static org.mockito.Mockito.mockStatic;
 @DisplayName("유저 서비스 테스트")
 class UserServiceTest {
     @Mock
-    private MessageSource ms;
+    private MessageResolver messageResolver;
     @Mock
     private UserRepository userRepository;
     @Mock
@@ -79,13 +82,13 @@ class UserServiceTest {
                     .name("테스트유저")
                     .email("test@test.com")
                     .build();
-            willDoNothing().given(userRepositoryImpl).save(any(User.class));
+            willDoNothing().given(userRepository).save(any(User.class));
 
             // when
             String result = userService.joinUser(data);
 
             // then
-            then(userRepositoryImpl).should().save(any(User.class));
+            then(userRepository).should().save(any(User.class));
             assertThat(result).isEqualTo("user1");
         }
 
@@ -99,10 +102,10 @@ class UserServiceTest {
                     .profileUrl("/media/temp/profile/test.jpg_some-uuid")
                     .profileUUID("some-uuid")
                     .build();
-            willDoNothing().given(userRepositoryImpl).save(any(User.class));
+            willDoNothing().given(userRepository).save(any(User.class));
 
             try (MockedStatic<PorestFile> mocked = mockStatic(PorestFile.class)) {
-                mocked.when(() -> PorestFile.copy(anyString(), anyString(), any(MessageSource.class)))
+                mocked.when(() -> PorestFile.copy(anyString(), anyString(), any(MessageResolver.class)))
                         .thenReturn(true);
                 mocked.when(() -> PorestFile.extractOriginalFilename(anyString(), isNull()))
                         .thenReturn("test.jpg");
@@ -111,7 +114,7 @@ class UserServiceTest {
                 String result = userService.joinUser(data);
 
                 // then
-                then(userRepositoryImpl).should().save(any(User.class));
+                then(userRepository).should().save(any(User.class));
                 assertThat(result).isEqualTo("user1");
             }
         }
@@ -125,13 +128,13 @@ class UserServiceTest {
                     .name("테스트유저")
                     .profileUUID("some-uuid")
                     .build();
-            willDoNothing().given(userRepositoryImpl).save(any(User.class));
+            willDoNothing().given(userRepository).save(any(User.class));
 
             // when
             String result = userService.joinUser(data);
 
             // then
-            then(userRepositoryImpl).should().save(any(User.class));
+            then(userRepository).should().save(any(User.class));
             assertThat(result).isEqualTo("user1");
         }
 
@@ -144,13 +147,13 @@ class UserServiceTest {
                     .name("테스트유저")
                     .profileUrl("/media/temp/profile/test.jpg")
                     .build();
-            willDoNothing().given(userRepositoryImpl).save(any(User.class));
+            willDoNothing().given(userRepository).save(any(User.class));
 
             // when
             String result = userService.joinUser(data);
 
             // then
-            then(userRepositoryImpl).should().save(any(User.class));
+            then(userRepository).should().save(any(User.class));
             assertThat(result).isEqualTo("user1");
         }
     }
@@ -165,13 +168,13 @@ class UserServiceTest {
             String userId = "user1";
             User user = User.createUser(userId, "", "이서준", "test@test.com", LocalDate.now(),
                     OriginCompanyType.SKAX, "9 ~ 6", YNType.N, null, null);
-            given(userRepositoryImpl.findById(userId)).willReturn(Optional.of(user));
+            given(userRepository.findByIdWithRolesAndPermissions(userId)).willReturn(Optional.of(user));
 
             // when
             UserServiceDto result = userService.searchUser(userId);
 
             // then
-            then(userRepositoryImpl).should().findById(userId);
+            then(userRepository).should().findByIdWithRolesAndPermissions(userId);
             assertThat(result.getName()).isEqualTo("이서준");
         }
 
@@ -180,13 +183,11 @@ class UserServiceTest {
         void searchUserFailNotFound() {
             // given
             String userId = "nonexistent";
-            given(userRepositoryImpl.findById(userId)).willReturn(Optional.empty());
-            given(ms.getMessage(eq("error.notfound.user"), any(), any()))
-                    .willReturn("유저를 찾을 수 없습니다");
+            given(userRepository.findByIdWithRolesAndPermissions(userId)).willReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> userService.searchUser(userId))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
         }
 
         @Test
@@ -197,13 +198,11 @@ class UserServiceTest {
             User user = User.createUser(userId, "", "이서준", "test@test.com", LocalDate.now(),
                     OriginCompanyType.SKAX, "9 ~ 6", YNType.N, null, null);
             user.deleteUser();
-            given(userRepositoryImpl.findById(userId)).willReturn(Optional.of(user));
-            given(ms.getMessage(eq("error.notfound.user"), any(), any()))
-                    .willReturn("유저를 찾을 수 없습니다");
+            given(userRepository.findByIdWithRolesAndPermissions(userId)).willReturn(Optional.of(user));
 
             // when & then
             assertThatThrownBy(() -> userService.searchUser(userId))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
         }
 
         @Test
@@ -213,7 +212,7 @@ class UserServiceTest {
             String userId = "user1";
             User user = User.createUser(userId, "", "이서준", "test@test.com", LocalDate.now(),
                     OriginCompanyType.SKAX, "9 ~ 6", YNType.N, "test.jpg", "some-uuid");
-            given(userRepositoryImpl.findById(userId)).willReturn(Optional.of(user));
+            given(userRepository.findByIdWithRolesAndPermissions(userId)).willReturn(Optional.of(user));
 
             try (MockedStatic<PorestFile> mocked = mockStatic(PorestFile.class)) {
                 mocked.when(() -> PorestFile.generatePhysicalFilename("test.jpg", "some-uuid"))
@@ -236,7 +235,7 @@ class UserServiceTest {
             String userId = "user1";
             User user = User.createUser(userId, "", "이서준", "test@test.com", LocalDate.now(),
                     OriginCompanyType.SKAX, "9 ~ 6", YNType.N, "test.jpg", null);
-            given(userRepositoryImpl.findById(userId)).willReturn(Optional.of(user));
+            given(userRepository.findByIdWithRolesAndPermissions(userId)).willReturn(Optional.of(user));
 
             // when
             UserServiceDto result = userService.searchUser(userId);
@@ -258,7 +257,7 @@ class UserServiceTest {
             Department dept = Department.createDepartment("부서", "개발팀", null, "head1", 1L, "desc", "#000", company);
             UserDepartment userDept = UserDepartment.createUserDepartment(user, dept, YNType.Y);
 
-            given(userRepositoryImpl.findById(userId)).willReturn(Optional.of(user));
+            given(userRepository.findByIdWithRolesAndPermissions(userId)).willReturn(Optional.of(user));
 
             // when
             UserServiceDto result = userService.searchUser(userId);
@@ -281,7 +280,7 @@ class UserServiceTest {
             UserDepartment userDept = UserDepartment.createUserDepartment(user, dept, YNType.Y);
             userDept.deleteUserDepartment();
 
-            given(userRepositoryImpl.findById(userId)).willReturn(Optional.of(user));
+            given(userRepository.findByIdWithRolesAndPermissions(userId)).willReturn(Optional.of(user));
 
             // when
             UserServiceDto result = userService.searchUser(userId);
@@ -303,7 +302,7 @@ class UserServiceTest {
             Department dept = Department.createDepartment("부서", "개발팀", null, "head1", 1L, "desc", "#000", company);
             UserDepartment userDept = UserDepartment.createUserDepartment(user, dept, YNType.N);
 
-            given(userRepositoryImpl.findById(userId)).willReturn(Optional.of(user));
+            given(userRepository.findByIdWithRolesAndPermissions(userId)).willReturn(Optional.of(user));
 
             // when
             UserServiceDto result = userService.searchUser(userId);
@@ -321,7 +320,7 @@ class UserServiceTest {
         @DisplayName("성공 - 유저 목록을 반환한다")
         void searchUsersSuccess() {
             // given
-            given(userRepositoryImpl.findUsers()).willReturn(List.of(
+            given(userRepository.findUsersWithRolesAndPermissions()).willReturn(List.of(
                     User.createUser("user1", "", "이서준", "", LocalDate.now(), OriginCompanyType.SKAX, "", YNType.N, null, null),
                     User.createUser("user2", "", "김서연", "", LocalDate.now(), OriginCompanyType.SKAX, "", YNType.N, null, null)
             ));
@@ -330,7 +329,7 @@ class UserServiceTest {
             List<UserServiceDto> result = userService.searchUsers();
 
             // then
-            then(userRepositoryImpl).should().findUsers();
+            then(userRepository).should().findUsersWithRolesAndPermissions();
             assertThat(result).hasSize(2);
             assertThat(result).extracting("name").containsExactly("이서준", "김서연");
         }
@@ -339,7 +338,7 @@ class UserServiceTest {
         @DisplayName("성공 - 유저가 없으면 빈 리스트를 반환한다")
         void searchUsersEmptyList() {
             // given
-            given(userRepositoryImpl.findUsers()).willReturn(List.of());
+            given(userRepository.findUsersWithRolesAndPermissions()).willReturn(List.of());
 
             // when
             List<UserServiceDto> result = userService.searchUsers();
@@ -359,7 +358,7 @@ class UserServiceTest {
             String userId = "user1";
             User user = User.createUser(userId, "", "이서준", "", LocalDate.now(),
                     OriginCompanyType.SKAX, "9 ~ 6", YNType.N, null, null);
-            given(userRepositoryImpl.findById(userId)).willReturn(Optional.of(user));
+            given(userRepository.findById(userId)).willReturn(Optional.of(user));
 
             UserServiceDto data = UserServiceDto.builder()
                     .id(userId)
@@ -371,7 +370,7 @@ class UserServiceTest {
             userService.editUser(data);
 
             // then
-            then(userRepositoryImpl).should().findById(userId);
+            then(userRepository).should().findById(userId);
             assertThat(user.getName()).isEqualTo("이하은");
             assertThat(user.getWorkTime()).isEqualTo("10 ~ 7");
         }
@@ -381,15 +380,13 @@ class UserServiceTest {
         void editUserFailNotFound() {
             // given
             String userId = "nonexistent";
-            given(userRepositoryImpl.findById(userId)).willReturn(Optional.empty());
-            given(ms.getMessage(eq("error.notfound.user"), any(), any()))
-                    .willReturn("유저를 찾을 수 없습니다");
+            given(userRepository.findById(userId)).willReturn(Optional.empty());
 
             UserServiceDto data = UserServiceDto.builder().id(userId).build();
 
             // when & then
             assertThatThrownBy(() -> userService.editUser(data))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
         }
 
         @Test
@@ -399,7 +396,7 @@ class UserServiceTest {
             String userId = "user1";
             User user = User.createUser(userId, "", "이서준", "", LocalDate.now(),
                     OriginCompanyType.SKAX, "9 ~ 6", YNType.N, null, null);
-            given(userRepositoryImpl.findById(userId)).willReturn(Optional.of(user));
+            given(userRepository.findById(userId)).willReturn(Optional.of(user));
 
             UserServiceDto data = UserServiceDto.builder()
                     .id(userId)
@@ -410,7 +407,7 @@ class UserServiceTest {
             userService.editUser(data);
 
             // then
-            then(userRepositoryImpl).should().findById(userId);
+            then(userRepository).should().findById(userId);
             assertThat(user.getDashboard()).isEqualTo("{\"layout\": []}");
         }
 
@@ -421,7 +418,7 @@ class UserServiceTest {
             String userId = "user1";
             User user = User.createUser(userId, "", "이서준", "", LocalDate.now(),
                     OriginCompanyType.SKAX, "9 ~ 6", YNType.N, null, null);
-            given(userRepositoryImpl.findById(userId)).willReturn(Optional.of(user));
+            given(userRepository.findById(userId)).willReturn(Optional.of(user));
 
             Role role = Role.createRole("ADMIN", "관리자", "관리자 역할");
             given(roleRepository.findByCode("ADMIN")).willReturn(Optional.of(role));
@@ -435,7 +432,7 @@ class UserServiceTest {
             userService.editUser(data);
 
             // then
-            then(userRepositoryImpl).should().findById(userId);
+            then(userRepository).should().findById(userId);
             then(roleRepository).should().findByCode("ADMIN");
             assertThat(user.getRoles()).contains(role);
         }
@@ -451,13 +448,13 @@ class UserServiceTest {
             String userId = "user1";
             User user = User.createUser(userId, "", "이서준", "", LocalDate.now(),
                     OriginCompanyType.SKAX, "9 ~ 6", YNType.N, null, null);
-            given(userRepositoryImpl.findById(userId)).willReturn(Optional.of(user));
+            given(userRepository.findById(userId)).willReturn(Optional.of(user));
 
             // when
             userService.deleteUser(userId);
 
             // then
-            then(userRepositoryImpl).should().findById(userId);
+            then(userRepository).should().findById(userId);
             assertThat(user.getIsDeleted()).isEqualTo(YNType.Y);
         }
 
@@ -466,13 +463,11 @@ class UserServiceTest {
         void deleteUserFailNotFound() {
             // given
             String userId = "nonexistent";
-            given(userRepositoryImpl.findById(userId)).willReturn(Optional.empty());
-            given(ms.getMessage(eq("error.notfound.user"), any(), any()))
-                    .willReturn("유저를 찾을 수 없습니다");
+            given(userRepository.findById(userId)).willReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> userService.deleteUser(userId))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
         }
     }
 
@@ -489,7 +484,7 @@ class UserServiceTest {
             try (MockedStatic<PorestFile> mocked = mockStatic(PorestFile.class)) {
                 mocked.when(() -> PorestFile.generatePhysicalFilename(eq("test.jpg"), anyString()))
                         .thenReturn(physicalFilename);
-                mocked.when(() -> PorestFile.save(eq(mockFile), anyString(), eq(physicalFilename), eq(ms)))
+                mocked.when(() -> PorestFile.save(eq(mockFile), anyString(), eq(physicalFilename), eq(messageResolver)))
                         .thenReturn(true);
 
                 // when
@@ -518,15 +513,15 @@ class UserServiceTest {
                     .joinDate(LocalDate.now())
                     .build();
 
-            given(userRepositoryImpl.findById("newuser")).willReturn(Optional.empty());
-            willDoNothing().given(userRepositoryImpl).save(any(User.class));
+            given(userRepository.findById("newuser")).willReturn(Optional.empty());
+            willDoNothing().given(userRepository).save(any(User.class));
             willDoNothing().given(emailService).sendInvitationEmail(anyString(), anyString(), anyString());
 
             // when
             UserServiceDto result = userService.inviteUser(data);
 
             // then
-            then(userRepositoryImpl).should().save(any(User.class));
+            then(userRepository).should().save(any(User.class));
             then(emailService).should().sendInvitationEmail(eq("new@test.com"), eq("신규유저"), anyString());
             assertThat(result.getId()).isEqualTo("newuser");
             assertThat(result.getInvitationStatus()).isEqualTo(StatusType.PENDING);
@@ -543,13 +538,11 @@ class UserServiceTest {
                     .build();
 
             User existingUser = User.createUser("existinguser");
-            given(userRepositoryImpl.findById("existinguser")).willReturn(Optional.of(existingUser));
-            given(ms.getMessage(eq("error.duplicate.userId"), any(), any()))
-                    .willReturn("이미 존재하는 아이디입니다");
+            given(userRepository.findById("existinguser")).willReturn(Optional.of(existingUser));
 
             // when & then
             assertThatThrownBy(() -> userService.inviteUser(data))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(DuplicateException.class);
         }
     }
 
@@ -563,7 +556,7 @@ class UserServiceTest {
             String userId = "user1";
             User user = User.createInvitedUser(userId, "유저", "user@test.com",
                     OriginCompanyType.SKAX, "9 ~ 6", LocalDate.now());
-            given(userRepositoryImpl.findById(userId)).willReturn(Optional.of(user));
+            given(userRepository.findById(userId)).willReturn(Optional.of(user));
             willDoNothing().given(emailService).sendInvitationEmail(anyString(), anyString(), anyString());
 
             // when
@@ -585,7 +578,7 @@ class UserServiceTest {
             String userId = "user1";
             User user = User.createInvitedUser(userId, "유저", "old@test.com",
                     OriginCompanyType.SKAX, "9 ~ 6", LocalDate.now());
-            given(userRepositoryImpl.findById(userId)).willReturn(Optional.of(user));
+            given(userRepository.findById(userId)).willReturn(Optional.of(user));
 
             UserServiceDto data = UserServiceDto.builder()
                     .name("수정된유저")
@@ -606,7 +599,7 @@ class UserServiceTest {
             String userId = "user1";
             User user = User.createInvitedUser(userId, "유저", "old@test.com",
                     OriginCompanyType.SKAX, "9 ~ 6", LocalDate.now());
-            given(userRepositoryImpl.findById(userId)).willReturn(Optional.of(user));
+            given(userRepository.findById(userId)).willReturn(Optional.of(user));
             willDoNothing().given(emailService).sendInvitationEmail(anyString(), anyString(), anyString());
 
             UserServiceDto data = UserServiceDto.builder()
@@ -630,15 +623,13 @@ class UserServiceTest {
                     OriginCompanyType.SKAX, "9 ~ 6", LocalDate.now());
             user.completeRegistration(LocalDate.now(), YNType.N);
 
-            given(userRepositoryImpl.findById(userId)).willReturn(Optional.of(user));
-            given(ms.getMessage(eq("error.validate.not.pending.user"), any(), any()))
-                    .willReturn("PENDING 상태가 아닙니다");
+            given(userRepository.findById(userId)).willReturn(Optional.of(user));
 
             UserServiceDto data = UserServiceDto.builder().name("수정").build();
 
             // when & then
             assertThatThrownBy(() -> userService.editInvitedUser(userId, data))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(BusinessRuleViolationException.class);
         }
     }
 
@@ -653,7 +644,7 @@ class UserServiceTest {
                     OriginCompanyType.SKAX, "9 ~ 6", LocalDate.now());
             String token = user.getInvitationToken();
 
-            given(userRepositoryImpl.findByInvitationToken(token)).willReturn(Optional.of(user));
+            given(userRepository.findByInvitationToken(token)).willReturn(Optional.of(user));
 
             UserServiceDto data = UserServiceDto.builder()
                     .invitationToken(token)
@@ -673,9 +664,7 @@ class UserServiceTest {
         @DisplayName("실패 - 존재하지 않는 토큰이면 예외가 발생한다")
         void completeRegistrationFailInvalidToken() {
             // given
-            given(userRepositoryImpl.findByInvitationToken("invalid-token")).willReturn(Optional.empty());
-            given(ms.getMessage(eq("error.notfound.invitation"), any(), any()))
-                    .willReturn("초대를 찾을 수 없습니다");
+            given(userRepository.findByInvitationToken("invalid-token")).willReturn(Optional.empty());
 
             UserServiceDto data = UserServiceDto.builder()
                     .invitationToken("invalid-token")
@@ -683,7 +672,7 @@ class UserServiceTest {
 
             // when & then
             assertThatThrownBy(() -> userService.completeInvitedUserRegistration(data))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
         }
 
         @Test
@@ -697,9 +686,7 @@ class UserServiceTest {
             // 만료일을 과거로 설정
             ReflectionTestUtils.setField(user, "invitationExpiresAt", LocalDateTime.now().minusDays(1));
 
-            given(userRepositoryImpl.findByInvitationToken(token)).willReturn(Optional.of(user));
-            given(ms.getMessage(eq("error.expired.invitation"), any(), any()))
-                    .willReturn("초대가 만료되었습니다");
+            given(userRepository.findByInvitationToken(token)).willReturn(Optional.of(user));
 
             UserServiceDto data = UserServiceDto.builder()
                     .invitationToken(token)
@@ -709,7 +696,7 @@ class UserServiceTest {
 
             // when & then
             assertThatThrownBy(() -> userService.completeInvitedUserRegistration(data))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(BusinessRuleViolationException.class);
         }
     }
 
@@ -721,7 +708,7 @@ class UserServiceTest {
         void checkUserIdDuplicateTrue() {
             // given
             User user = User.createUser("user1");
-            given(userRepositoryImpl.findById("user1")).willReturn(Optional.of(user));
+            given(userRepository.findById("user1")).willReturn(Optional.of(user));
 
             // when
             boolean result = userService.checkUserIdDuplicate("user1");
@@ -734,7 +721,7 @@ class UserServiceTest {
         @DisplayName("성공 - 중복이 아니면 false를 반환한다")
         void checkUserIdDuplicateFalse() {
             // given
-            given(userRepositoryImpl.findById("newuser")).willReturn(Optional.empty());
+            given(userRepository.findById("newuser")).willReturn(Optional.empty());
 
             // when
             boolean result = userService.checkUserIdDuplicate("newuser");
@@ -754,7 +741,7 @@ class UserServiceTest {
             String userId = "user1";
             User user = User.createUser(userId, "", "유저", "", LocalDate.now(),
                     OriginCompanyType.SKAX, "", YNType.N, null, null);
-            given(userRepositoryImpl.findById(userId)).willReturn(Optional.of(user));
+            given(userRepository.findById(userId)).willReturn(Optional.of(user));
             given(departmentRepository.hasMainDepartment(userId)).willReturn(true);
 
             // when
@@ -771,7 +758,7 @@ class UserServiceTest {
             String userId = "user1";
             User user = User.createUser(userId, "", "유저", "", LocalDate.now(),
                     OriginCompanyType.SKAX, "", YNType.N, null, null);
-            given(userRepositoryImpl.findById(userId)).willReturn(Optional.of(user));
+            given(userRepository.findById(userId)).willReturn(Optional.of(user));
             given(departmentRepository.hasMainDepartment(userId)).willReturn(false);
 
             // when
@@ -792,7 +779,7 @@ class UserServiceTest {
             String userId = "user1";
             User user = User.createUser(userId, "", "유저", "", LocalDate.now(),
                     OriginCompanyType.SKAX, "", YNType.N, null, null);
-            given(userRepositoryImpl.findById(userId)).willReturn(Optional.of(user));
+            given(userRepository.findById(userId)).willReturn(Optional.of(user));
 
             // when
             User result = userService.checkUserExist(userId);
@@ -805,13 +792,11 @@ class UserServiceTest {
         @DisplayName("실패 - 존재하지 않는 유저면 예외가 발생한다")
         void checkUserExistFailNotFound() {
             // given
-            given(userRepositoryImpl.findById("nonexistent")).willReturn(Optional.empty());
-            given(ms.getMessage(eq("error.notfound.user"), any(), any()))
-                    .willReturn("유저를 찾을 수 없습니다");
+            given(userRepository.findById("nonexistent")).willReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> userService.checkUserExist("nonexistent"))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
         }
 
         @Test
@@ -822,13 +807,11 @@ class UserServiceTest {
             User user = User.createUser(userId, "", "유저", "", LocalDate.now(),
                     OriginCompanyType.SKAX, "", YNType.N, null, null);
             user.deleteUser();
-            given(userRepositoryImpl.findById(userId)).willReturn(Optional.of(user));
-            given(ms.getMessage(eq("error.notfound.user"), any(), any()))
-                    .willReturn("유저를 찾을 수 없습니다");
+            given(userRepository.findById(userId)).willReturn(Optional.of(user));
 
             // when & then
             assertThatThrownBy(() -> userService.checkUserExist(userId))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
         }
     }
 
@@ -924,7 +907,7 @@ class UserServiceTest {
                     .build();
 
             try (MockedStatic<PorestFile> mocked = mockStatic(PorestFile.class)) {
-                mocked.when(() -> PorestFile.copy(anyString(), anyString(), eq(ms)))
+                mocked.when(() -> PorestFile.copy(anyString(), anyString(), eq(messageResolver)))
                         .thenReturn(true);
                 mocked.when(() -> PorestFile.extractOriginalFilename(anyString(), isNull()))
                         .thenReturn("test.jpg");
@@ -964,7 +947,7 @@ class UserServiceTest {
                     .build();
 
             try (MockedStatic<PorestFile> mocked = mockStatic(PorestFile.class)) {
-                mocked.when(() -> PorestFile.copy(anyString(), anyString(), eq(ms)))
+                mocked.when(() -> PorestFile.copy(anyString(), anyString(), eq(messageResolver)))
                         .thenReturn(false);
 
                 // when
@@ -987,7 +970,7 @@ class UserServiceTest {
             String userId = "user1";
             User user = User.createUser(userId, "", "유저", "", LocalDate.now(),
                     OriginCompanyType.SKAX, "9 ~ 6", YNType.N, null, null);
-            given(userRepositoryImpl.findById(userId)).willReturn(Optional.of(user));
+            given(userRepository.findById(userId)).willReturn(Optional.of(user));
 
             String dashboardData = "{\"widgets\": [{\"type\": \"chart\", \"position\": 1}]}";
 
@@ -995,7 +978,7 @@ class UserServiceTest {
             UserServiceDto result = userService.updateDashboard(userId, dashboardData);
 
             // then
-            then(userRepositoryImpl).should().findById(userId);
+            then(userRepository).should().findById(userId);
             assertThat(result.getId()).isEqualTo(userId);
             assertThat(result.getDashboard()).isEqualTo(dashboardData);
             assertThat(user.getDashboard()).isEqualTo(dashboardData);
@@ -1009,7 +992,7 @@ class UserServiceTest {
             User user = User.createUser(userId, "", "유저", "", LocalDate.now(),
                     OriginCompanyType.SKAX, "9 ~ 6", YNType.N, null, null);
             user.updateDashboard("{\"old\": \"data\"}");
-            given(userRepositoryImpl.findById(userId)).willReturn(Optional.of(user));
+            given(userRepository.findById(userId)).willReturn(Optional.of(user));
 
             // when
             UserServiceDto result = userService.updateDashboard(userId, null);
@@ -1024,13 +1007,11 @@ class UserServiceTest {
         void updateDashboardFailNotFound() {
             // given
             String userId = "nonexistent";
-            given(userRepositoryImpl.findById(userId)).willReturn(Optional.empty());
-            given(ms.getMessage(eq("error.notfound.user"), any(), any()))
-                    .willReturn("유저를 찾을 수 없습니다");
+            given(userRepository.findById(userId)).willReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> userService.updateDashboard(userId, "{\"test\": true}"))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
         }
 
         @Test
@@ -1041,13 +1022,11 @@ class UserServiceTest {
             User user = User.createUser(userId, "", "유저", "", LocalDate.now(),
                     OriginCompanyType.SKAX, "9 ~ 6", YNType.N, null, null);
             user.deleteUser();
-            given(userRepositoryImpl.findById(userId)).willReturn(Optional.of(user));
-            given(ms.getMessage(eq("error.notfound.user"), any(), any()))
-                    .willReturn("유저를 찾을 수 없습니다");
+            given(userRepository.findById(userId)).willReturn(Optional.of(user));
 
             // when & then
             assertThatThrownBy(() -> userService.updateDashboard(userId, "{\"test\": true}"))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
         }
     }
 
@@ -1061,7 +1040,7 @@ class UserServiceTest {
             String userId = "user1";
             User user = User.createUser(userId, "", "유저", "", LocalDate.now(),
                     OriginCompanyType.SKAX, "", YNType.N, null, null);
-            given(userRepositoryImpl.findById(userId)).willReturn(Optional.of(user));
+            given(userRepository.findById(userId)).willReturn(Optional.of(user));
 
             Company company = Company.createCompany("회사", "Company", "desc");
             Department dept = Department.createDepartment("부서", "부서KR", null, "head1", 1L, "desc", "#000", company);
@@ -1071,7 +1050,7 @@ class UserServiceTest {
                     OriginCompanyType.SKAX, "9 ~ 6", YNType.N, null, null);
 
             given(departmentRepository.findApproversByUserId(userId)).willReturn(List.of(dept));
-            given(userRepositoryImpl.findById("head1")).willReturn(Optional.of(approver));
+            given(userRepository.findByIdWithRolesAndPermissions("head1")).willReturn(Optional.of(approver));
 
             // when
             List<UserServiceDto> result = userService.getUserApprovers(userId);
@@ -1089,14 +1068,14 @@ class UserServiceTest {
             String userId = "user1";
             User user = User.createUser(userId, "", "유저", "", LocalDate.now(),
                     OriginCompanyType.SKAX, "", YNType.N, null, null);
-            given(userRepositoryImpl.findById(userId)).willReturn(Optional.of(user));
+            given(userRepository.findById(userId)).willReturn(Optional.of(user));
 
             Company company = Company.createCompany("회사", "Company", "desc");
             Department dept = Department.createDepartment("부서", "부서KR", null, "nonexistent", 1L, "desc", "#000", company);
             ReflectionTestUtils.setField(dept, "id", 1L);
 
             given(departmentRepository.findApproversByUserId(userId)).willReturn(List.of(dept));
-            given(userRepositoryImpl.findById("nonexistent")).willReturn(Optional.empty());
+            given(userRepository.findByIdWithRolesAndPermissions("nonexistent")).willReturn(Optional.empty());
 
             // when
             List<UserServiceDto> result = userService.getUserApprovers(userId);
@@ -1112,7 +1091,7 @@ class UserServiceTest {
             String userId = "user1";
             User user = User.createUser(userId, "", "유저", "", LocalDate.now(),
                     OriginCompanyType.SKAX, "", YNType.N, null, null);
-            given(userRepositoryImpl.findById(userId)).willReturn(Optional.of(user));
+            given(userRepository.findById(userId)).willReturn(Optional.of(user));
 
             Company company = Company.createCompany("회사", "Company", "desc");
             Department dept = Department.createDepartment("부서", "부서KR", null, "deleted", 1L, "desc", "#000", company);
@@ -1123,7 +1102,7 @@ class UserServiceTest {
             deletedApprover.deleteUser();
 
             given(departmentRepository.findApproversByUserId(userId)).willReturn(List.of(dept));
-            given(userRepositoryImpl.findById("deleted")).willReturn(Optional.of(deletedApprover));
+            given(userRepository.findByIdWithRolesAndPermissions("deleted")).willReturn(Optional.of(deletedApprover));
 
             // when
             List<UserServiceDto> result = userService.getUserApprovers(userId);
@@ -1139,7 +1118,7 @@ class UserServiceTest {
             String userId = "user1";
             User user = User.createUser(userId, "", "유저", "", LocalDate.now(),
                     OriginCompanyType.SKAX, "", YNType.N, null, null);
-            given(userRepositoryImpl.findById(userId)).willReturn(Optional.of(user));
+            given(userRepository.findById(userId)).willReturn(Optional.of(user));
             given(departmentRepository.findApproversByUserId(userId)).willReturn(List.of());
 
             // when

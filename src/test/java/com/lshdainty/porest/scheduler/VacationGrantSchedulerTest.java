@@ -5,8 +5,8 @@ import com.lshdainty.porest.user.domain.User;
 import com.lshdainty.porest.vacation.domain.UserVacationPolicy;
 import com.lshdainty.porest.vacation.domain.VacationGrant;
 import com.lshdainty.porest.vacation.domain.VacationPolicy;
-import com.lshdainty.porest.vacation.repository.UserVacationPolicyCustomRepositoryImpl;
-import com.lshdainty.porest.vacation.repository.VacationGrantCustomRepositoryImpl;
+import com.lshdainty.porest.vacation.repository.UserVacationPolicyRepository;
+import com.lshdainty.porest.vacation.repository.VacationGrantRepository;
 import com.lshdainty.porest.vacation.scheduler.VacationGrantScheduler;
 import com.lshdainty.porest.vacation.service.policy.RepeatGrant;
 import com.lshdainty.porest.vacation.service.policy.factory.VacationPolicyStrategyFactory;
@@ -34,10 +34,10 @@ import static org.mockito.BDDMockito.*;
 class VacationGrantSchedulerTest {
 
     @Mock
-    private UserVacationPolicyCustomRepositoryImpl userVacationPolicyRepository;
+    private UserVacationPolicyRepository userVacationPolicyRepository;
 
     @Mock
-    private VacationGrantCustomRepositoryImpl vacationGrantRepository;
+    private VacationGrantRepository vacationGrantRepository;
 
     @Mock
     private VacationPolicyStrategyFactory strategyFactory;

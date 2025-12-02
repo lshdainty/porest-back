@@ -1,6 +1,6 @@
 package com.lshdainty.porest.service.policy;
 
-import com.lshdainty.porest.vacation.repository.VacationPolicyCustomRepositoryImpl;
+import com.lshdainty.porest.vacation.repository.VacationPolicyRepository;
 import com.lshdainty.porest.vacation.service.policy.ManualGrant;
 import com.lshdainty.porest.vacation.service.policy.OnRequest;
 import com.lshdainty.porest.vacation.service.policy.RepeatGrant;
@@ -25,7 +25,7 @@ class VacationPolicyStrategyFactoryTest {
     private MessageSource ms;
 
     @Mock
-    private VacationPolicyCustomRepositoryImpl vacationPolicyRepository;
+    private VacationPolicyRepository vacationPolicyRepository;
 
     @InjectMocks
     private VacationPolicyStrategyFactory factory;

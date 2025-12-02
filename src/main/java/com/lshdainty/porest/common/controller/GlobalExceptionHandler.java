@@ -1,7 +1,9 @@
 package com.lshdainty.porest.common.controller;
 
 import com.lshdainty.porest.common.exception.BusinessException;
+import com.lshdainty.porest.common.exception.EntityNotFoundException;
 import com.lshdainty.porest.common.exception.ErrorCode;
+import com.lshdainty.porest.common.exception.ExternalServiceException;
 import com.lshdainty.porest.common.exception.UnauthorizedException;
 import com.lshdainty.porest.common.message.MessageKey;
 import com.lshdainty.porest.common.util.MessageResolver;
@@ -33,20 +35,32 @@ public class GlobalExceptionHandler {
     private final MessageResolver messageResolver;
 
     /**
-     * BusinessException 처리
-     * 비즈니스 로직 상의 예외 (가장 많이 사용됨)
+     * EntityNotFoundException 처리 (엔티티 조회 실패)
+     * BusinessException보다 먼저 처리되어야 함
      */
-    @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ApiResponse<Void>> handleBusinessException(BusinessException e) {
-        log.warn("BusinessException: code={}, message={}", e.getErrorCode().getCode(), e.getMessage());
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleEntityNotFoundException(EntityNotFoundException e) {
+        log.warn("EntityNotFoundException: code={}, message={}", e.getErrorCode().getCode(), e.getMessage());
 
         ErrorCode errorCode = e.getErrorCode();
+        String message = resolveMessage(e, errorCode);
+        ApiResponse<Void> response = ApiResponse.error(errorCode.getCode(), message);
 
-        // 커스텀 메시지가 있으면 사용, 없으면 MessageSource에서 가져오기
-        String message = e.getMessage() != null && !e.getMessage().equals(errorCode.getMessageKey())
-                ? e.getMessage()
-                : messageResolver.getMessage(errorCode);
+        return ResponseEntity
+                .status(errorCode.getHttpStatus())
+                .body(response);
+    }
 
+    /**
+     * ExternalServiceException 처리 (외부 서비스 연동 실패)
+     * 외부 서비스 연동 실패는 에러 레벨로 로깅
+     */
+    @ExceptionHandler(ExternalServiceException.class)
+    public ResponseEntity<ApiResponse<Void>> handleExternalServiceException(ExternalServiceException e) {
+        log.error("ExternalServiceException: code={}, message={}", e.getErrorCode().getCode(), e.getMessage(), e);
+
+        ErrorCode errorCode = e.getErrorCode();
+        String message = resolveMessage(e, errorCode);
         ApiResponse<Void> response = ApiResponse.error(errorCode.getCode(), message);
 
         return ResponseEntity
@@ -56,19 +70,36 @@ public class GlobalExceptionHandler {
 
     /**
      * UnauthorizedException 처리 (인증 실패)
+     * BusinessException을 상속받지만 별도 핸들러로 명시적 처리
      */
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<ApiResponse<Void>> handleUnauthorizedException(UnauthorizedException e) {
-        log.warn("UnauthorizedException: {}", e.getMessage());
+        log.warn("UnauthorizedException: code={}, message={}", e.getErrorCode().getCode(), e.getMessage());
 
-        String message = e.getMessage() != null && !e.getMessage().isEmpty()
-                ? e.getMessage()
-                : messageResolver.getMessage(ErrorCode.UNAUTHORIZED);
-
-        ApiResponse<Void> response = ApiResponse.error(ErrorCode.UNAUTHORIZED.getCode(), message);
+        ErrorCode errorCode = e.getErrorCode();
+        String message = resolveMessage(e, errorCode);
+        ApiResponse<Void> response = ApiResponse.error(errorCode.getCode(), message);
 
         return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
+                .status(errorCode.getHttpStatus())
+                .body(response);
+    }
+
+    /**
+     * BusinessException 처리
+     * 비즈니스 로직 상의 예외 (가장 많이 사용됨)
+     * 하위 예외들(EntityNotFoundException, InvalidValueException 등)이 먼저 처리됨
+     */
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<ApiResponse<Void>> handleBusinessException(BusinessException e) {
+        log.warn("BusinessException: code={}, message={}", e.getErrorCode().getCode(), e.getMessage());
+
+        ErrorCode errorCode = e.getErrorCode();
+        String message = resolveMessage(e, errorCode);
+        ApiResponse<Void> response = ApiResponse.error(errorCode.getCode(), message);
+
+        return ResponseEntity
+                .status(errorCode.getHttpStatus())
                 .body(response);
     }
 
@@ -197,5 +228,15 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(response);
+    }
+
+    /**
+     * BusinessException 메시지 처리 공통 메서드
+     * 커스텀 메시지가 있으면 사용, 없으면 MessageSource에서 가져오기
+     */
+    private String resolveMessage(BusinessException e, ErrorCode errorCode) {
+        return e.getMessage() != null && !e.getMessage().equals(errorCode.getMessageKey())
+                ? e.getMessage()
+                : messageResolver.getMessage(errorCode);
     }
 }

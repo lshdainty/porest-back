@@ -93,15 +93,11 @@ def jacocoExcludes = [
     '**/lib/**',
     '**/type/**',
     '**/security/**',
-    '**/vacation/**',
-    '**/work/**',
     '**/service/dto/**',
     '**/repository/dto/**',
     '**/SessionConst*',
     '**/util/PorestIP*',
     '**/service/EmailService*',
-    '**/repository/UserProviderRepositoryImpl*',
-    '**/repository/DuesCustomRepositoryImpl*',
     '**/exception/**'
 ]
 

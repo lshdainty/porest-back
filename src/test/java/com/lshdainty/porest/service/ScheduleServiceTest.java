@@ -1,8 +1,12 @@
 package com.lshdainty.porest.service;
 
+import com.lshdainty.porest.common.exception.BusinessRuleViolationException;
+import com.lshdainty.porest.common.exception.EntityNotFoundException;
+import com.lshdainty.porest.common.exception.ErrorCode;
+import com.lshdainty.porest.common.exception.InvalidValueException;
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.schedule.domain.Schedule;
-import com.lshdainty.porest.schedule.repository.ScheduleRepositoryImpl;
+import com.lshdainty.porest.schedule.repository.ScheduleRepository;
 import com.lshdainty.porest.schedule.service.ScheduleService;
 import com.lshdainty.porest.schedule.service.dto.ScheduleServiceDto;
 import com.lshdainty.porest.schedule.type.ScheduleType;
@@ -16,7 +20,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.MessageSource;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,7 +28,6 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.*;
 
 @Slf4j
@@ -33,9 +35,7 @@ import static org.mockito.BDDMockito.*;
 @DisplayName("스케줄 서비스 테스트")
 class ScheduleServiceTest {
     @Mock
-    private MessageSource ms;
-    @Mock
-    private ScheduleRepositoryImpl scheduleRepositoryImpl;
+    private ScheduleRepository scheduleRepository;
     @Mock
     private UserService userService;
 
@@ -63,14 +63,14 @@ class ScheduleServiceTest {
                     .build();
 
             given(userService.checkUserExist(userId)).willReturn(user);
-            willDoNothing().given(scheduleRepositoryImpl).save(any(Schedule.class));
+            willDoNothing().given(scheduleRepository).save(any(Schedule.class));
 
             // when
             scheduleService.registSchedule(data);
 
             // then
             then(userService).should().checkUserExist(userId);
-            then(scheduleRepositoryImpl).should().save(any(Schedule.class));
+            then(scheduleRepository).should().save(any(Schedule.class));
         }
 
         @Test
@@ -83,11 +83,11 @@ class ScheduleServiceTest {
                     .build();
 
             given(userService.checkUserExist(userId))
-                    .willThrow(new IllegalArgumentException("사용자를 찾을 수 없습니다"));
+                    .willThrow(new EntityNotFoundException(ErrorCode.USER_NOT_FOUND));
 
             // when & then
             assertThatThrownBy(() -> scheduleService.registSchedule(data))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
             then(userService).should().checkUserExist(userId);
         }
 
@@ -109,12 +109,10 @@ class ScheduleServiceTest {
                     .build();
 
             given(userService.checkUserExist(userId)).willReturn(user);
-            given(ms.getMessage(eq("error.validate.startIsAfterThanEnd"), any(), any()))
-                    .willReturn("시작일이 종료일보다 늦습니다");
 
             // when & then
             assertThatThrownBy(() -> scheduleService.registSchedule(data))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(InvalidValueException.class);
         }
     }
 
@@ -134,13 +132,13 @@ class ScheduleServiceTest {
                             LocalDateTime.now().plusDays(10), LocalDateTime.now().plusDays(11))
             );
 
-            given(scheduleRepositoryImpl.findSchedulesByUserId(userId)).willReturn(schedules);
+            given(scheduleRepository.findSchedulesByUserId(userId)).willReturn(schedules);
 
             // when
             List<Schedule> result = scheduleService.searchSchedulesByUser(userId);
 
             // then
-            then(scheduleRepositoryImpl).should().findSchedulesByUserId(userId);
+            then(scheduleRepository).should().findSchedulesByUserId(userId);
             assertThat(result).hasSize(2);
             assertThat(result).extracting("desc").containsExactly("교육", "출장");
         }
@@ -164,13 +162,13 @@ class ScheduleServiceTest {
                             LocalDateTime.of(2025, 7, 20, 0, 0), LocalDateTime.of(2025, 7, 20, 23, 59))
             );
 
-            given(scheduleRepositoryImpl.findSchedulesByPeriod(start, end)).willReturn(schedules);
+            given(scheduleRepository.findSchedulesByPeriod(start, end)).willReturn(schedules);
 
             // when
             List<Schedule> result = scheduleService.searchSchedulesByPeriod(start, end);
 
             // then
-            then(scheduleRepositoryImpl).should().findSchedulesByPeriod(start, end);
+            then(scheduleRepository).should().findSchedulesByPeriod(start, end);
             assertThat(result).hasSize(2);
         }
 
@@ -180,12 +178,10 @@ class ScheduleServiceTest {
             // given
             LocalDateTime start = LocalDateTime.now().plusDays(1);
             LocalDateTime end = start.minusDays(2);
-            given(ms.getMessage(eq("error.validate.startIsAfterThanEnd"), any(), any()))
-                    .willReturn("시작일이 종료일보다 늦습니다");
 
             // when & then
             assertThatThrownBy(() -> scheduleService.searchSchedulesByPeriod(start, end))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(InvalidValueException.class);
         }
     }
 
@@ -214,17 +210,17 @@ class ScheduleServiceTest {
                     .endDate(futureEnd.plusDays(5))
                     .build();
 
-            given(scheduleRepositoryImpl.findById(scheduleId)).willReturn(Optional.of(existingSchedule));
+            given(scheduleRepository.findById(scheduleId)).willReturn(Optional.of(existingSchedule));
             given(userService.checkUserExist(userId)).willReturn(user);
-            willDoNothing().given(scheduleRepositoryImpl).save(any(Schedule.class));
+            willDoNothing().given(scheduleRepository).save(any(Schedule.class));
 
             // when
             Long newScheduleId = scheduleService.updateSchedule(scheduleId, data);
 
             // then
-            then(scheduleRepositoryImpl).should().findById(scheduleId);
+            then(scheduleRepository).should().findById(scheduleId);
             then(userService).should().checkUserExist(userId);
-            then(scheduleRepositoryImpl).should().save(any(Schedule.class));
+            then(scheduleRepository).should().save(any(Schedule.class));
             assertThat(existingSchedule.getIsDeleted()).isEqualTo(YNType.Y);
         }
     }
@@ -245,13 +241,13 @@ class ScheduleServiceTest {
                     futureStart, futureEnd);
             setScheduleId(schedule, scheduleId);
 
-            given(scheduleRepositoryImpl.findById(scheduleId)).willReturn(Optional.of(schedule));
+            given(scheduleRepository.findById(scheduleId)).willReturn(Optional.of(schedule));
 
             // when
             scheduleService.deleteSchedule(scheduleId);
 
             // then
-            then(scheduleRepositoryImpl).should().findById(scheduleId);
+            then(scheduleRepository).should().findById(scheduleId);
             assertThat(schedule.getIsDeleted()).isEqualTo(YNType.Y);
         }
 
@@ -260,13 +256,11 @@ class ScheduleServiceTest {
         void deleteScheduleFailNotFound() {
             // given
             Long scheduleId = 999L;
-            given(scheduleRepositoryImpl.findById(scheduleId)).willReturn(Optional.empty());
-            given(ms.getMessage(eq("error.notfound.schedule"), any(), any()))
-                    .willReturn("스케줄을 찾을 수 없습니다");
+            given(scheduleRepository.findById(scheduleId)).willReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> scheduleService.deleteSchedule(scheduleId))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
         }
 
         @Test
@@ -282,13 +276,11 @@ class ScheduleServiceTest {
                     futureStart, futureEnd);
             schedule.deleteSchedule();
 
-            given(scheduleRepositoryImpl.findById(scheduleId)).willReturn(Optional.of(schedule));
-            given(ms.getMessage(eq("error.notfound.schedule"), any(), any()))
-                    .willReturn("스케줄을 찾을 수 없습니다");
+            given(scheduleRepository.findById(scheduleId)).willReturn(Optional.of(schedule));
 
             // when & then
             assertThatThrownBy(() -> scheduleService.deleteSchedule(scheduleId))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
         }
 
         @Test
@@ -304,13 +296,11 @@ class ScheduleServiceTest {
                     pastStart, pastEnd);
             setScheduleId(schedule, scheduleId);
 
-            given(scheduleRepositoryImpl.findById(scheduleId)).willReturn(Optional.of(schedule));
-            given(ms.getMessage(eq("error.validate.delete.isBeforeThanNow"), any(), any()))
-                    .willReturn("과거 스케줄은 삭제할 수 없습니다");
+            given(scheduleRepository.findById(scheduleId)).willReturn(Optional.of(schedule));
 
             // when & then
             assertThatThrownBy(() -> scheduleService.deleteSchedule(scheduleId))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(BusinessRuleViolationException.class);
         }
     }
 
@@ -327,7 +317,7 @@ class ScheduleServiceTest {
                     LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(2));
             setScheduleId(schedule, scheduleId);
 
-            given(scheduleRepositoryImpl.findById(scheduleId)).willReturn(Optional.of(schedule));
+            given(scheduleRepository.findById(scheduleId)).willReturn(Optional.of(schedule));
 
             // when
             Schedule result = scheduleService.checkScheduleExist(scheduleId);
@@ -341,13 +331,11 @@ class ScheduleServiceTest {
         void checkScheduleExistFailNotFound() {
             // given
             Long scheduleId = 999L;
-            given(scheduleRepositoryImpl.findById(scheduleId)).willReturn(Optional.empty());
-            given(ms.getMessage(eq("error.notfound.schedule"), any(), any()))
-                    .willReturn("스케줄을 찾을 수 없습니다");
+            given(scheduleRepository.findById(scheduleId)).willReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> scheduleService.checkScheduleExist(scheduleId))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
         }
 
         @Test
@@ -360,13 +348,11 @@ class ScheduleServiceTest {
                     LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(2));
             schedule.deleteSchedule();
 
-            given(scheduleRepositoryImpl.findById(scheduleId)).willReturn(Optional.of(schedule));
-            given(ms.getMessage(eq("error.notfound.schedule"), any(), any()))
-                    .willReturn("스케줄을 찾을 수 없습니다");
+            given(scheduleRepository.findById(scheduleId)).willReturn(Optional.of(schedule));
 
             // when & then
             assertThatThrownBy(() -> scheduleService.checkScheduleExist(scheduleId))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(EntityNotFoundException.class);
         }
     }
 

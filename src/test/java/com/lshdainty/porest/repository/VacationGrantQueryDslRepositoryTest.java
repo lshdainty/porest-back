@@ -4,10 +4,10 @@ import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.user.domain.User;
 import com.lshdainty.porest.vacation.domain.VacationGrant;
 import com.lshdainty.porest.vacation.domain.VacationPolicy;
-import com.lshdainty.porest.vacation.repository.VacationGrantCustomRepositoryImpl;
+import com.lshdainty.porest.vacation.repository.VacationGrantQueryDslRepository;
 import com.lshdainty.porest.vacation.type.EffectiveType;
 import com.lshdainty.porest.vacation.type.ExpirationType;
-import com.lshdainty.porest.vacation.type.GrantMethod;
+import com.lshdainty.porest.vacation.type.GrantStatus;
 import com.lshdainty.porest.vacation.type.VacationType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -23,15 +23,15 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@Import({VacationGrantCustomRepositoryImpl.class, TestQuerydslConfig.class})
+@Import({VacationGrantQueryDslRepository.class, TestQuerydslConfig.class})
 @Transactional
-@DisplayName("JPA 휴가부여 레포지토리 테스트")
-class VacationGrantRepositoryImplTest {
+@DisplayName("QueryDSL 휴가부여 레포지토리 테스트")
+class VacationGrantQueryDslRepositoryTest {
     @Autowired
-    private VacationGrantCustomRepositoryImpl vacationGrantRepository;
+    private VacationGrantQueryDslRepository vacationGrantRepository;
 
     @Autowired
     private TestEntityManager em;
@@ -227,8 +227,8 @@ class VacationGrantRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("휴가부여 차감 및 복원")
-    void deductAndRestore() {
+    @DisplayName("휴가부여 차감")
+    void deduct() {
         // given
         VacationGrant grant = VacationGrant.createVacationGrant(
                 user, policy, "연차", VacationType.ANNUAL, new BigDecimal("8.0"),
@@ -368,5 +368,57 @@ class VacationGrantRepositoryImplTest {
 
         // then
         assertThat(grants).isEmpty();
+    }
+
+    @Test
+    @DisplayName("기간 내 유효한 휴가부여 조회")
+    void findByUserIdAndValidPeriod() {
+        // given
+        vacationGrantRepository.save(VacationGrant.createVacationGrant(
+                user, policy, "연차", VacationType.ANNUAL, new BigDecimal("8.0"),
+                LocalDateTime.of(2025, 1, 1, 0, 0), LocalDateTime.of(2025, 12, 31, 23, 59)
+        ));
+        em.flush();
+        em.clear();
+
+        // when
+        List<VacationGrant> grants = vacationGrantRepository.findByUserIdAndValidPeriod(
+                "user1",
+                LocalDateTime.of(2025, 6, 1, 0, 0),
+                LocalDateTime.of(2025, 6, 30, 23, 59)
+        );
+
+        // then
+        assertThat(grants).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("상태와 기간으로 휴가부여 조회")
+    void findByUserIdAndStatusesAndPeriod() {
+        // given
+        VacationPolicy onRequestPolicy = VacationPolicy.createOnRequestPolicy(
+                "신청연차", "신청 정책", VacationType.ANNUAL, new BigDecimal("1.0"),
+                YNType.N, YNType.N, 1, EffectiveType.IMMEDIATELY, ExpirationType.END_OF_YEAR
+        );
+        em.persist(onRequestPolicy);
+
+        VacationGrant pendingGrant = VacationGrant.createPendingVacationGrant(
+                user, onRequestPolicy, "연차 신청", VacationType.ANNUAL, new BigDecimal("1.0"),
+                LocalDateTime.of(2025, 6, 15, 9, 0), LocalDateTime.of(2025, 6, 15, 18, 0), "개인 사유"
+        );
+        em.persist(pendingGrant);
+        em.flush();
+        em.clear();
+
+        // when
+        List<VacationGrant> grants = vacationGrantRepository.findByUserIdAndStatusesAndPeriod(
+                "user1",
+                List.of(GrantStatus.PENDING),
+                LocalDateTime.of(2025, 6, 1, 0, 0),
+                LocalDateTime.of(2025, 6, 30, 23, 59)
+        );
+
+        // then
+        assertThat(grants).hasSize(1);
     }
 }

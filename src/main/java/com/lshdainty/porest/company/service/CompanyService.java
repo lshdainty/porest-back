@@ -1,8 +1,10 @@
 package com.lshdainty.porest.company.service;
 
-import com.lshdainty.porest.common.message.MessageKey;
+import com.lshdainty.porest.common.exception.BusinessRuleViolationException;
+import com.lshdainty.porest.common.exception.DuplicateException;
+import com.lshdainty.porest.common.exception.EntityNotFoundException;
+import com.lshdainty.porest.common.exception.ErrorCode;
 import com.lshdainty.porest.common.type.YNType;
-import com.lshdainty.porest.common.util.MessageResolver;
 import com.lshdainty.porest.company.domain.Company;
 import com.lshdainty.porest.company.repository.CompanyRepository;
 import com.lshdainty.porest.company.service.dto.CompanyServiceDto;
@@ -20,7 +22,6 @@ import java.util.Optional;
 @Slf4j
 @Transactional(readOnly = true)
 public class CompanyService {
-    private final MessageResolver messageResolver;
     private final CompanyRepository companyRepository;
 
     @Transactional
@@ -58,7 +59,7 @@ public class CompanyService {
 
         if (!company.getDepartments().isEmpty()) {
             log.warn("회사 삭제 실패 - 부서 존재: id={}", id);
-            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_DEPARTMENT_EXISTS));
+            throw new BusinessRuleViolationException(ErrorCode.DEPARTMENT_HAS_MEMBERS);
         }
 
         company.deleteCompany();
@@ -85,7 +86,7 @@ public class CompanyService {
         Optional<Company> OCompany = companyRepository.findByIdWithDepartments(id);
         if (OCompany.isEmpty()) {
             log.warn("회사 조회 실패 - 존재하지 않는 회사: id={}", id);
-            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_COMPANY));
+            throw new EntityNotFoundException(ErrorCode.COMPANY_NOT_FOUND);
         }
 
         Company company = OCompany.get();
@@ -108,7 +109,7 @@ public class CompanyService {
         Optional<Company> company = companyRepository.findById(id);
         if (company.isPresent()) {
             log.warn("회사 ID 중복: id={}", id);
-            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_DUPLICATE_COMPANY));
+            throw new DuplicateException(ErrorCode.COMPANY_ALREADY_EXISTS);
         }
     }
 
@@ -116,7 +117,7 @@ public class CompanyService {
         Optional<Company> company = companyRepository.findById(companyId);
         if ((company.isEmpty()) || YNType.isY(company.get().getIsDeleted())) {
             log.warn("회사 조회 실패 - 존재하지 않거나 삭제된 회사: id={}", companyId);
-            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_COMPANY));
+            throw new EntityNotFoundException(ErrorCode.COMPANY_NOT_FOUND);
         }
         return company.get();
     }

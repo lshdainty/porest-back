@@ -18,10 +18,18 @@ public enum ErrorCode {
     // ========================================
     SUCCESS("COMMON_200", "error.common.success", HttpStatus.OK),
     INVALID_INPUT("COMMON_400", "error.common.invalid.input", HttpStatus.BAD_REQUEST),
-    UNAUTHORIZED("COMMON_401", "error.common.unauthorized", HttpStatus.UNAUTHORIZED),
-    FORBIDDEN("COMMON_403", "error.common.forbidden", HttpStatus.FORBIDDEN),
+    INVALID_DATE_RANGE("COMMON_401", "error.common.invalid.date.range", HttpStatus.BAD_REQUEST),
+    INVALID_PARAMETER("COMMON_402", "error.common.invalid.parameter", HttpStatus.BAD_REQUEST),
+    UNSUPPORTED_TYPE("COMMON_403", "error.common.unsupported.type", HttpStatus.BAD_REQUEST),
+    UNAUTHORIZED("COMMON_411", "error.common.unauthorized", HttpStatus.UNAUTHORIZED),
+    FORBIDDEN("COMMON_412", "error.common.forbidden", HttpStatus.FORBIDDEN),
     NOT_FOUND("COMMON_404", "error.common.not.found", HttpStatus.NOT_FOUND),
     INTERNAL_SERVER_ERROR("COMMON_500", "error.common.internal.server", HttpStatus.INTERNAL_SERVER_ERROR),
+
+    // ========================================
+    // FILE (파일)
+    // ========================================
+    FILE_NOT_FOUND("FILE_001", "error.file.notfound", HttpStatus.NOT_FOUND),
 
     // ========================================
     // USER (사용자)
@@ -52,6 +60,10 @@ public enum ErrorCode {
     WORK_ALREADY_ENDED("WORK_003", "error.work.already.ended", HttpStatus.CONFLICT),
     WORK_INVALID_TIME("WORK_004", "error.validate.worktime.startEndTime", HttpStatus.BAD_REQUEST),
     WORK_CODE_NOT_FOUND("WORK_005", "error.notfound.work.code", HttpStatus.NOT_FOUND),
+    WORK_CODE_DUPLICATE("WORK_006", "error.work.code.duplicate", HttpStatus.CONFLICT),
+    WORK_CODE_INVALID_PARENT("WORK_007", "error.work.code.invalid.parent", HttpStatus.BAD_REQUEST),
+    WORK_CODE_REQUIRED("WORK_008", "error.work.code.required", HttpStatus.BAD_REQUEST),
+    WORK_YEAR_MONTH_REQUIRED("WORK_009", "error.work.year.month.required", HttpStatus.BAD_REQUEST),
 
     // ========================================
     // DEPARTMENT (부서)
@@ -73,6 +85,8 @@ public enum ErrorCode {
     PERMISSION_DENIED("PERMISSION_001", "error.permission.denied", HttpStatus.FORBIDDEN),
     ROLE_NOT_FOUND("PERMISSION_002", "error.notfound.role", HttpStatus.NOT_FOUND),
     ROLE_ALREADY_EXISTS("PERMISSION_003", "error.role.already.exists", HttpStatus.CONFLICT),
+    PERMISSION_NOT_FOUND("PERMISSION_004", "error.notfound.permission", HttpStatus.NOT_FOUND),
+    PERMISSION_ALREADY_EXISTS("PERMISSION_005", "error.permission.already.exists", HttpStatus.CONFLICT),
 
     // ========================================
     // DUES (회비)
@@ -91,11 +105,18 @@ public enum ErrorCode {
     // COMPANY (회사)
     // ========================================
     COMPANY_NOT_FOUND("COMPANY_001", "error.notfound.company", HttpStatus.NOT_FOUND),
+    COMPANY_ALREADY_EXISTS("COMPANY_002", "error.company.already.exists", HttpStatus.CONFLICT),
 
     // ========================================
     // INVITATION (초대)
     // ========================================
     INVITATION_NOT_FOUND("INVITATION_001", "error.notfound.invitation", HttpStatus.NOT_FOUND),
+    INVITATION_EXPIRED("INVITATION_002", "error.validate.expired.invitation", HttpStatus.BAD_REQUEST),
+
+    // ========================================
+    // AUTH (인증)
+    // ========================================
+    UNSUPPORTED_OAUTH_PROVIDER("AUTH_001", "error.auth.unsupported.provider", HttpStatus.BAD_REQUEST),
 
     ;
 
