@@ -1,5 +1,7 @@
 package com.lshdainty.porest.permission.service;
 
+import com.lshdainty.porest.common.message.MessageKey;
+import com.lshdainty.porest.common.util.MessageResolver;
 import com.lshdainty.porest.permission.domain.Permission;
 import com.lshdainty.porest.permission.domain.Role;
 import com.lshdainty.porest.permission.repository.PermissionRepository;
@@ -7,7 +9,6 @@ import com.lshdainty.porest.permission.repository.RoleRepository;
 import com.lshdainty.porest.permission.type.ActionType;
 import com.lshdainty.porest.permission.type.ResourceType;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +23,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class RoleService {
-    private final MessageSource ms;
+    private final MessageResolver messageResolver;
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
 
@@ -45,7 +46,7 @@ public class RoleService {
      */
     public Role getRole(String roleCode) {
         return roleRepository.findByCodeWithPermissions(roleCode)
-                .orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.role", null, null)));
+                .orElseThrow(() -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_ROLE)));
     }
 
     /**
@@ -59,7 +60,7 @@ public class RoleService {
     @Transactional
     public Role createRole(String roleCode, String roleName, String description) {
         if (roleRepository.findByCode(roleCode).isPresent()) {
-            throw new IllegalArgumentException(ms.getMessage("error.validate.role.already.exists", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.ROLE_ALREADY_EXISTS));
         }
         Role role = Role.createRole(roleCode, roleName, description);
         roleRepository.save(role);
@@ -78,12 +79,12 @@ public class RoleService {
     @Transactional
     public Role createRoleWithPermissions(String roleCode, String roleName, String description, List<String> permissionCodes) {
         if (roleRepository.findByCode(roleCode).isPresent()) {
-            throw new IllegalArgumentException(ms.getMessage("error.validate.role.already.exists", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.ROLE_ALREADY_EXISTS));
         }
 
         List<Permission> permissions = permissionCodes.stream()
                 .map(code -> permissionRepository.findByCode(code)
-                        .orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.permission", null, null))))
+                        .orElseThrow(() -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_PERMISSION))))
                 .collect(Collectors.toList());
 
         Role role = Role.createRoleWithPermissions(roleCode, roleName, description, permissions);
@@ -100,7 +101,7 @@ public class RoleService {
     @Transactional
     public void updateRole(String roleCode, String description) {
         Role role = roleRepository.findByCode(roleCode)
-                .orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.role", null, null)));
+                .orElseThrow(() -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_ROLE)));
         role.updateRole(null, description, null);
     }
 
@@ -117,7 +118,7 @@ public class RoleService {
 
         List<Permission> permissions = permissionCodes.stream()
                 .map(code -> permissionRepository.findByCode(code)
-                        .orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.permission", null, null))))
+                        .orElseThrow(() -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_PERMISSION))))
                 .collect(Collectors.toList());
 
         role.updateRole(null, description, permissions);
@@ -135,7 +136,7 @@ public class RoleService {
 
         List<Permission> permissions = permissionCodes.stream()
                 .map(code -> permissionRepository.findByCode(code)
-                        .orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.permission", null, null))))
+                        .orElseThrow(() -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_PERMISSION))))
                 .collect(Collectors.toList());
 
         role.clearPermissions();
@@ -152,7 +153,7 @@ public class RoleService {
     public void addPermissionToRole(String roleCode, String permissionCode) {
         Role role = getRole(roleCode);
         Permission permission = permissionRepository.findByCode(permissionCode)
-                .orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.permission", null, null)));
+                .orElseThrow(() -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_PERMISSION)));
         role.addPermission(permission);
     }
 
@@ -166,7 +167,7 @@ public class RoleService {
     public void removePermissionFromRole(String roleCode, String permissionCode) {
         Role role = getRole(roleCode);
         Permission permission = permissionRepository.findByCode(permissionCode)
-                .orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.permission", null, null)));
+                .orElseThrow(() -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_PERMISSION)));
         role.removePermission(permission);
     }
 
@@ -178,7 +179,7 @@ public class RoleService {
     @Transactional
     public void deleteRole(String roleCode) {
         Role role = roleRepository.findByCode(roleCode)
-                .orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.role", null, null)));
+                .orElseThrow(() -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_ROLE)));
         role.deleteRole();
     }
 
@@ -201,7 +202,7 @@ public class RoleService {
      */
     public Permission getPermission(String permissionCode) {
         return permissionRepository.findByCode(permissionCode)
-                .orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.permission", null, null)));
+                .orElseThrow(() -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_PERMISSION)));
     }
 
     /**
@@ -227,7 +228,7 @@ public class RoleService {
     @Transactional
     public Permission createPermission(String code, String name, String description, String resource, String action) {
         if (permissionRepository.findByCode(code).isPresent()) {
-            throw new IllegalArgumentException(ms.getMessage("error.validate.permission.already.exists", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.PERMISSION_ALREADY_EXISTS));
         }
         ResourceType resourceType = ResourceType.valueOf(resource);
         ActionType actionType = ActionType.valueOf(action);
@@ -261,7 +262,7 @@ public class RoleService {
     @Transactional
     public void deletePermission(String permissionCode) {
         Permission permission = permissionRepository.findByCode(permissionCode)
-                .orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.permission", null, null)));
+                .orElseThrow(() -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_PERMISSION)));
         permission.deletePermission();
     }
 }

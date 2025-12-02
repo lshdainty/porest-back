@@ -1,14 +1,15 @@
 package com.lshdainty.porest.schedule.service;
 
+import com.lshdainty.porest.common.message.MessageKey;
+import com.lshdainty.porest.common.util.MessageResolver;
+import com.lshdainty.porest.common.util.PorestTime;
 import com.lshdainty.porest.schedule.domain.Schedule;
 import com.lshdainty.porest.schedule.repository.ScheduleRepositoryImpl;
 import com.lshdainty.porest.schedule.service.dto.ScheduleServiceDto;
-import com.lshdainty.porest.common.util.PorestTime;
 import com.lshdainty.porest.user.domain.User;
 import com.lshdainty.porest.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +21,7 @@ import java.util.*;
 @Slf4j
 @Transactional(readOnly = true)
 public class ScheduleService {
-    private final MessageSource ms;
+    private final MessageResolver messageResolver;
     private final ScheduleRepositoryImpl scheduleRepositoryImpl;
     private final UserService userService;
 
@@ -29,7 +30,7 @@ public class ScheduleService {
         // 유저 조회
         User user = userService.checkUserExist(data.getUserId());
 
-        if (PorestTime.isAfterThanEndDate(data.getStartDate(), data.getEndDate())) { throw new IllegalArgumentException(ms.getMessage("error.validate.startIsAfterThanEnd", null, null)); }
+        if (PorestTime.isAfterThanEndDate(data.getStartDate(), data.getEndDate())) { throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_START_AFTER_END)); }
 
         Schedule schedule = Schedule.createSchedule(
                 user,
@@ -50,7 +51,7 @@ public class ScheduleService {
     }
 
     public List<Schedule> searchSchedulesByPeriod(LocalDateTime start, LocalDateTime end) {
-        if (PorestTime.isAfterThanEndDate(start, end)) { throw new IllegalArgumentException(ms.getMessage("error.validate.startIsAfterThanEnd", null, null)); }
+        if (PorestTime.isAfterThanEndDate(start, end)) { throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_START_AFTER_END)); }
         return scheduleRepositoryImpl.findSchedulesByPeriod(start, end);
     }
 
@@ -71,14 +72,14 @@ public class ScheduleService {
     public void deleteSchedule(Long scheduleId) {
         Schedule schedule = checkScheduleExist(scheduleId);
 
-        if (schedule.getEndDate().isBefore(LocalDateTime.now())) { throw new IllegalArgumentException(ms.getMessage("error.validate.delete.isBeforeThanNow", null, null)); }
+        if (schedule.getEndDate().isBefore(LocalDateTime.now())) { throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_DELETE_BEFORE_NOW)); }
 
         schedule.deleteSchedule();
     }
 
     public Schedule checkScheduleExist(Long scheduleId) {
         Optional<Schedule> schedule = scheduleRepositoryImpl.findById(scheduleId);
-        if (schedule.isEmpty() || schedule.get().getIsDeleted().equals("Y")) { throw new IllegalArgumentException(ms.getMessage("error.notfound.schedule", null, null)); }
+        if (schedule.isEmpty() || schedule.get().getIsDeleted().equals("Y")) { throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_SCHEDULE)); }
         return schedule.get();
     }
 }

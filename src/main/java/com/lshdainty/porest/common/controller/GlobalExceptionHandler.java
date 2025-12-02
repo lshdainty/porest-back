@@ -3,7 +3,8 @@ package com.lshdainty.porest.common.controller;
 import com.lshdainty.porest.common.exception.BusinessException;
 import com.lshdainty.porest.common.exception.ErrorCode;
 import com.lshdainty.porest.common.exception.UnauthorizedException;
-import com.lshdainty.porest.common.util.ErrorMessageResolver;
+import com.lshdainty.porest.common.message.MessageKey;
+import com.lshdainty.porest.common.util.MessageResolver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -29,7 +30,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class GlobalExceptionHandler {
 
-    private final ErrorMessageResolver messageResolver;
+    private final MessageResolver messageResolver;
 
     /**
      * BusinessException 처리
@@ -97,7 +98,7 @@ public class GlobalExceptionHandler {
         // 스택 트레이스 없이 간단한 warn 로그만 남김 (보안 + 디스크 절약)
         log.warn("Invalid resource access: {}", e.getResourcePath());
 
-        String message = messageResolver.getMessage("error.common.404");
+        String message = messageResolver.getMessage(MessageKey.COMMON_404);
         ApiResponse<Void> response = ApiResponse.error("COMMON_404", message);
 
         return ResponseEntity

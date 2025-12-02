@@ -1,5 +1,7 @@
 package com.lshdainty.porest.dues.service;
 
+import com.lshdainty.porest.common.message.MessageKey;
+import com.lshdainty.porest.common.util.MessageResolver;
 import com.lshdainty.porest.dues.domain.Dues;
 import com.lshdainty.porest.dues.type.DuesCalcType;
 import com.lshdainty.porest.dues.repository.DuesRepositoryImpl;
@@ -7,7 +9,6 @@ import com.lshdainty.porest.dues.repository.dto.UsersMonthBirthDuesDto;
 import com.lshdainty.porest.dues.service.dto.DuesServiceDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +21,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Transactional(readOnly = true)
 public class DuesService {
-    private final MessageSource ms;
+    private final MessageResolver messageResolver;
     private final DuesRepositoryImpl duesRepositoryImpl;
 
     @Transactional
@@ -141,7 +142,7 @@ public class DuesService {
 
     public Dues checkDuesExist(Long duesSeq) {
         Optional<Dues> dues = duesRepositoryImpl.findById(duesSeq);
-        dues.orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.dues", null, null)));
+        dues.orElseThrow(() -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_DUES)));
         return dues.get();
     }
 }

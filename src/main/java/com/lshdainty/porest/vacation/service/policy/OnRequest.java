@@ -1,12 +1,13 @@
 package com.lshdainty.porest.vacation.service.policy;
 
+import com.lshdainty.porest.common.message.MessageKey;
 import com.lshdainty.porest.common.type.YNType;
+import com.lshdainty.porest.common.util.MessageResolver;
 import com.lshdainty.porest.vacation.domain.VacationPolicy;
 import com.lshdainty.porest.vacation.repository.VacationPolicyCustomRepositoryImpl;
 import com.lshdainty.porest.vacation.service.dto.VacationPolicyServiceDto;
 import com.lshdainty.porest.vacation.type.VacationType;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.MessageSource;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -16,7 +17,7 @@ import java.util.Objects;
 
 @RequiredArgsConstructor
 public class OnRequest implements VacationPolicyStrategy {
-    private final MessageSource ms;
+    private final MessageResolver messageResolver;
     private final VacationPolicyCustomRepositoryImpl vacationPolicyRepository;
 
     @Override
@@ -54,48 +55,48 @@ public class OnRequest implements VacationPolicyStrategy {
     private void validateOnRequestPolicy(VacationPolicyServiceDto data) {
         // 1. 정책명 필수 검증
         if (Objects.isNull(data.getName()) || data.getName().trim().isEmpty()) {
-            throw new IllegalArgumentException(ms.getMessage("vacation.policy.name.required", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VACATION_POLICY_NAME_REQUIRED));
         }
 
         // 2. 정책명 중복 검증
         if (vacationPolicyRepository.existsByName(data.getName())) {
-            throw new IllegalArgumentException(ms.getMessage("vacation.policy.name.duplicate", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VACATION_POLICY_NAME_DUPLICATE));
         }
 
         // 3. isFlexibleGrant 필수 검증
         if (Objects.isNull(data.getIsFlexibleGrant())) {
-            throw new IllegalArgumentException(ms.getMessage("vacation.policy.isFlexibleGrant.required", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VACATION_POLICY_FLEXIBLE_GRANT_REQUIRED));
         }
 
         // 4. isFlexibleGrant에 따른 grantTime 검증
         if (YNType.isY(data.getIsFlexibleGrant())) {
             // isFlexibleGrant가 Y인 경우: grantTime은 null이어야 함 (가변 부여, 동적 계산)
             if (Objects.nonNull(data.getGrantTime())) {
-                throw new IllegalArgumentException(ms.getMessage("vacation.policy.grantTime.unnecessary", null, null));
+                throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VACATION_POLICY_GRANT_TIME_UNNECESSARY));
             }
         } else {
             // isFlexibleGrant가 N인 경우: grantTime 필수 및 양수 검증 (고정 부여)
             if (Objects.isNull(data.getGrantTime())) {
-                throw new IllegalArgumentException(ms.getMessage("vacation.policy.grantTime.required", null, null));
+                throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VACATION_POLICY_GRANT_TIME_REQUIRED));
             }
             if (data.getGrantTime().compareTo(BigDecimal.ZERO) <= 0) {
-                throw new IllegalArgumentException(ms.getMessage("vacation.policy.grantTime.positive", null, null));
+                throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VACATION_POLICY_GRANT_TIME_POSITIVE));
             }
         }
 
         // 5. minuteGrantYn 필수 검증
         if (Objects.isNull(data.getMinuteGrantYn())) {
-            throw new IllegalArgumentException(ms.getMessage("vacation.policy.minuteGrantYn.required", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VACATION_POLICY_MINUTE_GRANT_YN_REQUIRED));
         }
 
         // 6. effectiveType 필수 검증
         if (Objects.isNull(data.getEffectiveType())) {
-            throw new IllegalArgumentException(ms.getMessage("vacation.policy.effectiveType.required", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VACATION_POLICY_EFFECTIVE_TYPE_REQUIRED));
         }
 
         // 7. expirationType 필수 검증
         if (Objects.isNull(data.getExpirationType())) {
-            throw new IllegalArgumentException(ms.getMessage("vacation.policy.expirationType.required", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VACATION_POLICY_EXPIRATION_TYPE_REQUIRED));
         }
     }
 
@@ -112,7 +113,7 @@ public class OnRequest implements VacationPolicyStrategy {
             BigDecimal policyGrantTime = policy.getGrantTime();
             if (Objects.isNull(policyGrantTime)) {
                 throw new IllegalArgumentException(
-                        ms.getMessage("error.validate.vacation.grantTimeNotDefined", null, null)
+                        messageResolver.getMessage(MessageKey.VACATION_GRANT_TIME_NOT_DEFINED)
                 );
             }
             return policyGrantTime;
@@ -121,14 +122,14 @@ public class OnRequest implements VacationPolicyStrategy {
         // isFlexibleGrant가 Y인 경우: 사용자가 입력한 시간 사용 (가변 부여)
         if (Objects.isNull(userGrantTime)) {
             throw new IllegalArgumentException(
-                    ms.getMessage("error.validate.vacation.userGrantTimeRequired", null, null)
+                    messageResolver.getMessage(MessageKey.VACATION_USER_GRANT_TIME_REQUIRED)
             );
         }
 
         // 사용자 입력값 양수 검증
         if (userGrantTime.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException(
-                    ms.getMessage("error.validate.vacation.userGrantTimePositive", null, null)
+                    messageResolver.getMessage(MessageKey.VACATION_USER_GRANT_TIME_POSITIVE)
             );
         }
 

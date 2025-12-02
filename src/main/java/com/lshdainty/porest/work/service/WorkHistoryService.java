@@ -1,8 +1,16 @@
 package com.lshdainty.porest.work.service;
 
+import com.lshdainty.porest.common.message.MessageKey;
 import com.lshdainty.porest.common.type.CountryCode;
+import com.lshdainty.porest.common.type.YNType;
+import com.lshdainty.porest.common.util.MessageResolver;
+import com.lshdainty.porest.holiday.domain.Holiday;
+import com.lshdainty.porest.holiday.service.HolidayService;
+import com.lshdainty.porest.holiday.type.HolidayType;
 import com.lshdainty.porest.user.domain.User;
+import com.lshdainty.porest.user.repository.UserRepositoryImpl;
 import com.lshdainty.porest.user.service.UserService;
+import com.lshdainty.porest.vacation.repository.VacationUsageCustomRepositoryImpl;
 import com.lshdainty.porest.work.domain.WorkCode;
 import com.lshdainty.porest.work.domain.WorkHistory;
 import com.lshdainty.porest.work.repository.WorkCodeRepositoryImpl;
@@ -10,16 +18,8 @@ import com.lshdainty.porest.work.repository.WorkHistoryCustomRepositoryImpl;
 import com.lshdainty.porest.work.repository.dto.WorkHistorySearchCondition;
 import com.lshdainty.porest.work.service.dto.WorkCodeServiceDto;
 import com.lshdainty.porest.work.service.dto.WorkHistoryServiceDto;
-import com.lshdainty.porest.holiday.service.HolidayService;
-import com.lshdainty.porest.holiday.domain.Holiday;
-import com.lshdainty.porest.holiday.type.HolidayType;
-import com.lshdainty.porest.common.type.YNType;
-import com.lshdainty.porest.user.repository.UserRepositoryImpl;
-import com.lshdainty.porest.vacation.domain.VacationUsage;
-import com.lshdainty.porest.vacation.repository.VacationUsageCustomRepositoryImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,7 +46,7 @@ import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 @Slf4j
 @Transactional(readOnly = true)
 public class WorkHistoryService {
-    private final MessageSource ms;
+    private final MessageResolver messageResolver;
     private final WorkHistoryCustomRepositoryImpl workHistoryRepository;
     private final WorkCodeRepositoryImpl workCodeRepository;
     private final UserService userService;
@@ -165,16 +165,16 @@ public class WorkHistoryService {
     private WorkHistory checkWorkHistoryExist(Long seq) {
         Optional<WorkHistory> workHistory = workHistoryRepository.findById(seq);
         workHistory.orElseThrow(
-                () -> new IllegalArgumentException(ms.getMessage("error.notfound.work.history", null, null)));
+                () -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_WORK_HISTORY)));
         return workHistory.get();
     }
 
     private WorkCode checkWorkCodeExist(String code) {
         if (code == null) {
-            throw new IllegalArgumentException(ms.getMessage("error.validate.work.code.required", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_WORK_CODE_REQUIRED));
         }
         Optional<WorkCode> workCode = workCodeRepository.findByCode(code);
-        workCode.orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.work.code", null, null)));
+        workCode.orElseThrow(() -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_WORK_CODE)));
         return workCode.get();
     }
 
@@ -260,7 +260,7 @@ public class WorkHistoryService {
             throws IOException {
         // 년월 유효성 검증
         if (year == null || month == null) {
-            throw new IllegalArgumentException(ms.getMessage("error.validate.year.month.required", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_YEAR_MONTH_REQUIRED));
         }
 
         // 해당 년월의 시작일과 마지막일 계산
@@ -468,7 +468,7 @@ public class WorkHistoryService {
     public List<LocalDate> getUnregisteredWorkDates(String userId, Integer year, Integer month) {
         // 년월 유효성 검증
         if (year == null || month == null) {
-            throw new IllegalArgumentException(ms.getMessage("error.validate.year.month.required", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_YEAR_MONTH_REQUIRED));
         }
 
         // 사용자 존재 확인

@@ -1,13 +1,14 @@
 package com.lshdainty.porest.holiday.service;
 
-import com.lshdainty.porest.holiday.domain.Holiday;
+import com.lshdainty.porest.common.message.MessageKey;
 import com.lshdainty.porest.common.type.CountryCode;
-import com.lshdainty.porest.holiday.type.HolidayType;
+import com.lshdainty.porest.common.util.MessageResolver;
+import com.lshdainty.porest.holiday.domain.Holiday;
 import com.lshdainty.porest.holiday.repository.HolidayRepositoryImpl;
 import com.lshdainty.porest.holiday.service.dto.HolidayServiceDto;
+import com.lshdainty.porest.holiday.type.HolidayType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +21,7 @@ import java.util.Optional;
 @Slf4j
 @Transactional(readOnly = true)
 public class HolidayService {
-    private final MessageSource ms;
+    private final MessageResolver messageResolver;
     private final HolidayRepositoryImpl holidayRepositoryImpl;
 
     @Transactional
@@ -78,7 +79,7 @@ public class HolidayService {
 
     public Holiday checkHolidayExist(Long holidaySeq) {
         Optional<Holiday> holiday = holidayRepositoryImpl.findById(holidaySeq);
-        holiday.orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.holiday", null, null)));
+        holiday.orElseThrow(() -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_HOLIDAY)));
         return holiday.get();
     }
 }

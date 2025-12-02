@@ -1,13 +1,14 @@
 package com.lshdainty.porest.company.service;
 
+import com.lshdainty.porest.common.message.MessageKey;
 import com.lshdainty.porest.common.type.YNType;
+import com.lshdainty.porest.common.util.MessageResolver;
 import com.lshdainty.porest.company.domain.Company;
 import com.lshdainty.porest.company.repository.CompanyCustomRepositoryImpl;
 import com.lshdainty.porest.company.service.dto.CompanyServiceDto;
 import com.lshdainty.porest.department.service.dto.DepartmentServiceDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,7 +20,7 @@ import java.util.Optional;
 @Slf4j
 @Transactional(readOnly = true)
 public class CompanyService {
-    private final MessageSource ms;
+    private final MessageResolver messageResolver;
     private final CompanyCustomRepositoryImpl companyRepository;
 
     @Transactional
@@ -51,7 +52,7 @@ public class CompanyService {
         Company company = checkCompanyExists(id);
 
         if (!company.getDepartments().isEmpty()) {
-            throw new IllegalArgumentException(ms.getMessage("error.validate.notnull.department", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_DEPARTMENT_EXISTS));
         }
 
         company.deleteCompany();
@@ -74,7 +75,7 @@ public class CompanyService {
     public CompanyServiceDto searchCompanyWithDepartments(String id) {
         Optional<Company> OCompany = companyRepository.findByIdWithDepartments(id);
         if (OCompany.isEmpty()) {
-            throw new IllegalArgumentException(ms.getMessage("error.notfound.company", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_COMPANY));
         }
 
         Company company = OCompany.get();
@@ -96,14 +97,14 @@ public class CompanyService {
     public void checkAlreadyCompanyId(String id) {
         Optional<Company> company = companyRepository.findById(id);
         if (company.isPresent()) {
-            throw new IllegalArgumentException(ms.getMessage("error.validate.duplicate.company", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_DUPLICATE_COMPANY));
         }
     }
 
     public Company checkCompanyExists(String companyId) {
         Optional<Company> company = companyRepository.findById(companyId);
         if ((company.isEmpty()) || (company.get().getIsDeleted().equals(YNType.Y))) {
-            throw new IllegalArgumentException(ms.getMessage("error.notfound.company", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_COMPANY));
         }
         return company.get();
     }

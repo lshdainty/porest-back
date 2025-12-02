@@ -1,6 +1,8 @@
 package com.lshdainty.porest.department.service;
 
+import com.lshdainty.porest.common.message.MessageKey;
 import com.lshdainty.porest.common.type.YNType;
+import com.lshdainty.porest.common.util.MessageResolver;
 import com.lshdainty.porest.company.domain.Company;
 import com.lshdainty.porest.company.service.CompanyService;
 import com.lshdainty.porest.department.domain.Department;
@@ -12,7 +14,6 @@ import com.lshdainty.porest.user.domain.User;
 import com.lshdainty.porest.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,7 +25,7 @@ import java.util.Optional;
 @Slf4j
 @Transactional(readOnly = true)
 public class DepartmentService {
-    private final MessageSource ms;
+    private final MessageResolver messageResolver;
     private final DepartmentCustomRepositoryImpl departmentRepository;
     private final CompanyService companyService;
     private final UserService userService;
@@ -41,7 +42,7 @@ public class DepartmentService {
 
             // 부모 부서와 같은 회사인지 검증
             if (!parent.getCompany().getId().equals(data.getCompanyId())) {
-                throw new IllegalArgumentException(ms.getMessage("error.validate.different.company", null, null));
+                throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_DIFFERENT_COMPANY));
             }
         }
 
@@ -70,17 +71,17 @@ public class DepartmentService {
 
             // 자기 자신을 부모로 설정하는 것 방지
             if (newParent.getId().equals(data.getId())) {
-                throw new IllegalArgumentException(ms.getMessage("error.validate.self.parent", null, null));
+                throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_SELF_PARENT));
             }
 
             // 순환 참조 방지 (자신의 하위 부서를 부모로 설정하는 것 방지)
             if (isDescendant(department, newParent)) {
-                throw new IllegalArgumentException(ms.getMessage("error.validate.circular.reference", null, null));
+                throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_CIRCULAR_REFERENCE));
             }
 
             // 같은 회사인지 검증
             if (!newParent.getCompany().getId().equals(department.getCompany().getId())) {
-                throw new IllegalArgumentException(ms.getMessage("error.validate.different.company", null, null));
+                throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_DIFFERENT_COMPANY));
             }
         }
 
@@ -104,7 +105,7 @@ public class DepartmentService {
                 .anyMatch(child -> child.getIsDeleted() == YNType.N);
 
         if (hasChildren) {
-            throw new IllegalArgumentException(ms.getMessage("error.validate.has.children.department", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_HAS_CHILDREN_DEPARTMENT));
         }
 
         // 논리 삭제 실행
@@ -149,7 +150,7 @@ public class DepartmentService {
 
                 if (existingMainDepartment.isPresent()) {
                     throw new IllegalArgumentException(
-                            ms.getMessage("error.validate.main.department.already.exists", null, null)
+                            messageResolver.getMessage(MessageKey.VALIDATE_MAIN_DEPARTMENT_EXISTS)
                     );
                 }
             }
@@ -176,7 +177,7 @@ public class DepartmentService {
 
             if (userDepartmentOpt.isEmpty()) {
                 throw new IllegalArgumentException(
-                        ms.getMessage("error.notfound.user.department", null, null)
+                        messageResolver.getMessage(MessageKey.NOT_FOUND_USER_DEPARTMENT)
                 );
             }
 
@@ -232,7 +233,7 @@ public class DepartmentService {
     public Department checkDepartmentExists(Long departmentId) {
         Optional<Department> department = departmentRepository.findById(departmentId);
         if ((department.isEmpty()) || department.get().getIsDeleted().equals(YNType.Y)) {
-            throw new IllegalArgumentException(ms.getMessage("error.notfound.department", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_DEPARTMENT));
         }
         return department.get();
     }

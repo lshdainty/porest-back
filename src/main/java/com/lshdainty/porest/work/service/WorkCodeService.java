@@ -1,12 +1,13 @@
 package com.lshdainty.porest.work.service;
 
+import com.lshdainty.porest.common.message.MessageKey;
+import com.lshdainty.porest.common.util.MessageResolver;
 import com.lshdainty.porest.work.domain.WorkCode;
 import com.lshdainty.porest.work.repository.WorkCodeRepository;
 import com.lshdainty.porest.work.service.dto.WorkCodeServiceDto;
 import com.lshdainty.porest.work.type.CodeType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,7 +20,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class WorkCodeService {
     private final WorkCodeRepository workCodeRepository;
-    private final MessageSource ms;
+    private final MessageResolver messageResolver;
 
     /**
      * 동적 조건으로 업무 코드 목록 조회
@@ -67,12 +68,12 @@ public class WorkCodeService {
         WorkCode parent = null;
         if (parentSeq != null) {
             parent = workCodeRepository.findBySeq(parentSeq)
-                    .orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.workcode", null, null)));
+                    .orElseThrow(() -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_WORK_CODE)));
         }
 
         // 코드 중복 체크
         workCodeRepository.findByCode(code).ifPresent(wc -> {
-            throw new IllegalArgumentException(ms.getMessage("error.duplicate.workcode", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_DUPLICATE_WORK_CODE));
         });
 
         // 업무 코드 생성
@@ -98,17 +99,17 @@ public class WorkCodeService {
     public void updateWorkCode(Long seq, String code, String name, Long parentSeq, Integer orderSeq) {
         // 업무 코드 조회
         WorkCode workCode = workCodeRepository.findBySeq(seq)
-                .orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.workcode", null, null)));
+                .orElseThrow(() -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_WORK_CODE)));
 
         // 부모 코드 조회 (parentSeq가 있는 경우)
         WorkCode parent = null;
         if (parentSeq != null) {
             parent = workCodeRepository.findBySeq(parentSeq)
-                    .orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.workcode.parent", null, null)));
+                    .orElseThrow(() -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_WORK_CODE_PARENT)));
 
             // 자기 자신을 부모로 설정하는 것 방지
             if (seq.equals(parentSeq)) {
-                throw new IllegalArgumentException(ms.getMessage("error.invalid.workcode.parent.self", null, null));
+                throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_INVALID_WORK_CODE_PARENT_SELF));
             }
         }
 
@@ -116,7 +117,7 @@ public class WorkCodeService {
         if (code != null) {
             workCodeRepository.findByCode(code).ifPresent(wc -> {
                 if (!wc.getSeq().equals(seq)) {
-                    throw new IllegalArgumentException(ms.getMessage("error.duplicate.workcode", null, null));
+                    throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_DUPLICATE_WORK_CODE));
                 }
             });
         }
@@ -137,7 +138,7 @@ public class WorkCodeService {
     public void deleteWorkCode(Long seq) {
         // 업무 코드 조회
         WorkCode workCode = workCodeRepository.findBySeq(seq)
-                .orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.workcode", null, null)));
+                .orElseThrow(() -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_WORK_CODE)));
 
         // 업무 코드 삭제 (Soft Delete)
         workCode.deleteWorkCode();

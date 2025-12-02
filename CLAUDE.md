@@ -17,6 +17,38 @@
 - 예외: 전역 @RestControllerAdvice로 에러 응답 표준화 [web:26]
 - 로깅: slf4j 사용 [web:26]
 
+## i18n & Message 관리
+- 메시지 키: `MessageKey` enum으로 중앙 관리 (`common/message/MessageKey.java`)
+- 메시지 조회: `MessageResolver` 사용 (`common/util/MessageResolver.java`)
+- 메시지 파일: `messages.properties` (한국어), `messages_en.properties` (영어)
+
+### 새 메시지 추가 절차
+1. `MessageKey` enum에 키 추가:
+   ```java
+   NOT_FOUND_USER("error.notfound.user"),
+   VALIDATE_DUPLICATE_USER_ID("error.validate.duplicate.userId"),
+   ```
+2. `messages.properties`에 메시지 추가:
+   ```properties
+   error.notfound.user=사용자를 찾을 수 없습니다.
+   error.validate.duplicate.userId=이미 존재하는 사용자 ID입니다.
+   ```
+3. `messages_en.properties`에 영어 메시지 추가
+4. 서비스에서 사용:
+   ```java
+   throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_USER));
+   // 파라미터 포함 시
+   throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.SOME_KEY, param1, param2));
+   ```
+
+### MessageKey 카테고리
+- `NOT_FOUND_*`: 조회 실패
+- `VALIDATE_*`: 검증 오류
+- `VACATION_*`: 휴가 관련
+- `VACATION_POLICY_*`: 휴가 정책
+- `FILE_*`: 파일 관련
+- `COMMON_*`: 공통
+
 ## API Guidelines
 - Base path: /api/v1 [web:27]
 - 에러 코드: 도메인별 접두어(USER_*, ORDER_*), HTTP 상태와 매핑 [web:26]

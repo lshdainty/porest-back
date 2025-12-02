@@ -1,19 +1,20 @@
 package com.lshdainty.porest.user.service;
 
+import com.lshdainty.porest.common.message.MessageKey;
+import com.lshdainty.porest.common.type.YNType;
+import com.lshdainty.porest.common.util.MessageResolver;
+import com.lshdainty.porest.common.util.PorestFile;
 import com.lshdainty.porest.department.repository.DepartmentCustomRepositoryImpl;
+import com.lshdainty.porest.permission.domain.Role;
+import com.lshdainty.porest.permission.repository.RoleRepository;
 import com.lshdainty.porest.user.domain.User;
 import com.lshdainty.porest.user.repository.UserRepositoryImpl;
 import com.lshdainty.porest.user.service.dto.UserServiceDto;
-import com.lshdainty.porest.common.type.YNType;
-import com.lshdainty.porest.common.util.PorestFile;
-import com.lshdainty.porest.permission.domain.Role;
-import com.lshdainty.porest.permission.repository.RoleRepository;
 import com.lshdainty.porest.user.type.StatusType;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -31,7 +32,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Transactional(readOnly = true)
 public class UserService {
-    private final MessageSource ms;
+    private final MessageResolver messageResolver;
     private final UserRepositoryImpl userRepositoryImpl;
     private final RoleRepository roleRepository;
     private final EmailService emailService;
@@ -226,7 +227,7 @@ public class UserService {
         String physicalFilename = PorestFile.generatePhysicalFilename(originalFilename, uuid);
 
         // 임시 폴더에 물리적 파일명으로 저장
-        PorestFile.save(file, tempPath, physicalFilename, ms);
+        PorestFile.save(file, tempPath, physicalFilename, messageResolver);
 
         // 저장된 파일의 절대 경로 생성 (물리적 파일명 기준)
         String absolutePath = Paths.get(tempPath, physicalFilename).toString();
@@ -240,7 +241,7 @@ public class UserService {
     public User checkUserExist(String userId) {
         Optional<User> findUser = userRepositoryImpl.findById(userId);
         if ((findUser.isEmpty()) || findUser.get().getIsDeleted().equals(YNType.Y)) {
-            throw new IllegalArgumentException(ms.getMessage("error.notfound.user", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_USER));
         }
         return findUser.get();
     }
@@ -255,7 +256,7 @@ public class UserService {
     public User findUserById(String userId) {
         Optional<User> findUser = userRepositoryImpl.findByIdWithRolesAndPermissions(userId);
         if ((findUser.isEmpty()) || findUser.get().getIsDeleted().equals(YNType.Y)) {
-            throw new IllegalArgumentException(ms.getMessage("error.notfound.user", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_USER));
         }
         return findUser.get();
     }
@@ -299,7 +300,7 @@ public class UserService {
             String tempFilePath = Paths.get(tempPath, physicalFileName).toString();
             String originFilePath = Paths.get(originPath, physicalFileName).toString();
 
-            if (PorestFile.copy(tempFilePath, originFilePath, ms)) {
+            if (PorestFile.copy(tempFilePath, originFilePath, messageResolver)) {
                 // PorestFile의 static 메소드를 사용하여 원본 파일명 추출
                 profileName = PorestFile.extractOriginalFilename(physicalFileName, null);
                 profileUUID = data.getProfileUUID();
@@ -319,7 +320,7 @@ public class UserService {
     public UserServiceDto inviteUser(UserServiceDto data) {
         // 아이디 중복 체크
         if (checkUserIdDuplicate(data.getId())) {
-            throw new IllegalArgumentException(ms.getMessage("error.duplicate.userId", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_DUPLICATE_USER_ID));
         }
 
         User user = User.createInvitedUser(
@@ -383,7 +384,7 @@ public class UserService {
 
         // PENDING 상태인지 확인
         if (user.getInvitationStatus() != StatusType.PENDING) {
-            throw new IllegalArgumentException(ms.getMessage("error.validate.not.pending.user", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_NOT_PENDING_USER));
         }
 
         // 이메일 변경 여부 확인
@@ -424,12 +425,12 @@ public class UserService {
     public String completeInvitedUserRegistration(UserServiceDto data) {
         Optional<User> findUser = userRepositoryImpl.findByInvitationToken(data.getInvitationToken());
         if (findUser.isEmpty()) {
-            throw new IllegalArgumentException(ms.getMessage("error.notfound.invitation", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_INVITATION));
         }
 
         User user = findUser.get();
         if (!user.isInvitationValid()) {
-            throw new IllegalArgumentException(ms.getMessage("error.expired.invitation", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_EXPIRED_INVITATION));
         }
 
         user.completeRegistration(

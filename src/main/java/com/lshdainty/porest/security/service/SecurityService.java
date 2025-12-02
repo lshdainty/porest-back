@@ -1,24 +1,25 @@
 package com.lshdainty.porest.security.service;
 
+import com.lshdainty.porest.common.message.MessageKey;
+import com.lshdainty.porest.common.util.MessageResolver;
+import com.lshdainty.porest.permission.domain.Role;
 import com.lshdainty.porest.user.domain.User;
 import com.lshdainty.porest.user.repository.UserRepositoryImpl;
 import com.lshdainty.porest.user.service.dto.UserServiceDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.stream.Collectors;
-import com.lshdainty.porest.permission.domain.Role;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
 public class SecurityService {
-    private final MessageSource ms;
+    private final MessageResolver messageResolver;
     private final UserRepositoryImpl userRepositoryImpl;
 
     /**
@@ -27,12 +28,12 @@ public class SecurityService {
     public UserServiceDto validateInvitationToken(String token) {
         Optional<User> findUser = userRepositoryImpl.findByInvitationToken(token);
         if (findUser.isEmpty()) {
-            throw new IllegalArgumentException(ms.getMessage("error.notfound.invitation", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_INVITATION));
         }
 
         User user = findUser.get();
         if (!user.isInvitationValid()) {
-            throw new IllegalArgumentException(ms.getMessage("error.expired.invitation", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_EXPIRED_INVITATION));
         }
 
         return UserServiceDto.builder()

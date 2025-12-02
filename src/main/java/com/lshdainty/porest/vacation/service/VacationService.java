@@ -1,26 +1,27 @@
 package com.lshdainty.porest.vacation.service;
 
+import com.lshdainty.porest.common.message.MessageKey;
 import com.lshdainty.porest.common.type.YNType;
-import com.lshdainty.porest.holiday.repository.HolidayRepositoryImpl;
-import com.lshdainty.porest.user.service.UserService;
-import com.lshdainty.porest.user.domain.User;
+import com.lshdainty.porest.common.util.MessageResolver;
+import com.lshdainty.porest.common.util.PorestTime;
 import com.lshdainty.porest.department.domain.Department;
 import com.lshdainty.porest.department.repository.DepartmentCustomRepositoryImpl;
+import com.lshdainty.porest.holiday.repository.HolidayRepositoryImpl;
+import com.lshdainty.porest.holiday.type.HolidayType;
+import com.lshdainty.porest.user.domain.User;
+import com.lshdainty.porest.user.service.UserService;
 import com.lshdainty.porest.vacation.domain.*;
 import com.lshdainty.porest.vacation.repository.*;
+import com.lshdainty.porest.vacation.service.dto.VacationApprovalServiceDto;
 import com.lshdainty.porest.vacation.service.dto.VacationPolicyServiceDto;
 import com.lshdainty.porest.vacation.service.dto.VacationServiceDto;
-import com.lshdainty.porest.vacation.service.dto.VacationApprovalServiceDto;
-import com.lshdainty.porest.vacation.service.policy.VacationPolicyStrategy;
-import com.lshdainty.porest.vacation.service.policy.RepeatGrant;
 import com.lshdainty.porest.vacation.service.policy.OnRequest;
+import com.lshdainty.porest.vacation.service.policy.RepeatGrant;
+import com.lshdainty.porest.vacation.service.policy.VacationPolicyStrategy;
 import com.lshdainty.porest.vacation.service.policy.factory.VacationPolicyStrategyFactory;
-import com.lshdainty.porest.holiday.type.HolidayType;
 import com.lshdainty.porest.vacation.type.*;
-import com.lshdainty.porest.common.util.PorestTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +37,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Transactional(readOnly = true)
 public class VacationService {
-    private final MessageSource ms;
+    private final MessageResolver messageResolver;
     private final VacationPolicyCustomRepositoryImpl vacationPolicyRepository;
     private final UserVacationPolicyCustomRepositoryImpl userVacationPolicyRepository;
     private final HolidayRepositoryImpl holidayRepository;
@@ -55,18 +56,18 @@ public class VacationService {
 
         // 2. 시작, 종료시간 비교
         if (PorestTime.isAfterThanEndDate(data.getStartDate(), data.getEndDate())) {
-            throw new IllegalArgumentException(ms.getMessage("error.validate.startIsAfterThanEnd", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_START_AFTER_END));
         }
 
         // 3. 연차가 아닌 시간단위 휴가인 경우 유연근무제 시간 체크
         if (!(data.getTimeType().equals(VacationTimeType.DAYOFF) || !data.getTimeType().equals(VacationTimeType.DEFENSE))) {
             if (!user.isBetweenWorkTime(data.getStartDate().toLocalTime(), data.getEndDate().toLocalTime())) {
-                throw new IllegalArgumentException(ms.getMessage("error.validate.worktime.startEndTime", null, null));
+                throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_WORKTIME_START_END));
             }
         }
 
         // 4. 주말 리스트 조회
-        List<LocalDate> weekDays = PorestTime.getBetweenDatesByDayOfWeek(data.getStartDate(), data.getEndDate(), new int[]{6, 7}, ms);
+        List<LocalDate> weekDays = PorestTime.getBetweenDatesByDayOfWeek(data.getStartDate(), data.getEndDate(), new int[]{6, 7}, messageResolver);
 
         // 5. 공휴일 리스트 조회
         List<LocalDate> holidays = holidayRepository.findHolidaysByStartEndDateWithType(
@@ -80,7 +81,7 @@ public class VacationService {
         weekDays = PorestTime.addAllDates(weekDays, holidays);
 
         // 6. 두 날짜 간 모든 날짜 가져오기
-        List<LocalDate> betweenDates = PorestTime.getBetweenDates(data.getStartDate(), data.getEndDate(), ms);
+        List<LocalDate> betweenDates = PorestTime.getBetweenDates(data.getStartDate(), data.getEndDate(), messageResolver);
         log.info("betweenDates : {}, weekDays : {}", betweenDates, weekDays);
 
         // 7. 사용자가 캘린더에서 선택한 날짜 중 휴일, 공휴일 제거
@@ -103,7 +104,7 @@ public class VacationService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         if (totalRemainTime.compareTo(totalUseTime) < 0) {
-            throw new IllegalArgumentException(ms.getMessage("error.validate.notEnoughRemainTime", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_NOT_ENOUGH_REMAIN_TIME));
         }
 
         // 11. 통합 기간 휴가 사용 내역 생성
@@ -146,7 +147,7 @@ public class VacationService {
 
         // 차감이 완료되지 않았다면 예외 (이론적으로는 발생하지 않아야 함)
         if (remainingNeedTime.compareTo(BigDecimal.ZERO) > 0) {
-            throw new IllegalArgumentException(ms.getMessage("error.validate.notEnoughRemainTime", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_NOT_ENOUGH_REMAIN_TIME));
         }
 
         // 13. 저장
@@ -275,16 +276,16 @@ public class VacationService {
     public void cancelVacationUsage(Long vacationUsageId) {
         // 1. VacationUsage 조회
         VacationUsage usage = vacationUsageRepository.findById(vacationUsageId)
-                .orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.vacation.usage", null, null)));
+                .orElseThrow(() -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_VACATION_USAGE)));
 
         // 2. 이미 삭제된 경우 예외 처리
         if (usage.getIsDeleted() == YNType.Y) {
-            throw new IllegalArgumentException(ms.getMessage("error.validate.already.deleted.vacation.usage", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_ALREADY_DELETED_VACATION_USAGE));
         }
 
         // 3. 삭제 가능 시점 체크 (현재 시간이 사용 시작일 이전인지 확인)
         if (PorestTime.isAfterThanEndDate(LocalDateTime.now(), usage.getStartDate())) {
-            throw new IllegalArgumentException(ms.getMessage("error.validate.delete.isBeforeThanNow", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_DELETE_BEFORE_NOW));
         }
 
         // 4. VacationUsageDeduction 조회 (차감 내역들)
@@ -488,7 +489,7 @@ public class VacationService {
 
     public VacationUsage validateAndGetVacationUsage(Long vacationUsageId) {
         Optional<VacationUsage> usage = vacationUsageRepository.findById(vacationUsageId);
-        usage.orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.vacation.usage", null, null)));
+        usage.orElseThrow(() -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_VACATION_USAGE)));
         return usage.get();
     }
 
@@ -559,7 +560,7 @@ public class VacationService {
 
     public VacationPolicy validateAndGetVacationPolicy(Long vacationPolicyId) {
         Optional<VacationPolicy> policy = vacationPolicyRepository.findVacationPolicyById(vacationPolicyId);
-        policy.orElseThrow(() -> new IllegalArgumentException(ms.getMessage("error.notfound.vacation.policy", null, null)));
+        policy.orElseThrow(() -> new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_VACATION_POLICY)));
         return policy.get();
     }
 
@@ -579,12 +580,12 @@ public class VacationService {
 
         // 2. 이미 삭제된 정책인지 확인
         if (vacationPolicy.getIsDeleted() == YNType.Y) {
-            throw new IllegalArgumentException(ms.getMessage("error.validate.already.deleted.vacation.policy", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_ALREADY_DELETED_VACATION_POLICY));
         }
 
         // 3. 삭제 가능 여부 확인
         if (vacationPolicy.getCanDeleted() == YNType.N) {
-            throw new IllegalArgumentException(ms.getMessage("error.validate.cannot.delete.vacation.policy", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_CANNOT_DELETE_VACATION_POLICY));
         }
 
         // 4. 휴가 정책 소프트 삭제
@@ -749,11 +750,11 @@ public class VacationService {
         UserVacationPolicy userVacationPolicy = userVacationPolicyRepository
                 .findByUserIdAndVacationPolicyId(userId, vacationPolicyId)
                 .orElseThrow(() -> new IllegalArgumentException(
-                        ms.getMessage("error.notfound.user.vacation.policy", null, null)));
+                        messageResolver.getMessage(MessageKey.NOT_FOUND_USER_VACATION_POLICY)));
 
         // 4. 이미 삭제된 경우 예외 처리
         if (userVacationPolicy.getIsDeleted() == YNType.Y) {
-            throw new IllegalArgumentException(ms.getMessage("error.validate.already.deleted.user.vacation.policy", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_ALREADY_DELETED_USER_VACATION_POLICY));
         }
 
         // 5. 소프트 삭제 수행
@@ -871,7 +872,7 @@ public class VacationService {
         // 3. 휴가 정책의 부여 방식이 MANUAL_GRANT인지 확인
         if (policy.getGrantMethod() != GrantMethod.MANUAL_GRANT) {
             throw new IllegalArgumentException(
-                    ms.getMessage("error.validate.vacation.notManualGrantPolicy", null, null)
+                    messageResolver.getMessage(MessageKey.VACATION_NOT_MANUAL_GRANT_POLICY)
             );
         }
 
@@ -882,7 +883,7 @@ public class VacationService {
             grantTime = policy.getGrantTime();
             if (grantTime == null || grantTime.compareTo(BigDecimal.ZERO) <= 0) {
                 throw new IllegalArgumentException(
-                        ms.getMessage("error.validate.vacation.policyGrantTimeInvalid", null, null)
+                        messageResolver.getMessage(MessageKey.VACATION_GRANT_TIME_REQUIRED)
                 );
             }
         } else {
@@ -890,7 +891,7 @@ public class VacationService {
             grantTime = data.getGrantTime();
             if (grantTime == null || grantTime.compareTo(BigDecimal.ZERO) <= 0) {
                 throw new IllegalArgumentException(
-                        ms.getMessage("error.validate.vacation.grantTimeRequired", null, null)
+                        messageResolver.getMessage(MessageKey.VACATION_GRANT_TIME_REQUIRED)
                 );
             }
         }
@@ -915,7 +916,7 @@ public class VacationService {
         // 6. 부여일과 만료일 검증 (부여일 < 만료일)
         if (PorestTime.isAfterThanEndDate(grantDate, expiryDate)) {
             throw new IllegalArgumentException(
-                    ms.getMessage("error.validate.vacation.grantDateAfterExpiryDate", null, null)
+                    messageResolver.getMessage(MessageKey.VACATION_GRANT_DATE_AFTER_EXPIRY)
             );
         }
 
@@ -951,27 +952,27 @@ public class VacationService {
         // 1. VacationGrant 존재 확인
         VacationGrant grant = vacationGrantRepository.findById(vacationGrantId)
                 .orElseThrow(() -> new IllegalArgumentException(
-                        ms.getMessage("error.notFound.vacationGrant", null, null)
+                        messageResolver.getMessage(MessageKey.NOT_FOUND_VACATION_GRANT)
                 ));
 
         // 2. 이미 삭제된 경우
         if (grant.getIsDeleted() == YNType.Y) {
             throw new IllegalArgumentException(
-                    ms.getMessage("error.validate.vacation.alreadyDeleted", null, null)
+                    messageResolver.getMessage(MessageKey.VACATION_ALREADY_DELETED)
             );
         }
 
         // 3. ACTIVE 상태인 경우에만 회수 가능
         if (grant.getStatus() != GrantStatus.ACTIVE) {
             throw new IllegalArgumentException(
-                    ms.getMessage("error.validate.vacation.notActiveGrant", null, null)
+                    messageResolver.getMessage(MessageKey.VACATION_NOT_ACTIVE_GRANT)
             );
         }
 
         // 4. 일부라도 사용된 경우 회수 불가
         if (grant.getRemainTime().compareTo(grant.getGrantTime()) < 0) {
             throw new IllegalArgumentException(
-                    ms.getMessage("error.validate.vacation.partiallyUsedGrant", null, null)
+                    messageResolver.getMessage(MessageKey.VACATION_PARTIALLY_USED_GRANT)
             );
         }
 
@@ -1002,7 +1003,7 @@ public class VacationService {
         // 3. 정책이 ON_REQUEST 방식인지 확인
         if (policy.getGrantMethod() != GrantMethod.ON_REQUEST) {
             throw new IllegalArgumentException(
-                    ms.getMessage("error.validate.vacation.notOnRequestPolicy", null, null)
+                    messageResolver.getMessage(MessageKey.VACATION_NOT_ON_REQUEST_POLICY)
             );
         }
 
@@ -1010,14 +1011,14 @@ public class VacationService {
         boolean hasPolicy = userVacationPolicyRepository.existsByUserIdAndVacationPolicyId(userId, data.getPolicyId());
         if (!hasPolicy) {
             throw new IllegalArgumentException(
-                    ms.getMessage("error.validate.vacation.policyNotAssigned", null, null)
+                    messageResolver.getMessage(MessageKey.VACATION_POLICY_NOT_ASSIGNED)
             );
         }
 
         // 5. 신청 사유 필수 검증
         if (data.getDesc() == null || data.getDesc().trim().isEmpty()) {
             throw new IllegalArgumentException(
-                    ms.getMessage("error.validate.vacation.requestReasonRequired", null, null)
+                    messageResolver.getMessage(MessageKey.VACATION_REQUEST_REASON_REQUIRED)
             );
         }
 
@@ -1028,14 +1029,14 @@ public class VacationService {
         if (requiredCount != null && requiredCount > 0) {
             if (approverIds == null || approverIds.isEmpty()) {
                 throw new IllegalArgumentException(
-                        ms.getMessage("error.validate.vacation.approverRequired", null, null)
+                        messageResolver.getMessage(MessageKey.VACATION_APPROVER_REQUIRED)
                 );
             }
 
             if (approverIds.size() != requiredCount) {
                 throw new IllegalArgumentException(
-                        ms.getMessage("error.validate.vacation.approverCountMismatch",
-                                new Object[]{requiredCount, approverIds.size()}, null)
+                        messageResolver.getMessage(MessageKey.VACATION_APPROVER_COUNT_MISMATCH,
+                                requiredCount, approverIds.size())
                 );
             }
 
@@ -1043,7 +1044,7 @@ public class VacationService {
             Set<String> uniqueApproverIds = new HashSet<>(approverIds);
             if (uniqueApproverIds.size() != approverIds.size()) {
                 throw new IllegalArgumentException(
-                        ms.getMessage("error.validate.vacation.duplicateApprover", null, null)
+                        messageResolver.getMessage(MessageKey.VACATION_DUPLICATE_APPROVER)
                 );
             }
 
@@ -1066,8 +1067,8 @@ public class VacationService {
 
             if (!nonHeadApprovers.isEmpty()) {
                 throw new IllegalArgumentException(
-                        ms.getMessage("error.validate.vacation.approverNotDepartmentHead",
-                                new Object[]{String.join(", ", nonHeadApprovers)}, null)
+                        messageResolver.getMessage(MessageKey.VACATION_APPROVER_NOT_DEPARTMENT_HEAD,
+                                String.join(", ", nonHeadApprovers))
                 );
             }
 
@@ -1142,20 +1143,20 @@ public class VacationService {
         // 1. VacationApproval 조회
         VacationApproval approval = vacationApprovalRepository.findByIdWithVacationGrantAndUser(approvalId)
                 .orElseThrow(() -> new IllegalArgumentException(
-                        ms.getMessage("error.notfound.vacation.approval", null, null)
+                        messageResolver.getMessage(MessageKey.NOT_FOUND_VACATION_APPROVAL)
                 ));
 
         // 2. 승인자 권한 검증
         if (!approval.getApprover().getId().equals(approverId)) {
             throw new IllegalArgumentException(
-                    ms.getMessage("error.validate.vacation.notAuthorizedApprover", null, null)
+                    messageResolver.getMessage(MessageKey.VACATION_NOT_AUTHORIZED_APPROVER)
             );
         }
 
         // 3. 이미 처리된 승인인지 확인
         if (!approval.isPending()) {
             throw new IllegalArgumentException(
-                    ms.getMessage("error.validate.vacation.alreadyProcessed", null, null)
+                    messageResolver.getMessage(MessageKey.VACATION_ALREADY_PROCESSED)
             );
         }
 
@@ -1172,7 +1173,7 @@ public class VacationService {
 
         if (hasPendingPreviousApprovals) {
             throw new IllegalArgumentException(
-                    ms.getMessage("error.validate.vacation.previousApprovalRequired", null, null)
+                    messageResolver.getMessage(MessageKey.VACATION_PREVIOUS_APPROVAL_REQUIRED)
             );
         }
 
@@ -1223,27 +1224,27 @@ public class VacationService {
         // 1. VacationApproval 조회
         VacationApproval approval = vacationApprovalRepository.findByIdWithVacationGrantAndUser(approvalId)
                 .orElseThrow(() -> new IllegalArgumentException(
-                        ms.getMessage("error.notfound.vacation.approval", null, null)
+                        messageResolver.getMessage(MessageKey.NOT_FOUND_VACATION_APPROVAL)
                 ));
 
         // 2. 승인자 권한 검증
         if (!approval.getApprover().getId().equals(approverId)) {
             throw new IllegalArgumentException(
-                    ms.getMessage("error.validate.vacation.notAuthorizedApprover", null, null)
+                    messageResolver.getMessage(MessageKey.VACATION_NOT_AUTHORIZED_APPROVER)
             );
         }
 
         // 3. 이미 처리된 승인인지 확인
         if (!approval.isPending()) {
             throw new IllegalArgumentException(
-                    ms.getMessage("error.validate.vacation.alreadyProcessed", null, null)
+                    messageResolver.getMessage(MessageKey.VACATION_ALREADY_PROCESSED)
             );
         }
 
         // 4. 거부 사유 필수 검증
         if (data.getRejectionReason() == null || data.getRejectionReason().trim().isEmpty()) {
             throw new IllegalArgumentException(
-                    ms.getMessage("error.validate.vacation.rejectionReasonRequired", null, null)
+                    messageResolver.getMessage(MessageKey.VACATION_REJECTION_REASON_REQUIRED)
             );
         }
 
@@ -1272,20 +1273,20 @@ public class VacationService {
         // 1. VacationGrant 조회
         VacationGrant vacationGrant = vacationGrantRepository.findById(vacationGrantId)
                 .orElseThrow(() -> new IllegalArgumentException(
-                        ms.getMessage("error.notFound.vacationGrant", null, null)
+                        messageResolver.getMessage(MessageKey.NOT_FOUND_VACATION_GRANT)
                 ));
 
         // 2. 신청자 권한 검증 (신청자만 취소 가능)
         if (!vacationGrant.getUser().getId().equals(userId)) {
             throw new IllegalArgumentException(
-                    ms.getMessage("error.validate.vacation.notAuthorizedRequester", null, null)
+                    messageResolver.getMessage(MessageKey.VACATION_NOT_AUTHORIZED_REQUESTER)
             );
         }
 
         // 3. PENDING 상태인지 확인 (한 명도 승인하지 않은 상태에서만 취소 가능)
         if (vacationGrant.getStatus() != GrantStatus.PENDING) {
             throw new IllegalArgumentException(
-                    ms.getMessage("error.validate.vacation.cannotCancelAfterApproval", null, null)
+                    messageResolver.getMessage(MessageKey.VACATION_CANNOT_CANCEL_AFTER_APPROVAL)
             );
         }
 
@@ -1683,7 +1684,7 @@ public class VacationService {
     public List<VacationServiceDto> getAllUsersVacationSummary(Integer year) {
         // 년도 유효성 검증
         if (year == null) {
-            throw new IllegalArgumentException(ms.getMessage("error.validate.year.required", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VALIDATE_YEAR_REQUIRED));
         }
 
         // 해당 년도의 시작일과 종료일 계산

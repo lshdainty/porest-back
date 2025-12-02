@@ -1,8 +1,8 @@
 package com.lshdainty.porest.common.util;
 
+import com.lshdainty.porest.common.message.MessageKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.MessageSource;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,10 +27,10 @@ public class PorestFile {
      * @param multipartFile 저장할 파일
      * @param path 파일 저장 경로
      * @param fileName 다른 이름으로 저장 시 사용
-     * @param ms MessageSource
+     * @param messageResolver MessageResolver
      * @return boolean 저장 성공 여부
      */
-    public static boolean save(MultipartFile multipartFile, String path, String fileName, MessageSource ms) {
+    public static boolean save(MultipartFile multipartFile, String path, String fileName, MessageResolver messageResolver) {
         if (multipartFile == null || multipartFile.isEmpty()) {
             log.warn("MultipartFile is null or empty");
             return false;
@@ -62,7 +62,7 @@ public class PorestFile {
             return true;
         } catch (IOException e) {
             log.error("File save failed. path: {}, fileName: {}", path, fileName, e);
-            throw new RuntimeException(ms.getMessage("error.file.registHoliday", new String[]{fileName}, null), e);
+            throw new RuntimeException(messageResolver.getMessage(MessageKey.FILE_REGISTER_HOLIDAY, fileName), e);
         }
     }
 
@@ -72,10 +72,10 @@ public class PorestFile {
      * OutOfMemoryError 발생 위험
      *
      * @param fullPath 읽어올 파일의 전체 경로
-     * @param ms MessageSource
+     * @param messageResolver MessageResolver
      * @return byte[] 파일 내용
      */
-    public static byte[] read(String fullPath, MessageSource ms) {
+    public static byte[] read(String fullPath, MessageResolver messageResolver) {
         log.debug("Reading file. fullPath: {}", fullPath);
         try {
             // 파일을 읽어올 전체 경로
@@ -89,11 +89,11 @@ public class PorestFile {
                 return fileBytes;
             } else {
                 log.warn("File not found or not readable. fullPath: {}", fullPath);
-                throw new NoSuchElementException(ms.getMessage("error.file.notfound", new String[]{fullPath}, null));
+                throw new NoSuchElementException(messageResolver.getMessage(MessageKey.FILE_NOT_FOUND, fullPath));
             }
         } catch (IOException e) {
             log.error("File read failed. fullPath: {}", fullPath, e);
-            throw new RuntimeException(ms.getMessage("error.file.read", new String[]{fullPath}, null), e);
+            throw new RuntimeException(messageResolver.getMessage(MessageKey.FILE_READ, fullPath), e);
         }
     }
 
@@ -102,10 +102,10 @@ public class PorestFile {
      *
      * @param sourcePath 원본 파일 전체 경로
      * @param targetPath 복사할 파일 전체 경로
-     * @param ms MessageSource
+     * @param messageResolver MessageResolver
      * @return boolean 복사 성공 여부
      */
-    public static boolean copy(String sourcePath, String targetPath, MessageSource ms) {
+    public static boolean copy(String sourcePath, String targetPath, MessageResolver messageResolver) {
         log.debug("Copying file. source: {}, target: {}", sourcePath, targetPath);
         Path source = Paths.get(sourcePath);
         Path target = Paths.get(targetPath);
@@ -114,7 +114,7 @@ public class PorestFile {
             // 원본 파일이 존재하는지 확인
             if (!Files.exists(source)) {
                 log.warn("Source file not found for copy: {}", sourcePath);
-                throw new NoSuchElementException(ms.getMessage("error.file.notfound", new String[]{sourcePath}, null));
+                throw new NoSuchElementException(messageResolver.getMessage(MessageKey.FILE_NOT_FOUND, sourcePath));
             }
 
             // 복사할 경로의 부모 디렉토리가 없으면 생성
@@ -129,7 +129,7 @@ public class PorestFile {
             return true;
         } catch (IOException e) {
             log.error("File copy failed. source: {}, target: {}", sourcePath, targetPath, e);
-            throw new RuntimeException(ms.getMessage("error.file.copy", new String[]{sourcePath, targetPath}, null), e);
+            throw new RuntimeException(messageResolver.getMessage(MessageKey.FILE_COPY, sourcePath, targetPath), e);
         }
     }
 
@@ -138,10 +138,10 @@ public class PorestFile {
      *
      * @param sourcePath 원본 파일 전체 경로
      * @param targetPath 이동할 파일 전체 경로
-     * @param ms MessageSource
+     * @param messageResolver MessageResolver
      * @return boolean 이동 성공 여부
      */
-    public static boolean move(String sourcePath, String targetPath, MessageSource ms) {
+    public static boolean move(String sourcePath, String targetPath, MessageResolver messageResolver) {
         log.debug("Moving file. source: {}, target: {}", sourcePath, targetPath);
         Path source = Paths.get(sourcePath);
         Path target = Paths.get(targetPath);
@@ -150,7 +150,7 @@ public class PorestFile {
             // 원본 파일이 존재하는지 확인
             if (!Files.exists(source)) {
                 log.warn("Source file not found for move: {}", sourcePath);
-                throw new NoSuchElementException(ms.getMessage("error.file.notfound", new String[]{sourcePath}, null));
+                throw new NoSuchElementException(messageResolver.getMessage(MessageKey.FILE_NOT_FOUND, sourcePath));
             }
 
             // 이동할 경로의 부모 디렉토리가 없으면 생성
@@ -165,7 +165,7 @@ public class PorestFile {
             return true;
         } catch (IOException e) {
             log.error("File move failed. source: {}, target: {}", sourcePath, targetPath, e);
-            throw new RuntimeException(ms.getMessage("error.file.move", new String[]{sourcePath, targetPath}, null), e);
+            throw new RuntimeException(messageResolver.getMessage(MessageKey.FILE_MOVE, sourcePath, targetPath), e);
         }
     }
 

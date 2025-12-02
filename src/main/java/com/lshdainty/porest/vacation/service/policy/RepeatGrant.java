@@ -1,13 +1,14 @@
 package com.lshdainty.porest.vacation.service.policy;
 
+import com.lshdainty.porest.common.message.MessageKey;
 import com.lshdainty.porest.common.type.YNType;
+import com.lshdainty.porest.common.util.MessageResolver;
 import com.lshdainty.porest.vacation.domain.VacationPolicy;
 import com.lshdainty.porest.vacation.repository.VacationPolicyCustomRepositoryImpl;
 import com.lshdainty.porest.vacation.service.dto.VacationPolicyServiceDto;
 import com.lshdainty.porest.vacation.type.GrantMethod;
 import com.lshdainty.porest.vacation.type.RepeatUnit;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.MessageSource;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -16,7 +17,7 @@ import java.util.Objects;
 
 @RequiredArgsConstructor
 public class RepeatGrant implements VacationPolicyStrategy {
-    private final MessageSource ms;
+    private final MessageResolver messageResolver;
     private final VacationPolicyCustomRepositoryImpl vacationPolicyRepository;
 
     @Override
@@ -62,42 +63,42 @@ public class RepeatGrant implements VacationPolicyStrategy {
     private void validateRepeatGrantPolicy(VacationPolicyServiceDto data) {
         // 1. 정책명 필수 검증
         if (Objects.isNull(data.getName()) || data.getName().trim().isEmpty()) {
-            throw new IllegalArgumentException(ms.getMessage("vacation.policy.name.required", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VACATION_POLICY_NAME_REQUIRED));
         }
 
         // 2. 정책명 중복 검증
         if (vacationPolicyRepository.existsByName(data.getName())) {
-            throw new IllegalArgumentException(ms.getMessage("vacation.policy.name.duplicate", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VACATION_POLICY_NAME_DUPLICATE));
         }
 
         // 3. 부여시간 필수 검증 (스케줄러에서 휴가 부여를 위해 필수)
         if (Objects.isNull(data.getGrantTime())) {
-            throw new IllegalArgumentException(ms.getMessage("vacation.policy.grantTime.required", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VACATION_POLICY_GRANT_TIME_REQUIRED));
         }
 
         // 4. 부여시간은 0보다 커야 함
         if (data.getGrantTime().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException(ms.getMessage("vacation.policy.grantTime.positive", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VACATION_POLICY_GRANT_TIME_POSITIVE));
         }
 
         // 5. minuteGrantYn 필수 검증
         if (Objects.isNull(data.getMinuteGrantYn())) {
-            throw new IllegalArgumentException(ms.getMessage("vacation.policy.minuteGrantYn.required", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VACATION_POLICY_MINUTE_GRANT_YN_REQUIRED));
         }
 
         // 6. 반복 단위 필수 검증
         if (Objects.isNull(data.getRepeatUnit())) {
-            throw new IllegalArgumentException(ms.getMessage("vacation.policy.repeatUnit.required", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VACATION_POLICY_REPEAT_UNIT_REQUIRED));
         }
 
         // 7. 반복 간격 필수 및 양수 검증
         if (Objects.isNull(data.getRepeatInterval()) || data.getRepeatInterval() <= 0) {
-            throw new IllegalArgumentException(ms.getMessage("vacation.policy.repeatInterval.positive", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VACATION_POLICY_REPEAT_INTERVAL_POSITIVE));
         }
 
         // 8. 첫 부여 시점 필수 검증 (스케줄러가 반복 부여를 계산하기 위한 기준일)
         if (Objects.isNull(data.getFirstGrantDate())) {
-            throw new IllegalArgumentException(ms.getMessage("vacation.policy.firstGrantDate.required", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VACATION_POLICY_FIRST_GRANT_DATE_REQUIRED));
         }
 
         // 9. 반복 단위에 따른 specificMonths/Days 검증
@@ -108,12 +109,12 @@ public class RepeatGrant implements VacationPolicyStrategy {
 
         // 11. effectiveType 필수 검증
         if (Objects.isNull(data.getEffectiveType())) {
-            throw new IllegalArgumentException(ms.getMessage("vacation.policy.effectiveType.required", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VACATION_POLICY_EFFECTIVE_TYPE_REQUIRED));
         }
 
         // 12. expirationType 필수 검증
         if (Objects.isNull(data.getExpirationType())) {
-            throw new IllegalArgumentException(ms.getMessage("vacation.policy.expirationType.required", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VACATION_POLICY_EXPIRATION_TYPE_REQUIRED));
         }
     }
 
@@ -141,7 +142,7 @@ public class RepeatGrant implements VacationPolicyStrategy {
                 // 3) months=X, days=Y: 매년 X월 Y일 (Y가 해당 월의 일수를 초과하면 마지막 날로 조정)
                 // 4) months=null, days=Y: 허용 안 함 (어느 달인지 모름)
                 if (months == null && days != null) {
-                    throw new IllegalArgumentException(ms.getMessage("vacation.policy.yearly.monthRequired", null, null));
+                    throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VACATION_POLICY_YEARLY_MONTH_REQUIRED));
                 }
                 if (months != null) {
                     validateMonth(months);
@@ -158,7 +159,7 @@ public class RepeatGrant implements VacationPolicyStrategy {
                 // 2) months=null, days=X: 매월 X일
                 // 3) months=X, days=any: 허용 안 함 (매월인데 특정 월?)
                 if (months != null) {
-                    throw new IllegalArgumentException(ms.getMessage("vacation.policy.monthly.monthNotAllowed", null, null));
+                    throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VACATION_POLICY_MONTHLY_MONTH_NOT_ALLOWED));
                 }
                 if (days != null) {
                     validateDay(days);
@@ -170,7 +171,7 @@ public class RepeatGrant implements VacationPolicyStrategy {
                 // days 지정 시 각 분기 시작월(1,4,7,10월)의 X일에 부여
                 // 해당 월에 X일이 없으면 해당 월의 마지막 날로 조정 (스케줄러에서 처리)
                 if (months != null) {
-                    throw new IllegalArgumentException(ms.getMessage("vacation.policy.quarterly.monthNotAllowed", null, null));
+                    throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VACATION_POLICY_QUARTERLY_MONTH_NOT_ALLOWED));
                 }
                 if (days != null) {
                     validateDay(days);
@@ -182,7 +183,7 @@ public class RepeatGrant implements VacationPolicyStrategy {
                 // days 지정 시 각 반기 시작월(1,7월)의 X일에 부여
                 // 해당 월에 X일이 없으면 해당 월의 마지막 날로 조정 (스케줄러에서 처리)
                 if (months != null) {
-                    throw new IllegalArgumentException(ms.getMessage("vacation.policy.half.monthNotAllowed", null, null));
+                    throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VACATION_POLICY_HALF_MONTH_NOT_ALLOWED));
                 }
                 if (days != null) {
                     validateDay(days);
@@ -192,14 +193,14 @@ public class RepeatGrant implements VacationPolicyStrategy {
             case DAILY:
                 // DAILY: months, days 둘 다 불가
                 if (months != null || days != null) {
-                    throw new IllegalArgumentException(ms.getMessage("vacation.policy.daily.monthDayNotAllowed", null, null));
+                    throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VACATION_POLICY_DAILY_MONTH_DAY_NOT_ALLOWED));
                 }
                 break;
         }
 
         // repeatInterval 최댓값 검증 (비현실적인 큰 값 방지)
         if (data.getRepeatInterval() > 100) {
-            throw new IllegalArgumentException(ms.getMessage("vacation.policy.repeatInterval.tooLarge", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VACATION_POLICY_REPEAT_INTERVAL_TOO_LARGE));
         }
     }
 
@@ -210,7 +211,7 @@ public class RepeatGrant implements VacationPolicyStrategy {
      */
     private void validateMonth(Integer month) {
         if (month < 1 || month > 12) {
-            throw new IllegalArgumentException(ms.getMessage("vacation.policy.month.invalid", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VACATION_POLICY_MONTH_INVALID));
         }
     }
 
@@ -221,7 +222,7 @@ public class RepeatGrant implements VacationPolicyStrategy {
      */
     private void validateDay(Integer day) {
         if (day < 1 || day > 31) {
-            throw new IllegalArgumentException(ms.getMessage("vacation.policy.day.invalid", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VACATION_POLICY_DAY_INVALID));
         }
     }
 
@@ -264,16 +265,16 @@ public class RepeatGrant implements VacationPolicyStrategy {
         // 1회성 부여(isRecurring=N)인 경우 maxGrantCount 필수
         if (YNType.isN(isRecurring)) {
             if (Objects.isNull(maxGrantCount)) {
-                throw new IllegalArgumentException(ms.getMessage("vacation.policy.maxGrantCount.required", null, null));
+                throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VACATION_POLICY_MAX_GRANT_COUNT_REQUIRED));
             }
             if (maxGrantCount <= 0) {
-                throw new IllegalArgumentException(ms.getMessage("vacation.policy.maxGrantCount.positive", null, null));
+                throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VACATION_POLICY_MAX_GRANT_COUNT_POSITIVE));
             }
         }
 
         // 반복 부여(isRecurring=Y)인 경우 maxGrantCount는 null이어야 함
         if (YNType.isY(isRecurring) && Objects.nonNull(maxGrantCount)) {
-            throw new IllegalArgumentException(ms.getMessage("vacation.policy.maxGrantCount.unnecessary", null, null));
+            throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.VACATION_POLICY_MAX_GRANT_COUNT_UNNECESSARY));
         }
     }
 
