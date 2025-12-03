@@ -310,6 +310,61 @@ class VacationGrantQueryDslRepositoryTest {
     }
 
     @Test
+    @DisplayName("유저별 기준시간 기준 유효한 휴가부여 조회 - EXHAUSTED, EXPIRED 포함, REVOKED 제외")
+    void findValidGrantsByUserIdAndBaseTime_includesExhaustedAndExpired_excludesRevoked() {
+        // given
+        LocalDateTime grantDate = LocalDateTime.of(2025, 1, 1, 0, 0, 0);
+        LocalDateTime expiryDate = LocalDateTime.of(2025, 12, 31, 23, 59, 59);
+        LocalDateTime baseTime = LocalDateTime.of(2025, 6, 1, 0, 0);
+
+        // ACTIVE 상태 휴가
+        VacationGrant activeGrant = VacationGrant.createVacationGrant(
+                user, policy, "활성 연차", VacationType.ANNUAL, new BigDecimal("8.0"),
+                grantDate, expiryDate
+        );
+        vacationGrantRepository.save(activeGrant);
+
+        // EXHAUSTED 상태 휴가 (잔여시간 전부 차감)
+        VacationGrant exhaustedGrant = VacationGrant.createVacationGrant(
+                user, policy, "소진 연차", VacationType.ANNUAL, new BigDecimal("8.0"),
+                grantDate, expiryDate
+        );
+        exhaustedGrant.deduct(new BigDecimal("8.0"));
+        vacationGrantRepository.save(exhaustedGrant);
+
+        // EXPIRED 상태 휴가
+        VacationGrant expiredGrant = VacationGrant.createVacationGrant(
+                user, policy, "만료 연차", VacationType.ANNUAL, new BigDecimal("8.0"),
+                grantDate, expiryDate
+        );
+        expiredGrant.expire();
+        vacationGrantRepository.save(expiredGrant);
+
+        // REVOKED 상태 휴가 (조회되지 않아야 함)
+        VacationGrant revokedGrant = VacationGrant.createVacationGrant(
+                user, policy, "회수 연차", VacationType.ANNUAL, new BigDecimal("8.0"),
+                grantDate, expiryDate
+        );
+        revokedGrant.revoke();
+        vacationGrantRepository.save(revokedGrant);
+
+        em.flush();
+        em.clear();
+
+        // when
+        List<VacationGrant> grants = vacationGrantRepository.findValidGrantsByUserIdAndBaseTime(
+                "user1", baseTime
+        );
+
+        // then
+        assertThat(grants).hasSize(3);
+        assertThat(grants).extracting(VacationGrant::getStatus)
+                .containsExactlyInAnyOrder(GrantStatus.ACTIVE, GrantStatus.EXHAUSTED, GrantStatus.EXPIRED);
+        assertThat(grants).extracting(VacationGrant::getStatus)
+                .doesNotContain(GrantStatus.REVOKED);
+    }
+
+    @Test
     @DisplayName("유저별 신청 휴가 목록 조회")
     void findAllRequestedVacationsByUserId() {
         // given

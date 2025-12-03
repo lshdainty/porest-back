@@ -126,7 +126,7 @@ public class VacationGrantQueryDslRepository implements VacationGrantRepository 
                 .join(vacationGrant.policy).fetchJoin()
                 .where(vacationGrant.user.id.eq(userId)
                         .and(vacationGrant.isDeleted.eq(YNType.N))
-                        .and(vacationGrant.status.eq(GrantStatus.ACTIVE))
+                        .and(vacationGrant.status.in(GrantStatus.ACTIVE, GrantStatus.EXHAUSTED, GrantStatus.EXPIRED))
                         .and(vacationGrant.grantDate.loe(baseTime))
                         .and(vacationGrant.expiryDate.goe(baseTime)))
                 .fetch();
