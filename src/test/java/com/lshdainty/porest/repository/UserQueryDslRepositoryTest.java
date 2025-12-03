@@ -1,5 +1,6 @@
 package com.lshdainty.porest.repository;
 
+import com.lshdainty.porest.common.type.CountryCode;
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.company.type.OriginCompanyType;
 import com.lshdainty.porest.user.domain.User;
@@ -36,7 +37,7 @@ class UserQueryDslRepositoryTest {
         User user = User.createUser(
                 "testUser", "password", "홍길동", "hong@test.com",
                 LocalDate.of(1990, 1, 1), OriginCompanyType.DTOL, "9 ~ 6",
-                YNType.N, null, null
+                YNType.N, null, null, CountryCode.KR
         );
 
         // when
@@ -68,7 +69,7 @@ class UserQueryDslRepositoryTest {
         User user = User.createUser(
                 "deletedUser", "password", "삭제유저", "deleted@test.com",
                 LocalDate.of(1990, 1, 1), OriginCompanyType.DTOL, "9 ~ 6",
-                YNType.N, null, null
+                YNType.N, null, null, CountryCode.KR
         );
         userRepository.save(user);
         user.deleteUser();
@@ -90,12 +91,12 @@ class UserQueryDslRepositoryTest {
         userRepository.save(User.createUser(
                 "user1", "password", "유저1", "user1@test.com",
                 LocalDate.of(1990, 1, 1), OriginCompanyType.DTOL, "9 ~ 6",
-                YNType.N, null, null
+                YNType.N, null, null, CountryCode.KR
         ));
         userRepository.save(User.createUser(
                 "user2", "password", "유저2", "user2@test.com",
                 LocalDate.of(1991, 2, 2), OriginCompanyType.DTOL, "8 ~ 5",
-                YNType.N, null, null
+                YNType.N, null, null, CountryCode.KR
         ));
         em.flush();
         em.clear();
@@ -115,12 +116,12 @@ class UserQueryDslRepositoryTest {
         User activeUser = User.createUser(
                 "activeUser", "password", "활성유저", "active@test.com",
                 LocalDate.of(1990, 1, 1), OriginCompanyType.DTOL, "9 ~ 6",
-                YNType.N, null, null
+                YNType.N, null, null, CountryCode.KR
         );
         User deletedUser = User.createUser(
                 "deletedUser", "password", "삭제유저", "deleted@test.com",
                 LocalDate.of(1991, 2, 2), OriginCompanyType.DTOL, "8 ~ 5",
-                YNType.N, null, null
+                YNType.N, null, null, CountryCode.KR
         );
         userRepository.save(activeUser);
         userRepository.save(deletedUser);
@@ -153,7 +154,7 @@ class UserQueryDslRepositoryTest {
         User user = User.createUser(
                 "testUser", "password", "원래이름", "original@test.com",
                 LocalDate.of(1990, 1, 1), OriginCompanyType.DTOL, "9 ~ 6",
-                YNType.N, null, null
+                YNType.N, null, null, CountryCode.KR
         );
         userRepository.save(user);
         em.flush();
@@ -163,7 +164,7 @@ class UserQueryDslRepositoryTest {
         User foundUser = userRepository.findById("testUser").orElseThrow();
         foundUser.updateUser("수정이름", "updated@test.com", null,
                 LocalDate.of(1991, 1, 1), OriginCompanyType.DTOL, "8 ~ 5",
-                YNType.Y, null, null, null);
+                YNType.Y, null, null, null, null);
         em.flush();
         em.clear();
 
@@ -181,7 +182,7 @@ class UserQueryDslRepositoryTest {
         User user = User.createUser(
                 "testUser", "password", "홍길동", "hong@test.com",
                 LocalDate.of(1990, 1, 1), OriginCompanyType.DTOL, "9 ~ 6",
-                YNType.N, null, null
+                YNType.N, null, null, CountryCode.KR
         );
         userRepository.save(user);
         em.flush();
@@ -210,7 +211,7 @@ class UserQueryDslRepositoryTest {
         User invitedUser = User.createInvitedUser(
                 "invitedUser", "초대유저", "invited@test.com",
                 OriginCompanyType.DTOL, "9 ~ 6",
-                LocalDate.of(2025, 1, 1)
+                LocalDate.of(2025, 1, 1), CountryCode.KR
         );
 
         // when

@@ -1,5 +1,6 @@
 package com.lshdainty.porest.repository;
 
+import com.lshdainty.porest.common.type.CountryCode;
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.user.domain.User;
 import com.lshdainty.porest.vacation.domain.UserVacationPolicy;

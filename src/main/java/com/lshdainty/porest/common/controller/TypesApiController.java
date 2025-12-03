@@ -3,6 +3,7 @@ package com.lshdainty.porest.common.controller;
 import com.lshdainty.porest.common.controller.dto.TypesDto;
 import com.lshdainty.porest.common.exception.EntityNotFoundException;
 import com.lshdainty.porest.common.exception.ErrorCode;
+import com.lshdainty.porest.common.type.CountryCode;
 import com.lshdainty.porest.common.type.DisplayType;
 import com.lshdainty.porest.company.type.OriginCompanyType;
 import com.lshdainty.porest.holiday.type.HolidayType;
@@ -33,7 +34,8 @@ public class TypesApiController implements TypesApi {
             Map.entry("schedule-type", ScheduleType.class),
             Map.entry("holiday-type", HolidayType.class),
             Map.entry("origin-company-type", OriginCompanyType.class),
-            Map.entry("system-type", SystemType.class)
+            Map.entry("system-type", SystemType.class),
+            Map.entry("country-code", CountryCode.class)
     );
 
     @Override

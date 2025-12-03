@@ -1,6 +1,7 @@
 package com.lshdainty.porest.user.domain;
 
 import com.lshdainty.porest.common.domain.AuditingFields;
+import com.lshdainty.porest.common.type.CountryCode;
 import com.lshdainty.porest.company.type.OriginCompanyType;
 import com.lshdainty.porest.department.domain.UserDepartment;
 import com.lshdainty.porest.permission.domain.Role;
@@ -88,6 +89,10 @@ public class User extends AuditingFields {
     @Column(name = "is_deleted")
     private YNType isDeleted; // 삭제여부
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "country_code")
+    private CountryCode countryCode; // 국가 코드
+
     @Column(name = "dashboard", columnDefinition = "json")
     private String dashboard; // 대시보드 데이터
 
@@ -129,7 +134,7 @@ public class User extends AuditingFields {
      */
     public static User createUser(String id, String pwd, String name, String email, LocalDate birth,
                                   OriginCompanyType company, String workTime,
-                                  YNType lunarYN, String profileName, String profileUUID) {
+                                  YNType lunarYN, String profileName, String profileUUID, CountryCode countryCode) {
         User user = new User();
         user.id = id;
         user.pwd = pwd;
@@ -141,6 +146,7 @@ public class User extends AuditingFields {
         user.lunarYN = lunarYN;
         user.profileName = profileName;
         user.profileUUID = profileUUID;
+        user.countryCode = countryCode;
         user.isDeleted = YNType.N;
         return user;
     }
@@ -159,7 +165,7 @@ public class User extends AuditingFields {
      * @return User
      */
     public static User createInvitedUser(String id, String name, String email,
-                                       OriginCompanyType company, String workTime, LocalDate joinDate) {
+                                       OriginCompanyType company, String workTime, LocalDate joinDate, CountryCode countryCode) {
         User user = new User();
         user.id = id;
         user.name = name;
@@ -167,6 +173,7 @@ public class User extends AuditingFields {
         user.company = company;
         user.workTime = workTime;
         user.joinDate = joinDate;
+        user.countryCode = countryCode;
         user.invitationStatus = StatusType.PENDING; // 초대 상태로 설정
         user.isDeleted = YNType.N;
 
@@ -192,12 +199,13 @@ public class User extends AuditingFields {
      * 초대된 사용자 정보 수정<br>
      * PENDING 상태인 사용자만 수정 가능
      */
-    public void updateInvitedUser(String name, String email, OriginCompanyType company, String workTime, LocalDate joinDate) {
+    public void updateInvitedUser(String name, String email, OriginCompanyType company, String workTime, LocalDate joinDate, CountryCode countryCode) {
         if (!Objects.isNull(name)) { this.name = name; }
         if (!Objects.isNull(email)) { this.email = email; }
         if (!Objects.isNull(company)) { this.company = company; }
         if (!Objects.isNull(workTime)) { this.workTime = workTime; }
         if (!Objects.isNull(joinDate)) { this.joinDate = joinDate; }
+        if (!Objects.isNull(countryCode)) { this.countryCode = countryCode; }
     }
 
     /**
@@ -230,7 +238,7 @@ public class User extends AuditingFields {
      */
     public void updateUser(String name, String email, List<Role> roles, LocalDate birth,
                            OriginCompanyType company, String workTime,
-                           YNType lunarYN, String profileName, String profileUUID, String dashboard) {
+                           YNType lunarYN, String profileName, String profileUUID, String dashboard, CountryCode countryCode) {
         if (!Objects.isNull(name)) { this.name = name; }
         if (!Objects.isNull(email)) { this.email = email; }
         if (!Objects.isNull(roles)) {
@@ -266,6 +274,7 @@ public class User extends AuditingFields {
         if (!Objects.isNull(profileName)) { this.profileName = profileName; }
         if (!Objects.isNull(profileUUID)) { this.profileUUID = profileUUID; }
         if (!Objects.isNull(dashboard)) { this.dashboard = dashboard; }
+        if (!Objects.isNull(countryCode)) { this.countryCode = countryCode; }
     }
 
     /**

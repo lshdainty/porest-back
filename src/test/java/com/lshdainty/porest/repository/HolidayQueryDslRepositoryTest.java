@@ -164,7 +164,8 @@ class HolidayQueryDslRepositoryTest {
         List<Holiday> holidays = holidayRepository.findHolidaysByStartEndDateWithType(
                 LocalDate.of(2025, 1, 1),
                 LocalDate.of(2025, 1, 31),
-                HolidayType.PUBLIC
+                HolidayType.PUBLIC,
+                CountryCode.KR
         );
 
         // then
@@ -210,7 +211,7 @@ class HolidayQueryDslRepositoryTest {
         // when
         Holiday foundHoliday = holidayRepository.findById(holiday.getId()).orElseThrow();
         foundHoliday.updateHoliday("수정된 이름", LocalDate.of(2025, 1, 2),
-                HolidayType.SUBSTITUTE, null, null, null, null, null);
+                HolidayType.SUBSTITUTE, CountryCode.KR, null, null, null, null);
         em.flush();
         em.clear();
 

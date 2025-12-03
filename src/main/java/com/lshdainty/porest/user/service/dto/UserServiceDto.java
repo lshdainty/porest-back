@@ -1,7 +1,7 @@
 package com.lshdainty.porest.user.service.dto;
 
+import com.lshdainty.porest.common.type.CountryCode;
 import com.lshdainty.porest.company.type.OriginCompanyType;
-import java.util.List;
 import com.lshdainty.porest.user.type.StatusType;
 import com.lshdainty.porest.common.type.YNType;
 import lombok.Builder;
@@ -10,6 +10,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter @Setter
 @Builder
@@ -24,6 +25,7 @@ public class UserServiceDto {
     private LocalDate joinDate; // 입사일
     private OriginCompanyType company;
     private YNType lunarYN;
+    private CountryCode countryCode; // 국가 코드
 
     private String profileName;
     private String profileUrl;

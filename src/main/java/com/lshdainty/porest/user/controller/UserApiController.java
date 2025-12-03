@@ -33,6 +33,7 @@ public class UserApiController implements UserApi {
                 .lunarYN(data.getLunarYn())
                 .profileUrl(data.getProfileUrl())
                 .profileUUID(data.getProfileUuid())
+                .countryCode(data.getCountryCode())
                 .build()
         );
 
@@ -87,7 +88,8 @@ public class UserApiController implements UserApi {
                 user.getInvitationStatus(),
                 user.getRegisteredAt(),
                 user.getMainDepartmentNameKR(),
-                user.getDashboard()
+                user.getDashboard(),
+                user.getCountryCode()
         ));
     }
 
@@ -147,7 +149,8 @@ public class UserApiController implements UserApi {
                             u.getInvitationStatus(),
                             u.getRegisteredAt(),
                             u.getMainDepartmentNameKR(),
-                            u.getDashboard()
+                            u.getDashboard(),
+                            u.getCountryCode()
                     );
                 })
                 .collect(Collectors.toList());
@@ -170,6 +173,7 @@ public class UserApiController implements UserApi {
                 .profileUrl(data.getProfileUrl())
                 .profileUUID(data.getProfileUuid())
                 .dashboard(data.getDashboard())
+                .countryCode(data.getCountryCode())
                 .build()
         );
 
@@ -211,7 +215,8 @@ public class UserApiController implements UserApi {
                 findUser.getCompany().getCompanyName(),
                 findUser.getLunarYN(),
                 findUser.getProfileUrl(),
-                findUser.getDashboard()
+                findUser.getDashboard(),
+                findUser.getCountryCode()
         ));
     }
 
@@ -244,6 +249,7 @@ public class UserApiController implements UserApi {
                 .company(data.getUserOriginCompanyType())
                 .workTime(data.getUserWorkTime())
                 .joinDate(data.getJoinDate())
+                .countryCode(data.getCountryCode())
                 .build()
         );
 
@@ -257,7 +263,8 @@ public class UserApiController implements UserApi {
                 result.getRoleNames(),
                 result.getInvitationSentAt(),
                 result.getInvitationExpiresAt(),
-                result.getInvitationStatus()
+                result.getInvitationStatus(),
+                result.getCountryCode()
         ));
     }
 
@@ -273,6 +280,7 @@ public class UserApiController implements UserApi {
                 .company(data.getUserOriginCompanyType())
                 .workTime(data.getUserWorkTime())
                 .joinDate(data.getJoinDate())
+                .countryCode(data.getCountryCode())
                 .build()
         );
 
@@ -286,7 +294,8 @@ public class UserApiController implements UserApi {
                 result.getRoleNames(),
                 result.getInvitationSentAt(),
                 result.getInvitationExpiresAt(),
-                result.getInvitationStatus()
+                result.getInvitationStatus(),
+                result.getCountryCode()
         ));
     }
 
@@ -308,7 +317,8 @@ public class UserApiController implements UserApi {
                 result.getRoleNames(),
                 result.getInvitationSentAt(),
                 result.getInvitationExpiresAt(),
-                result.getInvitationStatus()
+                result.getInvitationStatus(),
+                result.getCountryCode()
         ));
     }
 

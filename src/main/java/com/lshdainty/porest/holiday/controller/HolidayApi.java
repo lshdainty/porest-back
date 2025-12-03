@@ -4,6 +4,8 @@ import com.lshdainty.porest.common.controller.ApiResponse;
 import com.lshdainty.porest.common.type.CountryCode;
 import com.lshdainty.porest.holiday.controller.dto.HolidayApiDto;
 import com.lshdainty.porest.holiday.type.HolidayType;
+import com.lshdainty.porest.security.annotation.LoginUser;
+import com.lshdainty.porest.user.domain.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -63,8 +65,9 @@ public interface HolidayApi {
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @Parameter(description = "종료일 (YYYY-MM-DD)", example = "2024-12-31", required = true)
             @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
-            @Parameter(description = "국가 코드", example = "KR", required = true)
-            @RequestParam("country_code") CountryCode countryCode
+            @Parameter(description = "국가 코드 (미입력 시 로그인 사용자의 국가 코드 사용)", example = "KR", required = false)
+            @RequestParam(value = "country_code", required = false) CountryCode countryCode,
+            @Parameter(hidden = true) @LoginUser User loginUser
     );
 
     @Operation(

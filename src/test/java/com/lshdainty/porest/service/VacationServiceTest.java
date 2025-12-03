@@ -3,6 +3,7 @@ package com.lshdainty.porest.service;
 import com.lshdainty.porest.common.exception.BusinessRuleViolationException;
 import com.lshdainty.porest.common.exception.EntityNotFoundException;
 import com.lshdainty.porest.common.exception.ForbiddenException;
+import com.lshdainty.porest.common.type.CountryCode;
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.company.type.OriginCompanyType;
 import com.lshdainty.porest.department.repository.DepartmentRepository;
@@ -1194,7 +1195,7 @@ class VacationServiceTest {
     // 테스트 헬퍼 메서드들
     private User createTestUser(String userId) {
         return User.createUser(userId, "password", "테스트유저", "test@test.com",
-                LocalDate.of(1990, 1, 1), OriginCompanyType.SKAX, "9 ~ 6", YNType.N, null, null);
+                LocalDate.of(1990, 1, 1), OriginCompanyType.SKAX, "9 ~ 6", YNType.N, null, null, CountryCode.KR);
     }
 
     private VacationGrant createTestGrant(User user) {

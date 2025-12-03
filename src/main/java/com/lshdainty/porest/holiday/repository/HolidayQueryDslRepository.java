@@ -60,11 +60,12 @@ public class HolidayQueryDslRepository implements HolidayRepository {
     }
 
     @Override
-    public List<Holiday> findHolidaysByStartEndDateWithType(LocalDate start, LocalDate end, HolidayType type) {
+    public List<Holiday> findHolidaysByStartEndDateWithType(LocalDate start, LocalDate end, HolidayType type, CountryCode countryCode) {
         return query
                 .selectFrom(holiday)
                 .where(holiday.date.between(start, end)
-                        .and(holiday.type.eq(type)))
+                        .and(holiday.type.eq(type))
+                        .and(holiday.countryCode.eq(countryCode)))
                 .orderBy(holiday.date.asc())
                 .fetch();
     }

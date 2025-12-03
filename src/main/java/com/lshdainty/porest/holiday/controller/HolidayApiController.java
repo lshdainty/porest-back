@@ -1,16 +1,17 @@
 package com.lshdainty.porest.holiday.controller;
 
 import com.lshdainty.porest.common.controller.ApiResponse;
-import com.lshdainty.porest.holiday.domain.Holiday;
 import com.lshdainty.porest.common.type.CountryCode;
-import com.lshdainty.porest.holiday.type.HolidayType;
 import com.lshdainty.porest.holiday.controller.dto.HolidayApiDto;
+import com.lshdainty.porest.holiday.domain.Holiday;
 import com.lshdainty.porest.holiday.service.HolidayService;
 import com.lshdainty.porest.holiday.service.dto.HolidayServiceDto;
+import com.lshdainty.porest.holiday.type.HolidayType;
+import com.lshdainty.porest.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -41,8 +42,11 @@ public class HolidayApiController implements HolidayApi {
 
     @Override
     @PreAuthorize("hasAuthority('HOLIDAY_READ')")
-    public ApiResponse searchHolidaysByStartEndDate(LocalDate start, LocalDate end, CountryCode countryCode) {
-        List<Holiday> holidays = holidayService.searchHolidaysByStartEndDate(start, end, countryCode);
+    public ApiResponse searchHolidaysByStartEndDate(LocalDate start, LocalDate end, CountryCode countryCode, User loginUser) {
+        // countryCode가 null이면 로그인 사용자의 국가 코드 사용
+        CountryCode targetCountryCode = countryCode != null ? countryCode : loginUser.getCountryCode();
+
+        List<Holiday> holidays = holidayService.searchHolidaysByStartEndDate(start, end, targetCountryCode);
 
         List<HolidayApiDto.SearchHolidaysResp> resp = holidays.stream()
                 .map(h -> new HolidayApiDto.SearchHolidaysResp(

@@ -6,7 +6,6 @@ import com.lshdainty.porest.vacation.domain.VacationUsage;
 import com.lshdainty.porest.vacation.type.GrantStatus;
 import com.lshdainty.porest.vacation.type.VacationTimeType;
 import com.lshdainty.porest.vacation.type.VacationType;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;

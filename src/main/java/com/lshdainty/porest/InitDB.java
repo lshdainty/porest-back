@@ -112,27 +112,27 @@ public class InitDB {
 			// ==========================================
 			// user1: 관리자 (이서준) - ADMIN 역할
 			user1.updateUser(user1.getName(), user1.getEmail(), List.of(adminRole), user1.getBirth(),
-					user1.getCompany(), user1.getWorkTime(), user1.getLunarYN(), null, null, null);
+					user1.getCompany(), user1.getWorkTime(), user1.getLunarYN(), null, null, null, null);
 
 			// user2: 일반 사용자 (김서연) - USER 역할
 			user2.updateUser(user2.getName(), user2.getEmail(), List.of(userRole), user2.getBirth(),
-					user2.getCompany(), user2.getWorkTime(), user2.getLunarYN(), null, null, null);
+					user2.getCompany(), user2.getWorkTime(), user2.getLunarYN(), null, null, null, null);
 
 			// user3: 관리자 (김지후) - ADMIN 역할
 			user3.updateUser(user3.getName(), user3.getEmail(), List.of(adminRole), user3.getBirth(),
-					user3.getCompany(), user3.getWorkTime(), user3.getLunarYN(), null, null, null);
+					user3.getCompany(), user3.getWorkTime(), user3.getLunarYN(), null, null, null, null);
 
 			// user4: 매니저 (이준우) - MANAGER 역할
 			user4.updateUser(user4.getName(), user4.getEmail(), List.of(managerRole), user4.getBirth(),
-					user4.getCompany(), user4.getWorkTime(), user4.getLunarYN(), null, null, null);
+					user4.getCompany(), user4.getWorkTime(), user4.getLunarYN(), null, null, null, null);
 
 			// user5: 일반 사용자 (조민서) - USER 역할
 			user5.updateUser(user5.getName(), user5.getEmail(), List.of(userRole), user5.getBirth(),
-					user5.getCompany(), user5.getWorkTime(), user5.getLunarYN(), null, null, null);
+					user5.getCompany(), user5.getWorkTime(), user5.getLunarYN(), null, null, null, null);
 
 			// user6: 매니저 (이하은) - MANAGER 역할
 			user6.updateUser(user6.getName(), user6.getEmail(), List.of(managerRole), user6.getBirth(),
-					user6.getCompany(), user6.getWorkTime(), user6.getLunarYN(), null, null, null);
+					user6.getCompany(), user6.getWorkTime(), user6.getLunarYN(), null, null, null, null);
 
 			// ==========================================
 			// 4. 회원가입 완료 처리
@@ -1007,7 +1007,7 @@ public class InitDB {
 				String workTime, YNType lunar) {
 			String encodedPassword = passwordEncoder.encode("1234");
 			User user = User.createUser(id, encodedPassword, name, email, birth, company, workTime, lunar,
-					null, null);
+					null, null, CountryCode.KR);
 			em.persist(user);
 			return user;
 		}

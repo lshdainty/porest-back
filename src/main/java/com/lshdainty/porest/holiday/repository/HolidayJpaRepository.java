@@ -50,11 +50,12 @@ public class HolidayJpaRepository implements HolidayRepository {
     }
 
     @Override
-    public List<Holiday> findHolidaysByStartEndDateWithType(LocalDate start, LocalDate end, HolidayType type) {
-        return em.createQuery("select h from Holiday h where h.date between :start and :end and h.type = :type order by h.date", Holiday.class)
+    public List<Holiday> findHolidaysByStartEndDateWithType(LocalDate start, LocalDate end, HolidayType type, CountryCode countryCode) {
+        return em.createQuery("select h from Holiday h where h.date between :start and :end and h.type = :type and h.countryCode = :countryCode order by h.date", Holiday.class)
                 .setParameter("start", start)
                 .setParameter("end", end)
                 .setParameter("type", type)
+                .setParameter("countryCode", countryCode)
                 .getResultList();
     }
 

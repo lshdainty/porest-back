@@ -4,6 +4,7 @@ import com.lshdainty.porest.common.exception.BusinessRuleViolationException;
 import com.lshdainty.porest.common.exception.EntityNotFoundException;
 import com.lshdainty.porest.common.exception.ErrorCode;
 import com.lshdainty.porest.common.exception.InvalidValueException;
+import com.lshdainty.porest.common.type.CountryCode;
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.common.util.PorestTime;
 import com.lshdainty.porest.department.domain.Department;
@@ -74,11 +75,13 @@ public class VacationService {
         // 4. 주말 리스트 조회
         List<LocalDate> weekDays = PorestTime.getBetweenDatesByDayOfWeek(data.getStartDate(), data.getEndDate(), new int[]{6, 7});
 
-        // 5. 공휴일 리스트 조회
+        // 5. 공휴일 리스트 조회 (사용자의 국가 코드 기반)
+        CountryCode countryCode = user.getCountryCode();
         List<LocalDate> holidays = holidayRepository.findHolidaysByStartEndDateWithType(
                 data.getStartDate().toLocalDate(),
                 data.getEndDate().toLocalDate(),
-                HolidayType.PUBLIC
+                HolidayType.PUBLIC,
+                countryCode
         ).stream()
                 .map(h -> h.getDate())
                 .toList();

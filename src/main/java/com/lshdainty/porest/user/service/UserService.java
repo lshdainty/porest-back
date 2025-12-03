@@ -74,7 +74,8 @@ public class UserService {
                 data.getWorkTime(),
                 data.getLunarYN(),
                 profileDto.getProfileName(),
-                profileDto.getProfileUUID()
+                profileDto.getProfileUUID(),
+                data.getCountryCode()
         );
 
         userRepository.save(user);
@@ -121,6 +122,7 @@ public class UserService {
                 .joinDate(user.getJoinDate())
                 .company(user.getCompany())
                 .lunarYN(user.getLunarYN())
+                .countryCode(user.getCountryCode())
                 .profileName(user.getProfileName())
                 .profileUrl(StringUtils.hasText(user.getProfileName()) && StringUtils.hasText(user.getProfileUUID()) ?
                         generateProfileUrl(user.getProfileName(), user.getProfileUUID()) : null)
@@ -178,6 +180,7 @@ public class UserService {
                             .joinDate(user.getJoinDate())
                             .company(user.getCompany())
                             .lunarYN(user.getLunarYN())
+                            .countryCode(user.getCountryCode())
                             .profileName(user.getProfileName())
                             .profileUrl(StringUtils.hasText(user.getProfileName()) && StringUtils.hasText(user.getProfileUUID()) ?
                                     generateProfileUrl(user.getProfileName(), user.getProfileUUID()) : null)
@@ -219,7 +222,8 @@ public class UserService {
                 data.getLunarYN(),
                 profileDto.getProfileName(),
                 profileDto.getProfileUUID(),
-                data.getDashboard()
+                data.getDashboard(),
+                data.getCountryCode()
         );
         log.info("사용자 수정 완료: id={}", data.getId());
     }
@@ -350,7 +354,8 @@ public class UserService {
                 data.getEmail(),
                 data.getCompany(),
                 data.getWorkTime(),
-                data.getJoinDate()
+                data.getJoinDate(),
+                data.getCountryCode()
         );
 
         userRepository.save(user);
@@ -366,6 +371,7 @@ public class UserService {
                 .company(user.getCompany())
                 .workTime(user.getWorkTime())
                 .joinDate(user.getJoinDate())
+                .countryCode(user.getCountryCode())
                 .roleNames(user.getRoles().stream().map(Role::getName).collect(Collectors.toList()))
                 .invitationSentAt(user.getInvitationSentAt())
                 .invitationExpiresAt(user.getInvitationExpiresAt())
@@ -392,6 +398,8 @@ public class UserService {
                 .email(user.getEmail())
                 .company(user.getCompany())
                 .workTime(user.getWorkTime())
+                .joinDate(user.getJoinDate())
+                .countryCode(user.getCountryCode())
                 .roleNames(user.getRoles().stream().map(Role::getName).collect(Collectors.toList()))
                 .invitationSentAt(user.getInvitationSentAt())
                 .invitationExpiresAt(user.getInvitationExpiresAt())
@@ -422,7 +430,8 @@ public class UserService {
                 data.getEmail(),
                 data.getCompany(),
                 data.getWorkTime(),
-                data.getJoinDate()
+                data.getJoinDate(),
+                data.getCountryCode()
         );
 
         // 이메일이 변경된 경우 초대 이메일 재전송
@@ -439,6 +448,7 @@ public class UserService {
                 .company(user.getCompany())
                 .workTime(user.getWorkTime())
                 .joinDate(user.getJoinDate())
+                .countryCode(user.getCountryCode())
                 .roleNames(user.getRoles().stream().map(Role::getName).collect(Collectors.toList()))
                 .invitationSentAt(user.getInvitationSentAt())
                 .invitationExpiresAt(user.getInvitationExpiresAt())

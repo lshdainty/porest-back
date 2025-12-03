@@ -2,17 +2,18 @@ package com.lshdainty.porest.user.controller.dto;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.lshdainty.porest.common.type.CountryCode;
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.company.type.OriginCompanyType;
 import com.lshdainty.porest.user.type.StatusType;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class UserApiDto {
     @Getter
@@ -49,6 +50,9 @@ public class UserApiDto {
 
         @Schema(description = "프로필 이미지 UUID")
         private String profileUuid;
+
+        @Schema(description = "국가 코드", example = "KR")
+        private CountryCode countryCode;
     }
 
     @Getter
@@ -127,6 +131,9 @@ public class UserApiDto {
 
         @Schema(description = "대시보드 설정")
         private String dashboard;
+
+        @Schema(description = "국가 코드", example = "KR")
+        private CountryCode countryCode;
     }
 
     @Getter
@@ -163,6 +170,9 @@ public class UserApiDto {
 
         @Schema(description = "대시보드 설정")
         private String dashboard;
+
+        @Schema(description = "국가 코드", example = "KR")
+        private CountryCode countryCode;
     }
 
     @Getter
@@ -211,6 +221,9 @@ public class UserApiDto {
 
         @Schema(description = "대시보드 설정")
         private String dashboard;
+
+        @Schema(description = "국가 코드", example = "KR")
+        private CountryCode countryCode;
     }
 
     @Getter
@@ -256,6 +269,9 @@ public class UserApiDto {
 
         @Schema(description = "입사일", example = "2024-01-01")
         private LocalDate joinDate;
+
+        @Schema(description = "국가 코드", example = "KR")
+        private CountryCode countryCode;
     }
 
     @Getter
@@ -292,6 +308,9 @@ public class UserApiDto {
 
         @Schema(description = "초대 상태", example = "PENDING")
         private StatusType invitationStatus;
+
+        @Schema(description = "국가 코드", example = "KR")
+        private CountryCode countryCode;
     }
 
     @Getter
@@ -328,6 +347,9 @@ public class UserApiDto {
 
         @Schema(description = "초대 상태", example = "PENDING")
         private StatusType invitationStatus;
+
+        @Schema(description = "국가 코드", example = "KR")
+        private CountryCode countryCode;
     }
 
     @Getter
@@ -349,6 +371,9 @@ public class UserApiDto {
 
         @Schema(description = "입사일", example = "2024-01-01")
         private LocalDate joinDate;
+
+        @Schema(description = "국가 코드", example = "KR")
+        private CountryCode countryCode;
     }
 
     @Getter
@@ -385,6 +410,9 @@ public class UserApiDto {
 
         @Schema(description = "초대 상태", example = "PENDING")
         private StatusType invitationStatus;
+
+        @Schema(description = "국가 코드", example = "KR")
+        private CountryCode countryCode;
     }
 
     @Getter
