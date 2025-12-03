@@ -21,4 +21,8 @@ public class UnauthorizedException extends BusinessException {
     public UnauthorizedException(ErrorCode errorCode, Throwable cause) {
         super(errorCode, cause);
     }
+
+    public UnauthorizedException(ErrorCode errorCode, String customMessage, Throwable cause) {
+        super(errorCode, customMessage, cause);
+    }
 }

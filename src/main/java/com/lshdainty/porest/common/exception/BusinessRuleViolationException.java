@@ -22,4 +22,8 @@ public class BusinessRuleViolationException extends BusinessException {
     public BusinessRuleViolationException(ErrorCode errorCode, Throwable cause) {
         super(errorCode, cause);
     }
+
+    public BusinessRuleViolationException(ErrorCode errorCode, String customMessage, Throwable cause) {
+        super(errorCode, customMessage, cause);
+    }
 }

@@ -46,7 +46,7 @@ public class DepartmentService {
             // 부모 부서와 같은 회사인지 검증
             if (!parent.getCompany().getId().equals(data.getCompanyId())) {
                 log.warn("부서 생성 실패 - 부모 부서와 다른 회사: parentCompanyId={}, companyId={}", parent.getCompany().getId(), data.getCompanyId());
-                throw new InvalidValueException(ErrorCode.DEPARTMENT_ALREADY_EXISTS);
+                throw new InvalidValueException(ErrorCode.DEPARTMENT_COMPANY_MISMATCH);
             }
         }
 
@@ -78,19 +78,19 @@ public class DepartmentService {
             // 자기 자신을 부모로 설정하는 것 방지
             if (newParent.getId().equals(data.getId())) {
                 log.warn("부서 수정 실패 - 자기 자신을 부모로 설정: id={}", data.getId());
-                throw new InvalidValueException(ErrorCode.DEPARTMENT_ALREADY_EXISTS);
+                throw new InvalidValueException(ErrorCode.DEPARTMENT_SELF_REFERENCE);
             }
 
             // 순환 참조 방지 (자신의 하위 부서를 부모로 설정하는 것 방지)
             if (isDescendant(department, newParent)) {
                 log.warn("부서 수정 실패 - 순환 참조: id={}, parentId={}", data.getId(), data.getParentId());
-                throw new InvalidValueException(ErrorCode.DEPARTMENT_ALREADY_EXISTS);
+                throw new InvalidValueException(ErrorCode.DEPARTMENT_CIRCULAR_REFERENCE);
             }
 
             // 같은 회사인지 검증
             if (!newParent.getCompany().getId().equals(department.getCompany().getId())) {
                 log.warn("부서 수정 실패 - 다른 회사 부서: id={}, parentCompanyId={}", data.getId(), newParent.getCompany().getId());
-                throw new InvalidValueException(ErrorCode.DEPARTMENT_ALREADY_EXISTS);
+                throw new InvalidValueException(ErrorCode.DEPARTMENT_COMPANY_MISMATCH);
             }
         }
 

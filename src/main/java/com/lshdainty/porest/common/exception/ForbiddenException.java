@@ -21,4 +21,8 @@ public class ForbiddenException extends BusinessException {
     public ForbiddenException(ErrorCode errorCode, Throwable cause) {
         super(errorCode, cause);
     }
+
+    public ForbiddenException(ErrorCode errorCode, String customMessage, Throwable cause) {
+        super(errorCode, customMessage, cause);
+    }
 }

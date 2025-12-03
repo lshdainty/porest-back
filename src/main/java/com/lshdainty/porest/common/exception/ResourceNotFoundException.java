@@ -21,4 +21,8 @@ public class ResourceNotFoundException extends BusinessException {
     public ResourceNotFoundException(ErrorCode errorCode, Throwable cause) {
         super(errorCode, cause);
     }
+
+    public ResourceNotFoundException(ErrorCode errorCode, String customMessage, Throwable cause) {
+        super(errorCode, customMessage, cause);
+    }
 }

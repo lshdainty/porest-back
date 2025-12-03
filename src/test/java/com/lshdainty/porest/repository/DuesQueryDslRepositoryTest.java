@@ -45,7 +45,7 @@ class DuesQueryDslRepositoryTest {
         em.clear();
 
         // then
-        Optional<Dues> findDues = duesRepository.findById(dues.getSeq());
+        Optional<Dues> findDues = duesRepository.findById(dues.getId());
         assertThat(findDues.isPresent()).isTrue();
         assertThat(findDues.get().getUserName()).isEqualTo("홍길동");
         assertThat(findDues.get().getAmount()).isEqualTo(50000L);
@@ -196,13 +196,13 @@ class DuesQueryDslRepositoryTest {
         em.clear();
 
         // when
-        Dues foundDues = duesRepository.findById(dues.getSeq()).orElseThrow();
+        Dues foundDues = duesRepository.findById(dues.getId()).orElseThrow();
         duesRepository.delete(foundDues);
         em.flush();
         em.clear();
 
         // then
-        Optional<Dues> deletedDues = duesRepository.findById(dues.getSeq());
+        Optional<Dues> deletedDues = duesRepository.findById(dues.getId());
         assertThat(deletedDues.isEmpty()).isTrue();
     }
 
@@ -219,14 +219,14 @@ class DuesQueryDslRepositoryTest {
         em.clear();
 
         // when
-        Dues foundDues = duesRepository.findById(dues.getSeq()).orElseThrow();
+        Dues foundDues = duesRepository.findById(dues.getId()).orElseThrow();
         foundDues.updateDues("김철수", 60000L, DuesType.BIRTH, DuesCalcType.PLUS,
                 LocalDate.of(2025, 2, 1), "수정된 내용");
         em.flush();
         em.clear();
 
         // then
-        Dues updatedDues = duesRepository.findById(dues.getSeq()).orElseThrow();
+        Dues updatedDues = duesRepository.findById(dues.getId()).orElseThrow();
         assertThat(updatedDues.getUserName()).isEqualTo("김철수");
         assertThat(updatedDues.getAmount()).isEqualTo(60000L);
         assertThat(updatedDues.getType()).isEqualTo(DuesType.BIRTH);

@@ -50,7 +50,7 @@ public enum ErrorCode {
     VACATION_ALREADY_REJECTED("VACATION_005", "error.vacation.already.rejected", HttpStatus.CONFLICT),
     VACATION_CANNOT_CANCEL("VACATION_006", "error.vacation.cannot.cancel", HttpStatus.BAD_REQUEST),
     VACATION_POLICY_NOT_FOUND("VACATION_007", "error.notfound.vacation.policy", HttpStatus.NOT_FOUND),
-    VACATION_GRANT_NOT_FOUND("VACATION_008", "error.notFound.vacationGrant", HttpStatus.NOT_FOUND),
+    VACATION_GRANT_NOT_FOUND("VACATION_008", "error.notfound.vacation.grant", HttpStatus.NOT_FOUND),
 
     // ========================================
     // WORK (근무)
@@ -71,6 +71,9 @@ public enum ErrorCode {
     DEPARTMENT_NOT_FOUND("DEPARTMENT_001", "error.notfound.department", HttpStatus.NOT_FOUND),
     DEPARTMENT_ALREADY_EXISTS("DEPARTMENT_002", "error.validate.notnull.department", HttpStatus.CONFLICT),
     DEPARTMENT_HAS_MEMBERS("DEPARTMENT_003", "error.validate.has.children.department", HttpStatus.CONFLICT),
+    DEPARTMENT_COMPANY_MISMATCH("DEPARTMENT_004", "error.validate.different.company", HttpStatus.BAD_REQUEST),
+    DEPARTMENT_SELF_REFERENCE("DEPARTMENT_005", "error.validate.self.parent", HttpStatus.BAD_REQUEST),
+    DEPARTMENT_CIRCULAR_REFERENCE("DEPARTMENT_006", "error.validate.circular.reference", HttpStatus.BAD_REQUEST),
 
     // ========================================
     // SCHEDULE (일정)

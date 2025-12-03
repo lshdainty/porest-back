@@ -17,7 +17,7 @@
   - Repository는 순수 데이터 접근만 담당 (비즈니스 로직 금지)
   - 날짜 변환, 값 계산 등은 Service에서 처리 후 파라미터로 전달
   - 재사용성과 테스트 용이성을 위해 계산된 값을 받도록 설계
-- 예외: 전역 @RestControllerAdvice로 에러 응답 표준화 [web:26]
+- 예외: 전역 @RestControllerAdvice로 에러 응답 표준화 (상세 내용은 아래 "Exception 처리" 섹션 참조)
 - 로깅: slf4j 사용 [web:26]
 - Import 규칙:
   - 클래스는 반드시 파일 상단에 import 문으로 선언 (풀경로 인라인 사용 금지)
@@ -26,35 +26,121 @@
 
 ## i18n & Message 관리
 - 메시지 키: `MessageKey` enum으로 중앙 관리 (`common/message/MessageKey.java`)
+- 에러 코드: `ErrorCode` enum으로 중앙 관리 (`common/exception/ErrorCode.java`)
 - 메시지 조회: `MessageResolver` 사용 (`common/util/MessageResolver.java`)
-- 메시지 파일: `messages.properties` (한국어), `messages_en.properties` (영어)
+- 메시지 파일 위치: `src/main/resources/message/`
+  - `messages.properties` (기본, 영어)
+  - `messages_en.properties` (영어)
+  - `messages_ko.properties` (한국어)
 
-### 새 메시지 추가 절차
-1. `MessageKey` enum에 키 추가:
-   ```java
-   NOT_FOUND_USER("error.notfound.user"),
-   VALIDATE_DUPLICATE_USER_ID("error.validate.duplicate.userId"),
-   ```
-2. `messages.properties`에 메시지 추가:
-   ```properties
-   error.notfound.user=사용자를 찾을 수 없습니다.
-   error.validate.duplicate.userId=이미 존재하는 사용자 ID입니다.
-   ```
-3. `messages_en.properties`에 영어 메시지 추가
-4. 서비스에서 사용:
-   ```java
-   throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.NOT_FOUND_USER));
-   // 파라미터 포함 시
-   throw new IllegalArgumentException(messageResolver.getMessage(MessageKey.SOME_KEY, param1, param2));
-   ```
+### 메시지 키 네이밍 규칙
+- **모두 소문자 + 점(.) 구분자 사용** (camelCase 금지)
+- 올바른 예: `error.notfound.vacation.grant`
+- 잘못된 예: `error.notFound.vacationGrant`
 
-### MessageKey 카테고리
-- `NOT_FOUND_*`: 조회 실패
-- `VALIDATE_*`: 검증 오류
-- `VACATION_*`: 휴가 관련
-- `VACATION_POLICY_*`: 휴가 정책
-- `FILE_*`: 파일 관련
-- `COMMON_*`: 공통
+### 새 메시지 추가 절차 (필수)
+**모든 메시지는 반드시 3개 파일 동기화 필요:**
+
+1. `messages.properties`에 메시지 추가 (기본, 영어)
+2. `messages_en.properties`에 영어 메시지 추가
+3. `messages_ko.properties`에 한국어 메시지 추가
+4. `MessageKey` 또는 `ErrorCode`에서 해당 키 참조
+
+### ErrorCode 사용 (예외 처리용)
+```java
+// 1. ErrorCode에 정의
+USER_NOT_FOUND("USER_001", "error.notfound.user", HttpStatus.NOT_FOUND),
+
+// 2. messages.properties (3개 파일 모두)
+error.notfound.user=User not found
+
+// 3. 서비스에서 사용
+throw new EntityNotFoundException(ErrorCode.USER_NOT_FOUND);
+throw new InvalidValueException(ErrorCode.VACATION_INVALID_DATE);
+throw new DuplicateException(ErrorCode.USER_ALREADY_EXISTS);
+```
+
+### MessageKey 사용 (일반 메시지 조회용)
+```java
+// 1. MessageKey에 정의
+NOT_FOUND_USER("error.notfound.user"),
+
+// 2. 서비스에서 사용
+String message = messageResolver.getMessage(MessageKey.NOT_FOUND_USER);
+// 파라미터 포함 시
+String message = messageResolver.getMessage(MessageKey.FILE_READ, fileName);
+```
+
+### 카테고리별 접두어
+| 카테고리 | 접두어 | 예시 |
+|---------|--------|------|
+| 조회 실패 | `error.notfound.*` | `error.notfound.user` |
+| 검증 오류 | `error.validate.*` | `error.validate.parameter.null` |
+| 도메인별 | `error.{domain}.*` | `error.vacation.invalid.date` |
+| 휴가 정책 | `vacation.policy.*` | `vacation.policy.name.required` |
+| 파일 | `error.file.*` | `error.file.notfound` |
+| 공통 | `error.common.*` | `error.common.invalid.input` |
+
+### 주의사항
+- **ErrorCode의 messageKey는 반드시 messages.properties에 존재해야 함**
+- **MessageKey의 key도 반드시 messages.properties에 존재해야 함**
+- 메시지 추가/수정 시 3개 언어 파일 모두 동기화 필수
+- 사용하지 않는 메시지 키는 정기적으로 정리
+
+## Exception 처리
+
+### 예외 처리 원칙
+- **Unchecked Exception (RuntimeException) 사용**: `@Transactional` 자동 롤백 지원
+- **전역 처리**: `GlobalExceptionHandler`에서 일괄 처리, Service에서 try-catch 금지
+- **ErrorCode 필수**: 모든 비즈니스 예외는 ErrorCode를 포함하여 throw
+
+### 예외 클래스 계층 구조
+```
+RuntimeException
+  └── BusinessException (기본 비즈니스 예외)
+      ├── EntityNotFoundException      # DB 엔티티 조회 실패 (404)
+      ├── InvalidValueException        # 입력값 검증 실패 (400)
+      ├── DuplicateException           # 중복 데이터 (409)
+      ├── BusinessRuleViolationException # 비즈니스 규칙 위반 (400)
+      ├── ForbiddenException           # 권한 없음 (403)
+      ├── UnauthorizedException        # 인증 실패 (401)
+      ├── ExternalServiceException     # 외부 서비스 연동 실패 (502/503)
+      └── ResourceNotFoundException    # 파일 등 리소스 조회 실패 (404)
+```
+
+### 예외 사용 예시
+```java
+// 엔티티 조회 실패
+throw new EntityNotFoundException(ErrorCode.USER_NOT_FOUND);
+
+// 입력값 검증 실패
+throw new InvalidValueException(ErrorCode.VACATION_INVALID_DATE);
+
+// 중복 데이터
+throw new DuplicateException(ErrorCode.USER_ALREADY_EXISTS);
+
+// 비즈니스 규칙 위반
+throw new BusinessRuleViolationException(ErrorCode.VACATION_INSUFFICIENT_BALANCE);
+
+// 외부 서비스 실패 (원인 예외 포함)
+throw new ExternalServiceException(ErrorCode.INTERNAL_SERVER_ERROR, "메일 발송 실패", cause);
+
+// 커스텀 메시지 사용
+throw new EntityNotFoundException(ErrorCode.USER_NOT_FOUND, "사용자 ID: " + userId);
+```
+
+### 예외 생성자 (모든 예외 클래스 공통)
+```java
+XxxException(ErrorCode errorCode)                                    // 기본
+XxxException(ErrorCode errorCode, String customMessage)              // 커스텀 메시지
+XxxException(ErrorCode errorCode, Throwable cause)                   // 원인 예외
+XxxException(ErrorCode errorCode, String customMessage, Throwable cause) // 둘 다
+```
+
+### 주의사항
+- **Service에서 try-catch 사용 금지** (IOException 등 체크드 예외 변환 시에만 허용)
+- **RuntimeException 직접 사용 금지** → 적절한 비즈니스 예외로 래핑
+- 체크드 예외 발생 시 `ExternalServiceException`으로 래핑하여 throw
 
 ## API Guidelines
 - Base path: /api/v1 [web:27]

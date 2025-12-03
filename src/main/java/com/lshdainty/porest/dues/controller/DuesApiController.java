@@ -25,7 +25,7 @@ public class DuesApiController implements DuesApi {
     @Override
     @PreAuthorize("hasAuthority('DUES_MANAGE')")
     public ApiResponse registDues(DuesApiDto.RegistDuesReq data) {
-        Long duesSeq = duesService.registDues(DuesServiceDto.builder()
+        Long duesId = duesService.registDues(DuesServiceDto.builder()
                 .userName(data.getDuesUserName())
                 .amount(data.getDuesAmount())
                 .type(data.getDuesType())
@@ -34,7 +34,7 @@ public class DuesApiController implements DuesApi {
                 .detail(data.getDuesDetail())
                 .build()
         );
-        return ApiResponse.success(new DuesApiDto.RegistDuesResp(duesSeq));
+        return ApiResponse.success(new DuesApiDto.RegistDuesResp(duesId));
     }
 
     @Override
@@ -43,7 +43,7 @@ public class DuesApiController implements DuesApi {
         List<DuesServiceDto> dtos = duesService.searchYearDues(year);
         return ApiResponse.success(dtos.stream()
                 .map(d -> new DuesApiDto.SearchYearDuesResp(
-                        d.getSeq(),
+                        d.getId(),
                         d.getUserName(),
                         d.getAmount(),
                         d.getType(),
@@ -103,9 +103,9 @@ public class DuesApiController implements DuesApi {
 
     @Override
     @PreAuthorize("hasAuthority('DUES_MANAGE')")
-    public ApiResponse editDues(Long seq, DuesApiDto.EditDuesReq data) {
+    public ApiResponse editDues(Long id, DuesApiDto.EditDuesReq data) {
         duesService.editDues(DuesServiceDto.builder()
-                .seq(seq)
+                .id(id)
                 .userName(data.getDuesUserName())
                 .amount(data.getDuesAmount())
                 .type(data.getDuesType())
@@ -119,8 +119,8 @@ public class DuesApiController implements DuesApi {
 
     @Override
     @PreAuthorize("hasAuthority('DUES_MANAGE')")
-    public ApiResponse deleteDues(Long seq) {
-        duesService.deleteDues(seq);
+    public ApiResponse deleteDues(Long id) {
+        duesService.deleteDues(id);
         return ApiResponse.success();
     }
 }

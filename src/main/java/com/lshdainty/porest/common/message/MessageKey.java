@@ -20,7 +20,7 @@ public enum MessageKey {
     NOT_FOUND_VACATION_USAGE("error.notfound.vacation.usage"),
     NOT_FOUND_VACATION_POLICY("error.notfound.vacation.policy"),
     NOT_FOUND_USER_VACATION_POLICY("error.notfound.user.vacation.policy"),
-    NOT_FOUND_VACATION_GRANT("error.notFound.vacationGrant"),
+    NOT_FOUND_VACATION_GRANT("error.notfound.vacation.grant"),
     NOT_FOUND_VACATION_APPROVAL("error.notfound.vacation.approval"),
     NOT_FOUND_SCHEDULE("error.notfound.schedule"),
     NOT_FOUND_HOLIDAY("error.notfound.holiday"),
@@ -42,8 +42,8 @@ public enum MessageKey {
     // VALIDATE (검증 오류)
     // ========================================
     VALIDATE_PARAMETER_NULL("error.validate.parameter.null"),
-    VALIDATE_WORK_CODE_REQUIRED("error.validate.work.code.required"),
-    VALIDATE_YEAR_MONTH_REQUIRED("error.validate.year.month.required"),
+    VALIDATE_WORK_CODE_REQUIRED("error.work.code.required"),
+    VALIDATE_YEAR_MONTH_REQUIRED("error.work.year.month.required"),
     VALIDATE_YEAR_REQUIRED("error.validate.year.required"),
     VALIDATE_DAY_OF_WEEK("error.validate.dayOfWeek"),
     VALIDATE_START_AFTER_END("error.validate.startIsAfterThanEnd"),
@@ -140,7 +140,7 @@ public enum MessageKey {
     // PERMISSION & ROLE (권한 및 역할)
     // ========================================
     ROLE_ALREADY_EXISTS("error.validate.role.already.exists"),
-    PERMISSION_ALREADY_EXISTS("error.validate.permission.already.exists"),
+    PERMISSION_ALREADY_EXISTS("error.permission.already.exists"),
 
     // ========================================
     // COMMON (공통)

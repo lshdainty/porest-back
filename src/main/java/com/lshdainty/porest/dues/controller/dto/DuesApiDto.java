@@ -41,8 +41,8 @@ public class DuesApiDto {
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Schema(description = "회비 등록 응답")
     public static class RegistDuesResp {
-        @Schema(description = "등록된 회비 시퀀스", example = "1")
-        private Long duesSeq;
+        @Schema(description = "등록된 회비 ID", example = "1")
+        private Long duesId;
     }
 
     @Getter
@@ -74,8 +74,8 @@ public class DuesApiDto {
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Schema(description = "연도별 회비 조회 응답")
     public static class SearchYearDuesResp {
-        @Schema(description = "회비 시퀀스", example = "1")
-        private Long duesSeq;
+        @Schema(description = "회비 ID", example = "1")
+        private Long duesId;
 
         @Schema(description = "사용자 이름", example = "홍길동")
         private String duesUserName;

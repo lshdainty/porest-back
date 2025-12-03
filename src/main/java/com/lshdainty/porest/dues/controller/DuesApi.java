@@ -140,10 +140,10 @@ public interface DuesApi {
                     description = "회비 내역을 찾을 수 없음"
             )
     })
-    @PutMapping("/api/v1/dues/{seq}")
+    @PutMapping("/api/v1/dues/{id}")
     ApiResponse editDues(
-            @Parameter(description = "회비 시퀀스", example = "1", required = true)
-            @PathVariable("seq") Long seq,
+            @Parameter(description = "회비 ID", example = "1", required = true)
+            @PathVariable("id") Long id,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "회비 수정 정보",
                     required = true,
@@ -170,9 +170,9 @@ public interface DuesApi {
                     description = "회비 내역을 찾을 수 없음"
             )
     })
-    @DeleteMapping("/api/v1/dues/{seq}")
+    @DeleteMapping("/api/v1/dues/{id}")
     ApiResponse deleteDues(
-            @Parameter(description = "회비 시퀀스", example = "1", required = true)
-            @PathVariable("seq") Long seq
+            @Parameter(description = "회비 ID", example = "1", required = true)
+            @PathVariable("id") Long id
     );
 }

@@ -17,8 +17,8 @@ import java.util.Objects;
 @Table(name = "dues")
 public class Dues extends AuditingFields {
     @Id @GeneratedValue
-    @Column(name = "dues_seq")
-    private Long seq;
+    @Column(name = "dues_id")
+    private Long id;
 
     @Column(name = "dues_user_name")
     private String userName;

@@ -200,13 +200,13 @@ class DuesServiceTest {
         @DisplayName("성공 - 회비 정보가 수정된다")
         void editDuesSuccess() {
             // given
-            Long seq = 1L;
+            Long id = 1L;
             Dues dues = Dues.createDues("이서준", 10000L, DuesType.BIRTH, DuesCalcType.PLUS, LocalDate.of(2025, 1, 1), "1월 회비");
-            setDuesSeq(dues, seq);
-            given(duesRepository.findById(seq)).willReturn(Optional.of(dues));
+            setDuesId(dues, id);
+            given(duesRepository.findById(id)).willReturn(Optional.of(dues));
 
             DuesServiceDto data = DuesServiceDto.builder()
-                    .seq(seq)
+                    .id(id)
                     .userName("이민서")
                     .amount(20000L)
                     .build();
@@ -215,7 +215,7 @@ class DuesServiceTest {
             duesService.editDues(data);
 
             // then
-            then(duesRepository).should().findById(seq);
+            then(duesRepository).should().findById(id);
             assertThat(dues.getUserName()).isEqualTo("이민서");
             assertThat(dues.getAmount()).isEqualTo(20000L);
         }
@@ -224,14 +224,14 @@ class DuesServiceTest {
         @DisplayName("실패 - 존재하지 않는 회비를 수정하려 하면 예외가 발생한다")
         void editDuesFailNotFound() {
             // given
-            Long seq = 999L;
-            DuesServiceDto data = DuesServiceDto.builder().seq(seq).build();
-            given(duesRepository.findById(seq)).willReturn(Optional.empty());
+            Long id = 999L;
+            DuesServiceDto data = DuesServiceDto.builder().id(id).build();
+            given(duesRepository.findById(id)).willReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> duesService.editDues(data))
                     .isInstanceOf(EntityNotFoundException.class);
-            then(duesRepository).should().findById(seq);
+            then(duesRepository).should().findById(id);
         }
     }
 
@@ -242,16 +242,16 @@ class DuesServiceTest {
         @DisplayName("성공 - 회비가 삭제된다")
         void deleteDuesSuccess() {
             // given
-            Long seq = 1L;
+            Long id = 1L;
             Dues dues = Dues.createDues("이서준", 50000L, DuesType.BIRTH, DuesCalcType.PLUS, LocalDate.of(2025, 1, 1), "1월 회비");
-            given(duesRepository.findById(seq)).willReturn(Optional.of(dues));
+            given(duesRepository.findById(id)).willReturn(Optional.of(dues));
             willDoNothing().given(duesRepository).delete(dues);
 
             // when
-            duesService.deleteDues(seq);
+            duesService.deleteDues(id);
 
             // then
-            then(duesRepository).should().findById(seq);
+            then(duesRepository).should().findById(id);
             then(duesRepository).should().delete(dues);
         }
 
@@ -259,13 +259,13 @@ class DuesServiceTest {
         @DisplayName("실패 - 존재하지 않는 회비를 삭제하려 하면 예외가 발생한다")
         void deleteDuesFailNotFound() {
             // given
-            Long seq = 999L;
-            given(duesRepository.findById(seq)).willReturn(Optional.empty());
+            Long id = 999L;
+            given(duesRepository.findById(id)).willReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> duesService.deleteDues(seq))
+            assertThatThrownBy(() -> duesService.deleteDues(id))
                     .isInstanceOf(EntityNotFoundException.class);
-            then(duesRepository).should().findById(seq);
+            then(duesRepository).should().findById(id);
             then(duesRepository).should(never()).delete(any(Dues.class));
         }
     }
@@ -277,15 +277,15 @@ class DuesServiceTest {
         @DisplayName("성공 - 존재하는 회비를 반환한다")
         void checkDuesExistSuccess() {
             // given
-            Long seq = 1L;
+            Long id = 1L;
             Dues dues = Dues.createDues("이서준", 50000L, DuesType.BIRTH, DuesCalcType.PLUS, LocalDate.of(2025, 1, 1), "1월 회비");
-            given(duesRepository.findById(seq)).willReturn(Optional.of(dues));
+            given(duesRepository.findById(id)).willReturn(Optional.of(dues));
 
             // when
-            Dues result = duesService.checkDuesExist(seq);
+            Dues result = duesService.checkDuesExist(id);
 
             // then
-            then(duesRepository).should().findById(seq);
+            then(duesRepository).should().findById(id);
             assertThat(result).isEqualTo(dues);
         }
 
@@ -293,21 +293,21 @@ class DuesServiceTest {
         @DisplayName("실패 - 존재하지 않는 회비면 예외가 발생한다")
         void checkDuesExistFailNotFound() {
             // given
-            Long seq = 999L;
-            given(duesRepository.findById(seq)).willReturn(Optional.empty());
+            Long id = 999L;
+            given(duesRepository.findById(id)).willReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> duesService.checkDuesExist(seq))
+            assertThatThrownBy(() -> duesService.checkDuesExist(id))
                     .isInstanceOf(EntityNotFoundException.class);
         }
     }
 
     // 테스트 헬퍼 메서드
-    private void setDuesSeq(Dues dues, Long seq) {
+    private void setDuesId(Dues dues, Long id) {
         try {
-            java.lang.reflect.Field field = Dues.class.getDeclaredField("seq");
+            java.lang.reflect.Field field = Dues.class.getDeclaredField("id");
             field.setAccessible(true);
-            field.set(dues, seq);
+            field.set(dues, id);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @Getter @Setter
 @Builder
 public class DuesServiceDto {
-    private Long seq;
+    private Long id;
     private String userName;
     private Long amount;
     private DuesType type;

@@ -34,8 +34,8 @@ public class DuesService {
                 data.getDetail()
         );
         duesRepository.save(dues);
-        log.info("회비 등록 완료: duesSeq={}", dues.getSeq());
-        return dues.getSeq();
+        log.info("회비 등록 완료: duesId={}", dues.getId());
+        return dues.getId();
     }
 
     public List<DuesServiceDto> searchDues() {
@@ -44,7 +44,7 @@ public class DuesService {
 
         List<DuesServiceDto> dtos = dues.stream()
                 .map(d -> DuesServiceDto.builder()
-                        .seq(d.getSeq())
+                        .id(d.getId())
                         .userName(d.getUserName())
                         .amount(d.getAmount())
                         .type(d.getType())
@@ -68,7 +68,7 @@ public class DuesService {
 
         List<DuesServiceDto> dtos = dues.stream()
                 .map(d -> DuesServiceDto.builder()
-                        .seq(d.getSeq())
+                        .id(d.getId())
                         .userName(d.getUserName())
                         .amount(d.getAmount())
                         .type(d.getType())
@@ -126,8 +126,8 @@ public class DuesService {
 
     @Transactional
     public void editDues(DuesServiceDto data) {
-        log.debug("회비 수정 시작: duesSeq={}", data.getSeq());
-        Dues dues = checkDuesExist(data.getSeq());
+        log.debug("회비 수정 시작: duesId={}", data.getId());
+        Dues dues = checkDuesExist(data.getId());
         dues.updateDues(
                 data.getUserName(),
                 data.getAmount(),
@@ -136,21 +136,21 @@ public class DuesService {
                 data.getDate(),
                 data.getDetail()
         );
-        log.info("회비 수정 완료: duesSeq={}", data.getSeq());
+        log.info("회비 수정 완료: duesId={}", data.getId());
     }
 
     @Transactional
-    public void deleteDues(Long duesSeq) {
-        log.debug("회비 삭제 시작: duesSeq={}", duesSeq);
-        Dues findDues = checkDuesExist(duesSeq);
+    public void deleteDues(Long duesId) {
+        log.debug("회비 삭제 시작: duesId={}", duesId);
+        Dues findDues = checkDuesExist(duesId);
         duesRepository.delete(findDues);
-        log.info("회비 삭제 완료: duesSeq={}", duesSeq);
+        log.info("회비 삭제 완료: duesId={}", duesId);
     }
 
-    public Dues checkDuesExist(Long duesSeq) {
-        return duesRepository.findById(duesSeq)
+    public Dues checkDuesExist(Long duesId) {
+        return duesRepository.findById(duesId)
                 .orElseThrow(() -> {
-                    log.warn("회비 조회 실패 - 존재하지 않는 회비: duesSeq={}", duesSeq);
+                    log.warn("회비 조회 실패 - 존재하지 않는 회비: duesId={}", duesId);
                     return new EntityNotFoundException(ErrorCode.DUES_NOT_FOUND);
                 });
     }

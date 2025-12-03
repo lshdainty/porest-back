@@ -21,4 +21,8 @@ public class EntityNotFoundException extends BusinessException {
     public EntityNotFoundException(ErrorCode errorCode, Throwable cause) {
         super(errorCode, cause);
     }
+
+    public EntityNotFoundException(ErrorCode errorCode, String customMessage, Throwable cause) {
+        super(errorCode, customMessage, cause);
+    }
 }

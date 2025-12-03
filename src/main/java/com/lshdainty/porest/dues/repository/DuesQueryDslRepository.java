@@ -31,7 +31,7 @@ public class DuesQueryDslRepository implements DuesRepository {
     public Optional<Dues> findById(Long id) {
         return Optional.ofNullable(query
                 .selectFrom(dues)
-                .where(dues.seq.eq(id))
+                .where(dues.id.eq(id))
                 .fetchOne());
     }
 

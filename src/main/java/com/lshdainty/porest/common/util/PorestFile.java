@@ -1,6 +1,7 @@
 package com.lshdainty.porest.common.util;
 
 import com.lshdainty.porest.common.exception.ErrorCode;
+import com.lshdainty.porest.common.exception.ExternalServiceException;
 import com.lshdainty.porest.common.exception.ResourceNotFoundException;
 import com.lshdainty.porest.common.message.MessageKey;
 import org.slf4j.Logger;
@@ -63,7 +64,11 @@ public class PorestFile {
             return true;
         } catch (IOException e) {
             log.error("File save failed. path: {}, fileName: {}", path, fileName, e);
-            throw new RuntimeException(messageResolver.getMessage(MessageKey.FILE_REGISTER_HOLIDAY, fileName), e);
+            throw new ExternalServiceException(
+                    ErrorCode.INTERNAL_SERVER_ERROR,
+                    messageResolver.getMessage(MessageKey.FILE_REGISTER_HOLIDAY, fileName),
+                    e
+            );
         }
     }
 
@@ -94,7 +99,11 @@ public class PorestFile {
             }
         } catch (IOException e) {
             log.error("File read failed. fullPath: {}", fullPath, e);
-            throw new RuntimeException(messageResolver.getMessage(MessageKey.FILE_READ, fullPath), e);
+            throw new ExternalServiceException(
+                    ErrorCode.INTERNAL_SERVER_ERROR,
+                    messageResolver.getMessage(MessageKey.FILE_READ, fullPath),
+                    e
+            );
         }
     }
 
@@ -130,7 +139,11 @@ public class PorestFile {
             return true;
         } catch (IOException e) {
             log.error("File copy failed. source: {}, target: {}", sourcePath, targetPath, e);
-            throw new RuntimeException(messageResolver.getMessage(MessageKey.FILE_COPY, sourcePath, targetPath), e);
+            throw new ExternalServiceException(
+                    ErrorCode.INTERNAL_SERVER_ERROR,
+                    messageResolver.getMessage(MessageKey.FILE_COPY, sourcePath, targetPath),
+                    e
+            );
         }
     }
 
@@ -166,7 +179,11 @@ public class PorestFile {
             return true;
         } catch (IOException e) {
             log.error("File move failed. source: {}, target: {}", sourcePath, targetPath, e);
-            throw new RuntimeException(messageResolver.getMessage(MessageKey.FILE_MOVE, sourcePath, targetPath), e);
+            throw new ExternalServiceException(
+                    ErrorCode.INTERNAL_SERVER_ERROR,
+                    messageResolver.getMessage(MessageKey.FILE_MOVE, sourcePath, targetPath),
+                    e
+            );
         }
     }
 

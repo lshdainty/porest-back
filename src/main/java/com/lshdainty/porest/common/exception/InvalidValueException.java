@@ -21,4 +21,8 @@ public class InvalidValueException extends BusinessException {
     public InvalidValueException(ErrorCode errorCode, Throwable cause) {
         super(errorCode, cause);
     }
+
+    public InvalidValueException(ErrorCode errorCode, String customMessage, Throwable cause) {
+        super(errorCode, customMessage, cause);
+    }
 }
