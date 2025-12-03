@@ -3,22 +3,21 @@ package com.lshdainty.porest.schedule.type;
 import com.lshdainty.porest.common.type.DisplayType;
 
 public enum ScheduleType implements DisplayType {
-    EDUCATION("교육", 1L),
-    BIRTHDAY("생일", 2L),
-    BUSINESSTRIP("출장", 3L),
-    BIRTHPARTY("생일파티", 4L);
+    EDUCATION(1L),
+    BIRTHDAY(2L),
+    BUSINESSTRIP(3L),
+    BIRTHPARTY(4L);
 
-    private String strName;
+    private static final String MESSAGE_KEY_PREFIX = "type.schedule.type.";
     private Long orderSeq;
 
-    ScheduleType(String strName, Long orderSeq) {
-        this.strName = strName;
+    ScheduleType(Long orderSeq) {
         this.orderSeq = orderSeq;
     }
 
     @Override
-    public String getViewName() {
-        return strName;
+    public String getMessageKey() {
+        return MESSAGE_KEY_PREFIX + this.name().toLowerCase();
     }
 
     @Override

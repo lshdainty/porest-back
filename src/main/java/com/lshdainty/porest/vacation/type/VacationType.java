@@ -3,25 +3,24 @@ package com.lshdainty.porest.vacation.type;
 import com.lshdainty.porest.common.type.DisplayType;
 
 public enum VacationType implements DisplayType {
-    ANNUAL("연차", 1L),
-    MATERNITY("출산", 2L),
-    WEDDING("결혼", 3L),
-    BEREAVEMENT("상조", 4L),
-    OVERTIME("연장", 5L),
-    HEALTH("건강", 6L),
-    ARMY("군", 7L);
+    ANNUAL(1L),
+    MATERNITY(2L),
+    WEDDING(3L),
+    BEREAVEMENT(4L),
+    OVERTIME(5L),
+    HEALTH(6L),
+    ARMY(7L);
 
-    private String strName;
+    private static final String MESSAGE_KEY_PREFIX = "type.vacation.type.";
     private Long orderSeq;
 
-    VacationType(String strName, Long orderSeq) {
-        this.strName = strName;
+    VacationType(Long orderSeq) {
         this.orderSeq = orderSeq;
     }
 
     @Override
-    public String getViewName() {
-        return strName;
+    public String getMessageKey() {
+        return MESSAGE_KEY_PREFIX + this.name().toLowerCase();
     }
 
     @Override

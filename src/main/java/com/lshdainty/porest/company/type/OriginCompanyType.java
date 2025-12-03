@@ -3,28 +3,23 @@ package com.lshdainty.porest.company.type;
 import com.lshdainty.porest.common.type.DisplayType;
 
 public enum OriginCompanyType implements DisplayType {
-    SKAX("SK AX", 1L),
-    DTOL("디투엘", 2L),
-    INSIGHTON("인사이트온", 3L),
-    BIGXDATA("BigxData", 4L),
-    CNTHOTH("씨앤토트플러스", 5L),
-    AGS("AGS", 6L);
+    SKAX(1L),
+    DTOL(2L),
+    INSIGHTON(3L),
+    BIGXDATA(4L),
+    CNTHOTH(5L),
+    AGS(6L);
 
-    private String companyName;
+    private static final String MESSAGE_KEY_PREFIX = "type.origin.company.";
     private Long orderSeq;
 
-    OriginCompanyType(String companyName, Long orderSeq) {
-        this.companyName = companyName;
+    OriginCompanyType(Long orderSeq) {
         this.orderSeq = orderSeq;
     }
 
-    public String getCompanyName() {
-        return companyName;
-    }
-
     @Override
-    public String getViewName() {
-        return companyName;
+    public String getMessageKey() {
+        return MESSAGE_KEY_PREFIX + this.name().toLowerCase();
     }
 
     @Override

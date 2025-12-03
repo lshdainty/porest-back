@@ -3,21 +3,20 @@ package com.lshdainty.porest.holiday.type;
 import com.lshdainty.porest.common.type.DisplayType;
 
 public enum HolidayType implements DisplayType {
-    PUBLIC("공휴일", 1L),
-    SUBSTITUTE("대체", 2L),
-    ETC("기타", 3L);
+    PUBLIC(1L),
+    SUBSTITUTE(2L),
+    ETC(3L);
 
-    private String strName;
+    private static final String MESSAGE_KEY_PREFIX = "type.holiday.type.";
     private Long orderSeq;
 
-    HolidayType(String strName, Long orderSeq) {
-        this.strName = strName;
+    HolidayType(Long orderSeq) {
         this.orderSeq = orderSeq;
     }
 
     @Override
-    public String getViewName() {
-        return strName;
+    public String getMessageKey() {
+        return MESSAGE_KEY_PREFIX + this.name().toLowerCase();
     }
 
     @Override

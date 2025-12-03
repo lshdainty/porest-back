@@ -6,6 +6,7 @@ import com.lshdainty.porest.vacation.domain.VacationPolicy;
 import com.lshdainty.porest.vacation.repository.VacationPolicyRepository;
 import com.lshdainty.porest.vacation.service.dto.VacationPolicyServiceDto;
 import com.lshdainty.porest.vacation.service.policy.RepeatGrant;
+import com.lshdainty.porest.vacation.service.policy.description.KoreanRepeatGrantDescriptionGenerator;
 import com.lshdainty.porest.vacation.type.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -460,6 +461,8 @@ class RepeatGrantTest {
     @Nested
     @DisplayName("한국어 설명 생성")
     class GenerateRepeatGrantDescription {
+        private final KoreanRepeatGrantDescriptionGenerator koreanGenerator = new KoreanRepeatGrantDescriptionGenerator();
+
         @Test
         @DisplayName("성공 - 매년 정책의 설명을 생성한다")
         void generateYearlyDescription() {
@@ -467,7 +470,7 @@ class RepeatGrantTest {
             VacationPolicy policy = createTestRepeatPolicy(RepeatUnit.YEARLY, 1);
 
             // when
-            String result = RepeatGrant.generateRepeatGrantDescription(policy);
+            String result = koreanGenerator.generate(policy);
 
             // then
             assertThat(result).contains("매년");
@@ -481,7 +484,7 @@ class RepeatGrantTest {
             VacationPolicy policy = createTestRepeatPolicy(RepeatUnit.MONTHLY, 1);
 
             // when
-            String result = RepeatGrant.generateRepeatGrantDescription(policy);
+            String result = koreanGenerator.generate(policy);
 
             // then
             assertThat(result).contains("매월");
@@ -494,7 +497,7 @@ class RepeatGrantTest {
             VacationPolicy policy = createTestRepeatPolicy(RepeatUnit.YEARLY, 2);
 
             // when
-            String result = RepeatGrant.generateRepeatGrantDescription(policy);
+            String result = koreanGenerator.generate(policy);
 
             // then
             assertThat(result).contains("2년");
@@ -505,7 +508,7 @@ class RepeatGrantTest {
         @DisplayName("성공 - null 정책이면 null을 반환한다")
         void generateNullPolicyDescription() {
             // when
-            String result = RepeatGrant.generateRepeatGrantDescription(null);
+            String result = koreanGenerator.generate(null);
 
             // then
             assertThat(result).isNull();

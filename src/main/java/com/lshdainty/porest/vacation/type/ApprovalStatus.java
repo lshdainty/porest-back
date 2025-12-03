@@ -3,21 +3,20 @@ package com.lshdainty.porest.vacation.type;
 import com.lshdainty.porest.common.type.DisplayType;
 
 public enum ApprovalStatus implements DisplayType {
-    PENDING("대기중", 1L),
-    APPROVED("승인", 2L),
-    REJECTED("반려", 3L);
+    PENDING(1L),
+    APPROVED(2L),
+    REJECTED(3L);
 
-    private String strName;
+    private static final String MESSAGE_KEY_PREFIX = "type.approval.status.";
     private Long orderSeq;
 
-    ApprovalStatus(String strName, Long orderSeq) {
-        this.strName = strName;
+    ApprovalStatus(Long orderSeq) {
         this.orderSeq = orderSeq;
     }
 
     @Override
-    public String getViewName() {
-        return strName;
+    public String getMessageKey() {
+        return MESSAGE_KEY_PREFIX + this.name().toLowerCase();
     }
 
     @Override

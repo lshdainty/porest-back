@@ -13,9 +13,11 @@ import com.lshdainty.porest.user.service.UserService;
 import com.lshdainty.porest.vacation.domain.*;
 import com.lshdainty.porest.vacation.repository.*;
 import com.lshdainty.porest.vacation.service.VacationService;
+import com.lshdainty.porest.vacation.service.VacationTimeFormatter;
 import com.lshdainty.porest.vacation.service.dto.VacationApprovalServiceDto;
 import com.lshdainty.porest.vacation.service.dto.VacationPolicyServiceDto;
 import com.lshdainty.porest.vacation.service.dto.VacationServiceDto;
+import com.lshdainty.porest.vacation.service.policy.description.RepeatGrantDescriptionFactory;
 import com.lshdainty.porest.vacation.service.policy.factory.VacationPolicyStrategyFactory;
 import com.lshdainty.porest.vacation.type.*;
 import lombok.extern.slf4j.Slf4j;
@@ -74,6 +76,12 @@ class VacationServiceTest {
 
     @Mock
     private DepartmentRepository departmentRepository;
+
+    @Mock
+    private RepeatGrantDescriptionFactory repeatGrantDescriptionFactory;
+
+    @Mock
+    private VacationTimeFormatter vacationTimeFormatter;
 
     @InjectMocks
     private VacationService vacationService;

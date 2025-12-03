@@ -2,12 +2,15 @@ package com.lshdainty.porest.calendar.controller;
 
 import com.lshdainty.porest.calendar.controller.dto.CalendarApiDto;
 import com.lshdainty.porest.common.controller.ApiResponse;
+import com.lshdainty.porest.common.type.DisplayType;
 import com.lshdainty.porest.schedule.domain.Schedule;
 import com.lshdainty.porest.schedule.service.ScheduleService;
 import com.lshdainty.porest.vacation.service.VacationService;
 import com.lshdainty.porest.vacation.service.dto.VacationServiceDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,6 +26,7 @@ import java.util.List;
 public class CalendarApiController implements CalendarApi {
     private final ScheduleService scheduleService;
     private final VacationService vacationService;
+    private final MessageSource messageSource;
 
     @Override
     public ApiResponse searchEventsByPeriod(LocalDateTime startDate, LocalDateTime endDate) {
@@ -33,7 +37,7 @@ public class CalendarApiController implements CalendarApi {
                 .map(s -> new CalendarApiDto.searchEventsByPeriodResp(
                         s.getUser().getId(),
                         s.getUser().getName(),
-                        s.getType().getViewName(),
+                        getTranslatedName(s.getType()),
                         s.getType().name(),
                         s.getDesc(),
                         s.getStartDate(),
@@ -49,7 +53,7 @@ public class CalendarApiController implements CalendarApi {
                 .map(v -> new CalendarApiDto.searchEventsByPeriodResp(
                         v.getUser().getId(),
                         v.getUser().getName(),
-                        v.getTimeType().getStrName(),
+                        getTranslatedName(v.getTimeType()),
                         v.getTimeType().name(),
                         v.getDesc(),
                         v.getStartDate(),
@@ -61,5 +65,10 @@ public class CalendarApiController implements CalendarApi {
                 .toList());
 
         return ApiResponse.success(resp);
+    }
+
+    private String getTranslatedName(DisplayType type) {
+        if (type == null) return null;
+        return messageSource.getMessage(type.getMessageKey(), null, LocaleContextHolder.getLocale());
     }
 }

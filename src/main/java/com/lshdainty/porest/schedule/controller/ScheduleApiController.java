@@ -5,9 +5,12 @@ import com.lshdainty.porest.schedule.domain.Schedule;
 import com.lshdainty.porest.schedule.controller.dto.ScheduleApiDto;
 import com.lshdainty.porest.schedule.service.ScheduleService;
 import com.lshdainty.porest.schedule.service.dto.ScheduleServiceDto;
+import com.lshdainty.porest.common.type.DisplayType;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +22,7 @@ import java.util.List;
 @Slf4j
 public class ScheduleApiController implements ScheduleApi {
     private final ScheduleService scheduleService;
+    private final MessageSource messageSource;
 
     @Override
     @PreAuthorize("hasAuthority('SCHEDULE_CREATE')")
@@ -68,7 +72,7 @@ public class ScheduleApiController implements ScheduleApi {
                 .map(s -> new ScheduleApiDto.SearchSchedulesByUserResp(
                         s.getId(),
                         s.getType(),
-                        s.getType().getViewName(),
+                        getTranslatedName(s.getType()),
                         s.getDesc(),
                         s.getStartDate(),
                         s.getEndDate()
@@ -89,7 +93,7 @@ public class ScheduleApiController implements ScheduleApi {
                         s.getUser().getId(),
                         s.getUser().getName(),
                         s.getType(),
-                        s.getType().getViewName(),
+                        getTranslatedName(s.getType()),
                         s.getDesc(),
                         s.getStartDate(),
                         s.getEndDate()
@@ -97,5 +101,10 @@ public class ScheduleApiController implements ScheduleApi {
                 .toList();
 
         return ApiResponse.success(resp);
+    }
+
+    private String getTranslatedName(DisplayType type) {
+        if (type == null) return null;
+        return messageSource.getMessage(type.getMessageKey(), null, LocaleContextHolder.getLocale());
     }
 }

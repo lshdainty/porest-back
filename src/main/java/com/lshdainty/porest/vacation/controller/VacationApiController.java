@@ -4,15 +4,18 @@ import com.lshdainty.porest.common.controller.ApiResponse;
 import com.lshdainty.porest.vacation.controller.dto.VacationApiDto;
 import com.lshdainty.porest.vacation.domain.VacationGrant;
 import com.lshdainty.porest.vacation.service.VacationService;
+import com.lshdainty.porest.vacation.service.VacationTimeFormatter;
 import com.lshdainty.porest.vacation.service.dto.VacationApprovalServiceDto;
 import com.lshdainty.porest.vacation.service.dto.VacationPolicyServiceDto;
 import com.lshdainty.porest.vacation.service.dto.VacationServiceDto;
 import com.lshdainty.porest.vacation.type.GrantMethod;
 import com.lshdainty.porest.vacation.type.GrantStatus;
 import com.lshdainty.porest.vacation.type.VacationType;
-import com.lshdainty.porest.vacation.type.VacationTimeType;
+import com.lshdainty.porest.common.type.DisplayType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,6 +28,8 @@ import java.util.List;
 @Slf4j
 public class VacationApiController implements VacationApi {
     private final VacationService vacationService;
+    private final MessageSource messageSource;
+    private final VacationTimeFormatter vacationTimeFormatter;
 
     @Override
     @PreAuthorize("hasAuthority('VACATION_REQUEST')")
@@ -52,12 +57,12 @@ public class VacationApiController implements VacationApi {
                 .map(g -> new VacationApiDto.GetUserVacationHistoryResp.VacationGrantInfo(
                         g.getId(),
                         g.getType(),
-                        g.getType().getViewName(),
+                        getTranslatedName(g.getType()),
                         g.getDesc(),
                         g.getGrantTime(),
-                        VacationTimeType.convertValueToDay(g.getGrantTime()),
+                        vacationTimeFormatter.format(g.getGrantTime()),
                         g.getRemainTime(),
-                        VacationTimeType.convertValueToDay(g.getRemainTime()),
+                        vacationTimeFormatter.format(g.getRemainTime()),
                         g.getGrantDate(),
                         g.getExpiryDate()
                 ))
@@ -69,9 +74,9 @@ public class VacationApiController implements VacationApi {
                         u.getId(),
                         u.getDesc(),
                         u.getType(),
-                        u.getType().getStrName(),
+                        getTranslatedName(u.getType()),
                         u.getUsedTime(),
-                        VacationTimeType.convertValueToDay(u.getUsedTime()),
+                        vacationTimeFormatter.format(u.getUsedTime()),
                         u.getStartDate(),
                         u.getEndDate()
                 ))
@@ -93,12 +98,12 @@ public class VacationApiController implements VacationApi {
                                     .map(g -> new VacationApiDto.GetAllUsersVacationHistoryResp.VacationGrantInfo(
                                             g.getId(),
                                             g.getType(),
-                                            g.getType().getViewName(),
+                                            getTranslatedName(g.getType()),
                                             g.getDesc(),
                                             g.getGrantTime(),
-                                            VacationTimeType.convertValueToDay(g.getGrantTime()),
+                                            vacationTimeFormatter.format(g.getGrantTime()),
                                             g.getRemainTime(),
-                                            VacationTimeType.convertValueToDay(g.getRemainTime()),
+                                            vacationTimeFormatter.format(g.getRemainTime()),
                                             g.getGrantDate(),
                                             g.getExpiryDate()
                                     ))
@@ -111,9 +116,9 @@ public class VacationApiController implements VacationApi {
                                             u.getId(),
                                             u.getDesc(),
                                             u.getType(),
-                                            u.getType().getStrName(),
+                                            getTranslatedName(u.getType()),
                                             u.getUsedTime(),
-                                            VacationTimeType.convertValueToDay(u.getUsedTime()),
+                                            vacationTimeFormatter.format(u.getUsedTime()),
                                             u.getStartDate(),
                                             u.getEndDate()
                                     ))
@@ -139,9 +144,9 @@ public class VacationApiController implements VacationApi {
         List<VacationApiDto.GetAvailableVacationsResp> resp = availableVacations.stream()
                 .map(dto -> new VacationApiDto.GetAvailableVacationsResp(
                         dto.getType(),
-                        dto.getType().getViewName(),
+                        getTranslatedName(dto.getType()),
                         dto.getRemainTime(),
-                        VacationTimeType.convertValueToDay(dto.getRemainTime())
+                        vacationTimeFormatter.format(dto.getRemainTime())
                 ))
                 .toList();
 
@@ -185,7 +190,7 @@ public class VacationApiController implements VacationApi {
                         dto.getId(),
                         dto.getDesc(),
                         dto.getTimeType(),
-                        dto.getTimeType().getStrName(),
+                        getTranslatedName(dto.getTimeType()),
                         dto.getUsedTime(),
                         dto.getStartDate(),
                         dto.getEndDate()
@@ -205,7 +210,7 @@ public class VacationApiController implements VacationApi {
                         dto.getId(),
                         dto.getDesc(),
                         dto.getTimeType(),
-                        dto.getTimeType().getStrName(),
+                        getTranslatedName(dto.getTimeType()),
                         dto.getUsedTime(),
                         dto.getStartDate(),
                         dto.getEndDate()
@@ -224,7 +229,7 @@ public class VacationApiController implements VacationApi {
                 .map(v -> new VacationApiDto.GetUserMonthlyVacationStatsResp(
                         v.getMonth(),
                         v.getUsedTime(),
-                        VacationTimeType.convertValueToDay(v.getUsedTime())
+                        vacationTimeFormatter.format(v.getUsedTime())
                 ))
                 .toList();
 
@@ -238,21 +243,21 @@ public class VacationApiController implements VacationApi {
 
         return ApiResponse.success(new VacationApiDto.GetUserVacationStatsResp(
                 stats.getRemainTime(),
-                VacationTimeType.convertValueToDay(stats.getRemainTime()),
+                vacationTimeFormatter.format(stats.getRemainTime()),
                 stats.getUsedTime(),
-                VacationTimeType.convertValueToDay(stats.getUsedTime()),
+                vacationTimeFormatter.format(stats.getUsedTime()),
                 stats.getExpectUsedTime(),
-                VacationTimeType.convertValueToDay(stats.getExpectUsedTime()),
+                vacationTimeFormatter.format(stats.getExpectUsedTime()),
                 stats.getPrevRemainTime(),
-                VacationTimeType.convertValueToDay(stats.getPrevRemainTime()),
+                vacationTimeFormatter.format(stats.getPrevRemainTime()),
                 stats.getPrevUsedTime(),
-                VacationTimeType.convertValueToDay(stats.getPrevUsedTime()),
+                vacationTimeFormatter.format(stats.getPrevUsedTime()),
                 stats.getPrevExpectUsedTime(),
-                VacationTimeType.convertValueToDay(stats.getPrevExpectUsedTime()),
+                vacationTimeFormatter.format(stats.getPrevExpectUsedTime()),
                 stats.getRemainTime().subtract(stats.getPrevRemainTime()),
-                VacationTimeType.convertValueToDay(stats.getRemainTime().subtract(stats.getPrevRemainTime()).abs()),
+                vacationTimeFormatter.format(stats.getRemainTime().subtract(stats.getPrevRemainTime()).abs()),
                 stats.getUsedTime().subtract(stats.getPrevUsedTime()),
-                VacationTimeType.convertValueToDay(stats.getUsedTime().subtract(stats.getPrevUsedTime()).abs())
+                vacationTimeFormatter.format(stats.getUsedTime().subtract(stats.getPrevUsedTime()).abs())
         ));
     }
 
@@ -295,7 +300,7 @@ public class VacationApiController implements VacationApi {
                 policy.getVacationType(),
                 policy.getGrantMethod(),
                 policy.getGrantTime(),
-                VacationTimeType.convertValueToDay(policy.getGrantTime()),
+                vacationTimeFormatter.format(policy.getGrantTime()),
                 policy.getIsFlexibleGrant(),
                 policy.getMinuteGrantYn(),
                 policy.getRepeatUnit(),
@@ -321,7 +326,7 @@ public class VacationApiController implements VacationApi {
                         vp.getVacationType(),
                         vp.getGrantMethod(),
                         vp.getGrantTime(),
-                        VacationTimeType.convertValueToDay(vp.getGrantTime()),
+                        vacationTimeFormatter.format(vp.getGrantTime()),
                         vp.getIsFlexibleGrant(),
                         vp.getMinuteGrantYn(),
                         vp.getRepeatUnit(),
@@ -370,7 +375,7 @@ public class VacationApiController implements VacationApi {
                         vp.getVacationType(),
                         vp.getGrantMethod(),
                         vp.getGrantTime(),
-                        VacationTimeType.convertValueToDay(vp.getGrantTime()),
+                        vacationTimeFormatter.format(vp.getGrantTime()),
                         vp.getIsFlexibleGrant(),
                         vp.getMinuteGrantYn(),
                         vp.getRepeatUnit(),
@@ -404,7 +409,7 @@ public class VacationApiController implements VacationApi {
                         vp.getVacationType(),
                         vp.getGrantMethod(),
                         vp.getGrantTime(),
-                        VacationTimeType.convertValueToDay(vp.getGrantTime()),
+                        vacationTimeFormatter.format(vp.getGrantTime()),
                         vp.getIsFlexibleGrant(),
                         vp.getMinuteGrantYn(),
                         vp.getRepeatUnit(),
@@ -546,7 +551,7 @@ public class VacationApiController implements VacationApi {
                                         approver.getApproverName(),
                                         approver.getApprovalOrder(),
                                         approver.getApprovalStatus(),
-                                        approver.getApprovalStatus().getViewName(),
+                                        getTranslatedName(approver.getApprovalStatus()),
                                         approver.getApprovalDate(),
                                         approver.getRejectionReason()
                                 ))
@@ -558,21 +563,21 @@ public class VacationApiController implements VacationApi {
                             v.getPolicyId(),
                             v.getPolicyName(),
                             v.getType(),
-                            v.getType().getViewName(),
+                            getTranslatedName(v.getType()),
                             v.getDesc(),
                             v.getGrantTime(),
-                            VacationTimeType.convertValueToDay(v.getGrantTime()),
+                            vacationTimeFormatter.format(v.getGrantTime()),
                             v.getPolicyGrantTime(),
-                            VacationTimeType.convertValueToDay(v.getPolicyGrantTime()),
+                            vacationTimeFormatter.format(v.getPolicyGrantTime()),
                             v.getRemainTime(),
-                            VacationTimeType.convertValueToDay(v.getRemainTime()),
+                            vacationTimeFormatter.format(v.getRemainTime()),
                             v.getGrantDate(),
                             v.getExpiryDate(),
                             v.getRequestStartTime(),
                             v.getRequestEndTime(),
                             v.getRequestDesc(),
                             v.getGrantStatus(),
-                            v.getGrantStatus().getViewName(),
+                            getTranslatedName(v.getGrantStatus()),
                             v.getCreateDate(),
                             v.getCurrentApproverId(),
                             v.getCurrentApproverName(),
@@ -601,7 +606,7 @@ public class VacationApiController implements VacationApi {
                                         approver.getApproverName(),
                                         approver.getApprovalOrder(),
                                         approver.getApprovalStatus(),
-                                        approver.getApprovalStatus().getViewName(),
+                                        getTranslatedName(approver.getApprovalStatus()),
                                         approver.getApprovalDate(),
                                         approver.getRejectionReason()
                                 ))
@@ -613,21 +618,21 @@ public class VacationApiController implements VacationApi {
                             v.getPolicyId(),
                             v.getPolicyName(),
                             v.getType(),
-                            v.getType().getViewName(),
+                            getTranslatedName(v.getType()),
                             v.getDesc(),
                             v.getGrantTime(),
-                            VacationTimeType.convertValueToDay(v.getGrantTime()),
+                            vacationTimeFormatter.format(v.getGrantTime()),
                             v.getPolicyGrantTime(),
-                            VacationTimeType.convertValueToDay(v.getPolicyGrantTime()),
+                            vacationTimeFormatter.format(v.getPolicyGrantTime()),
                             v.getRemainTime(),
-                            VacationTimeType.convertValueToDay(v.getRemainTime()),
+                            vacationTimeFormatter.format(v.getRemainTime()),
                             v.getGrantDate(),
                             v.getExpiryDate(),
                             v.getRequestStartTime(),
                             v.getRequestEndTime(),
                             v.getRequestDesc(),
                             v.getGrantStatus(),
-                            v.getGrantStatus().getViewName(),
+                            getTranslatedName(v.getGrantStatus()),
                             v.getCreateDate(),
                             v.getCurrentApproverId(),
                             v.getCurrentApproverName(),
@@ -675,7 +680,7 @@ public class VacationApiController implements VacationApi {
                                 vp.getVacationType(),
                                 vp.getGrantMethod(),
                                 vp.getGrantTime(),
-                                VacationTimeType.convertValueToDay(vp.getGrantTime()),
+                                vacationTimeFormatter.format(vp.getGrantTime()),
                                 vp.getIsFlexibleGrant(),
                                 vp.getMinuteGrantYn(),
                                 vp.getRepeatUnit(),
@@ -698,7 +703,7 @@ public class VacationApiController implements VacationApi {
                                 vp.getVacationType(),
                                 vp.getGrantMethod(),
                                 vp.getGrantTime(),
-                                VacationTimeType.convertValueToDay(vp.getGrantTime()),
+                                vacationTimeFormatter.format(vp.getGrantTime()),
                                 vp.getIsFlexibleGrant(),
                                 vp.getMinuteGrantYn(),
                                 vp.getRepeatUnit(),
@@ -730,16 +735,21 @@ public class VacationApiController implements VacationApi {
                         dto.getUser().getName(),
                         dto.getDepartmentName(),
                         dto.getTotalVacationDays(),
-                        VacationTimeType.convertValueToDay(dto.getTotalVacationDays()),
+                        vacationTimeFormatter.format(dto.getTotalVacationDays()),
                         dto.getUsedVacationDays(),
-                        VacationTimeType.convertValueToDay(dto.getUsedVacationDays()),
+                        vacationTimeFormatter.format(dto.getUsedVacationDays()),
                         dto.getScheduledVacationDays(),
-                        VacationTimeType.convertValueToDay(dto.getScheduledVacationDays()),
+                        vacationTimeFormatter.format(dto.getScheduledVacationDays()),
                         dto.getRemainingVacationDays(),
-                        VacationTimeType.convertValueToDay(dto.getRemainingVacationDays())
+                        vacationTimeFormatter.format(dto.getRemainingVacationDays())
                 ))
                 .toList();
 
         return ApiResponse.success(resp);
+    }
+
+    private String getTranslatedName(DisplayType type) {
+        if (type == null) return null;
+        return messageSource.getMessage(type.getMessageKey(), null, LocaleContextHolder.getLocale());
     }
 }

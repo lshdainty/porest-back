@@ -66,7 +66,7 @@ public class VacationGrantScheduler {
                     log.info("휴가 만료 처리 완료 - Grant ID: {}, User: {}, VacationType: {}, RemainTime: {}, ExpiryDate: {}",
                             grant.getId(),
                             grant.getUser().getId(),
-                            grant.getType().getViewName(),
+                            grant.getType().name(),
                             grant.getRemainTime(),
                             grant.getExpiryDate());
 
@@ -147,7 +147,7 @@ public class VacationGrantScheduler {
                     log.info("휴가 부여 완료 - User: {}, Policy: {}, VacationType: {}, GrantTime: {}, StartDate: {}, ExpiryDate: {}, NextGrantDate: {}",
                             uvp.getUser().getId(),
                             policy.getName(),
-                            vacationType.getViewName(),
+                            vacationType.name(),
                             policy.getGrantTime(),
                             startDate,
                             expiryDate,

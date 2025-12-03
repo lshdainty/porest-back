@@ -1,12 +1,15 @@
 package com.lshdainty.porest.user.controller;
 
 import com.lshdainty.porest.common.type.YNType;
+import com.lshdainty.porest.company.type.OriginCompanyType;
 import com.lshdainty.porest.user.controller.dto.UserApiDto;
 import com.lshdainty.porest.common.controller.ApiResponse;
 import com.lshdainty.porest.user.service.UserService;
 import com.lshdainty.porest.user.service.dto.UserServiceDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,6 +22,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class UserApiController implements UserApi {
     private final UserService userService;
+    private final MessageSource messageSource;
 
     @Override
     public ApiResponse joinUser(UserApiDto.JoinUserReq data) {
@@ -79,7 +83,7 @@ public class UserApiController implements UserApi {
                 roleNames.isEmpty() ? null : roleNames.get(0),
                 allPermissions,
                 user.getCompany(),
-                user.getCompany().getCompanyName(),
+                getTranslatedName(user.getCompany()),
                 user.getLunarYN(),
                 user.getProfileUrl(),
                 user.getInvitationToken(),
@@ -140,7 +144,7 @@ public class UserApiController implements UserApi {
                             roleNames.isEmpty() ? null : roleNames.get(0),
                             allPermissions,
                             u.getCompany(),
-                            u.getCompany().getCompanyName(),
+                            getTranslatedName(u.getCompany()),
                             u.getLunarYN(),
                             u.getProfileUrl(),
                             u.getInvitationToken(),
@@ -212,7 +216,7 @@ public class UserApiController implements UserApi {
                 roleNames.isEmpty() ? null : roleNames.get(0),
                 allPermissions,
                 findUser.getCompany(),
-                findUser.getCompany().getCompanyName(),
+                getTranslatedName(findUser.getCompany()),
                 findUser.getLunarYN(),
                 findUser.getProfileUrl(),
                 findUser.getDashboard(),
@@ -395,5 +399,10 @@ public class UserApiController implements UserApi {
                 .collect(Collectors.toList());
 
         return ApiResponse.success(resp);
+    }
+
+    private String getTranslatedName(OriginCompanyType type) {
+        if (type == null) return null;
+        return messageSource.getMessage(type.getMessageKey(), null, LocaleContextHolder.getLocale());
     }
 }

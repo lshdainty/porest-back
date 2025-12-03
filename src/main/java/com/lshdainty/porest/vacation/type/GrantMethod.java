@@ -3,21 +3,20 @@ package com.lshdainty.porest.vacation.type;
 import com.lshdainty.porest.common.type.DisplayType;
 
 public enum GrantMethod implements DisplayType {
-    ON_REQUEST("신청시 부여", 1L),
-    MANUAL_GRANT("관리자 직접 부여", 2L),
-    REPEAT_GRANT("반복 부여", 3L);
+    ON_REQUEST(1L),
+    MANUAL_GRANT(2L),
+    REPEAT_GRANT(3L);
 
-    private String strName;
+    private static final String MESSAGE_KEY_PREFIX = "type.grant.method.";
     private Long orderSeq;
 
-    GrantMethod(String strName, Long orderSeq) {
-        this.strName = strName;
+    GrantMethod(Long orderSeq) {
         this.orderSeq = orderSeq;
     }
 
     @Override
-    public String getViewName() {
-        return strName;
+    public String getMessageKey() {
+        return MESSAGE_KEY_PREFIX + this.name().toLowerCase();
     }
 
     @Override
