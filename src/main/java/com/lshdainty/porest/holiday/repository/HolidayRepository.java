@@ -12,7 +12,7 @@ public interface HolidayRepository {
     // 신규 휴일 저장
     void save(Holiday holiday);
     // 단건 휴일 조회
-    Optional<Holiday> findById(Long seq);
+    Optional<Holiday> findById(Long id);
     // 전체 휴일 조회
     List<Holiday> findHolidays(CountryCode countryCode);
     // 기간에 해당하는 휴일 조회

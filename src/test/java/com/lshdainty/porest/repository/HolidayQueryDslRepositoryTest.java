@@ -46,7 +46,7 @@ class HolidayQueryDslRepositoryTest {
         em.clear();
 
         // then
-        Optional<Holiday> findHoliday = holidayRepository.findById(holiday.getSeq());
+        Optional<Holiday> findHoliday = holidayRepository.findById(holiday.getId());
         assertThat(findHoliday.isPresent()).isTrue();
         assertThat(findHoliday.get().getName()).isEqualTo("설날");
         assertThat(findHoliday.get().getType()).isEqualTo(HolidayType.PUBLIC);
@@ -185,13 +185,13 @@ class HolidayQueryDslRepositoryTest {
         em.clear();
 
         // when
-        Holiday foundHoliday = holidayRepository.findById(holiday.getSeq()).orElseThrow();
+        Holiday foundHoliday = holidayRepository.findById(holiday.getId()).orElseThrow();
         holidayRepository.delete(foundHoliday);
         em.flush();
         em.clear();
 
         // then
-        Optional<Holiday> deletedHoliday = holidayRepository.findById(holiday.getSeq());
+        Optional<Holiday> deletedHoliday = holidayRepository.findById(holiday.getId());
         assertThat(deletedHoliday.isEmpty()).isTrue();
     }
 
@@ -208,14 +208,14 @@ class HolidayQueryDslRepositoryTest {
         em.clear();
 
         // when
-        Holiday foundHoliday = holidayRepository.findById(holiday.getSeq()).orElseThrow();
+        Holiday foundHoliday = holidayRepository.findById(holiday.getId()).orElseThrow();
         foundHoliday.updateHoliday("수정된 이름", LocalDate.of(2025, 1, 2),
                 HolidayType.SUBSTITUTE, null, null, null, null, null);
         em.flush();
         em.clear();
 
         // then
-        Holiday updatedHoliday = holidayRepository.findById(holiday.getSeq()).orElseThrow();
+        Holiday updatedHoliday = holidayRepository.findById(holiday.getId()).orElseThrow();
         assertThat(updatedHoliday.getName()).isEqualTo("수정된 이름");
         assertThat(updatedHoliday.getDate()).isEqualTo(LocalDate.of(2025, 1, 2));
         assertThat(updatedHoliday.getType()).isEqualTo(HolidayType.SUBSTITUTE);

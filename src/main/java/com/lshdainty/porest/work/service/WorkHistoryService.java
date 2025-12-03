@@ -287,7 +287,7 @@ public class WorkHistoryService {
         LocalDate endDate = yearMonth.atEndOfMonth();
 
         // 해당 기간의 공휴일 조회 (PUBLIC, SUBSTITUTE만 - ETC 제외)
-        List<Holiday> holidays = holidayService.searchHolidaysByStartEndDate(startDate, endDate, null);
+        List<Holiday> holidays = holidayService.searchHolidaysByStartEndDate(startDate, endDate, CountryCode.KR);
         Set<LocalDate> holidayDates = holidays.stream()
                 .filter(h -> h.getType() == HolidayType.PUBLIC || h.getType() == HolidayType.SUBSTITUTE)
                 .map(Holiday::getDate)

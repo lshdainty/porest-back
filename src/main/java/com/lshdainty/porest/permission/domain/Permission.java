@@ -21,7 +21,6 @@ import java.util.Objects;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "permissions")
 public class Permission extends AuditingFields {
-
     /**
      * 권한 ID (Primary Key)<br>
      * 자동 생성되는 고유 식별자

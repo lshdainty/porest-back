@@ -69,16 +69,16 @@ class HolidayServiceTest {
         @DisplayName("성공 - 존재하는 공휴일을 반환한다")
         void findByIdSuccess() {
             // given
-            Long seq = 1L;
+            Long id = 1L;
             Holiday holiday = Holiday.createHoliday("설날", LocalDate.of(2025, 1, 29), HolidayType.PUBLIC, CountryCode.KR, YNType.Y, LocalDate.of(2025, 1, 1), YNType.Y, "🎉");
-            setHolidaySeq(holiday, seq);
-            given(holidayRepository.findById(seq)).willReturn(Optional.of(holiday));
+            setHolidayId(holiday, id);
+            given(holidayRepository.findById(id)).willReturn(Optional.of(holiday));
 
             // when
-            Holiday result = holidayService.findById(seq);
+            Holiday result = holidayService.findById(id);
 
             // then
-            then(holidayRepository).should().findById(seq);
+            then(holidayRepository).should().findById(id);
             assertThat(result.getName()).isEqualTo("설날");
         }
 
@@ -86,11 +86,11 @@ class HolidayServiceTest {
         @DisplayName("실패 - 존재하지 않는 공휴일이면 예외가 발생한다")
         void findByIdFailNotFound() {
             // given
-            Long seq = 999L;
-            given(holidayRepository.findById(seq)).willReturn(Optional.empty());
+            Long id = 999L;
+            given(holidayRepository.findById(id)).willReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> holidayService.findById(seq))
+            assertThatThrownBy(() -> holidayService.findById(id))
                     .isInstanceOf(EntityNotFoundException.class);
         }
     }
@@ -186,13 +186,13 @@ class HolidayServiceTest {
         @DisplayName("성공 - 공휴일 정보가 수정된다")
         void editHolidaySuccess() {
             // given
-            Long seq = 1L;
+            Long id = 1L;
             Holiday holiday = Holiday.createHoliday("설날", LocalDate.of(2025, 1, 29), HolidayType.PUBLIC, CountryCode.KR, YNType.Y, LocalDate.of(2025, 1, 1), YNType.Y, "🎉");
-            setHolidaySeq(holiday, seq);
-            given(holidayRepository.findById(seq)).willReturn(Optional.of(holiday));
+            setHolidayId(holiday, id);
+            given(holidayRepository.findById(id)).willReturn(Optional.of(holiday));
 
             HolidayServiceDto data = HolidayServiceDto.builder()
-                    .seq(seq)
+                    .id(id)
                     .name("설날 연휴")
                     .date(LocalDate.of(2025, 1, 30))
                     .build();
@@ -201,7 +201,7 @@ class HolidayServiceTest {
             holidayService.editHoliday(data);
 
             // then
-            then(holidayRepository).should().findById(seq);
+            then(holidayRepository).should().findById(id);
             assertThat(holiday.getName()).isEqualTo("설날 연휴");
             assertThat(holiday.getDate()).isEqualTo(LocalDate.of(2025, 1, 30));
         }
@@ -210,9 +210,9 @@ class HolidayServiceTest {
         @DisplayName("실패 - 존재하지 않는 공휴일을 수정하려 하면 예외가 발생한다")
         void editHolidayFailNotFound() {
             // given
-            Long seq = 999L;
-            HolidayServiceDto data = HolidayServiceDto.builder().seq(seq).build();
-            given(holidayRepository.findById(seq)).willReturn(Optional.empty());
+            Long id = 999L;
+            HolidayServiceDto data = HolidayServiceDto.builder().id(id).build();
+            given(holidayRepository.findById(id)).willReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> holidayService.editHoliday(data))
@@ -227,16 +227,16 @@ class HolidayServiceTest {
         @DisplayName("성공 - 공휴일이 삭제된다")
         void deleteHolidaySuccess() {
             // given
-            Long seq = 1L;
+            Long id = 1L;
             Holiday holiday = Holiday.createHoliday("설날", LocalDate.of(2025, 1, 29), HolidayType.PUBLIC, CountryCode.KR, YNType.Y, LocalDate.of(2025, 1, 1), YNType.Y, "🎉");
-            given(holidayRepository.findById(seq)).willReturn(Optional.of(holiday));
+            given(holidayRepository.findById(id)).willReturn(Optional.of(holiday));
             willDoNothing().given(holidayRepository).delete(holiday);
 
             // when
-            holidayService.deleteHoliday(seq);
+            holidayService.deleteHoliday(id);
 
             // then
-            then(holidayRepository).should().findById(seq);
+            then(holidayRepository).should().findById(id);
             then(holidayRepository).should().delete(holiday);
         }
 
@@ -244,11 +244,11 @@ class HolidayServiceTest {
         @DisplayName("실패 - 존재하지 않는 공휴일을 삭제하려 하면 예외가 발생한다")
         void deleteHolidayFailNotFound() {
             // given
-            Long seq = 999L;
-            given(holidayRepository.findById(seq)).willReturn(Optional.empty());
+            Long id = 999L;
+            given(holidayRepository.findById(id)).willReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> holidayService.deleteHoliday(seq))
+            assertThatThrownBy(() -> holidayService.deleteHoliday(id))
                     .isInstanceOf(EntityNotFoundException.class);
             then(holidayRepository).should(never()).delete(any(Holiday.class));
         }
@@ -261,12 +261,12 @@ class HolidayServiceTest {
         @DisplayName("성공 - 존재하는 공휴일을 반환한다")
         void checkHolidayExistSuccess() {
             // given
-            Long seq = 1L;
+            Long id = 1L;
             Holiday holiday = Holiday.createHoliday("설날", LocalDate.of(2025, 1, 29), HolidayType.PUBLIC, CountryCode.KR, YNType.Y, LocalDate.of(2025, 1, 1), YNType.Y, "🎉");
-            given(holidayRepository.findById(seq)).willReturn(Optional.of(holiday));
+            given(holidayRepository.findById(id)).willReturn(Optional.of(holiday));
 
             // when
-            Holiday result = holidayService.checkHolidayExist(seq);
+            Holiday result = holidayService.checkHolidayExist(id);
 
             // then
             assertThat(result).isEqualTo(holiday);
@@ -276,21 +276,21 @@ class HolidayServiceTest {
         @DisplayName("실패 - 존재하지 않는 공휴일이면 예외가 발생한다")
         void checkHolidayExistFailNotFound() {
             // given
-            Long seq = 999L;
-            given(holidayRepository.findById(seq)).willReturn(Optional.empty());
+            Long id = 999L;
+            given(holidayRepository.findById(id)).willReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> holidayService.checkHolidayExist(seq))
+            assertThatThrownBy(() -> holidayService.checkHolidayExist(id))
                     .isInstanceOf(EntityNotFoundException.class);
         }
     }
 
     // 테스트 헬퍼 메서드
-    private void setHolidaySeq(Holiday holiday, Long seq) {
+    private void setHolidayId(Holiday holiday, Long id) {
         try {
-            java.lang.reflect.Field field = Holiday.class.getDeclaredField("seq");
+            java.lang.reflect.Field field = Holiday.class.getDeclaredField("id");
             field.setAccessible(true);
-            field.set(holiday, seq);
+            field.set(holiday, id);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

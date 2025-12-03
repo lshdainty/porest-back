@@ -106,10 +106,10 @@ public interface HolidayApi {
                     description = "공휴일 정보를 찾을 수 없음"
             )
     })
-    @PutMapping("/api/v1/holiday/{seq}")
+    @PutMapping("/api/v1/holiday/{id}")
     ApiResponse editHoliday(
-            @Parameter(description = "공휴일 시퀀스", example = "1", required = true)
-            @PathVariable("seq") Long seq,
+            @Parameter(description = "공휴일 아이디", example = "1", required = true)
+            @PathVariable("id") Long id,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "공휴일 수정 정보",
                     required = true,
@@ -136,9 +136,9 @@ public interface HolidayApi {
                     description = "공휴일 정보를 찾을 수 없음"
             )
     })
-    @DeleteMapping("/api/v1/holiday/{seq}")
+    @DeleteMapping("/api/v1/holiday/{id}")
     ApiResponse deleteHoliday(
-            @Parameter(description = "공휴일 시퀀스", example = "1", required = true)
-            @PathVariable("seq") Long seq
+            @Parameter(description = "공휴일 아이디", example = "1", required = true)
+            @PathVariable("id") Long id
     );
 }

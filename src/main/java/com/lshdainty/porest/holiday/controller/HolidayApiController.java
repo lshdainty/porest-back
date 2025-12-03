@@ -25,7 +25,7 @@ public class HolidayApiController implements HolidayApi {
     @Override
     @PreAuthorize("hasAuthority('HOLIDAY_MANAGE')")
     public ApiResponse registHoliday(HolidayApiDto.RegistHolidayReq data) {
-        Long holidaySeq = holidayService.registHoliday(HolidayServiceDto.builder()
+        Long holidayId = holidayService.registHoliday(HolidayServiceDto.builder()
                 .name(data.getHolidayName())
                 .date(data.getHolidayDate())
                 .type(data.getHolidayType())
@@ -36,7 +36,7 @@ public class HolidayApiController implements HolidayApi {
                 .icon(data.getHolidayIcon())
                 .build()
         );
-        return ApiResponse.success(new HolidayApiDto.RegistHolidayResp(holidaySeq));
+        return ApiResponse.success(new HolidayApiDto.RegistHolidayResp(holidayId));
     }
 
     @Override
@@ -46,7 +46,7 @@ public class HolidayApiController implements HolidayApi {
 
         List<HolidayApiDto.SearchHolidaysResp> resp = holidays.stream()
                 .map(h -> new HolidayApiDto.SearchHolidaysResp(
-                        h.getSeq(),
+                        h.getId(),
                         h.getName(),
                         h.getDate(),
                         h.getType(),
@@ -68,7 +68,7 @@ public class HolidayApiController implements HolidayApi {
 
         List<HolidayApiDto.SearchHolidaysResp> resp = holidays.stream()
                 .map(h -> new HolidayApiDto.SearchHolidaysResp(
-                        h.getSeq(),
+                        h.getId(),
                         h.getName(),
                         h.getDate(),
                         h.getType(),
@@ -85,9 +85,9 @@ public class HolidayApiController implements HolidayApi {
 
     @Override
     @PreAuthorize("hasAuthority('HOLIDAY_MANAGE')")
-    public ApiResponse editHoliday(Long seq, HolidayApiDto.EditHolidayReq data) {
+    public ApiResponse editHoliday(Long id, HolidayApiDto.EditHolidayReq data) {
         holidayService.editHoliday(HolidayServiceDto.builder()
-                .seq(seq)
+                .id(id)
                 .name(data.getHolidayName())
                 .date(data.getHolidayDate())
                 .type(data.getHolidayType())
@@ -99,9 +99,9 @@ public class HolidayApiController implements HolidayApi {
                 .build()
         );
 
-        Holiday findHoliday = holidayService.findById(seq);
+        Holiday findHoliday = holidayService.findById(id);
         return ApiResponse.success(new HolidayApiDto.EditHolidayResp(
-                findHoliday.getSeq(),
+                findHoliday.getId(),
                 findHoliday.getName(),
                 findHoliday.getDate(),
                 findHoliday.getType(),
@@ -115,8 +115,8 @@ public class HolidayApiController implements HolidayApi {
 
     @Override
     @PreAuthorize("hasAuthority('HOLIDAY_MANAGE')")
-    public ApiResponse deleteHoliday(Long seq) {
-        holidayService.deleteHoliday(seq);
+    public ApiResponse deleteHoliday(Long id) {
+        holidayService.deleteHoliday(id);
         return ApiResponse.success();
     }
 }

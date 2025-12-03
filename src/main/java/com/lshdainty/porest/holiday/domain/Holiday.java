@@ -19,8 +19,8 @@ import java.util.Objects;
 @Table(name = "holiday")
 public class Holiday extends AuditingFields {
     @Id @GeneratedValue
-    @Column(name = "holiday_seq")
-    private Long seq;           // 공휴일 아이디
+    @Column(name = "holiday_id")
+    private Long id;           // 공휴일 아이디
 
     @NotNull
     @Column(name = "holiday_date")
@@ -45,7 +45,7 @@ public class Holiday extends AuditingFields {
     @Column(name = "lunar_yn")
     private YNType lunarYN;     // 음력 여부
 
-    @Column(name = "holiday_lunar_date")
+    @Column(name = "lunar_date")
     private LocalDate lunarDate;   // 음력 날짜
 
     @Enumerated(EnumType.STRING)

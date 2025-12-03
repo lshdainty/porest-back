@@ -36,13 +36,13 @@ public class HolidayService {
                 data.getIcon()
         );
         holidayRepository.save(holiday);
-        log.info("공휴일 등록 완료: holidaySeq={}, name={}", holiday.getSeq(), data.getName());
-        return holiday.getSeq();
+        log.info("공휴일 등록 완료: holidayId={}, name={}", holiday.getId(), data.getName());
+        return holiday.getId();
     }
 
-    public Holiday findById(Long seq) {
-        log.debug("공휴일 조회: seq={}", seq);
-        return checkHolidayExist(seq);
+    public Holiday findById(Long id) {
+        log.debug("공휴일 조회: id={}", id);
+        return checkHolidayExist(id);
     }
 
     public List<Holiday> findHolidays(CountryCode countryCode) {
@@ -62,8 +62,8 @@ public class HolidayService {
 
     @Transactional
     public void editHoliday(HolidayServiceDto data) {
-        log.debug("공휴일 수정 시작: holidaySeq={}", data.getSeq());
-        Holiday findHoliday = checkHolidayExist(data.getSeq());
+        log.debug("공휴일 수정 시작: holidayId={}", data.getId());
+        Holiday findHoliday = checkHolidayExist(data.getId());
         findHoliday.updateHoliday(
                 data.getName(),
                 data.getDate(),
@@ -74,21 +74,21 @@ public class HolidayService {
                 data.getIsRecurring(),
                 data.getIcon()
         );
-        log.info("공휴일 수정 완료: holidaySeq={}", data.getSeq());
+        log.info("공휴일 수정 완료: holidayId={}", data.getId());
     }
 
     @Transactional
-    public void deleteHoliday(Long holidaySeq) {
-        log.debug("공휴일 삭제 시작: holidaySeq={}", holidaySeq);
-        Holiday findHoliday = checkHolidayExist(holidaySeq);
+    public void deleteHoliday(Long holidayId) {
+        log.debug("공휴일 삭제 시작: holidayId={}", holidayId);
+        Holiday findHoliday = checkHolidayExist(holidayId);
         holidayRepository.delete(findHoliday);
-        log.info("공휴일 삭제 완료: holidaySeq={}", holidaySeq);
+        log.info("공휴일 삭제 완료: holidayId={}", holidayId);
     }
 
-    public Holiday checkHolidayExist(Long holidaySeq) {
-        return holidayRepository.findById(holidaySeq)
+    public Holiday checkHolidayExist(Long holidayId) {
+        return holidayRepository.findById(holidayId)
                 .orElseThrow(() -> {
-                    log.warn("공휴일 조회 실패 - 존재하지 않는 공휴일: holidaySeq={}", holidaySeq);
+                    log.warn("공휴일 조회 실패 - 존재하지 않는 공휴일: holidayId={}", holidayId);
                     return new EntityNotFoundException(ErrorCode.HOLIDAY_NOT_FOUND);
                 });
     }

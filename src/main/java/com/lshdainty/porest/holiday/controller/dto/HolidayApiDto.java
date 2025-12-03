@@ -47,8 +47,8 @@ public class HolidayApiDto {
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Schema(description = "공휴일 등록 응답")
     public static class RegistHolidayResp {
-        @Schema(description = "등록된 공휴일 시퀀스", example = "1")
-        private Long holidaySeq;
+        @Schema(description = "등록된 공휴일 아이디", example = "1")
+        private Long holidayId;
     }
 
     @Getter
@@ -86,8 +86,8 @@ public class HolidayApiDto {
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Schema(description = "공휴일 조회 응답")
     public static class SearchHolidaysResp {
-        @Schema(description = "공휴일 시퀀스", example = "1")
-        private Long holidaySeq;
+        @Schema(description = "공휴일 아이디", example = "1")
+        private Long holidayId;
 
         @Schema(description = "공휴일 이름", example = "설날")
         private String holidayName;
@@ -119,8 +119,8 @@ public class HolidayApiDto {
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Schema(description = "공휴일 수정 응답")
     public static class EditHolidayResp {
-        @Schema(description = "공휴일 시퀀스", example = "1")
-        private Long holidaySeq;
+        @Schema(description = "공휴일 아이디", example = "1")
+        private Long holidayId;
 
         @Schema(description = "공휴일 이름", example = "설날")
         private String holidayName;

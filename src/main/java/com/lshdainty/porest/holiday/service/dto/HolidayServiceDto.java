@@ -12,7 +12,7 @@ import java.time.LocalDate;
 @Getter @Setter
 @Builder
 public class HolidayServiceDto {
-    private Long seq;
+    private Long id;
     private String name;
     private LocalDate date;
     private HolidayType type;
