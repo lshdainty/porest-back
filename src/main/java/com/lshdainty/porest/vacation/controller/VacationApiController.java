@@ -254,10 +254,10 @@ public class VacationApiController implements VacationApi {
                 vacationTimeFormatter.format(stats.getPrevUsedTime()),
                 stats.getPrevExpectUsedTime(),
                 vacationTimeFormatter.format(stats.getPrevExpectUsedTime()),
-                stats.getRemainTime().subtract(stats.getPrevRemainTime()),
-                vacationTimeFormatter.format(stats.getRemainTime().subtract(stats.getPrevRemainTime()).abs()),
-                stats.getUsedTime().subtract(stats.getPrevUsedTime()),
-                vacationTimeFormatter.format(stats.getUsedTime().subtract(stats.getPrevUsedTime()).abs())
+                stats.getRemainTimeGap(),
+                vacationTimeFormatter.format(stats.getRemainTimeGap().abs()),
+                stats.getUsedTimeGap(),
+                vacationTimeFormatter.format(stats.getUsedTimeGap().abs())
         ));
     }
 

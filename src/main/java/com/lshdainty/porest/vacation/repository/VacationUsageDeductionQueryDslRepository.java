@@ -49,4 +49,18 @@ public class VacationUsageDeductionQueryDslRepository implements VacationUsageDe
                 .where(vacationUsageDeduction.grant.id.eq(grantId))
                 .fetch();
     }
+
+    @Override
+    public List<VacationUsageDeduction> findByGrantIds(List<Long> grantIds) {
+        if (grantIds == null || grantIds.isEmpty()) {
+            return List.of();
+        }
+        return query
+                .selectFrom(vacationUsageDeduction)
+                .join(vacationUsageDeduction.usage).fetchJoin()
+                .join(vacationUsageDeduction.grant).fetchJoin()
+                .where(vacationUsageDeduction.grant.id.in(grantIds)
+                        .and(vacationUsageDeduction.usage.isDeleted.eq(com.lshdainty.porest.common.type.YNType.N)))
+                .fetch();
+    }
 }

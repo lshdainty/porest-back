@@ -24,4 +24,9 @@ public interface VacationUsageDeductionRepository {
      * VacationGrant ID로 차감 내역 조회
      */
     List<VacationUsageDeduction> findByGrantId(Long grantId);
+
+    /**
+     * 여러 VacationGrant ID로 차감 내역 일괄 조회
+     */
+    List<VacationUsageDeduction> findByGrantIds(List<Long> grantIds);
 }

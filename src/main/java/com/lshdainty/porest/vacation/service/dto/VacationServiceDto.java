@@ -73,6 +73,10 @@ public class VacationServiceDto {
     private BigDecimal prevUsedTime;
     // 이전달 휴가 사용 예정 시간
     private BigDecimal prevExpectUsedTime;
+    // 잔여 휴가 증감 (이번달 - 이전달)
+    private BigDecimal remainTimeGap;
+    // 사용 휴가 증감 (이번달 - 이전달)
+    private BigDecimal usedTimeGap;
 
     // 부여받은 휴가 내역 리스트
     private List<VacationGrant> grants;

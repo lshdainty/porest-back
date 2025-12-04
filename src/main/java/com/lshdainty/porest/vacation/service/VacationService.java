@@ -33,6 +33,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -457,11 +458,57 @@ public class VacationService {
         // 유저 존재 확인
         userService.checkUserExist(userId);
 
-        // 현재 통계 계산
-        VacationServiceDto curStats = calculateStatsForBaseTime(userId, baseTime);
+        // 1. baseTime 기준 유효한 부여 휴가 조회
+        List<VacationGrant> validGrants = vacationGrantRepository.findValidGrantsByUserIdAndBaseTime(userId, baseTime);
+        List<Long> grantIds = validGrants.stream().map(VacationGrant::getId).toList();
 
-        // 이전 달 통계 계산
-        VacationServiceDto prevStats = calculateStatsForBaseTime(userId, baseTime.minusMonths(1));
+        // 2. 해당 부여 휴가에 연결된 사용 내역 조회 (VacationUsageDeduction 통해)
+        List<VacationUsageDeduction> deductions = vacationUsageDeductionRepository.findByGrantIds(grantIds);
+        List<VacationUsage> allUsages = deductions.stream()
+                .map(VacationUsageDeduction::getUsage)
+                .distinct()
+                .toList();
+
+        // 3. 현재 통계 계산
+        VacationServiceDto curStats = calculateStatsForBaseTime(validGrants, allUsages, baseTime);
+
+        // 4. 이전 달 통계 계산 (이전 달의 마지막 날 23:59:59를 기준으로 계산)
+        LocalDateTime prevMonthLastDay = baseTime.minusMonths(1)
+                .with(TemporalAdjusters.lastDayOfMonth())
+                .withHour(23)
+                .withMinute(59)
+                .withSecond(59);
+
+        // 이전 달 기준 유효한 부여 휴가 조회
+        List<VacationGrant> prevValidGrants = vacationGrantRepository.findValidGrantsByUserIdAndBaseTime(userId, prevMonthLastDay);
+        List<Long> prevGrantIds = prevValidGrants.stream().map(VacationGrant::getId).toList();
+
+        // 이전 달 부여 휴가에 연결된 사용 내역 조회
+        List<VacationUsageDeduction> prevDeductions = vacationUsageDeductionRepository.findByGrantIds(prevGrantIds);
+        List<VacationUsage> prevAllUsages = prevDeductions.stream()
+                .map(VacationUsageDeduction::getUsage)
+                .distinct()
+                .toList();
+
+        VacationServiceDto prevStats = calculateStatsForBaseTime(prevValidGrants, prevAllUsages, prevMonthLastDay);
+
+        // 5. 잔여 휴가 Gap 계산 (이번달 잔여 - 이전달 잔여)
+        BigDecimal remainTimeGap = curStats.getRemainTime().subtract(prevStats.getRemainTime());
+
+        // 6. 사용 휴가 Gap 계산 (이번달에만 사용한 휴가 - 이전달에만 사용한 휴가)
+        LocalDateTime curMonthStart = baseTime.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        BigDecimal curMonthUsedTime = curStats.getUsages().stream()
+                .filter(usage -> !usage.getStartDate().isBefore(curMonthStart))
+                .map(VacationUsage::getUsedTime)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        LocalDateTime prevMonthStart = prevMonthLastDay.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        BigDecimal prevMonthUsedTime = prevStats.getUsages().stream()
+                .filter(usage -> !usage.getStartDate().isBefore(prevMonthStart))
+                .map(VacationUsage::getUsedTime)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal usedTimeGap = curMonthUsedTime.subtract(prevMonthUsedTime);
 
         return VacationServiceDto.builder()
                 .remainTime(curStats.getRemainTime())
@@ -470,30 +517,35 @@ public class VacationService {
                 .prevRemainTime(prevStats.getRemainTime())
                 .prevUsedTime(prevStats.getUsedTime())
                 .prevExpectUsedTime(prevStats.getExpectUsedTime())
+                .remainTimeGap(remainTimeGap)
+                .usedTimeGap(usedTimeGap)
                 .build();
     }
 
     /**
      * baseTime 기준 휴가 통계 계산 헬퍼 메서드
+     *
+     * @param validGrants 유효한 부여 휴가 목록
+     * @param allUsages 해당 부여 휴가에 연결된 전체 사용 내역
+     * @param baseTime 기준 시간
      */
-    private VacationServiceDto calculateStatsForBaseTime(String userId, LocalDateTime baseTime) {
-        // baseTime 기준으로 유효한 VacationGrant 조회
-        List<VacationGrant> validGrants = vacationGrantRepository.findValidGrantsByUserIdAndBaseTime(userId, baseTime);
-
+    private VacationServiceDto calculateStatsForBaseTime(List<VacationGrant> validGrants, List<VacationUsage> allUsages, LocalDateTime baseTime) {
         // 총 부여 시간 계산
         BigDecimal totalGranted = validGrants.stream()
                 .map(VacationGrant::getGrantTime)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // baseTime 이전에 사용한 VacationUsage 조회 및 합산
-        List<VacationUsage> usedUsages = vacationUsageRepository.findUsedByUserIdAndBaseTime(userId, baseTime);
+        // baseTime 이전에 사용한 VacationUsage 필터링 및 합산
+        List<VacationUsage> usedUsages = allUsages.stream()
+                .filter(usage -> !usage.getStartDate().isAfter(baseTime))
+                .toList();
         BigDecimal totalUsedTime = usedUsages.stream()
                 .map(VacationUsage::getUsedTime)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // baseTime 이후 사용 예정인 VacationUsage 조회 및 합산
-        List<VacationUsage> expectedUsages = vacationUsageRepository.findExpectedByUserIdAndBaseTime(userId, baseTime);
-        BigDecimal totalExpectUsedTime = expectedUsages.stream()
+        // baseTime 이후 사용 예정인 VacationUsage 필터링 및 합산
+        BigDecimal totalExpectUsedTime = allUsages.stream()
+                .filter(usage -> usage.getStartDate().isAfter(baseTime))
                 .map(VacationUsage::getUsedTime)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
@@ -504,6 +556,7 @@ public class VacationService {
                 .remainTime(totalRemainTime)
                 .usedTime(totalUsedTime)
                 .expectUsedTime(totalExpectUsedTime)
+                .usages(usedUsages)
                 .build();
     }
 
