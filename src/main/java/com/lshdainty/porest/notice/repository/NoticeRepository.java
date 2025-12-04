@@ -5,7 +5,7 @@ import com.lshdainty.porest.notice.type.NoticeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Optional;
 
 public interface NoticeRepository {
@@ -19,9 +19,9 @@ public interface NoticeRepository {
 
     Page<Notice> findNoticesByTitleContaining(String keyword, Pageable pageable);
 
-    Page<Notice> findActiveNotices(LocalDateTime now, Pageable pageable);
+    Page<Notice> findActiveNotices(LocalDate now, Pageable pageable);
 
     Page<Notice> findPinnedNotices(Pageable pageable);
 
-    long countActiveNotices(LocalDateTime now);
+    long countActiveNotices(LocalDate now);
 }

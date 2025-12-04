@@ -14,7 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -106,7 +106,7 @@ public class NoticeQueryDslRepository implements NoticeRepository {
     }
 
     @Override
-    public Page<Notice> findActiveNotices(LocalDateTime now, Pageable pageable) {
+    public Page<Notice> findActiveNotices(LocalDate now, Pageable pageable) {
         List<Notice> content = query
                 .selectFrom(notice)
                 .leftJoin(notice.writer).fetchJoin()
@@ -148,7 +148,7 @@ public class NoticeQueryDslRepository implements NoticeRepository {
     }
 
     @Override
-    public long countActiveNotices(LocalDateTime now) {
+    public long countActiveNotices(LocalDate now) {
         Long count = query
                 .select(notice.count())
                 .from(notice)
@@ -162,7 +162,7 @@ public class NoticeQueryDslRepository implements NoticeRepository {
         return notice.isDeleted.eq(YNType.N);
     }
 
-    private BooleanExpression isActiveNotice(LocalDateTime now) {
+    private BooleanExpression isActiveNotice(LocalDate now) {
         return notice.startDate.loe(now)
                 .and(notice.endDate.goe(now).or(notice.endDate.isNull()));
     }

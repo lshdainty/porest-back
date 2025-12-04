@@ -4,7 +4,6 @@ import com.lshdainty.porest.common.exception.EntityNotFoundException;
 import com.lshdainty.porest.common.exception.ErrorCode;
 import com.lshdainty.porest.common.exception.InvalidValueException;
 import com.lshdainty.porest.common.type.YNType;
-import com.lshdainty.porest.common.util.PorestTime;
 import com.lshdainty.porest.notice.domain.Notice;
 import com.lshdainty.porest.notice.repository.NoticeRepository;
 import com.lshdainty.porest.notice.service.dto.NoticeServiceDto;
@@ -18,7 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Optional;
 
 @Service
@@ -87,7 +86,7 @@ public class NoticeService {
 
     public Page<NoticeServiceDto> searchActiveNotices(Pageable pageable) {
         log.debug("활성 공지사항 조회: page={}", pageable.getPageNumber());
-        LocalDateTime now = LocalDateTime.now();
+        LocalDate now = LocalDate.now();
         return noticeRepository.findActiveNotices(now, pageable)
                 .map(this::convertToDto);
     }
@@ -137,8 +136,8 @@ public class NoticeService {
         return notice.get();
     }
 
-    private void validateNoticeDate(LocalDateTime startDate, LocalDateTime endDate) {
-        if (startDate != null && endDate != null && PorestTime.isAfterThanEndDate(startDate, endDate)) {
+    private void validateNoticeDate(LocalDate startDate, LocalDate endDate) {
+        if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
             log.warn("공지사항 등록/수정 실패 - 시작일이 종료일보다 이후: startDate={}, endDate={}", startDate, endDate);
             throw new InvalidValueException(ErrorCode.NOTICE_INVALID_DATE);
         }

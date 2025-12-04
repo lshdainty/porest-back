@@ -4,30 +4,19 @@ import com.lshdainty.porest.common.domain.AuditingFields;
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.notice.type.NoticeType;
 import com.lshdainty.porest.user.domain.User;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "notice")
 public class Notice extends AuditingFields {
-    @Id
-    @GeneratedValue
+    @Id @GeneratedValue
     @Column(name = "notice_id")
     private Long id;
 
@@ -54,10 +43,10 @@ public class Notice extends AuditingFields {
     private Long viewCount;
 
     @Column(name = "start_date")
-    private LocalDateTime startDate;
+    private LocalDate startDate;
 
     @Column(name = "end_date")
-    private LocalDateTime endDate;
+    private LocalDate endDate;
 
     @Column(name = "is_deleted")
     @Enumerated(EnumType.STRING)
@@ -69,7 +58,7 @@ public class Notice extends AuditingFields {
      * @return Notice
      */
     public static Notice createNotice(User writer, String title, String content, NoticeType type,
-                                       YNType isPinned, LocalDateTime startDate, LocalDateTime endDate) {
+                                       YNType isPinned, LocalDate startDate, LocalDate endDate) {
         Notice notice = new Notice();
         notice.writer = writer;
         notice.title = title;
@@ -87,7 +76,7 @@ public class Notice extends AuditingFields {
      * 공지사항 수정 함수
      */
     public void updateNotice(String title, String content, NoticeType type,
-                              YNType isPinned, LocalDateTime startDate, LocalDateTime endDate) {
+                              YNType isPinned, LocalDate startDate, LocalDate endDate) {
         this.title = title;
         this.content = content;
         this.type = type;

@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
@@ -20,8 +21,8 @@ public class NoticeServiceDto {
     private NoticeType type;
     private YNType isPinned;
     private Long viewCount;
-    private LocalDateTime startDate;
-    private LocalDateTime endDate;
+    private LocalDate startDate;
+    private LocalDate endDate;
     private LocalDateTime createDate;
     private LocalDateTime modifyDate;
 }

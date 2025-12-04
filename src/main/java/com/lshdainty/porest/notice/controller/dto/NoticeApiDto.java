@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class NoticeApiDto {
@@ -32,11 +33,11 @@ public class NoticeApiDto {
         @Schema(description = "상단 고정 여부", example = "N")
         private YNType isPinned;
 
-        @Schema(description = "노출 시작일", example = "2025-01-01T00:00:00")
-        private LocalDateTime startDate;
+        @Schema(description = "노출 시작일", example = "2025-01-01")
+        private LocalDate startDate;
 
-        @Schema(description = "노출 종료일", example = "2025-12-31T23:59:59")
-        private LocalDateTime endDate;
+        @Schema(description = "노출 종료일", example = "2025-12-31")
+        private LocalDate endDate;
     }
 
     @Getter
@@ -65,11 +66,11 @@ public class NoticeApiDto {
         @Schema(description = "상단 고정 여부", example = "Y")
         private YNType isPinned;
 
-        @Schema(description = "노출 시작일", example = "2025-01-01T00:00:00")
-        private LocalDateTime startDate;
+        @Schema(description = "노출 시작일", example = "2025-01-01")
+        private LocalDate startDate;
 
-        @Schema(description = "노출 종료일", example = "2025-12-31T23:59:59")
-        private LocalDateTime endDate;
+        @Schema(description = "노출 종료일", example = "2025-12-31")
+        private LocalDate endDate;
     }
 
     @Getter
@@ -104,11 +105,11 @@ public class NoticeApiDto {
         @Schema(description = "조회수", example = "100")
         private Long viewCount;
 
-        @Schema(description = "노출 시작일", example = "2025-01-01T00:00:00")
-        private LocalDateTime startDate;
+        @Schema(description = "노출 시작일", example = "2025-01-01")
+        private LocalDate startDate;
 
-        @Schema(description = "노출 종료일", example = "2025-12-31T23:59:59")
-        private LocalDateTime endDate;
+        @Schema(description = "노출 종료일", example = "2025-12-31")
+        private LocalDate endDate;
 
         @Schema(description = "생성일", example = "2025-01-01T09:00:00")
         private LocalDateTime createDate;
@@ -146,11 +147,11 @@ public class NoticeApiDto {
         @Schema(description = "조회수", example = "100")
         private Long viewCount;
 
-        @Schema(description = "노출 시작일", example = "2025-01-01T00:00:00")
-        private LocalDateTime startDate;
+        @Schema(description = "노출 시작일", example = "2025-01-01")
+        private LocalDate startDate;
 
-        @Schema(description = "노출 종료일", example = "2025-12-31T23:59:59")
-        private LocalDateTime endDate;
+        @Schema(description = "노출 종료일", example = "2025-12-31")
+        private LocalDate endDate;
 
         @Schema(description = "생성일", example = "2025-01-01T09:00:00")
         private LocalDateTime createDate;
