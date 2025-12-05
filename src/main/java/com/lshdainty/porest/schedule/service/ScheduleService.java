@@ -1,106 +1,70 @@
 package com.lshdainty.porest.schedule.service;
 
-import com.lshdainty.porest.common.exception.BusinessRuleViolationException;
-import com.lshdainty.porest.common.exception.EntityNotFoundException;
-import com.lshdainty.porest.common.exception.ErrorCode;
-import com.lshdainty.porest.common.exception.InvalidValueException;
-import com.lshdainty.porest.common.type.YNType;
-import com.lshdainty.porest.common.util.PorestTime;
 import com.lshdainty.porest.schedule.domain.Schedule;
-import com.lshdainty.porest.schedule.repository.ScheduleRepository;
 import com.lshdainty.porest.schedule.service.dto.ScheduleServiceDto;
-import com.lshdainty.porest.user.domain.User;
-import com.lshdainty.porest.user.service.UserService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
 
-@Service
-@RequiredArgsConstructor
-@Slf4j
-@Transactional(readOnly = true)
-public class ScheduleService {
-    private final ScheduleRepository scheduleRepository;
-    private final UserService userService;
+/**
+ * 일정 관리 서비스 인터페이스
+ * 일정 등록, 조회, 수정, 삭제 기능을 제공합니다.
+ */
+public interface ScheduleService {
+    /**
+     * 일정을 등록합니다.
+     *
+     * @param data 일정 등록 정보
+     * @return 등록된 일정 ID
+     * @throws InvalidValueException 시작일이 종료일보다 이후인 경우
+     * @throws EntityNotFoundException 사용자가 존재하지 않는 경우
+     */
+    Long registSchedule(ScheduleServiceDto data);
 
-    @Transactional
-    public Long registSchedule(ScheduleServiceDto data) {
-        log.debug("일정 등록 시작: userId={}, type={}", data.getUserId(), data.getType());
-        // 유저 조회
-        User user = userService.checkUserExist(data.getUserId());
+    /**
+     * 사용자별 일정을 조회합니다.
+     *
+     * @param userId 사용자 ID
+     * @return 사용자의 일정 목록
+     */
+    List<Schedule> searchSchedulesByUser(String userId);
 
-        if (PorestTime.isAfterThanEndDate(data.getStartDate(), data.getEndDate())) {
-            log.warn("일정 등록 실패 - 시작일이 종료일보다 이후: startDate={}, endDate={}", data.getStartDate(), data.getEndDate());
-            throw new InvalidValueException(ErrorCode.SCHEDULE_INVALID_DATE);
-        }
+    /**
+     * 기간별 일정을 조회합니다.
+     *
+     * @param start 시작 일시
+     * @param end 종료 일시
+     * @return 기간 내 일정 목록
+     * @throws InvalidValueException 시작일이 종료일보다 이후인 경우
+     */
+    List<Schedule> searchSchedulesByPeriod(LocalDateTime start, LocalDateTime end);
 
-        Schedule schedule = Schedule.createSchedule(
-                user,
-                data.getDesc(),
-                data.getType(),
-                data.getStartDate(),
-                data.getEndDate()
-        );
+    /**
+     * 일정을 수정합니다.
+     * 기존 일정을 삭제하고 새로운 일정을 등록합니다.
+     *
+     * @param scheduleId 수정할 일정 ID
+     * @param data 새로운 일정 정보
+     * @return 새로 등록된 일정 ID
+     * @throws EntityNotFoundException 일정이 존재하지 않는 경우
+     */
+    Long updateSchedule(Long scheduleId, ScheduleServiceDto data);
 
-        // 휴가 등록
-        scheduleRepository.save(schedule);
-        log.info("일정 등록 완료: scheduleId={}, userId={}", schedule.getId(), data.getUserId());
+    /**
+     * 일정을 삭제합니다.
+     *
+     * @param scheduleId 삭제할 일정 ID
+     * @throws EntityNotFoundException 일정이 존재하지 않는 경우
+     * @throws BusinessRuleViolationException 종료일이 현재보다 이전인 경우
+     */
+    void deleteSchedule(Long scheduleId);
 
-        return schedule.getId();
-    }
-
-    public List<Schedule> searchSchedulesByUser(String userId) {
-        log.debug("사용자별 일정 조회: userId={}", userId);
-        return scheduleRepository.findSchedulesByUserId(userId);
-    }
-
-    public List<Schedule> searchSchedulesByPeriod(LocalDateTime start, LocalDateTime end) {
-        log.debug("기간별 일정 조회: start={}, end={}", start, end);
-        if (PorestTime.isAfterThanEndDate(start, end)) {
-            log.warn("일정 조회 실패 - 시작일이 종료일보다 이후: start={}, end={}", start, end);
-            throw new InvalidValueException(ErrorCode.SCHEDULE_INVALID_DATE);
-        }
-        return scheduleRepository.findSchedulesByPeriod(start, end);
-    }
-
-    @Transactional
-    public Long updateSchedule(Long scheduleId, ScheduleServiceDto data) {
-        log.debug("일정 수정 시작: scheduleId={}", scheduleId);
-        // 1. 기존 스케줄 삭제
-        deleteSchedule(scheduleId);
-
-        // 2. 새로운 스케줄 등록
-        Long newScheduleId = registSchedule(data);
-
-        log.info("스케줄 수정 완료 - 기존 ID: {}, 새로운 ID: {}", scheduleId, newScheduleId);
-
-        return newScheduleId;
-    }
-
-    @Transactional
-    public void deleteSchedule(Long scheduleId) {
-        log.debug("일정 삭제 시작: scheduleId={}", scheduleId);
-        Schedule schedule = checkScheduleExist(scheduleId);
-
-        if (schedule.getEndDate().isBefore(LocalDateTime.now())) {
-            log.warn("일정 삭제 실패 - 종료일이 현재보다 이전: scheduleId={}, endDate={}", scheduleId, schedule.getEndDate());
-            throw new BusinessRuleViolationException(ErrorCode.SCHEDULE_INVALID_DATE);
-        }
-
-        schedule.deleteSchedule();
-        log.info("일정 삭제 완료: scheduleId={}", scheduleId);
-    }
-
-    public Schedule checkScheduleExist(Long scheduleId) {
-        Optional<Schedule> schedule = scheduleRepository.findById(scheduleId);
-        if (schedule.isEmpty() || YNType.isY(schedule.get().getIsDeleted())) {
-            log.warn("일정 조회 실패 - 존재하지 않는 일정: scheduleId={}", scheduleId);
-            throw new EntityNotFoundException(ErrorCode.SCHEDULE_NOT_FOUND);
-        }
-        return schedule.get();
-    }
+    /**
+     * 일정이 존재하는지 확인하고 조회합니다.
+     *
+     * @param scheduleId 일정 ID
+     * @return 일정 엔티티
+     * @throws EntityNotFoundException 일정이 존재하지 않거나 삭제된 경우
+     */
+    Schedule checkScheduleExist(Long scheduleId);
 }

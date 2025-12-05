@@ -454,7 +454,7 @@ class WorkHistoryJpaRepositoryTest {
     void findAllWithUserName() {
         // given
         User user2 = User.createUser("user2");
-        user2.updateUser("홍길동", null, null, null, null, null, null, null);
+        user2.updateUser("홍길동", null, null, null, null, null, null, null, null, null, null);
         em.persist(user2);
 
         workHistoryRepository.save(WorkHistory.createWorkHistory(

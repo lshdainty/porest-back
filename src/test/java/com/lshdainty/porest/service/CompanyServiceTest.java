@@ -7,6 +7,7 @@ import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.company.domain.Company;
 import com.lshdainty.porest.company.repository.CompanyRepository;
 import com.lshdainty.porest.company.service.CompanyService;
+import com.lshdainty.porest.company.service.CompanyServiceImpl;
 import com.lshdainty.porest.company.service.dto.CompanyServiceDto;
 import com.lshdainty.porest.department.domain.Department;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +34,7 @@ class CompanyServiceTest {
     private CompanyRepository companyRepository;
 
     @InjectMocks
-    private CompanyService companyService;
+    private CompanyServiceImpl companyService;
 
     @Nested
     @DisplayName("회사 등록")

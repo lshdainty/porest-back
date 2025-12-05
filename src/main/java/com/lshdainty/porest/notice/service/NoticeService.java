@@ -1,162 +1,103 @@
 package com.lshdainty.porest.notice.service;
 
-import com.lshdainty.porest.common.exception.EntityNotFoundException;
-import com.lshdainty.porest.common.exception.ErrorCode;
-import com.lshdainty.porest.common.exception.InvalidValueException;
-import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.notice.domain.Notice;
-import com.lshdainty.porest.notice.repository.NoticeRepository;
 import com.lshdainty.porest.notice.service.dto.NoticeServiceDto;
 import com.lshdainty.porest.notice.type.NoticeType;
-import com.lshdainty.porest.user.domain.User;
-import com.lshdainty.porest.user.service.UserService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.util.Optional;
+/**
+ * 공지사항 서비스 인터페이스
+ */
+public interface NoticeService {
 
-@Service
-@RequiredArgsConstructor
-@Slf4j
-@Transactional(readOnly = true)
-public class NoticeService {
-    private final NoticeRepository noticeRepository;
-    private final UserService userService;
+    /**
+     * 공지사항 생성
+     *
+     * @param data 공지사항 생성 데이터
+     * @return 생성된 공지사항 ID
+     */
+    Long createNotice(NoticeServiceDto data);
 
-    @Transactional
-    public Long createNotice(NoticeServiceDto data) {
-        log.debug("공지사항 등록 시작: writerId={}, title={}", data.getWriterId(), data.getTitle());
+    /**
+     * 공지사항 조회 (조회수 증가 없음)
+     *
+     * @param noticeId 공지사항 ID
+     * @return 공지사항 정보
+     */
+    NoticeServiceDto searchNotice(Long noticeId);
 
-        User writer = userService.checkUserExist(data.getWriterId());
+    /**
+     * 공지사항 조회 및 조회수 증가
+     *
+     * @param noticeId 공지사항 ID
+     * @return 공지사항 정보
+     */
+    NoticeServiceDto searchNoticeAndIncreaseViewCount(Long noticeId);
 
-        validateNoticeDate(data.getStartDate(), data.getEndDate());
+    /**
+     * 공지사항 목록 조회
+     *
+     * @param pageable 페이징 정보
+     * @return 공지사항 목록
+     */
+    Page<NoticeServiceDto> searchNotices(Pageable pageable);
 
-        Notice notice = Notice.createNotice(
-                writer,
-                data.getTitle(),
-                data.getContent(),
-                data.getType(),
-                data.getIsPinned() != null ? data.getIsPinned() : YNType.N,
-                data.getStartDate(),
-                data.getEndDate()
-        );
+    /**
+     * 유형별 공지사항 목록 조회
+     *
+     * @param type 공지사항 유형
+     * @param pageable 페이징 정보
+     * @return 공지사항 목록
+     */
+    Page<NoticeServiceDto> searchNoticesByType(NoticeType type, Pageable pageable);
 
-        noticeRepository.save(notice);
-        log.info("공지사항 등록 완료: noticeId={}, writerId={}", notice.getId(), data.getWriterId());
+    /**
+     * 키워드 검색으로 공지사항 목록 조회
+     *
+     * @param keyword 검색 키워드
+     * @param pageable 페이징 정보
+     * @return 공지사항 목록
+     */
+    Page<NoticeServiceDto> searchNoticesByKeyword(String keyword, Pageable pageable);
 
-        return notice.getId();
-    }
+    /**
+     * 활성 공지사항 목록 조회 (현재 날짜 기준 표시 기간 내)
+     *
+     * @param pageable 페이징 정보
+     * @return 공지사항 목록
+     */
+    Page<NoticeServiceDto> searchActiveNotices(Pageable pageable);
 
-    public NoticeServiceDto searchNotice(Long noticeId) {
-        log.debug("공지사항 조회: noticeId={}", noticeId);
-        Notice notice = checkNoticeExist(noticeId);
-        return convertToDto(notice);
-    }
+    /**
+     * 고정 공지사항 목록 조회
+     *
+     * @param pageable 페이징 정보
+     * @return 공지사항 목록
+     */
+    Page<NoticeServiceDto> searchPinnedNotices(Pageable pageable);
 
-    @Transactional
-    public NoticeServiceDto searchNoticeAndIncreaseViewCount(Long noticeId) {
-        log.debug("공지사항 조회 및 조회수 증가: noticeId={}", noticeId);
-        Notice notice = checkNoticeExist(noticeId);
-        notice.increaseViewCount();
-        return convertToDto(notice);
-    }
+    /**
+     * 공지사항 수정
+     *
+     * @param noticeId 공지사항 ID
+     * @param data 수정할 공지사항 데이터
+     */
+    void updateNotice(Long noticeId, NoticeServiceDto data);
 
-    public Page<NoticeServiceDto> searchNotices(Pageable pageable) {
-        log.debug("공지사항 목록 조회: page={}, size={}", pageable.getPageNumber(), pageable.getPageSize());
-        return noticeRepository.findNotices(pageable)
-                .map(this::convertToDto);
-    }
+    /**
+     * 공지사항 삭제 (Soft Delete)
+     *
+     * @param noticeId 공지사항 ID
+     */
+    void deleteNotice(Long noticeId);
 
-    public Page<NoticeServiceDto> searchNoticesByType(NoticeType type, Pageable pageable) {
-        log.debug("공지사항 유형별 조회: type={}, page={}", type, pageable.getPageNumber());
-        return noticeRepository.findNoticesByType(type, pageable)
-                .map(this::convertToDto);
-    }
-
-    public Page<NoticeServiceDto> searchNoticesByKeyword(String keyword, Pageable pageable) {
-        log.debug("공지사항 키워드 검색: keyword={}, page={}", keyword, pageable.getPageNumber());
-        return noticeRepository.findNoticesByTitleContaining(keyword, pageable)
-                .map(this::convertToDto);
-    }
-
-    public Page<NoticeServiceDto> searchActiveNotices(Pageable pageable) {
-        log.debug("활성 공지사항 조회: page={}", pageable.getPageNumber());
-        LocalDate now = LocalDate.now();
-        return noticeRepository.findActiveNotices(now, pageable)
-                .map(this::convertToDto);
-    }
-
-    public Page<NoticeServiceDto> searchPinnedNotices(Pageable pageable) {
-        log.debug("고정 공지사항 조회: page={}", pageable.getPageNumber());
-        return noticeRepository.findPinnedNotices(pageable)
-                .map(this::convertToDto);
-    }
-
-    @Transactional
-    public void updateNotice(Long noticeId, NoticeServiceDto data) {
-        log.debug("공지사항 수정 시작: noticeId={}", noticeId);
-
-        Notice notice = checkNoticeExist(noticeId);
-
-        validateNoticeDate(data.getStartDate(), data.getEndDate());
-
-        notice.updateNotice(
-                data.getTitle(),
-                data.getContent(),
-                data.getType(),
-                data.getIsPinned(),
-                data.getStartDate(),
-                data.getEndDate()
-        );
-
-        log.info("공지사항 수정 완료: noticeId={}", noticeId);
-    }
-
-    @Transactional
-    public void deleteNotice(Long noticeId) {
-        log.debug("공지사항 삭제 시작: noticeId={}", noticeId);
-
-        Notice notice = checkNoticeExist(noticeId);
-        notice.deleteNotice();
-
-        log.info("공지사항 삭제 완료: noticeId={}", noticeId);
-    }
-
-    public Notice checkNoticeExist(Long noticeId) {
-        Optional<Notice> notice = noticeRepository.findById(noticeId);
-        if (notice.isEmpty() || YNType.isY(notice.get().getIsDeleted())) {
-            log.warn("공지사항 조회 실패 - 존재하지 않는 공지사항: noticeId={}", noticeId);
-            throw new EntityNotFoundException(ErrorCode.NOTICE_NOT_FOUND);
-        }
-        return notice.get();
-    }
-
-    private void validateNoticeDate(LocalDate startDate, LocalDate endDate) {
-        if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
-            log.warn("공지사항 등록/수정 실패 - 시작일이 종료일보다 이후: startDate={}, endDate={}", startDate, endDate);
-            throw new InvalidValueException(ErrorCode.NOTICE_INVALID_DATE);
-        }
-    }
-
-    private NoticeServiceDto convertToDto(Notice notice) {
-        return NoticeServiceDto.builder()
-                .id(notice.getId())
-                .writerId(notice.getWriter() != null ? notice.getWriter().getId() : null)
-                .writerName(notice.getWriter() != null ? notice.getWriter().getName() : null)
-                .title(notice.getTitle())
-                .content(notice.getContent())
-                .type(notice.getType())
-                .isPinned(notice.getIsPinned())
-                .viewCount(notice.getViewCount())
-                .startDate(notice.getStartDate())
-                .endDate(notice.getEndDate())
-                .createDate(notice.getCreateDate())
-                .modifyDate(notice.getModifyDate())
-                .build();
-    }
+    /**
+     * 공지사항 존재 여부 확인
+     *
+     * @param noticeId 공지사항 ID
+     * @return 공지사항 엔티티
+     * @throws com.lshdainty.porest.common.exception.EntityNotFoundException 공지사항이 존재하지 않거나 삭제된 경우
+     */
+    Notice checkNoticeExist(Long noticeId);
 }

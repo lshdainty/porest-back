@@ -12,6 +12,7 @@ import com.lshdainty.porest.user.domain.User;
 import com.lshdainty.porest.user.repository.UserRepository;
 import com.lshdainty.porest.user.service.EmailService;
 import com.lshdainty.porest.user.service.UserService;
+import com.lshdainty.porest.user.service.UserServiceImpl;
 import com.lshdainty.porest.user.service.dto.UserServiceDto;
 import com.lshdainty.porest.user.type.StatusType;
 import lombok.extern.slf4j.Slf4j;
@@ -61,7 +62,7 @@ class UserServiceTest {
     private RoleRepository roleRepository;
 
     @InjectMocks
-    private UserService userService;
+    private UserServiceImpl userService;
 
     @BeforeEach
     void setUp() {

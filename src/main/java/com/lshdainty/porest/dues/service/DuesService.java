@@ -1,157 +1,84 @@
 package com.lshdainty.porest.dues.service;
 
-import com.lshdainty.porest.common.exception.EntityNotFoundException;
-import com.lshdainty.porest.common.exception.ErrorCode;
 import com.lshdainty.porest.dues.domain.Dues;
-import com.lshdainty.porest.dues.type.DuesCalcType;
-import com.lshdainty.porest.dues.repository.DuesRepository;
-import com.lshdainty.porest.dues.repository.dto.UsersMonthBirthDuesDto;
 import com.lshdainty.porest.dues.service.dto.DuesServiceDto;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-@Service
-@RequiredArgsConstructor
-@Slf4j
-@Transactional(readOnly = true)
-public class DuesService {
-    private final DuesRepository duesRepository;
+/**
+ * 회비 관리 서비스
+ * 회비 등록, 조회, 수정, 삭제 기능을 제공합니다.
+ */
+public interface DuesService {
 
-    @Transactional
-    public Long registDues(DuesServiceDto data) {
-        log.debug("회비 등록 시작: userName={}, amount={}, type={}", data.getUserName(), data.getAmount(), data.getType());
-        Dues dues = Dues.createDues(
-                data.getUserName(),
-                data.getAmount(),
-                data.getType(),
-                data.getCalc(),
-                data.getDate(),
-                data.getDetail()
-        );
-        duesRepository.save(dues);
-        log.info("회비 등록 완료: duesId={}", dues.getId());
-        return dues.getId();
-    }
+    /**
+     * 회비를 등록합니다.
+     *
+     * @param data 회비 등록 정보
+     * @return 등록된 회비 ID
+     */
+    Long registDues(DuesServiceDto data);
 
-    public List<DuesServiceDto> searchDues() {
-        log.debug("전체 회비 목록 조회");
-        List<Dues> dues = duesRepository.findDues();
+    /**
+     * 전체 회비 목록을 조회합니다.
+     *
+     * @return 회비 목록
+     */
+    List<DuesServiceDto> searchDues();
 
-        List<DuesServiceDto> dtos = dues.stream()
-                .map(d -> DuesServiceDto.builder()
-                        .id(d.getId())
-                        .userName(d.getUserName())
-                        .amount(d.getAmount())
-                        .type(d.getType())
-                        .calc(d.getCalc())
-                        .date(d.getDate())
-                        .detail(d.getDetail())
-                        .build())
-                .collect(Collectors.toList());
+    /**
+     * 특정 연도의 회비 목록을 조회합니다.
+     *
+     * @param year 조회할 연도
+     * @return 연도별 회비 목록
+     */
+    List<DuesServiceDto> searchYearDues(int year);
 
-        Long total = 0L;
-        for (DuesServiceDto dto : dtos) {
-            dto.setTotalDues(total = dto.getCalc().applyAsType(total, dto.getAmount()));
-        }
+    /**
+     * 특정 연도의 운영 회비 통계를 조회합니다.
+     *
+     * @param year 조회할 연도
+     * @return 운영 회비 통계 (총액, 입금액, 출금액)
+     */
+    DuesServiceDto searchYearOperationDues(int year);
 
-        return dtos;
-    }
+    /**
+     * 특정 연월의 생일 회비 총액을 조회합니다.
+     *
+     * @param year 조회할 연도
+     * @param month 조회할 월
+     * @return 생일 회비 총액
+     */
+    Long searchMonthBirthDues(int year, int month);
 
-    public List<DuesServiceDto> searchYearDues(int year) {
-        log.debug("연도별 회비 목록 조회: year={}", year);
-        List<Dues> dues = duesRepository.findDuesByYear(year);
+    /**
+     * 특정 연도의 사용자별 월별 생일 회비를 조회합니다.
+     *
+     * @param year 조회할 연도
+     * @return 사용자별 월별 생일 회비 목록
+     */
+    List<DuesServiceDto> searchUsersMonthBirthDues(int year);
 
-        List<DuesServiceDto> dtos = dues.stream()
-                .map(d -> DuesServiceDto.builder()
-                        .id(d.getId())
-                        .userName(d.getUserName())
-                        .amount(d.getAmount())
-                        .type(d.getType())
-                        .calc(d.getCalc())
-                        .date(d.getDate())
-                        .detail(d.getDetail())
-                        .build())
-                .collect(Collectors.toList());
+    /**
+     * 회비 정보를 수정합니다.
+     *
+     * @param data 수정할 회비 정보
+     */
+    void editDues(DuesServiceDto data);
 
-        Long total = 0L;
-        for (DuesServiceDto dto : dtos) {
-            dto.setTotalDues(total = dto.getCalc().applyAsType(total, dto.getAmount()));
-        }
+    /**
+     * 회비를 삭제합니다.
+     *
+     * @param duesId 삭제할 회비 ID
+     */
+    void deleteDues(Long duesId);
 
-        return dtos;
-    }
-
-    public DuesServiceDto searchYearOperationDues(int year) {
-        log.debug("연도별 운영 회비 조회: year={}", year);
-        List<Dues> dues = duesRepository.findOperatingDuesByYear(year);
-        Long total = 0L;
-        Long deposit = 0L;
-        Long withdraw = 0L;
-        for (Dues due : dues) {
-            total = due.getCalc().applyAsType(total, due.getAmount());
-            if (due.getCalc().equals(DuesCalcType.PLUS)) {
-                deposit = due.getCalc().applyAsType(deposit, due.getAmount());
-            } else {
-                withdraw = DuesCalcType.PLUS.applyAsType(withdraw, due.getAmount());
-            }
-        }
-
-        return DuesServiceDto.builder()
-                .totalDues(total)
-                .totalDeposit(deposit)
-                .totalWithdrawal(withdraw)
-                .build();
-    }
-
-    public Long searchMonthBirthDues(int year, int month) {
-        return duesRepository.findBirthDuesByYearAndMonth(year, month);
-    }
-
-    public List<DuesServiceDto> searchUsersMonthBirthDues(int year) {
-        List<UsersMonthBirthDuesDto> repositoryDtos = duesRepository.findUsersMonthBirthDues(year);
-        return repositoryDtos.stream()
-                .map(d -> DuesServiceDto.builder()
-                        .userName(d.getUserName())
-                        .month(d.getMonth())
-                        .amount(d.getAmount())
-                        .detail(d.getDetail())
-                        .build())
-                .toList();
-    }
-
-    @Transactional
-    public void editDues(DuesServiceDto data) {
-        log.debug("회비 수정 시작: duesId={}", data.getId());
-        Dues dues = checkDuesExist(data.getId());
-        dues.updateDues(
-                data.getUserName(),
-                data.getAmount(),
-                data.getType(),
-                data.getCalc(),
-                data.getDate(),
-                data.getDetail()
-        );
-        log.info("회비 수정 완료: duesId={}", data.getId());
-    }
-
-    @Transactional
-    public void deleteDues(Long duesId) {
-        log.debug("회비 삭제 시작: duesId={}", duesId);
-        Dues findDues = checkDuesExist(duesId);
-        duesRepository.delete(findDues);
-        log.info("회비 삭제 완료: duesId={}", duesId);
-    }
-
-    public Dues checkDuesExist(Long duesId) {
-        return duesRepository.findById(duesId)
-                .orElseThrow(() -> {
-                    log.warn("회비 조회 실패 - 존재하지 않는 회비: duesId={}", duesId);
-                    return new EntityNotFoundException(ErrorCode.DUES_NOT_FOUND);
-                });
-    }
+    /**
+     * 회비 존재 여부를 확인하고 조회합니다.
+     *
+     * @param duesId 조회할 회비 ID
+     * @return 조회된 회비 엔티티
+     * @throws com.lshdainty.porest.common.exception.EntityNotFoundException 회비가 존재하지 않을 경우
+     */
+    Dues checkDuesExist(Long duesId);
 }

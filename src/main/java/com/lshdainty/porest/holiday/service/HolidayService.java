@@ -1,95 +1,81 @@
 package com.lshdainty.porest.holiday.service;
 
-import com.lshdainty.porest.common.exception.EntityNotFoundException;
-import com.lshdainty.porest.common.exception.ErrorCode;
 import com.lshdainty.porest.common.type.CountryCode;
 import com.lshdainty.porest.holiday.domain.Holiday;
-import com.lshdainty.porest.holiday.repository.HolidayRepository;
 import com.lshdainty.porest.holiday.service.dto.HolidayServiceDto;
 import com.lshdainty.porest.holiday.type.HolidayType;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
 
-@Service
-@RequiredArgsConstructor
-@Slf4j
-@Transactional(readOnly = true)
-public class HolidayService {
-    private final HolidayRepository holidayRepository;
+/**
+ * 공휴일 서비스 인터페이스
+ * 공휴일 등록, 조회, 수정, 삭제 기능을 제공합니다.
+ */
+public interface HolidayService {
 
-    @Transactional
-    public Long registHoliday(HolidayServiceDto data) {
-        log.debug("공휴일 등록 시작: name={}, date={}, type={}", data.getName(), data.getDate(), data.getType());
-        Holiday holiday = Holiday.createHoliday(
-                data.getName(),
-                data.getDate(),
-                data.getType(),
-                data.getCountryCode(),
-                data.getLunarYN(),
-                data.getLunarDate(),
-                data.getIsRecurring(),
-                data.getIcon()
-        );
-        holidayRepository.save(holiday);
-        log.info("공휴일 등록 완료: holidayId={}, name={}", holiday.getId(), data.getName());
-        return holiday.getId();
-    }
+    /**
+     * 공휴일을 등록합니다.
+     *
+     * @param data 공휴일 등록 데이터
+     * @return 등록된 공휴일 ID
+     */
+    Long registHoliday(HolidayServiceDto data);
 
-    public Holiday findById(Long id) {
-        log.debug("공휴일 조회: id={}", id);
-        return checkHolidayExist(id);
-    }
+    /**
+     * ID로 공휴일을 조회합니다.
+     *
+     * @param id 공휴일 ID
+     * @return 공휴일 엔티티
+     */
+    Holiday findById(Long id);
 
-    public List<Holiday> findHolidays(CountryCode countryCode) {
-        log.debug("공휴일 목록 조회: countryCode={}", countryCode);
-        return holidayRepository.findHolidays(countryCode);
-    }
+    /**
+     * 국가 코드로 공휴일 목록을 조회합니다.
+     *
+     * @param countryCode 국가 코드
+     * @return 공휴일 목록
+     */
+    List<Holiday> findHolidays(CountryCode countryCode);
 
-    public List<Holiday> searchHolidaysByStartEndDate(LocalDate startDate, LocalDate endDate, CountryCode countryCode) {
-        log.debug("기간별 공휴일 조회: startDate={}, endDate={}, countryCode={}", startDate, endDate, countryCode);
-        return holidayRepository.findHolidaysByStartEndDate(startDate, endDate, countryCode);
-    }
+    /**
+     * 시작일과 종료일 기간 내의 공휴일을 조회합니다.
+     *
+     * @param startDate 시작일
+     * @param endDate 종료일
+     * @param countryCode 국가 코드
+     * @return 기간 내 공휴일 목록
+     */
+    List<Holiday> searchHolidaysByStartEndDate(LocalDate startDate, LocalDate endDate, CountryCode countryCode);
 
-    public List<Holiday> searchHolidaysByType(HolidayType type) {
-        log.debug("타입별 공휴일 조회: type={}", type);
-        return holidayRepository.findHolidaysByType(type);
-    }
+    /**
+     * 공휴일 타입으로 공휴일 목록을 조회합니다.
+     *
+     * @param type 공휴일 타입
+     * @return 해당 타입의 공휴일 목록
+     */
+    List<Holiday> searchHolidaysByType(HolidayType type);
 
-    @Transactional
-    public void editHoliday(HolidayServiceDto data) {
-        log.debug("공휴일 수정 시작: holidayId={}", data.getId());
-        Holiday findHoliday = checkHolidayExist(data.getId());
-        findHoliday.updateHoliday(
-                data.getName(),
-                data.getDate(),
-                data.getType(),
-                data.getCountryCode(),
-                data.getLunarYN(),
-                data.getLunarDate(),
-                data.getIsRecurring(),
-                data.getIcon()
-        );
-        log.info("공휴일 수정 완료: holidayId={}", data.getId());
-    }
+    /**
+     * 공휴일 정보를 수정합니다.
+     *
+     * @param data 수정할 공휴일 데이터
+     */
+    void editHoliday(HolidayServiceDto data);
 
-    @Transactional
-    public void deleteHoliday(Long holidayId) {
-        log.debug("공휴일 삭제 시작: holidayId={}", holidayId);
-        Holiday findHoliday = checkHolidayExist(holidayId);
-        holidayRepository.delete(findHoliday);
-        log.info("공휴일 삭제 완료: holidayId={}", holidayId);
-    }
+    /**
+     * 공휴일을 삭제합니다.
+     *
+     * @param holidayId 삭제할 공휴일 ID
+     */
+    void deleteHoliday(Long holidayId);
 
-    public Holiday checkHolidayExist(Long holidayId) {
-        return holidayRepository.findById(holidayId)
-                .orElseThrow(() -> {
-                    log.warn("공휴일 조회 실패 - 존재하지 않는 공휴일: holidayId={}", holidayId);
-                    return new EntityNotFoundException(ErrorCode.HOLIDAY_NOT_FOUND);
-                });
-    }
+    /**
+     * 공휴일 존재 여부를 확인하고 엔티티를 반환합니다.
+     *
+     * @param holidayId 확인할 공휴일 ID
+     * @return 공휴일 엔티티
+     * @throws com.lshdainty.porest.common.exception.EntityNotFoundException 공휴일이 존재하지 않을 경우
+     */
+    Holiday checkHolidayExist(Long holidayId);
 }

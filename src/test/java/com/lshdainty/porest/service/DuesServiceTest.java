@@ -3,6 +3,7 @@ package com.lshdainty.porest.service;
 import com.lshdainty.porest.common.exception.EntityNotFoundException;
 import com.lshdainty.porest.dues.domain.Dues;
 import com.lshdainty.porest.dues.service.DuesService;
+import com.lshdainty.porest.dues.service.DuesServiceImpl;
 import com.lshdainty.porest.dues.type.DuesCalcType;
 import com.lshdainty.porest.dues.type.DuesType;
 import com.lshdainty.porest.dues.repository.DuesRepository;
@@ -34,7 +35,7 @@ class DuesServiceTest {
     private DuesRepository duesRepository;
 
     @InjectMocks
-    private DuesService duesService;
+    private DuesServiceImpl duesService;
 
     @Nested
     @DisplayName("회비 등록")

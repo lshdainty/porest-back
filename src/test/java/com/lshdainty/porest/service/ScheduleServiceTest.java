@@ -8,6 +8,7 @@ import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.schedule.domain.Schedule;
 import com.lshdainty.porest.schedule.repository.ScheduleRepository;
 import com.lshdainty.porest.schedule.service.ScheduleService;
+import com.lshdainty.porest.schedule.service.ScheduleServiceImpl;
 import com.lshdainty.porest.schedule.service.dto.ScheduleServiceDto;
 import com.lshdainty.porest.schedule.type.ScheduleType;
 import com.lshdainty.porest.user.domain.User;
@@ -40,7 +41,7 @@ class ScheduleServiceTest {
     private UserService userService;
 
     @InjectMocks
-    private ScheduleService scheduleService;
+    private ScheduleServiceImpl scheduleService;
 
     @Nested
     @DisplayName("스케줄 등록")

@@ -11,6 +11,7 @@ import com.lshdainty.porest.department.domain.Department;
 import com.lshdainty.porest.department.domain.UserDepartment;
 import com.lshdainty.porest.department.repository.DepartmentRepository;
 import com.lshdainty.porest.department.service.DepartmentService;
+import com.lshdainty.porest.department.service.DepartmentServiceImpl;
 import com.lshdainty.porest.department.service.dto.DepartmentServiceDto;
 import com.lshdainty.porest.department.service.dto.UserDepartmentServiceDto;
 import com.lshdainty.porest.user.domain.User;
@@ -44,7 +45,7 @@ class DepartmentServiceTest {
     private UserService userService;
 
     @InjectMocks
-    private DepartmentService departmentService;
+    private DepartmentServiceImpl departmentService;
 
     @Nested
     @DisplayName("부서 등록")

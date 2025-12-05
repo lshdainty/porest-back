@@ -1,19 +1,9 @@
 package com.lshdainty.porest.work.service;
 
-import com.lshdainty.porest.work.domain.WorkSystemLog;
-import com.lshdainty.porest.work.repository.WorkSystemLogRepository;
 import com.lshdainty.porest.work.type.SystemType;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * 업무 시스템 로그 서비스<br>
@@ -22,12 +12,7 @@ import java.util.stream.Collectors;
  * - 체크 시간은 AuditingFields의 createDate에서 자동으로 설정됨<br>
  * - 누가 체크했는지는 중요하지 않고, 시스템이 오늘 체크됐는지만 확인
  */
-@Service
-@RequiredArgsConstructor
-@Transactional(readOnly = true)
-@Slf4j
-public class WorkSystemLogService {
-    private final WorkSystemLogRepository workSystemLogRepository;
+public interface WorkSystemLogService {
 
     /**
      * 시스템 체크 토글<br>
@@ -37,28 +22,7 @@ public class WorkSystemLogService {
      * @param code 시스템 코드
      * @return true: 생성됨, false: 삭제됨
      */
-    @Transactional
-    public boolean toggleSystemCheck(SystemType code) {
-        LocalDate today = LocalDate.now();
-        LocalDateTime startOfDay = today.atStartOfDay();
-        LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
-
-        Optional<WorkSystemLog> existingLog = workSystemLogRepository
-                .findByPeriodAndCode(startOfDay, endOfDay, code);
-
-        if (existingLog.isPresent()) {
-            // 이미 체크된 로그가 있으면 삭제
-            workSystemLogRepository.delete(existingLog.get());
-            log.info("System log deleted - code: {}", code);
-            return false;
-        } else {
-            // 체크된 로그가 없으면 생성 (userId는 AuditingFields에서 자동 설정)
-            WorkSystemLog newLog = WorkSystemLog.of(code);
-            workSystemLogRepository.save(newLog);
-            log.info("System log created - code: {}", code);
-            return true;
-        }
-    }
+    boolean toggleSystemCheck(SystemType code);
 
     /**
      * 오늘 날짜 특정 시스템 체크 여부 확인<br>
@@ -67,15 +31,7 @@ public class WorkSystemLogService {
      * @param code 시스템 코드
      * @return true: 체크됨, false: 체크 안됨
      */
-    public boolean isCheckedToday(SystemType code) {
-        LocalDate today = LocalDate.now();
-        LocalDateTime startOfDay = today.atStartOfDay();
-        LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
-
-        return workSystemLogRepository
-                .findByPeriodAndCode(startOfDay, endOfDay, code)
-                .isPresent();
-    }
+    boolean isCheckedToday(SystemType code);
 
     /**
      * 오늘 날짜 여러 시스템의 체크 여부를 배치 확인<br>
@@ -84,21 +40,5 @@ public class WorkSystemLogService {
      * @param codes 시스템 코드 목록
      * @return Map<SystemType, Boolean> - 시스템 코드별 체크 여부
      */
-    public Map<SystemType, Boolean> checkSystemStatusBatch(List<SystemType> codes) {
-        LocalDate today = LocalDate.now();
-        LocalDateTime startOfDay = today.atStartOfDay();
-        LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
-
-        List<SystemType> checkedCodes = workSystemLogRepository
-                .findCodesByPeriodAndCodes(startOfDay, endOfDay, codes);
-
-        Map<SystemType, Boolean> result = codes.stream()
-                .collect(Collectors.toMap(
-                        code -> code,
-                        checkedCodes::contains
-                ));
-
-        log.info("Batch system status checked - codes: {}, result: {}", codes, result);
-        return result;
-    }
+    Map<SystemType, Boolean> checkSystemStatusBatch(List<SystemType> codes);
 }

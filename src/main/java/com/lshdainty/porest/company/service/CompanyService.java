@@ -1,124 +1,68 @@
 package com.lshdainty.porest.company.service;
 
-import com.lshdainty.porest.common.exception.BusinessRuleViolationException;
-import com.lshdainty.porest.common.exception.DuplicateException;
-import com.lshdainty.porest.common.exception.EntityNotFoundException;
-import com.lshdainty.porest.common.exception.ErrorCode;
-import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.company.domain.Company;
-import com.lshdainty.porest.company.repository.CompanyRepository;
 import com.lshdainty.porest.company.service.dto.CompanyServiceDto;
-import com.lshdainty.porest.department.service.dto.DepartmentServiceDto;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
+/**
+ * 회사(Company) 비즈니스 로직을 처리하는 서비스 인터페이스
+ */
+public interface CompanyService {
+    /**
+     * 회사를 등록합니다.
+     *
+     * @param data 회사 등록 정보
+     * @return 생성된 회사 ID
+     * @throws com.lshdainty.porest.common.exception.DuplicateException 이미 존재하는 회사 ID인 경우
+     */
+    String regist(CompanyServiceDto data);
 
-@Service
-@RequiredArgsConstructor
-@Slf4j
-@Transactional(readOnly = true)
-public class CompanyService {
-    private final CompanyRepository companyRepository;
+    /**
+     * 회사 정보를 수정합니다.
+     *
+     * @param data 회사 수정 정보
+     * @throws com.lshdainty.porest.common.exception.EntityNotFoundException 회사가 존재하지 않는 경우
+     */
+    void edit(CompanyServiceDto data);
 
-    @Transactional
-    public String regist(CompanyServiceDto data) {
-        log.debug("회사 생성 시작: id={}, name={}", data.getId(), data.getName());
-        checkAlreadyCompanyId(data.getId());
+    /**
+     * 회사를 삭제합니다.
+     *
+     * @param id 회사 ID
+     * @throws com.lshdainty.porest.common.exception.EntityNotFoundException 회사가 존재하지 않는 경우
+     * @throws com.lshdainty.porest.common.exception.BusinessRuleViolationException 부서가 존재하는 경우
+     */
+    void delete(String id);
 
-        Company company = Company.createCompany(
-                data.getId(),
-                data.getName(),
-                data.getDesc()
-        );
+    /**
+     * 회사 정보를 조회합니다.
+     *
+     * @return 회사 정보 (존재하지 않으면 빈 DTO 반환)
+     */
+    CompanyServiceDto searchCompany();
 
-        companyRepository.save(company);
-        log.info("회사 생성 완료: id={}", company.getId());
-        return company.getId();
-    }
+    /**
+     * 회사 정보를 부서 트리와 함께 조회합니다.
+     *
+     * @param id 회사 ID
+     * @return 회사 정보 (부서 트리 포함)
+     * @throws com.lshdainty.porest.common.exception.EntityNotFoundException 회사가 존재하지 않는 경우
+     */
+    CompanyServiceDto searchCompanyWithDepartments(String id);
 
-    @Transactional
-    public void edit(CompanyServiceDto data) {
-        log.debug("회사 수정 시작: id={}", data.getId());
-        Company company = checkCompanyExists(data.getId());
+    /**
+     * 회사 ID 중복을 검증합니다.
+     *
+     * @param id 회사 ID
+     * @throws com.lshdainty.porest.common.exception.DuplicateException 이미 존재하는 회사 ID인 경우
+     */
+    void checkAlreadyCompanyId(String id);
 
-        company.updateCompany(
-                data.getName(),
-                data.getDesc()
-        );
-        log.info("회사 수정 완료: id={}", data.getId());
-    }
-
-    @Transactional
-    public void delete(String id) {
-        log.debug("회사 삭제 시작: id={}", id);
-        Company company = checkCompanyExists(id);
-
-        if (!company.getDepartments().isEmpty()) {
-            log.warn("회사 삭제 실패 - 부서 존재: id={}", id);
-            throw new BusinessRuleViolationException(ErrorCode.DEPARTMENT_HAS_MEMBERS);
-        }
-
-        company.deleteCompany();
-        log.info("회사 삭제 완료: id={}", id);
-    }
-
-    public CompanyServiceDto searchCompany() {
-        log.debug("회사 조회");
-        Optional<Company> OCompany = companyRepository.find();
-        if (OCompany.isPresent()) {
-            Company company = OCompany.get();
-            return CompanyServiceDto.builder()
-                    .id(company.getId())
-                    .name(company.getName())
-                    .desc(company.getDesc())
-                    .build();
-        } else {
-            return CompanyServiceDto.builder().build();
-        }
-    }
-
-    public CompanyServiceDto searchCompanyWithDepartments(String id) {
-        log.debug("회사 조회 (부서 포함): id={}", id);
-        Optional<Company> OCompany = companyRepository.findByIdWithDepartments(id);
-        if (OCompany.isEmpty()) {
-            log.warn("회사 조회 실패 - 존재하지 않는 회사: id={}", id);
-            throw new EntityNotFoundException(ErrorCode.COMPANY_NOT_FOUND);
-        }
-
-        Company company = OCompany.get();
-
-        // 최상위(parent가 null) 부서만 필터링, 각 부서 트리를 재귀로 DTO 변환
-        List<DepartmentServiceDto> departmentDtos = company.getDepartments().stream()
-                .filter(department -> department.getParent() == null && YNType.isN(department.getIsDeleted()))
-                .map(DepartmentServiceDto::fromEntityWithChildren)
-                .toList();
-
-        return CompanyServiceDto.builder()
-                .id(company.getId())
-                .name(company.getName())
-                .desc(company.getDesc())
-                .departments(departmentDtos)
-                .build();
-    }
-
-    public void checkAlreadyCompanyId(String id) {
-        Optional<Company> company = companyRepository.findById(id);
-        if (company.isPresent()) {
-            log.warn("회사 ID 중복: id={}", id);
-            throw new DuplicateException(ErrorCode.COMPANY_ALREADY_EXISTS);
-        }
-    }
-
-    public Company checkCompanyExists(String companyId) {
-        Optional<Company> company = companyRepository.findById(companyId);
-        if ((company.isEmpty()) || YNType.isY(company.get().getIsDeleted())) {
-            log.warn("회사 조회 실패 - 존재하지 않거나 삭제된 회사: id={}", companyId);
-            throw new EntityNotFoundException(ErrorCode.COMPANY_NOT_FOUND);
-        }
-        return company.get();
-    }
+    /**
+     * 회사 존재 여부를 검증하고 회사 엔티티를 반환합니다.
+     *
+     * @param companyId 회사 ID
+     * @return 회사 엔티티
+     * @throws com.lshdainty.porest.common.exception.EntityNotFoundException 회사가 존재하지 않거나 삭제된 경우
+     */
+    Company checkCompanyExists(String companyId);
 }

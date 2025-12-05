@@ -13,6 +13,7 @@ import com.lshdainty.porest.user.service.UserService;
 import com.lshdainty.porest.vacation.domain.*;
 import com.lshdainty.porest.vacation.repository.*;
 import com.lshdainty.porest.vacation.service.VacationService;
+import com.lshdainty.porest.vacation.service.VacationServiceImpl;
 import com.lshdainty.porest.vacation.service.VacationTimeFormatter;
 import com.lshdainty.porest.vacation.service.dto.VacationApprovalServiceDto;
 import com.lshdainty.porest.vacation.service.dto.VacationPolicyServiceDto;
@@ -84,7 +85,7 @@ class VacationServiceTest {
     private VacationTimeFormatter vacationTimeFormatter;
 
     @InjectMocks
-    private VacationService vacationService;
+    private VacationServiceImpl vacationService;
 
     @Nested
     @DisplayName("유저 휴가 내역 조회")

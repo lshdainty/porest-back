@@ -6,6 +6,7 @@ import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.holiday.domain.Holiday;
 import com.lshdainty.porest.holiday.repository.HolidayRepository;
 import com.lshdainty.porest.holiday.service.HolidayService;
+import com.lshdainty.porest.holiday.service.HolidayServiceImpl;
 import com.lshdainty.porest.holiday.service.dto.HolidayServiceDto;
 import com.lshdainty.porest.holiday.type.HolidayType;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +34,7 @@ class HolidayServiceTest {
     private HolidayRepository holidayRepository;
 
     @InjectMocks
-    private HolidayService holidayService;
+    private HolidayServiceImpl holidayService;
 
     @Nested
     @DisplayName("공휴일 등록")

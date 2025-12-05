@@ -7,6 +7,7 @@ import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.notice.domain.Notice;
 import com.lshdainty.porest.notice.repository.NoticeRepository;
 import com.lshdainty.porest.notice.service.NoticeService;
+import com.lshdainty.porest.notice.service.NoticeServiceImpl;
 import com.lshdainty.porest.notice.service.dto.NoticeServiceDto;
 import com.lshdainty.porest.notice.type.NoticeType;
 import com.lshdainty.porest.user.domain.User;
@@ -46,7 +47,7 @@ class NoticeServiceTest {
     private UserService userService;
 
     @InjectMocks
-    private NoticeService noticeService;
+    private NoticeServiceImpl noticeService;
 
     @Nested
     @DisplayName("공지사항 등록")
