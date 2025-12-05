@@ -50,6 +50,7 @@ public class VacationUsageQueryDslRepository implements VacationUsageRepository 
                 .join(vacationUsage.user).fetchJoin()
                 .where(vacationUsage.user.id.eq(userId)
                         .and(vacationUsage.isDeleted.eq(YNType.N)))
+                .orderBy(vacationUsage.startDate.asc())
                 .fetch();
     }
 

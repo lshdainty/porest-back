@@ -45,6 +45,7 @@ public class VacationGrantQueryDslRepository implements VacationGrantRepository 
                 .where(vacationGrant.user.id.eq(userId)
                         .and(vacationGrant.isDeleted.eq(YNType.N))
                         .and(vacationGrant.status.eq(GrantStatus.ACTIVE)))
+                .orderBy(vacationGrant.grantDate.asc())
                 .fetch();
     }
 
