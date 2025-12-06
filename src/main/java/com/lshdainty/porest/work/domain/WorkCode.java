@@ -14,33 +14,34 @@ import lombok.NoArgsConstructor;
 @Table(name = "work_code")
 public class WorkCode extends AuditingFields {
     /**
+     * 업무 코드 아이디<br>
      * 코드 관리용 ID
      */
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "work_code_id")
+    @Column(name = "work_code_id", columnDefinition = "bigint(20) COMMENT '업무 코드 아이디'")
     private Long id;
 
     /**
-     * 코드 값
+     * 업무 코드
      */
-    @Column(name = "work_code")
+    @Column(name = "work_code", nullable = false, length = 50, columnDefinition = "varchar(50) NOT NULL COMMENT '업무 코드'")
     private String code;
 
     /**
-     * 코드명
+     * 업무 코드명
      */
-    @Column(name = "work_code_name")
+    @Column(name = "work_code_name", nullable = false, length = 50, columnDefinition = "varchar(50) NOT NULL COMMENT '업무 코드명'")
     private String name;
 
     /**
-     * 코드타입
+     * 코드 타입
      */
     @Enumerated(EnumType.STRING)
-    @Column(name = "code_type")
+    @Column(name = "code_type", nullable = false, length = 10, columnDefinition = "varchar(10) NOT NULL COMMENT '코드 타입'")
     private CodeType type;
 
     /**
-     * 부모 코드 (자기 참조)
+     * 상위 코드 (자기 참조)
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_code_id")
@@ -49,14 +50,14 @@ public class WorkCode extends AuditingFields {
     /**
      * 정렬 순서
      */
-    @Column(name = "order_seq")
+    @Column(name = "order_seq", columnDefinition = "int(11) COMMENT '정렬 순서'")
     private Integer orderSeq;
 
     /**
      * 삭제 여부
      */
     @Enumerated(EnumType.STRING)
-    @Column(name = "is_deleted")
+    @Column(name = "is_deleted", nullable = false, length = 1, columnDefinition = "varchar(1) DEFAULT 'N' NOT NULL COMMENT '삭제 여부'")
     private YNType isDeleted;
 
     /**

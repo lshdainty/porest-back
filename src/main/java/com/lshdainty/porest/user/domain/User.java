@@ -34,83 +34,83 @@ import java.util.stream.Collectors;
 @Table(name = "users")
 public class User extends AuditingFields {
     /**
-     * 유저 아이디<br>
+     * 사용자 아이디<br>
      * 테이블 관리용 Primary Key
      */
     @Id
-    @Column(name = "user_id")
+    @Column(name = "user_id", length = 20, columnDefinition = "varchar(20) COMMENT '사용자 아이디'")
     private String id;
 
     /**
-     * 유저 비밀번호<br>
+     * 사용자 비밀번호<br>
      * 암호화된 비밀번호 저장
      */
-    @Column(name = "user_pwd")
+    @Column(name = "user_pwd", length = 100, columnDefinition = "varchar(100) COMMENT '사용자 비밀번호'")
     private String pwd;
 
     /**
-     * 유저 이름<br>
+     * 사용자명<br>
      * 사용자의 실명
      */
-    @Column(name = "user_name")
+    @Column(name = "user_name", nullable = false, length = 20, columnDefinition = "varchar(20) NOT NULL COMMENT '사용자명'")
     private String name;
 
     /**
-     * 유저 이메일<br>
+     * 사용자 이메일<br>
      * 사용자의 이메일 주소
      */
-    @Column(name = "user_email")
+    @Column(name = "user_email", nullable = false, length = 100, columnDefinition = "varchar(100) NOT NULL COMMENT '사용자 이메일'")
     private String email;
 
     /**
-     * 유저 생일<br>
+     * 사용자 생일<br>
      * 사용자의 생년월일
      */
-    @Column(name = "user_birth")
+    @Column(name = "user_birth", columnDefinition = "date COMMENT '사용자 생일'")
     private LocalDate birth;
 
     /**
-     * 유연근무제 시간<br>
+     * 사용자 근무시간<br>
      * 사용자의 근무 시간대 (예: "8 ~ 5", "9 ~ 6", "10 ~ 7")
      */
-    @Column(name = "user_work_time")
+    @Column(name = "user_work_time", length = 10, columnDefinition = "varchar(10) COMMENT '사용자 근무시간'")
     private String workTime;
 
     /**
-     * 입사일<br>
+     * 사용자 입사 일자<br>
      * 사용자의 회사 입사 날짜
      */
-    @Column(name = "join_date")
+    @Column(name = "join_date", columnDefinition = "date COMMENT '사용자 입사 일자'")
     private LocalDate joinDate;
 
     /**
-     * 유저 원소속 회사<br>
+     * 사용자 원소속 회사<br>
      * 사용자가 원래 속한 회사 정보
      */
     @Enumerated(EnumType.STRING)
-    @Column(name = "user_origin_company")
+    @Column(name = "user_origin_company", nullable = false, length = 10, columnDefinition = "varchar(10) NOT NULL COMMENT '사용자 원소속 회사'")
     private OriginCompanyType company;
 
     /**
-     * 프로필 이미지 파일명<br>
+     * 프로필 파일명<br>
      * 사용자의 프로필 이미지 원본 파일명
      */
-    @Column(name = "profile_name")
+    @Column(name = "profile_name", length = 50, columnDefinition = "varchar(50) COMMENT '프로필 파일명'")
     private String profileName;
 
     /**
-     * 프로필 이미지 UUID<br>
+     * 프로필 파일 고유 UUID<br>
      * 사용자의 프로필 이미지 고유 식별자
      */
-    @Column(name = "profile_uuid")
+    @Column(name = "profile_uuid", length = 36, columnDefinition = "varchar(36) COMMENT '프로필 파일 고유 UUID'")
     private String profileUUID;
 
     /**
-     * 음력 여부<br>
+     * 생일 음력 여부<br>
      * 생일의 음력/양력 여부
      */
     @Enumerated(EnumType.STRING)
-    @Column(name = "lunar_yn")
+    @Column(name = "lunar_yn", nullable = false, length = 1, columnDefinition = "varchar(1) DEFAULT 'N' NOT NULL COMMENT '생일 음력 여부'")
     private YNType lunarYN;
 
     /**
@@ -118,43 +118,43 @@ public class User extends AuditingFields {
      * 사용자의 국가 정보
      */
     @Enumerated(EnumType.STRING)
-    @Column(name = "country_code")
+    @Column(name = "country_code", nullable = false, length = 2, columnDefinition = "varchar(2) DEFAULT 'KR' NOT NULL COMMENT '국가 코드'")
     private CountryCode countryCode;
 
     /**
-     * 초대 토큰<br>
+     * 회원가입 토큰 UUID<br>
      * 회원가입 초대 시 사용되는 고유 토큰
      */
-    @Column(name = "invitation_token")
+    @Column(name = "invitation_token", length = 36, columnDefinition = "varchar(36) COMMENT '회원가입 토큰 UUID'")
     private String invitationToken;
 
     /**
-     * 초대 상태<br>
+     * 회원가입 상태<br>
      * 초대 진행 상태 (PENDING, ACTIVE 등)
      */
     @Enumerated(EnumType.STRING)
-    @Column(name = "invitation_status")
+    @Column(name = "invitation_status", length = 10, columnDefinition = "varchar(10) COMMENT '회원가입 상태'")
     private StatusType invitationStatus;
 
     /**
-     * 초대 발송 시간<br>
+     * 초대 메일 전송 일시<br>
      * 초대 이메일이 발송된 일시
      */
-    @Column(name = "invitation_sent_at")
+    @Column(name = "invitation_sent_at", columnDefinition = "datetime(6) COMMENT '초대 메일 전송 일시'")
     private LocalDateTime invitationSentAt;
 
     /**
-     * 초대 만료 시간<br>
+     * 초대 메일 만료 일시<br>
      * 초대 토큰이 만료되는 일시
      */
-    @Column(name = "invitation_expires_at")
+    @Column(name = "invitation_expires_at", columnDefinition = "datetime(6) COMMENT '초대 메일 만료 일시'")
     private LocalDateTime invitationExpiresAt;
 
     /**
-     * 실제 회원가입 완료 시간<br>
+     * 회원가입 일시<br>
      * 사용자가 회원가입을 완료한 일시
      */
-    @Column(name = "registered_at")
+    @Column(name = "registered_at", columnDefinition = "datetime(6) COMMENT '회원가입 일시'")
     private LocalDateTime registeredAt;
 
     /**
@@ -162,14 +162,14 @@ public class User extends AuditingFields {
      * Soft delete를 위한 플래그
      */
     @Enumerated(EnumType.STRING)
-    @Column(name = "is_deleted")
+    @Column(name = "is_deleted", nullable = false, length = 1, columnDefinition = "varchar(1) DEFAULT 'N' NOT NULL COMMENT '삭제 여부'")
     private YNType isDeleted;
 
     /**
-     * 대시보드 데이터<br>
+     * 대시보드 레이아웃 정보<br>
      * 사용자 맞춤 대시보드 설정 정보 (JSON 형식)
      */
-    @Column(name = "dashboard", columnDefinition = "json")
+    @Column(name = "dashboard", columnDefinition = "longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin COMMENT '대시보드 레이아웃 정보'")
     private String dashboard;
 
     /**

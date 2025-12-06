@@ -12,34 +12,34 @@ import lombok.NoArgsConstructor;
 @Table(name = "user_provider")
 public class UserProvider extends AuditingFields {
     /**
-     * 제공자 시퀀스<br>
+     * provider 시퀀스<br>
      * 테이블 관리용 seq
      */
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "provider_seq")
+    @Column(name = "provider_seq", columnDefinition = "bigint(20) COMMENT 'provider 시퀀스'")
     private Long seq;
 
     /**
-     * 유저 객체<br>
+     * 사용자 객체<br>
      * 테이블 컬럼은 user_id<br>
      * 어떤 유저의 OAuth 정보인지 알기 위해 사용
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     /**
-     * OAuth 제공자 타입<br>
+     * provider 타입<br>
      * OAuth 제공자 종류 (예: GOOGLE, KAKAO, NAVER 등)
      */
-    @Column(name = "provider_type")
+    @Column(name = "provider_type", nullable = false, length = 10, columnDefinition = "varchar(10) NOT NULL COMMENT 'provider 타입'")
     private String type;
 
     /**
      * OAuth 제공자 사용자 아이디<br>
      * OAuth 제공자에서 발급한 고유 사용자 식별자
      */
-    @Column(name = "provider_user_id")
+    @Column(name = "provider_user_id", length = 100, columnDefinition = "varchar(100) COMMENT 'OAuth 제공자 사용자 아이디'")
     private String id;
 
     // user 추가 연관관계 편의 메소드

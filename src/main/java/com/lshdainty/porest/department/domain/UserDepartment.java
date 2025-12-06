@@ -14,20 +14,20 @@ import lombok.NoArgsConstructor;
 @Table(name = "user_department")
 public class UserDepartment extends AuditingFields {
     /**
-     * 유저 부서 아이디<br>
+     * 사용자-부서 매핑 아이디<br>
      * 테이블 관리용 seq
      */
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_department_id")
+    @Column(name = "user_department_id", columnDefinition = "bigint(20) COMMENT '사용자-부서 매핑 아이디'")
     private Long id;
 
     /**
-     * 유저 객체<br>
+     * 사용자 객체<br>
      * 테이블 컬럼은 user_id<br>
      * 어떤 유저가 부서에 속해 있는지 알기 위해 사용
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     /**
@@ -36,7 +36,7 @@ public class UserDepartment extends AuditingFields {
      * 유저가 속한 부서 정보
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "department_id")
+    @JoinColumn(name = "department_id", nullable = false)
     private Department department;
 
     /**
@@ -44,7 +44,7 @@ public class UserDepartment extends AuditingFields {
      * 유저가 여러 부서에 속할 경우 대표 부서를 구분하기 위한 플래그
      */
     @Enumerated(EnumType.STRING)
-    @Column(name = "main_department_yn")
+    @Column(name = "main_department_yn", nullable = false, length = 1, columnDefinition = "varchar(1) DEFAULT 'N' NOT NULL COMMENT '메인 부서 여부'")
     private YNType mainYN;
 
     /**
@@ -52,7 +52,7 @@ public class UserDepartment extends AuditingFields {
      * Soft delete를 위한 플래그
      */
     @Enumerated(EnumType.STRING)
-    @Column(name = "is_deleted")
+    @Column(name = "is_deleted", nullable = false, length = 1, columnDefinition = "varchar(1) DEFAULT 'N' NOT NULL COMMENT '삭제 여부'")
     private YNType isDeleted;
 
     // user 추가 연관관계 편의 메소드

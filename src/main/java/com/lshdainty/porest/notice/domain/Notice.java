@@ -20,8 +20,8 @@ public class Notice extends AuditingFields {
      * 공지사항 아이디<br>
      * 테이블 관리용 seq
      */
-    @Id @GeneratedValue
-    @Column(name = "notice_id")
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "notice_id", columnDefinition = "bigint(20) COMMENT '공지사항 아이디'")
     private Long id;
 
     /**
@@ -30,14 +30,14 @@ public class Notice extends AuditingFields {
      * 공지사항을 작성한 유저 정보
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "writer_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User writer;
 
     /**
      * 공지사항 제목<br>
      * 공지사항의 제목
      */
-    @Column(name = "notice_title", nullable = false)
+    @Column(name = "notice_title", nullable = false, length = 100, columnDefinition = "varchar(100) NOT NULL COMMENT '공지사항 제목'")
     private String title;
 
     /**
@@ -45,14 +45,14 @@ public class Notice extends AuditingFields {
      * 공지사항의 상세 내용 (Large Object 타입)
      */
     @Lob
-    @Column(name = "notice_content", nullable = false)
+    @Column(name = "notice_content", nullable = false, columnDefinition = "longtext NOT NULL COMMENT '공지사항 내용'")
     private String content;
 
     /**
      * 공지사항 타입<br>
      * 공지사항의 종류를 구분하기 위한 타입
      */
-    @Column(name = "notice_type")
+    @Column(name = "notice_type", nullable = false, length = 15, columnDefinition = "varchar(15) NOT NULL COMMENT '공지사항 타입'")
     @Enumerated(EnumType.STRING)
     private NoticeType type;
 
@@ -60,7 +60,7 @@ public class Notice extends AuditingFields {
      * 상단 고정 여부<br>
      * 공지사항 목록 상단에 고정 표시 여부
      */
-    @Column(name = "is_pinned")
+    @Column(name = "is_pinned", nullable = false, length = 1, columnDefinition = "varchar(1) DEFAULT 'N' NOT NULL COMMENT '상단 고정 여부'")
     @Enumerated(EnumType.STRING)
     private YNType isPinned;
 
@@ -68,28 +68,28 @@ public class Notice extends AuditingFields {
      * 조회수<br>
      * 공지사항이 조회된 횟수
      */
-    @Column(name = "view_count")
+    @Column(name = "view_count", nullable = false, columnDefinition = "bigint(20) DEFAULT 0 NOT NULL COMMENT '조회수'")
     private Long viewCount;
 
     /**
      * 게시 시작일<br>
      * 공지사항이 표시되기 시작하는 날짜
      */
-    @Column(name = "start_date")
+    @Column(name = "start_date", columnDefinition = "date COMMENT '게시 시작일'")
     private LocalDate startDate;
 
     /**
      * 게시 종료일<br>
      * 공지사항이 표시 종료되는 날짜
      */
-    @Column(name = "end_date")
+    @Column(name = "end_date", columnDefinition = "date COMMENT '게시 종료일'")
     private LocalDate endDate;
 
     /**
      * 삭제 여부<br>
      * Soft delete를 위한 플래그
      */
-    @Column(name = "is_deleted")
+    @Column(name = "is_deleted", nullable = false, length = 1, columnDefinition = "varchar(1) DEFAULT 'N' NOT NULL COMMENT '삭제 여부'")
     @Enumerated(EnumType.STRING)
     private YNType isDeleted;
 

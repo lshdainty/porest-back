@@ -19,17 +19,17 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkSystemLog extends AuditingFields {
     /**
-     * 로그 관리용 ID
+     * 시스템 로그 아이디<br>
      */
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "system_log_id")
+    @Column(name = "system_log_id", columnDefinition = "bigint(20) COMMENT '시스템 로그 아이디'")
     private Long id;
 
     /**
      * 시스템 코드
      */
     @Enumerated(EnumType.STRING)
-    @Column(name = "system_code", nullable = false)
+    @Column(name = "system_code", nullable = false, length = 20, columnDefinition = "varchar(20) NOT NULL COMMENT '시스템 코드'")
     private SystemType code;
 
     /**

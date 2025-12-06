@@ -21,21 +21,21 @@ public class Dues extends AuditingFields {
      * 테이블 관리용 seq
      */
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "dues_id")
+    @Column(name = "dues_id", columnDefinition = "bigint(20) COMMENT '회비 아이디'")
     private Long id;
 
     /**
-     * 회비 사용자명<br>
+     * 회원 이름<br>
      * 회비를 납부하거나 사용한 사용자의 이름
      */
-    @Column(name = "dues_user_name")
+    @Column(name = "dues_user_name", length = 20, columnDefinition = "varchar(20) COMMENT '회원 이름'")
     private String userName;
 
     /**
      * 회비 금액<br>
      * 납부 또는 사용된 회비 금액
      */
-    @Column(name = "dues_amount")
+    @Column(name = "dues_amount", nullable = false, columnDefinition = "bigint(20) NOT NULL COMMENT '회비 금액'")
     private Long amount;
 
     /**
@@ -43,29 +43,29 @@ public class Dues extends AuditingFields {
      * 회비의 종류를 구분하기 위한 타입
      */
     @Enumerated(EnumType.STRING)
-    @Column(name = "dues_type")
+    @Column(name = "dues_type", nullable = false, length = 15, columnDefinition = "varchar(15) NOT NULL COMMENT '회비 타입'")
     private DuesType type;
 
     /**
-     * 회비 계산 타입<br>
+     * 회비 계산 연산자<br>
      * 회비 금액 계산 방식을 구분하기 위한 타입
      */
     @Enumerated(EnumType.STRING)
-    @Column(name = "dues_calc")
+    @Column(name = "dues_calc", nullable = false, length = 10, columnDefinition = "varchar(10) NOT NULL COMMENT '회비 계산 연산자'")
     private DuesCalcType calc;
 
     /**
      * 회비 날짜<br>
      * 회비 납부 또는 사용 날짜
      */
-    @Column(name = "dues_date")
+    @Column(name = "dues_date", nullable = false, columnDefinition = "date NOT NULL COMMENT '회비 날짜'")
     private LocalDate date;
 
     /**
-     * 회비 상세 내용<br>
+     * 회비 설명<br>
      * 회비 사용 내역에 대한 상세 설명
      */
-    @Column(name = "dues_detail")
+    @Column(name = "dues_detail", length = 1000, columnDefinition = "varchar(1000) COMMENT '회비 설명'")
     private String detail;
 
     /**

@@ -26,16 +26,16 @@ public class VacationGrant extends AuditingFields {
      * 테이블 관리용 seq
      */
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "vacation_grant_id")
+    @Column(name = "vacation_grant_id", columnDefinition = "bigint(20) COMMENT '휴가 부여 아이디'")
     private Long id;
 
     /**
-     * 유저 객체<br>
+     * 사용자 객체<br>
      * 테이블 컬럼은 user_id<br>
      * 어떤 유저에게 부여했는지 알기 위해 사용
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     @Setter
     private User user;
 
@@ -45,14 +45,14 @@ public class VacationGrant extends AuditingFields {
      * 어떤 휴가 정책에 의해 부여 받았는지 알기 위해 사용
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "vacation_policy_id")
+    @JoinColumn(name = "vacation_policy_id", nullable = false)
     private VacationPolicy policy;
 
     /**
-     * 휴가 부여 사유 설명<br>
+     * 휴가 부여 사유<br>
      * 휴가 부여 사유를 작성, 관리하는 컬럼
      */
-    @Column(name = "vacation_grant_desc")
+    @Column(name = "vacation_grant_desc", length = 1000, columnDefinition = "varchar(1000) COMMENT '휴가 부여 사유'")
     private String desc;
 
     /**
@@ -60,24 +60,24 @@ public class VacationGrant extends AuditingFields {
      * 휴가 타입으로 그룹핑하여 휴가 사용일수 관리함
      */
     @Enumerated(EnumType.STRING)
-    @Column(name = "vacation_type")
+    @Column(name = "vacation_type", nullable = false, length = 15, columnDefinition = "varchar(15) NOT NULL COMMENT '휴가 타입'")
     private VacationType type;
 
     /**
-     * 휴가 사용 가능기간 시작 일자<br>
+     * 휴가 사용 가능시간 시작 일시<br>
      * 사용자가 휴가 정책을 통해 휴가를 부여받아
      * 사용할 수 있는 기간의 시작 일자를 의미<br>
      * 시스템에서 추가하는 createAt하고 grantDate는 다름
      */
-    @Column(name = "grant_date")
+    @Column(name = "grant_date", columnDefinition = "datetime(6) COMMENT '휴가 사용 가능시간 시작 일시'")
     private LocalDateTime grantDate;
 
     /**
-     * 휴가 사용 가능기간 만료 일자<br>
+     * 휴가 사용 가능시간 종료 일시<br>
      * 사용자가 휴가 정책을 통해 휴가를 부여받아
      * 사용할 수 있는 기간의 만료 일자를 의미
      */
-    @Column(name = "expiry_date")
+    @Column(name = "expiry_date", columnDefinition = "datetime(6) COMMENT '휴가 사용 가능시간 종료 일시'")
     private LocalDateTime expiryDate;
 
     /**
@@ -85,7 +85,7 @@ public class VacationGrant extends AuditingFields {
      * 휴가 정책에 따른 휴가 부여 내역<br>
      * (grantTime만 있다면 휴가 부여 내역으로 간주)
      */
-    @Column(name = "grant_time", precision = 7, scale = 4)
+    @Column(name = "grant_time", precision = 7, scale = 4, columnDefinition = "decimal(7,4) COMMENT '휴가 부여 시간'")
     private BigDecimal grantTime;
 
     /**
@@ -93,7 +93,7 @@ public class VacationGrant extends AuditingFields {
      * 사용자가 부여받은 휴가 중에서 만료 기간이 짧은 것을 기준으로<br>
      * 부여받은 시간에서 사용한 시간만큼 차감하여 남아있는 시간을 기록
      */
-    @Column(name = "remain_time", precision = 7, scale = 4)
+    @Column(name = "remain_time", precision = 7, scale = 4, columnDefinition = "decimal(7,4) COMMENT '휴가 잔여 시간'")
     private BigDecimal remainTime;
 
     /**
@@ -103,40 +103,40 @@ public class VacationGrant extends AuditingFields {
      * 완전히 잘못된 데이터의 경우만 is_deleted로 소프트 삭제 처리함
      */
     @Enumerated(EnumType.STRING)
-    @Column(name = "grant_status")
+    @Column(name = "grant_status", nullable = false, length = 15, columnDefinition = "varchar(15) NOT NULL COMMENT '휴가 부여 상태'")
     private GrantStatus status;
 
     /**
-     * 신청 시작 일시<br>
+     * 요청 대상 일자 시작 일시<br>
      * 사용자가 신청시 부여 타입으로 휴가를 신청할 때 시작 일시<br>
      * - OT: OT 시작 시간 (예: 2025-09-14 18:00)<br>
      * - 결혼/출산: 해당 일자 (예: 2025-09-14 00:00)<br>
      * 모든 신청 타입에서 필수로 사용됨
      */
-    @Column(name = "request_start_time")
+    @Column(name = "request_start_time", columnDefinition = "datetime(6) COMMENT '요청 대상 일자 시작 일시'")
     private LocalDateTime requestStartTime;
 
     /**
-     * 신청 종료 일시<br>
+     * 요청 대상 일자 종료 일시<br>
      * OT일 경우에만 값이 들어간다.<br>
      * OT 종료 시간 (예: 2025-09-14 19:00)<br>
      * 결혼/출산 등 OT가 아닌 경우는 null
      */
-    @Column(name = "request_end_time")
+    @Column(name = "request_end_time", columnDefinition = "datetime(6) COMMENT '요청 대상 일자 종료 일시'")
     private LocalDateTime requestEndTime;
 
     /**
-     * 휴가 신청 사유<br>
+     * 요청 사유<br>
      * 신청 시 추가 타입으로 휴가를 신청할 때 휴가 신청 사유를 작성하는데 해당 컬럼에 값이 들어감
      */
-    @Column(name = "request_desc")
+    @Column(name = "request_desc", length = 1000, columnDefinition = "varchar(1000) COMMENT '요청 사유'")
     private String requestDesc;
 
     /**
      * 삭제 여부
      */
     @Enumerated(EnumType.STRING)
-    @Column(name = "is_deleted")
+    @Column(name = "is_deleted", nullable = false, length = 1, columnDefinition = "varchar(1) DEFAULT 'N' NOT NULL COMMENT '삭제 여부'")
     private YNType isDeleted;
 
     @BatchSize(size = 100)

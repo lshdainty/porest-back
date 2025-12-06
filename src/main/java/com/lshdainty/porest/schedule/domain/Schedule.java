@@ -23,23 +23,23 @@ public class Schedule extends AuditingFields {
      * 테이블 관리용 seq
      */
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "schedule_id")
+    @Column(name = "schedule_id", columnDefinition = "bigint(20) COMMENT '스케줄 아이디'")
     private Long id;
 
     /**
-     * 유저 객체<br>
+     * 사용자 객체<br>
      * 테이블 컬럼은 user_id<br>
      * 어떤 유저의 스케줄인지 알기 위해 사용
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     /**
      * 스케줄 타입<br>
      * 스케줄의 종류를 구분하기 위한 타입
      */
-    @Column(name = "schedule_type")
+    @Column(name = "schedule_type", nullable = false, length = 15, columnDefinition = "varchar(15) NOT NULL COMMENT '스케줄 타입'")
     @Enumerated(EnumType.STRING)
     private ScheduleType type;
 
@@ -47,28 +47,28 @@ public class Schedule extends AuditingFields {
      * 스케줄 설명<br>
      * 스케줄에 대한 상세 내용 및 설명
      */
-    @Column(name = "schedule_desc")
+    @Column(name = "schedule_desc", length = 1000, columnDefinition = "varchar(1000) COMMENT '스케줄 설명'")
     private String desc;
 
     /**
-     * 스케줄 시작 일시<br>
+     * 시작 일자<br>
      * 스케줄이 시작되는 날짜와 시간
      */
-    @Column(name = "start_date")
+    @Column(name = "start_date", columnDefinition = "datetime(6) COMMENT '시작 일자'")
     private LocalDateTime startDate;
 
     /**
-     * 스케줄 종료 일시<br>
+     * 종료 일자<br>
      * 스케줄이 종료되는 날짜와 시간
      */
-    @Column(name = "end_date")
+    @Column(name = "end_date", columnDefinition = "datetime(6) COMMENT '종료 일자'")
     private LocalDateTime endDate;
 
     /**
      * 삭제 여부<br>
      * Soft delete를 위한 플래그
      */
-    @Column(name = "is_deleted")
+    @Column(name = "is_deleted", nullable = false, length = 1, columnDefinition = "varchar(1) DEFAULT 'N' NOT NULL COMMENT '삭제 여부'")
     @Enumerated(EnumType.STRING)
     private YNType isDeleted;
 

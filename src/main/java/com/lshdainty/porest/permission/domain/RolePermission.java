@@ -17,13 +17,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "role_permissions")
 public class RolePermission extends AuditingFields {
-
     /**
-     * 역할-권한 매핑 ID<br>
+     * 역할-권한 매핑 아이디<br>
      * 테이블 관리용 seq
      */
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "role_permission_id")
+    @Column(name = "role_permission_id", columnDefinition = "bigint(20) COMMENT '역할-권한 매핑 아이디'")
     private Long id;
 
     /**
@@ -31,7 +30,7 @@ public class RolePermission extends AuditingFields {
      * 어떤 역할에 권한이 부여되었는지
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "role_id")
+    @JoinColumn(name = "role_id", nullable = false)
     private Role role;
 
     /**
@@ -39,7 +38,7 @@ public class RolePermission extends AuditingFields {
      * 어떤 권한이 부여되었는지
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "permission_id")
+    @JoinColumn(name = "permission_id", nullable = false)
     private Permission permission;
 
     /**
@@ -47,7 +46,7 @@ public class RolePermission extends AuditingFields {
      * Soft delete를 위한 플래그
      */
     @Enumerated(EnumType.STRING)
-    @Column(name = "is_deleted")
+    @Column(name = "is_deleted", nullable = false, length = 1, columnDefinition = "varchar(1) DEFAULT 'N' NOT NULL COMMENT '삭제 여부'")
     private YNType isDeleted;
 
     /**

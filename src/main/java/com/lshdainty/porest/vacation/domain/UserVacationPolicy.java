@@ -15,19 +15,19 @@ import java.time.LocalDateTime;
 @Table(name = "user_vacation_policy")
 public class UserVacationPolicy extends AuditingFields {
     /**
-     * 유저 휴가 정책 관리 아이디<br>
+     * 사용자-휴가 정책 매핑 아이디<br>
      * 테이블 관리용 seq
      */
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_vacation_policy_id")
+    @Column(name = "user_vacation_policy_id", columnDefinition = "bigint(20) COMMENT '사용자-휴가 정책 매핑 아이디'")
     private Long id;
 
     /**
-     * 유저 객체<br>
+     * 사용자 객체<br>
      * 테이블 컬럼은 user_id
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     @Setter
     private User user;
 
@@ -36,31 +36,31 @@ public class UserVacationPolicy extends AuditingFields {
      * 테이블 컬럼은 vacation_policy_id
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "vacation_policy_id")
+    @JoinColumn(name = "vacation_policy_id", nullable = false)
     @Setter
     private VacationPolicy vacationPolicy;
 
     /**
-     * 마지막 휴가 부여 시간<br>
+     * 마지막 휴가 부여 일시<br>
      * policy_type이 repeat(반복)인 경우 스케줄러 실행으로<br>
      * 휴가를 부여하는데 중복 부여 방지를 위한 컬럼
      */
-    @Column(name = "last_granted_at")
+    @Column(name = "last_granted_at", columnDefinition = "datetime(6) COMMENT '마지막 휴가 부여 일시'")
     private LocalDateTime lastGrantedAt;
 
     /**
-     * 다음 휴가 부여 예정 일자<br>
+     * 다음 휴가 부여 일자<br>
      * 스케줄러 조회 최적화용 컬럼<br>
      * (인덱스 추가 예정)
      */
-    @Column(name = "next_grant_date")
+    @Column(name = "next_grant_date", columnDefinition = "date COMMENT '다음 휴가 부여 일자'")
     private LocalDate nextGrantDate;
 
     /**
      * 삭제 여부
      */
     @Enumerated(EnumType.STRING)
-    @Column(name = "is_deleted")
+    @Column(name = "is_deleted", nullable = false, length = 1, columnDefinition = "varchar(1) DEFAULT 'N' NOT NULL COMMENT '삭제 여부'")
     private YNType isDeleted;
 
     // user 추가 연관관계 편의 메소드

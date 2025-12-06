@@ -20,60 +20,60 @@ public class WorkHistory extends AuditingFields {
      * 이력 관리용 ID
      */
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "work_history_id")
+    @Column(name = "work_history_id", columnDefinition = "bigint(20) COMMENT '업무 이력 아이디'")
     private Long id;
 
     /**
      * 업무 날짜
      */
-    @Column(name = "work_date")
+    @Column(name = "work_date", nullable = false, columnDefinition = "date NOT NULL COMMENT '업무 날짜'")
     private LocalDate date;
 
     /**
      * 근무자
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     /**
      * 업무 그룹
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "work_group")
+    @JoinColumn(name = "work_group", nullable = false)
     private WorkCode group;
 
     /**
      * 업무 파트
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "work_part")
+    @JoinColumn(name = "work_part", nullable = false)
     private WorkCode part;
 
     /**
      * 업무 분류
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "work_division")
+    @JoinColumn(name = "work_division", nullable = false)
     private WorkCode division;
 
     /**
      * 업무 시간
      */
-    @Column(name = "work_hour")
+    @Column(name = "work_hour", nullable = false, precision = 7, scale = 4, columnDefinition = "decimal(7,4) NOT NULL COMMENT '업무 시간'")
     private BigDecimal hours;
 
     /**
      * 업무 내용
      */
-    @Column(name = "work_content")
+    @Column(name = "work_content", length = 1000, columnDefinition = "varchar(1000) COMMENT '업무 내용'")
     private String content;
 
     /**
      * 삭제 여부
      */
     @Enumerated(EnumType.STRING)
-    @Column(name = "is_deleted")
+    @Column(name = "is_deleted", nullable = false, length = 1, columnDefinition = "varchar(1) DEFAULT 'N' NOT NULL COMMENT '삭제 여부'")
     private YNType isDeleted;
 
     /**
