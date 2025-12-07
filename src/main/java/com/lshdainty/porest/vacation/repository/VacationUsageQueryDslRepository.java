@@ -55,6 +55,21 @@ public class VacationUsageQueryDslRepository implements VacationUsageRepository 
     }
 
     @Override
+    public List<VacationUsage> findByUserIdAndYear(String userId, int year) {
+        LocalDateTime startOfYear = LocalDateTime.of(year, 1, 1, 0, 0, 0);
+        LocalDateTime endOfYear = LocalDateTime.of(year, 12, 31, 23, 59, 59);
+
+        return query
+                .selectFrom(vacationUsage)
+                .join(vacationUsage.user).fetchJoin()
+                .where(vacationUsage.user.id.eq(userId)
+                        .and(vacationUsage.isDeleted.eq(YNType.N))
+                        .and(vacationUsage.startDate.between(startOfYear, endOfYear)))
+                .orderBy(vacationUsage.startDate.asc())
+                .fetch();
+    }
+
+    @Override
     public List<VacationUsage> findAllWithUser() {
         return query
                 .selectFrom(vacationUsage)

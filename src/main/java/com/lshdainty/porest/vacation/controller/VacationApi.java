@@ -62,7 +62,9 @@ public interface VacationApi {
     @GetMapping("/api/v1/users/{userId}/vacations")
     ApiResponse getUserVacationHistory(
             @Parameter(description = "사용자 ID", example = "user123", required = true)
-            @PathVariable("userId") String userId
+            @PathVariable("userId") String userId,
+            @Parameter(description = "조회할 연도", example = "2024", required = true)
+            @RequestParam("year") Integer year
     );
 
     @Operation(

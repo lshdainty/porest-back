@@ -51,6 +51,25 @@ public class VacationUsageJpaRepository implements VacationUsageRepository {
     }
 
     @Override
+    public List<VacationUsage> findByUserIdAndYear(String userId, int year) {
+        LocalDateTime startOfYear = LocalDateTime.of(year, 1, 1, 0, 0, 0);
+        LocalDateTime endOfYear = LocalDateTime.of(year, 12, 31, 23, 59, 59);
+
+        return em.createQuery(
+                        "select vu from VacationUsage vu " +
+                                "join fetch vu.user " +
+                                "where vu.user.id = :userId " +
+                                "and vu.isDeleted = :isDeleted " +
+                                "and vu.startDate between :startOfYear and :endOfYear " +
+                                "order by vu.startDate asc", VacationUsage.class)
+                .setParameter("userId", userId)
+                .setParameter("isDeleted", YNType.N)
+                .setParameter("startOfYear", startOfYear)
+                .setParameter("endOfYear", endOfYear)
+                .getResultList();
+    }
+
+    @Override
     public List<VacationUsage> findAllWithUser() {
         return em.createQuery(
                         "select vu from VacationUsage vu " +

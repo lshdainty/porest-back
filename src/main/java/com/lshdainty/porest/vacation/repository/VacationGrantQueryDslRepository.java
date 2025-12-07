@@ -50,6 +50,24 @@ public class VacationGrantQueryDslRepository implements VacationGrantRepository 
     }
 
     @Override
+    public List<VacationGrant> findByUserIdAndYear(String userId, int year) {
+        LocalDateTime startOfYear = LocalDateTime.of(year, 1, 1, 0, 0, 0);
+        LocalDateTime endOfYear = LocalDateTime.of(year, 12, 31, 23, 59, 59);
+
+        return query
+                .selectFrom(vacationGrant)
+                .join(vacationGrant.user).fetchJoin()
+                .join(vacationGrant.policy).fetchJoin()
+                .where(vacationGrant.user.id.eq(userId)
+                        .and(vacationGrant.isDeleted.eq(YNType.N))
+                        .and(vacationGrant.status.in(GrantStatus.ACTIVE, GrantStatus.EXHAUSTED, GrantStatus.EXPIRED))
+                        .and(vacationGrant.grantDate.loe(endOfYear))
+                        .and(vacationGrant.expiryDate.goe(startOfYear)))
+                .orderBy(vacationGrant.grantDate.asc())
+                .fetch();
+    }
+
+    @Override
     public List<VacationGrant> findByPolicyId(Long policyId) {
         return query
                 .selectFrom(vacationGrant)

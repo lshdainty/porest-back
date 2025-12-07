@@ -50,8 +50,8 @@ public class VacationApiController implements VacationApi {
 
     @Override
     @PreAuthorize("hasAuthority('VACATION_READ')")
-    public ApiResponse getUserVacationHistory(String userId) {
-        VacationServiceDto vacationInfo = vacationService.getUserVacationHistory(userId);
+    public ApiResponse getUserVacationHistory(String userId, Integer year) {
+        VacationServiceDto vacationInfo = vacationService.getUserVacationHistory(userId, year);
 
         // VacationGrant 정보 변환
         List<VacationApiDto.GetUserVacationHistoryResp.VacationGrantInfo> grantInfos = vacationInfo.getGrants().stream()

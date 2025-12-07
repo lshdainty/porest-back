@@ -30,9 +30,10 @@ public interface VacationService {
      * 유저의 휴가 부여 및 사용 내역 조회
      *
      * @param userId 유저 아이디
+     * @param year 조회할 년도
      * @return 부여받은 내역(VacationGrant)과 사용한 내역(VacationUsage)
      */
-    VacationServiceDto getUserVacationHistory(String userId);
+    VacationServiceDto getUserVacationHistory(String userId, int year);
 
     /**
      * 모든 유저의 휴가 부여 및 사용 내역 조회

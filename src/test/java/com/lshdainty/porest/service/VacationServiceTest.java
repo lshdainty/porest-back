@@ -95,17 +95,18 @@ class VacationServiceTest {
         void getUserVacationHistorySuccess() {
             // given
             String userId = "user1";
+            int year = 2024;
             User user = createTestUser(userId);
 
             VacationGrant grant = createTestGrant(user);
             VacationUsage usage = createTestUsage(user);
 
             given(userService.checkUserExist(userId)).willReturn(user);
-            given(vacationGrantRepository.findByUserId(userId)).willReturn(List.of(grant));
-            given(vacationUsageRepository.findByUserId(userId)).willReturn(List.of(usage));
+            given(vacationGrantRepository.findByUserIdAndYear(userId, year)).willReturn(List.of(grant));
+            given(vacationUsageRepository.findByUserIdAndYear(userId, year)).willReturn(List.of(usage));
 
             // when
-            VacationServiceDto result = vacationService.getUserVacationHistory(userId);
+            VacationServiceDto result = vacationService.getUserVacationHistory(userId, year);
 
             // then
             assertThat(result.getGrants()).hasSize(1);
@@ -118,14 +119,15 @@ class VacationServiceTest {
         void getUserVacationHistoryEmpty() {
             // given
             String userId = "user1";
+            int year = 2024;
             User user = createTestUser(userId);
 
             given(userService.checkUserExist(userId)).willReturn(user);
-            given(vacationGrantRepository.findByUserId(userId)).willReturn(List.of());
-            given(vacationUsageRepository.findByUserId(userId)).willReturn(List.of());
+            given(vacationGrantRepository.findByUserIdAndYear(userId, year)).willReturn(List.of());
+            given(vacationUsageRepository.findByUserIdAndYear(userId, year)).willReturn(List.of());
 
             // when
-            VacationServiceDto result = vacationService.getUserVacationHistory(userId);
+            VacationServiceDto result = vacationService.getUserVacationHistory(userId, year);
 
             // then
             assertThat(result.getGrants()).isEmpty();

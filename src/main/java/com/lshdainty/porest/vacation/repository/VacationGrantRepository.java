@@ -25,6 +25,16 @@ public interface VacationGrantRepository {
     List<VacationGrant> findByUserId(String userId);
 
     /**
+     * 유저 ID와 년도로 VacationGrant 조회
+     * - grantDate 또는 expiryDate가 해당 년도에 포함되는 VacationGrant 조회
+     *
+     * @param userId 유저 ID
+     * @param year 년도
+     * @return 해당 년도의 VacationGrant 리스트
+     */
+    List<VacationGrant> findByUserIdAndYear(String userId, int year);
+
+    /**
      * 휴가 정책 ID로 VacationGrant 조회
      */
     List<VacationGrant> findByPolicyId(Long policyId);

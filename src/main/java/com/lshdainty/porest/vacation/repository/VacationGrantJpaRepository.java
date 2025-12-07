@@ -48,6 +48,29 @@ public class VacationGrantJpaRepository implements VacationGrantRepository {
     }
 
     @Override
+    public List<VacationGrant> findByUserIdAndYear(String userId, int year) {
+        LocalDateTime startOfYear = LocalDateTime.of(year, 1, 1, 0, 0, 0);
+        LocalDateTime endOfYear = LocalDateTime.of(year, 12, 31, 23, 59, 59);
+
+        return em.createQuery(
+                        "select vg from VacationGrant vg " +
+                                "join fetch vg.user " +
+                                "join fetch vg.policy " +
+                                "where vg.user.id = :userId " +
+                                "and vg.isDeleted = :isDeleted " +
+                                "and vg.status in :statuses " +
+                                "and vg.grantDate <= :endOfYear " +
+                                "and vg.expiryDate >= :startOfYear " +
+                                "order by vg.grantDate asc", VacationGrant.class)
+                .setParameter("userId", userId)
+                .setParameter("isDeleted", YNType.N)
+                .setParameter("statuses", List.of(GrantStatus.ACTIVE, GrantStatus.EXHAUSTED, GrantStatus.EXPIRED))
+                .setParameter("startOfYear", startOfYear)
+                .setParameter("endOfYear", endOfYear)
+                .getResultList();
+    }
+
+    @Override
     public List<VacationGrant> findByPolicyId(Long policyId) {
         return em.createQuery(
                         "select vg from VacationGrant vg " +

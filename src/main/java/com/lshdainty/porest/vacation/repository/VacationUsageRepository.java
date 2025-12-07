@@ -28,6 +28,16 @@ public interface VacationUsageRepository {
     List<VacationUsage> findByUserId(String userId);
 
     /**
+     * 유저 ID와 년도로 VacationUsage 조회
+     * - startDate가 해당 년도에 포함되는 VacationUsage 조회
+     *
+     * @param userId 유저 ID
+     * @param year 년도
+     * @return 해당 년도의 VacationUsage 리스트
+     */
+    List<VacationUsage> findByUserIdAndYear(String userId, int year);
+
+    /**
      * 모든 VacationUsage 조회 (User 정보 포함)
      * 모든 유저의 휴가 사용 내역을 조회
      *

@@ -174,16 +174,16 @@ public class VacationServiceImpl implements VacationService {
     }
 
     @Override
-    public VacationServiceDto getUserVacationHistory(String userId) {
-        log.debug("유저 휴가 내역 조회: userId={}", userId);
+    public VacationServiceDto getUserVacationHistory(String userId, int year) {
+        log.debug("유저 휴가 내역 조회: userId={}, year={}", userId, year);
         // 유저 존재 확인
         userService.checkUserExist(userId);
 
-        // 부여받은 내역 조회
-        List<VacationGrant> grants = vacationGrantRepository.findByUserId(userId);
+        // 부여받은 내역 조회 (년도 필터링)
+        List<VacationGrant> grants = vacationGrantRepository.findByUserIdAndYear(userId, year);
 
-        // 사용한 내역 조회
-        List<VacationUsage> usages = vacationUsageRepository.findByUserId(userId);
+        // 사용한 내역 조회 (년도 필터링)
+        List<VacationUsage> usages = vacationUsageRepository.findByUserIdAndYear(userId, year);
 
         return VacationServiceDto.builder()
                 .grants(grants)
