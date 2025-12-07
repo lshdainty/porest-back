@@ -253,10 +253,11 @@ public interface VacationService {
      * - getUserRequestedVacations와 동일한 응답 형식
      *
      * @param approverId 승인자 ID
+     * @param year 조회할 년도
      * @param status 휴가 부여 상태 필터 (Optional)
      * @return 승인자에게 할당된 휴가 신청 내역 리스트
      */
-    List<VacationServiceDto> getAllVacationsByApprover(String approverId, GrantStatus status);
+    List<VacationServiceDto> getAllVacationsByApprover(String approverId, Integer year, GrantStatus status);
 
     /**
      * 사용자 ID로 ON_REQUEST 방식의 모든 휴가 신청 내역 조회 (모든 상태 포함)
@@ -264,17 +265,19 @@ public interface VacationService {
      * - 신청일시 최신순으로 반환
      *
      * @param userId 사용자 ID
+     * @param year 조회할 년도
      * @return ON_REQUEST 방식의 모든 휴가 신청 내역
      */
-    List<VacationServiceDto> getAllRequestedVacationsByUserId(String userId);
+    List<VacationServiceDto> getAllRequestedVacationsByUserId(String userId, Integer year);
 
     /**
      * 사용자 ID로 ON_REQUEST 방식의 휴가 신청 통계 조회
      *
      * @param userId 사용자 ID
+     * @param year 조회할 년도
      * @return 휴가 신청 통계 정보
      */
-    VacationServiceDto getRequestedVacationStatsByUserId(String userId);
+    VacationServiceDto getRequestedVacationStatsByUserId(String userId, Integer year);
 
     /**
      * 유저의 휴가 정책 할당 상태 조회

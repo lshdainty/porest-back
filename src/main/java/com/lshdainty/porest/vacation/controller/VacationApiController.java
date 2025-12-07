@@ -549,8 +549,8 @@ public class VacationApiController implements VacationApi {
 
     @Override
     @PreAuthorize("hasAuthority('VACATION_APPROVE')")
-    public ApiResponse getAllVacationsByApprover(String approverId, GrantStatus status) {
-        List<VacationServiceDto> vacations = vacationService.getAllVacationsByApprover(approverId, status);
+    public ApiResponse getAllVacationsByApprover(String approverId, Integer year, GrantStatus status) {
+        List<VacationServiceDto> vacations = vacationService.getAllVacationsByApprover(approverId, year, status);
 
         List<VacationApiDto.GetUserRequestedVacationsResp> resp = vacations.stream()
                 .map(v -> {
@@ -604,8 +604,8 @@ public class VacationApiController implements VacationApi {
 
     @Override
     @PreAuthorize("hasAuthority('VACATION_READ')")
-    public ApiResponse getUserRequestedVacations(String userId) {
-        List<VacationServiceDto> requestedVacations = vacationService.getAllRequestedVacationsByUserId(userId);
+    public ApiResponse getUserRequestedVacations(String userId, Integer year) {
+        List<VacationServiceDto> requestedVacations = vacationService.getAllRequestedVacationsByUserId(userId, year);
 
         List<VacationApiDto.GetUserRequestedVacationsResp> resp = requestedVacations.stream()
                 .map(v -> {
@@ -659,8 +659,8 @@ public class VacationApiController implements VacationApi {
 
     @Override
     @PreAuthorize("hasAuthority('VACATION_READ')")
-    public ApiResponse getUserRequestedVacationStats(String userId) {
-        VacationServiceDto stats = vacationService.getRequestedVacationStatsByUserId(userId);
+    public ApiResponse getUserRequestedVacationStats(String userId, Integer year) {
+        VacationServiceDto stats = vacationService.getRequestedVacationStatsByUserId(userId, year);
 
         return ApiResponse.success(new VacationApiDto.GetUserRequestedVacationStatsResp(
                 stats.getTotalRequestCount(),

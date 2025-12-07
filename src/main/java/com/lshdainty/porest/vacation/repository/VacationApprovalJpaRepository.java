@@ -49,6 +49,19 @@ public class VacationApprovalJpaRepository implements VacationApprovalRepository
     }
 
     @Override
+    public List<Long> findAllVacationGrantIdsByApproverIdAndYear(String approverId, Integer year) {
+        return em.createQuery(
+                        "select distinct va.vacationGrant.id from VacationApproval va " +
+                                "where va.approver.id = :approverId " +
+                                "and va.isDeleted = :isDeleted " +
+                                "and function('year', va.vacationGrant.createDate) = :year", Long.class)
+                .setParameter("approverId", approverId)
+                .setParameter("isDeleted", YNType.N)
+                .setParameter("year", year)
+                .getResultList();
+    }
+
+    @Override
     public Optional<VacationApproval> findById(Long id) {
         List<VacationApproval> result = em.createQuery(
                         "select va from VacationApproval va " +

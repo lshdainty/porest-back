@@ -655,6 +655,8 @@ public interface VacationApi {
     ApiResponse getAllVacationsByApprover(
             @Parameter(description = "승인자 ID", example = "admin123", required = true)
             @PathVariable("approverId") String approverId,
+            @Parameter(description = "조회할 연도", example = "2024", required = true)
+            @RequestParam("year") Integer year,
             @Parameter(description = "부여 상태 필터", example = "PENDING")
             @RequestParam(value = "status", required = false) GrantStatus status
     );
@@ -676,7 +678,9 @@ public interface VacationApi {
     @GetMapping("/api/v1/users/{userId}/vacation-requests")
     ApiResponse getUserRequestedVacations(
             @Parameter(description = "사용자 ID", example = "user123", required = true)
-            @PathVariable("userId") String userId
+            @PathVariable("userId") String userId,
+            @Parameter(description = "조회할 연도", example = "2024", required = true)
+            @RequestParam("year") Integer year
     );
 
     @Operation(
@@ -697,7 +701,9 @@ public interface VacationApi {
     @GetMapping("/api/v1/users/{userId}/vacation-requests/stats")
     ApiResponse getUserRequestedVacationStats(
             @Parameter(description = "사용자 ID", example = "user123", required = true)
-            @PathVariable("userId") String userId
+            @PathVariable("userId") String userId,
+            @Parameter(description = "조회할 연도", example = "2024", required = true)
+            @RequestParam("year") Integer year
     );
 
     @Operation(

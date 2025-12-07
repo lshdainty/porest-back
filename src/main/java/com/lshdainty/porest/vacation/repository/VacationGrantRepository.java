@@ -123,6 +123,18 @@ public interface VacationGrantRepository {
     List<VacationGrant> findAllRequestedVacationsByUserId(String userId);
 
     /**
+     * 사용자 ID와 년도로 ON_REQUEST 방식의 모든 VacationGrant 조회 (모든 상태 포함)
+     * - createDate가 해당 년도에 해당하는 것만 조회
+     * - 승인대기, 활성, 소진, 만료, 회수, 거부 등 모든 상태 포함
+     * - 신청일시 최신순으로 정렬
+     *
+     * @param userId 사용자 ID
+     * @param year 조회할 년도
+     * @return ON_REQUEST 방식의 모든 VacationGrant 리스트
+     */
+    List<VacationGrant> findAllRequestedVacationsByUserIdAndYear(String userId, Integer year);
+
+    /**
      * VacationGrant ID 리스트로 VacationGrant 조회
      * - User, Policy와 fetch join
      * - 신청일시 최신순으로 정렬

@@ -2,6 +2,7 @@ package com.lshdainty.porest.vacation.repository;
 
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.vacation.domain.VacationGrant;
+import com.lshdainty.porest.vacation.type.GrantMethod;
 import com.lshdainty.porest.vacation.type.GrantStatus;
 import com.lshdainty.porest.vacation.type.VacationType;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -181,7 +182,21 @@ public class VacationGrantQueryDslRepository implements VacationGrantRepository 
                 .join(vacationGrant.policy).fetchJoin()
                 .where(vacationGrant.user.id.eq(userId)
                         .and(vacationGrant.isDeleted.eq(YNType.N))
-                        .and(vacationGrant.policy.grantMethod.eq(com.lshdainty.porest.vacation.type.GrantMethod.ON_REQUEST)))
+                        .and(vacationGrant.policy.grantMethod.eq(GrantMethod.ON_REQUEST)))
+                .orderBy(vacationGrant.requestStartTime.desc())
+                .fetch();
+    }
+
+    @Override
+    public List<VacationGrant> findAllRequestedVacationsByUserIdAndYear(String userId, Integer year) {
+        return query
+                .selectFrom(vacationGrant)
+                .join(vacationGrant.user).fetchJoin()
+                .join(vacationGrant.policy).fetchJoin()
+                .where(vacationGrant.user.id.eq(userId)
+                        .and(vacationGrant.isDeleted.eq(YNType.N))
+                        .and(vacationGrant.policy.grantMethod.eq(com.lshdainty.porest.vacation.type.GrantMethod.ON_REQUEST))
+                        .and(vacationGrant.createDate.year().eq(year)))
                 .orderBy(vacationGrant.requestStartTime.desc())
                 .fetch();
     }

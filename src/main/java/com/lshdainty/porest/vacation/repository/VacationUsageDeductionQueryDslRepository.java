@@ -1,5 +1,6 @@
 package com.lshdainty.porest.vacation.repository;
 
+import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.vacation.domain.VacationUsageDeduction;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
@@ -60,7 +61,7 @@ public class VacationUsageDeductionQueryDslRepository implements VacationUsageDe
                 .join(vacationUsageDeduction.usage).fetchJoin()
                 .join(vacationUsageDeduction.grant).fetchJoin()
                 .where(vacationUsageDeduction.grant.id.in(grantIds)
-                        .and(vacationUsageDeduction.usage.isDeleted.eq(com.lshdainty.porest.common.type.YNType.N)))
+                        .and(vacationUsageDeduction.usage.isDeleted.eq(YNType.N)))
                 .fetch();
     }
 }

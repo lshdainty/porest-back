@@ -219,6 +219,24 @@ public class VacationGrantJpaRepository implements VacationGrantRepository {
     }
 
     @Override
+    public List<VacationGrant> findAllRequestedVacationsByUserIdAndYear(String userId, Integer year) {
+        return em.createQuery(
+                        "select vg from VacationGrant vg " +
+                                "join fetch vg.user " +
+                                "join fetch vg.policy " +
+                                "where vg.user.id = :userId " +
+                                "and vg.isDeleted = :isDeleted " +
+                                "and vg.policy.grantMethod = :grantMethod " +
+                                "and function('year', vg.createDate) = :year " +
+                                "order by vg.requestStartTime desc", VacationGrant.class)
+                .setParameter("userId", userId)
+                .setParameter("isDeleted", YNType.N)
+                .setParameter("grantMethod", GrantMethod.ON_REQUEST)
+                .setParameter("year", year)
+                .getResultList();
+    }
+
+    @Override
     public List<VacationGrant> findByIdsWithUserAndPolicy(List<Long> vacationGrantIds) {
         if (vacationGrantIds == null || vacationGrantIds.isEmpty()) {
             return List.of();

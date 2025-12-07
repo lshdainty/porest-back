@@ -18,6 +18,7 @@ import com.lshdainty.porest.vacation.service.VacationTimeFormatter;
 import com.lshdainty.porest.vacation.service.dto.VacationApprovalServiceDto;
 import com.lshdainty.porest.vacation.service.dto.VacationPolicyServiceDto;
 import com.lshdainty.porest.vacation.service.dto.VacationServiceDto;
+import com.lshdainty.porest.vacation.service.policy.ManualGrant;
 import com.lshdainty.porest.vacation.service.policy.description.RepeatGrantDescriptionFactory;
 import com.lshdainty.porest.vacation.service.policy.factory.VacationPolicyStrategyFactory;
 import com.lshdainty.porest.vacation.type.*;
@@ -791,14 +792,15 @@ class VacationServiceTest {
         void getAllVacationsByApproverSuccess() {
             // given
             String approverId = "approver1";
+            Integer year = 2025;
             User approver = createTestUser(approverId);
 
             given(userService.checkUserExist(approverId)).willReturn(approver);
-            given(vacationApprovalRepository.findAllVacationGrantIdsByApproverId(approverId))
+            given(vacationApprovalRepository.findAllVacationGrantIdsByApproverIdAndYear(approverId, year))
                     .willReturn(List.of());
 
             // when
-            List<VacationServiceDto> result = vacationService.getAllVacationsByApprover(approverId, null);
+            List<VacationServiceDto> result = vacationService.getAllVacationsByApprover(approverId, year, null);
 
             // then
             assertThat(result).isEmpty();
@@ -813,14 +815,15 @@ class VacationServiceTest {
         void getAllRequestedVacationsByUserIdSuccess() {
             // given
             String userId = "user1";
+            Integer year = 2025;
             User user = createTestUser(userId);
 
             given(userService.checkUserExist(userId)).willReturn(user);
-            given(vacationGrantRepository.findAllRequestedVacationsByUserId(userId))
+            given(vacationGrantRepository.findAllRequestedVacationsByUserIdAndYear(userId, year))
                     .willReturn(List.of());
 
             // when
-            List<VacationServiceDto> result = vacationService.getAllRequestedVacationsByUserId(userId);
+            List<VacationServiceDto> result = vacationService.getAllRequestedVacationsByUserId(userId, year);
 
             // then
             assertThat(result).isEmpty();
@@ -892,14 +895,15 @@ class VacationServiceTest {
         void getRequestedVacationStatsByUserIdSuccess() {
             // given
             String userId = "user1";
+            Integer year = 2025;
             User user = createTestUser(userId);
 
             given(userService.checkUserExist(userId)).willReturn(user);
-            given(vacationGrantRepository.findAllRequestedVacationsByUserId(userId))
+            given(vacationGrantRepository.findAllRequestedVacationsByUserIdAndYear(userId, year))
                     .willReturn(List.of());
 
             // when
-            VacationServiceDto result = vacationService.getRequestedVacationStatsByUserId(userId);
+            VacationServiceDto result = vacationService.getRequestedVacationStatsByUserId(userId, year);
 
             // then
             assertThat(result).isNotNull();
@@ -1074,8 +1078,7 @@ class VacationServiceTest {
                     .expirationType(ExpirationType.END_OF_YEAR)
                     .build();
 
-            com.lshdainty.porest.vacation.service.policy.ManualGrant mockStrategy =
-                    mock(com.lshdainty.porest.vacation.service.policy.ManualGrant.class);
+            ManualGrant mockStrategy = mock(ManualGrant.class);
 
             given(vacationPolicyStrategyFactory.getStrategy(GrantMethod.MANUAL_GRANT))
                     .willReturn(mockStrategy);
@@ -1146,11 +1149,12 @@ class VacationServiceTest {
         void getAllRequestedVacationsByUserIdSuccess() {
             // given
             String userId = "user1";
+            Integer year = 2025;
 
-            given(vacationGrantRepository.findAllRequestedVacationsByUserId(userId)).willReturn(List.of());
+            given(vacationGrantRepository.findAllRequestedVacationsByUserIdAndYear(userId, year)).willReturn(List.of());
 
             // when
-            List<VacationServiceDto> result = vacationService.getAllRequestedVacationsByUserId(userId);
+            List<VacationServiceDto> result = vacationService.getAllRequestedVacationsByUserId(userId, year);
 
             // then
             assertThat(result).isEmpty();
@@ -1165,13 +1169,14 @@ class VacationServiceTest {
         void getAllVacationsByApproverSuccess() {
             // given
             String approverId = "approver1";
+            Integer year = 2025;
             GrantStatus status = GrantStatus.PENDING;
 
-            given(vacationApprovalRepository.findAllVacationGrantIdsByApproverId(approverId))
+            given(vacationApprovalRepository.findAllVacationGrantIdsByApproverIdAndYear(approverId, year))
                     .willReturn(List.of());
 
             // when
-            List<VacationServiceDto> result = vacationService.getAllVacationsByApprover(approverId, status);
+            List<VacationServiceDto> result = vacationService.getAllVacationsByApprover(approverId, year, status);
 
             // then
             assertThat(result).isEmpty();

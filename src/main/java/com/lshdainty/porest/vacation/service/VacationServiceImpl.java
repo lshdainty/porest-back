@@ -1278,12 +1278,12 @@ public class VacationServiceImpl implements VacationService {
     }
 
     @Override
-    public List<VacationServiceDto> getAllVacationsByApprover(String approverId, GrantStatus status) {
+    public List<VacationServiceDto> getAllVacationsByApprover(String approverId, Integer year, GrantStatus status) {
         // 승인자 존재 확인
         userService.checkUserExist(approverId);
 
-        // 승인자가 포함된 모든 VacationGrant ID 조회
-        List<Long> vacationGrantIds = vacationApprovalRepository.findAllVacationGrantIdsByApproverId(approverId);
+        // 승인자가 포함된 모든 VacationGrant ID 조회 (년도 필터링 포함)
+        List<Long> vacationGrantIds = vacationApprovalRepository.findAllVacationGrantIdsByApproverIdAndYear(approverId, year);
 
         if (vacationGrantIds.isEmpty()) {
             return List.of();
@@ -1347,12 +1347,12 @@ public class VacationServiceImpl implements VacationService {
     }
 
     @Override
-    public List<VacationServiceDto> getAllRequestedVacationsByUserId(String userId) {
+    public List<VacationServiceDto> getAllRequestedVacationsByUserId(String userId, Integer year) {
         // 사용자 존재 확인
         userService.checkUserExist(userId);
 
-        // ON_REQUEST 방식의 모든 휴가 신청 내역 조회
-        List<VacationGrant> grants = vacationGrantRepository.findAllRequestedVacationsByUserId(userId);
+        // ON_REQUEST 방식의 모든 휴가 신청 내역 조회 (년도 필터링 포함)
+        List<VacationGrant> grants = vacationGrantRepository.findAllRequestedVacationsByUserIdAndYear(userId, year);
 
         return grants.stream()
                 .map(grant -> {
@@ -1399,12 +1399,12 @@ public class VacationServiceImpl implements VacationService {
     }
 
     @Override
-    public VacationServiceDto getRequestedVacationStatsByUserId(String userId) {
+    public VacationServiceDto getRequestedVacationStatsByUserId(String userId, Integer year) {
         // 사용자 존재 확인
         userService.checkUserExist(userId);
 
-        // ON_REQUEST 방식의 모든 휴가 신청 내역 조회
-        List<VacationGrant> allGrants = vacationGrantRepository.findAllRequestedVacationsByUserId(userId);
+        // ON_REQUEST 방식의 모든 휴가 신청 내역 조회 (년도 필터링 포함)
+        List<VacationGrant> allGrants = vacationGrantRepository.findAllRequestedVacationsByUserIdAndYear(userId, year);
 
         // 현재 날짜 기준
         LocalDateTime now = LocalDateTime.now();

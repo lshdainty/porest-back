@@ -56,6 +56,18 @@ public class VacationApprovalQueryDslRepository implements VacationApprovalRepos
     }
 
     @Override
+    public List<Long> findAllVacationGrantIdsByApproverIdAndYear(String approverId, Integer year) {
+        return query
+                .select(vacationApproval.vacationGrant.id)
+                .from(vacationApproval)
+                .where(vacationApproval.approver.id.eq(approverId)
+                        .and(vacationApproval.isDeleted.eq(YNType.N))
+                        .and(vacationApproval.vacationGrant.createDate.year().eq(year)))
+                .distinct()
+                .fetch();
+    }
+
+    @Override
     public Optional<VacationApproval> findById(Long id) {
         VacationApproval result = query
                 .selectFrom(vacationApproval)
