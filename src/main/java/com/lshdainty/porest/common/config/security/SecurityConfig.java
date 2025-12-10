@@ -19,7 +19,6 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.csrf.CsrfTokenRequestHandler;
 import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -74,111 +73,8 @@ public class SecurityConfig {
         http.httpBasic(basic -> basic.realmName("Porest Monitoring"));
 
         // 경로별 인가 작업
+        // 보안 위협 패턴은 MaliciousPatternBlockFilter에서 처리
         http.authorizeHttpRequests((auth) -> auth
-                // ========== 보안 위협 패턴 원천 차단 (AntPathRequestMatcher 사용) ==========
-                // 숨김 파일/폴더 - 버전 관리 시스템
-                .requestMatchers(
-                        new AntPathRequestMatcher("/**/.git"),
-                        new AntPathRequestMatcher("/**/.git/**"),
-                        new AntPathRequestMatcher("/**/.svn"),
-                        new AntPathRequestMatcher("/**/.svn/**"),
-                        new AntPathRequestMatcher("/**/.hg"),
-                        new AntPathRequestMatcher("/**/.hg/**"),
-                        new AntPathRequestMatcher("/**/.bzr"),
-                        new AntPathRequestMatcher("/**/.bzr/**")
-                ).denyAll()
-
-                // 숨김 파일/폴더 - 환경 변수 및 설정
-                .requestMatchers(
-                        new AntPathRequestMatcher("/**/.env"),
-                        new AntPathRequestMatcher("/**/.env.*"),
-                        new AntPathRequestMatcher("/**/.htaccess"),
-                        new AntPathRequestMatcher("/**/web.config"),
-                        new AntPathRequestMatcher("/**/php.ini"),
-                        new AntPathRequestMatcher("/**/httpd.conf"),
-                        new AntPathRequestMatcher("/**/nginx.conf")
-                ).denyAll()
-
-                // IDE 및 에디터 설정 파일
-                .requestMatchers(
-                        new AntPathRequestMatcher("/**/.idea"),
-                        new AntPathRequestMatcher("/**/.idea/**"),
-                        new AntPathRequestMatcher("/**/.vscode"),
-                        new AntPathRequestMatcher("/**/.vscode/**"),
-                        new AntPathRequestMatcher("/**/.eclipse"),
-                        new AntPathRequestMatcher("/**/.eclipse/**"),
-                        new AntPathRequestMatcher("/**/.settings"),
-                        new AntPathRequestMatcher("/**/.settings/**"),
-                        new AntPathRequestMatcher("/**/.classpath"),
-                        new AntPathRequestMatcher("/**/.project"),
-                        new AntPathRequestMatcher("/**/.DS_Store"),
-                        new AntPathRequestMatcher("/**/Thumbs.db"),
-                        new AntPathRequestMatcher("/**/desktop.ini")
-                ).denyAll()
-
-                // 백업 및 임시 파일 (OWASP 권장)
-                .requestMatchers(
-                        new AntPathRequestMatcher("/**/*.bak"),
-                        new AntPathRequestMatcher("/**/*.backup"),
-                        new AntPathRequestMatcher("/**/*.old"),
-                        new AntPathRequestMatcher("/**/*.orig"),
-                        new AntPathRequestMatcher("/**/*.tmp"),
-                        new AntPathRequestMatcher("/**/*.temp"),
-                        new AntPathRequestMatcher("/**/*.swp"),
-                        new AntPathRequestMatcher("/**/*.swo"),
-                        new AntPathRequestMatcher("/**/*.save"),
-                        new AntPathRequestMatcher("/**/*~")
-                ).denyAll()
-
-                // 데이터베이스 및 설정 파일
-                .requestMatchers(
-                        new AntPathRequestMatcher("/**/*.sql"),
-                        new AntPathRequestMatcher("/**/*.sqlite"),
-                        new AntPathRequestMatcher("/**/*.db"),
-                        new AntPathRequestMatcher("/**/config.php"),
-                        new AntPathRequestMatcher("/**/config.yml"),
-                        new AntPathRequestMatcher("/**/config.json"),
-                        new AntPathRequestMatcher("/**/application.yml"),
-                        new AntPathRequestMatcher("/**/application.properties"),
-                        new AntPathRequestMatcher("/**/application-*.yml"),
-                        new AntPathRequestMatcher("/**/application-*.properties")
-                ).denyAll()
-
-                // 압축 파일 (소스코드/백업 포함 가능성)
-                .requestMatchers(
-                        new AntPathRequestMatcher("/**/*.tar"),
-                        new AntPathRequestMatcher("/**/*.tar.gz"),
-                        new AntPathRequestMatcher("/**/*.tgz"),
-                        new AntPathRequestMatcher("/**/*.zip"),
-                        new AntPathRequestMatcher("/**/*.rar"),
-                        new AntPathRequestMatcher("/**/*.7z")
-                ).denyAll()
-
-                // 공격 벡터 - 악성 스크립트
-                .requestMatchers(
-                        new AntPathRequestMatcher("/**/eval-stdin.php"),
-                        new AntPathRequestMatcher("/**/shell.php"),
-                        new AntPathRequestMatcher("/**/c99.php"),
-                        new AntPathRequestMatcher("/**/r57.php"),
-                        new AntPathRequestMatcher("/**/adminer.php"),
-                        new AntPathRequestMatcher("/**/phpMyAdmin"),
-                        new AntPathRequestMatcher("/**/phpMyAdmin/**"),
-                        new AntPathRequestMatcher("/**/phpmyadmin"),
-                        new AntPathRequestMatcher("/**/phpmyadmin/**"),
-                        new AntPathRequestMatcher("/**/*.php"),
-                        new AntPathRequestMatcher("/**/*.asp"),
-                        new AntPathRequestMatcher("/**/*.aspx"),
-                        new AntPathRequestMatcher("/**/*.jsp.bak"),
-                        new AntPathRequestMatcher("/**/*.java.bak")
-                ).denyAll()
-
-                // 로그 파일 (민감 정보 포함 가능)
-                .requestMatchers(
-                        new AntPathRequestMatcher("/**/*.log"),
-                        new AntPathRequestMatcher("/**/logs"),
-                        new AntPathRequestMatcher("/**/logs/**")
-                ).denyAll()
-
                 // ========== 정상 접근 허용 경로 ==========
                 // 인증 없이 접근 가능한 경로들
                 .requestMatchers(
@@ -227,8 +123,7 @@ public class SecurityConfig {
 
         //로그아웃 시 리다이렉트될 URL을 설정
         http.logout(logout -> logout
-                .logoutUrl("/logout")
-                .logoutRequestMatcher(new AntPathRequestMatcher("/api/v1/logout", "POST"))
+                .logoutUrl("/api/v1/logout")
                 .invalidateHttpSession(true)
                 .clearAuthentication(true)
                 .deleteCookies("JSESSIONID")
