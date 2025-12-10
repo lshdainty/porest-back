@@ -29,50 +29,52 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    // ==================== Spring Boot Starters ====================
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-logging:3.1.0'
-    compileOnly 'org.projectlombok:lombok'
-    runtimeOnly 'com.h2database:h2'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.boot:spring-boot-data-jpa-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    testCompileOnly 'org.projectlombok:lombok'
-    testAnnotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.security:spring-security-test'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
 
-    // MariaDB
-    implementation 'org.mariadb.jdbc:mariadb-java-client:3.5.1'
-
-    // P6Spy 의존성 추가
-    implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.12.0'
-
-    // spring security & oauth
+    // ==================== Security & OAuth ====================
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 
-    // email
-    implementation 'org.springframework.boot:spring-boot-starter-mail'
+    // ==================== Database & JPA ====================
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.mariadb.jdbc:mariadb-java-client:3.5.1'
+    runtimeOnly 'com.h2database:h2'
 
-    // queryDSL
-    implementation 'io.github.openfeign.querydsl:querydsl-jpa:6.11'
-    annotationProcessor 'io.github.openfeign.querydsl:querydsl-apt:6.11:jpa'
+    // QueryDSL (Hibernate 7 + Jakarta Persistence 3.2)
+    implementation 'io.github.openfeign.querydsl:querydsl-jpa:7.1'
+    annotationProcessor 'io.github.openfeign.querydsl:querydsl-apt:7.1:jpa'
     annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
     annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
 
-    // Apache POI
+    // P6Spy (SQL 로깅)
+    implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:2.0.0'
+
+    // ==================== Monitoring & Logging ====================
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+    implementation 'com.github.loki4j:loki-logback-appender:2.0.1'
+
+    // ==================== API Documentation ====================
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.0'
+
+    // ==================== Utilities ====================
     implementation 'org.apache.poi:poi:5.3.0'
     implementation 'org.apache.poi:poi-ooxml:5.3.0'
 
-    // Springdoc OpenAPI (Swagger UI)
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.0'
+    // ==================== Lombok ====================
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 
-    // Prometheus
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    implementation 'io.micrometer:micrometer-registry-prometheus'
-    implementation 'com.github.loki4j:loki-logback-appender:1.6.0'
+    // ==================== Test ====================
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-data-jpa-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
 }
 
 tasks.named('test') {

@@ -15,14 +15,18 @@
             <http>
                 <url>${LOKI_URL:-http://localhost:3100/loki/api/v1/push}</url>
             </http>
-            <format>
-                <label>
-                    <pattern>app=porest,host=${HOSTNAME},level=%level,env=prod</pattern>
-                </label>
-                <message>
-                    <pattern>%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} %-8(%X{requestId}) %logger{0} %msg%n</pattern>
-                </message>
-            </format>
+            <!-- loki4j 2.0.x: format 섹션 제거, labels/message를 최상위로 이동 -->
+            <labels>
+                <pattern>
+                    app=porest
+                    host=${HOSTNAME}
+                    level=%level
+                    env=prod
+                </pattern>
+            </labels>
+            <message>
+                <pattern>%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} %-8(%X{requestId}) %logger{0} %msg%n</pattern>
+            </message>
         </appender>
 
         <root level="info">
