@@ -12,6 +12,7 @@
     <!-- Loki로 로그 전송 설정 (prod 환경만) -->
     <springProfile name="prod">
         <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
+            <verbose>true</verbose>
             <http>
                 <url>${LOKI_URL:-http://localhost:3100/loki/api/v1/push}</url>
             </http>
