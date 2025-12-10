@@ -519,4 +519,63 @@ class WorkHistoryJpaRepositoryTest {
         // then
         assertThat(count).isEqualTo(2);
     }
+
+    @Test
+    @DisplayName("파트로 필터링하여 조회")
+    void findAllWithPartSeq() {
+        // given
+        WorkCode part2 = WorkCode.createWorkCode("PART002", "프론트엔드", CodeType.OPTION, group, 2);
+        em.persist(part2);
+        WorkCode division2 = WorkCode.createWorkCode("DIV002", "UI개발", CodeType.OPTION, part2, 1);
+        em.persist(division2);
+
+        workHistoryRepository.save(WorkHistory.createWorkHistory(
+                LocalDate.of(2025, 1, 1), user, group, part, division,
+                new BigDecimal("8.0"), "백엔드 작업"
+        ));
+        workHistoryRepository.save(WorkHistory.createWorkHistory(
+                LocalDate.of(2025, 1, 1), user, group, part2, division2,
+                new BigDecimal("8.0"), "프론트엔드 작업"
+        ));
+        em.flush();
+        em.clear();
+
+        // when
+        WorkHistorySearchCondition condition = new WorkHistorySearchCondition();
+        condition.setPartSeq(part.getId());
+        List<WorkHistory> histories = workHistoryRepository.findAll(condition);
+
+        // then
+        assertThat(histories).hasSize(1);
+        assertThat(histories.get(0).getContent()).isEqualTo("백엔드 작업");
+    }
+
+    @Test
+    @DisplayName("디비전으로 필터링하여 조회")
+    void findAllWithDivisionSeq() {
+        // given
+        WorkCode division2 = WorkCode.createWorkCode("DIV002", "UI개발", CodeType.OPTION, part, 2);
+        em.persist(division2);
+
+        workHistoryRepository.save(WorkHistory.createWorkHistory(
+                LocalDate.of(2025, 1, 1), user, group, part, division,
+                new BigDecimal("8.0"), "API 개발"
+        ));
+        workHistoryRepository.save(WorkHistory.createWorkHistory(
+                LocalDate.of(2025, 1, 1), user, group, part, division2,
+                new BigDecimal("8.0"), "UI 개발"
+        ));
+        em.flush();
+        em.clear();
+
+        // when
+        WorkHistorySearchCondition condition = new WorkHistorySearchCondition();
+        condition.setDivisionSeq(division.getId());
+        List<WorkHistory> histories = workHistoryRepository.findAll(condition);
+
+        // then
+        assertThat(histories).hasSize(1);
+        assertThat(histories.get(0).getContent()).isEqualTo("API 개발");
+    }
+
 }

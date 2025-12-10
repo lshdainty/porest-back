@@ -307,4 +307,45 @@ class VacationApprovalQueryDslRepositoryTest {
         // then
         assertThat(result).hasSize(3);
     }
+
+    @Test
+    @DisplayName("승인자 ID와 연도로 부여 ID 목록 조회")
+    void findAllVacationGrantIdsByApproverIdAndYear() {
+        // given
+        vacationApprovalRepository.save(VacationApproval.createVacationApproval(grant, approver, 1));
+        em.flush();
+        em.clear();
+
+        // when
+        List<Long> result = vacationApprovalRepository.findAllVacationGrantIdsByApproverIdAndYear("approver1", 2025);
+
+        // then
+        assertThat(result).hasSize(1);
+        assertThat(result).contains(grant.getId());
+    }
+
+    @Test
+    @DisplayName("승인자 ID와 연도로 조회 시 다른 연도 제외")
+    void findAllVacationGrantIdsByApproverIdAndYearExcludesOtherYear() {
+        // given
+        vacationApprovalRepository.save(VacationApproval.createVacationApproval(grant, approver, 1));
+        em.flush();
+        em.clear();
+
+        // when - 2024년으로 조회
+        List<Long> result = vacationApprovalRepository.findAllVacationGrantIdsByApproverIdAndYear("approver1", 2024);
+
+        // then
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    @DisplayName("승인자 ID와 연도로 조회 시 없으면 빈 리스트 반환")
+    void findAllVacationGrantIdsByApproverIdAndYearEmpty() {
+        // when
+        List<Long> result = vacationApprovalRepository.findAllVacationGrantIdsByApproverIdAndYear("nonexistent", 2025);
+
+        // then
+        assertThat(result).isEmpty();
+    }
 }

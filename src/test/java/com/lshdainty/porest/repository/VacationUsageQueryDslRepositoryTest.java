@@ -443,4 +443,57 @@ class VacationUsageQueryDslRepositoryTest {
         // then
         assertThat(result).isEmpty();
     }
+
+    @Test
+    @DisplayName("유저별 연도별 휴가사용 조회")
+    void findByUserIdAndYear() {
+        // given
+        vacationUsageRepository.save(VacationUsage.createVacationUsage(
+                user, "2025년 연차", VacationTimeType.DAYOFF,
+                LocalDateTime.of(2025, 6, 1, 9, 0), LocalDateTime.of(2025, 6, 1, 18, 0),
+                new BigDecimal("1.0000")
+        ));
+        vacationUsageRepository.save(VacationUsage.createVacationUsage(
+                user, "2024년 연차", VacationTimeType.DAYOFF,
+                LocalDateTime.of(2024, 6, 1, 9, 0), LocalDateTime.of(2024, 6, 1, 18, 0),
+                new BigDecimal("1.0000")
+        ));
+        em.flush();
+        em.clear();
+
+        // when
+        List<VacationUsage> result = vacationUsageRepository.findByUserIdAndYear("user1", 2025);
+
+        // then
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getDesc()).isEqualTo("2025년 연차");
+    }
+
+    @Test
+    @DisplayName("유저별 연도별 휴가사용 조회 - 삭제된 내역 제외")
+    void findByUserIdAndYearExcludesDeleted() {
+        // given
+        VacationUsage activeUsage = VacationUsage.createVacationUsage(
+                user, "활성 연차", VacationTimeType.DAYOFF,
+                LocalDateTime.of(2025, 6, 1, 9, 0), LocalDateTime.of(2025, 6, 1, 18, 0),
+                new BigDecimal("1.0000")
+        );
+        VacationUsage deletedUsage = VacationUsage.createVacationUsage(
+                user, "삭제 연차", VacationTimeType.DAYOFF,
+                LocalDateTime.of(2025, 7, 1, 9, 0), LocalDateTime.of(2025, 7, 1, 18, 0),
+                new BigDecimal("1.0000")
+        );
+        vacationUsageRepository.save(activeUsage);
+        vacationUsageRepository.save(deletedUsage);
+        deletedUsage.deleteVacationUsage();
+        em.flush();
+        em.clear();
+
+        // when
+        List<VacationUsage> result = vacationUsageRepository.findByUserIdAndYear("user1", 2025);
+
+        // then
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getDesc()).isEqualTo("활성 연차");
+    }
 }
