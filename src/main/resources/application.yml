@@ -39,6 +39,7 @@ server:
     session:
       timeout: 8h
   port: ${SERVER_PORT:8000}
+  forward-headers-strategy: framework
 
 # LOG 설정
 logging:
