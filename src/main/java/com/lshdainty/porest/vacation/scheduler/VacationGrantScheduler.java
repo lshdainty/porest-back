@@ -1,10 +1,10 @@
 package com.lshdainty.porest.vacation.scheduler;
 
-import com.lshdainty.porest.vacation.domain.UserVacationPolicy;
 import com.lshdainty.porest.vacation.domain.VacationGrant;
+import com.lshdainty.porest.vacation.domain.VacationGrantSchedule;
 import com.lshdainty.porest.vacation.domain.VacationPolicy;
-import com.lshdainty.porest.vacation.repository.UserVacationPolicyRepository;
 import com.lshdainty.porest.vacation.repository.VacationGrantRepository;
+import com.lshdainty.porest.vacation.repository.VacationGrantScheduleRepository;
 import com.lshdainty.porest.vacation.service.policy.RepeatGrant;
 import com.lshdainty.porest.vacation.service.policy.factory.VacationPolicyStrategyFactory;
 import com.lshdainty.porest.vacation.type.GrantMethod;
@@ -22,13 +22,13 @@ import java.util.List;
 
 /**
  * 반복 부여 휴가 정책 스케줄러<br>
- * 매일 12시에 실행되어 오늘 부여해야 할 휴가를 자동으로 부여함
+ * 매일 자정(00:00)에 실행되어 오늘 부여해야 할 휴가를 자동으로 부여함
  */
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class VacationGrantScheduler {
-    private final UserVacationPolicyRepository userVacationPolicyRepository;
+    private final VacationGrantScheduleRepository vacationGrantScheduleRepository;
     private final VacationGrantRepository vacationGrantRepository;
     private final VacationPolicyStrategyFactory strategyFactory;
 
@@ -101,23 +101,23 @@ public class VacationGrantScheduler {
             // RepeatGrant 전략 인스턴스 가져오기
             RepeatGrant repeatGrantService = (RepeatGrant) strategyFactory.getStrategy(GrantMethod.REPEAT_GRANT);
 
-            // 1. 오늘 부여 대상인 UserVacationPolicy 조회
-            List<UserVacationPolicy> targets = userVacationPolicyRepository.findRepeatGrantTargetsForToday(today);
-            log.info("부여 대상 정책 수: {}", targets.size());
+            // 1. 오늘 부여 대상인 VacationGrantSchedule 조회
+            List<VacationGrantSchedule> targets = vacationGrantScheduleRepository.findRepeatGrantTargetsForToday(today);
+            log.info("부여 대상 스케줄 수: {}", targets.size());
 
             if (targets.isEmpty()) {
                 log.info("오늘 부여할 휴가가 없습니다.");
                 return;
             }
 
-            // 2. 각 정책에 대해 휴가 부여 처리
+            // 2. 각 스케줄에 대해 휴가 부여 처리
             List<VacationGrant> grantsToSave = new ArrayList<>();
             int successCount = 0;
             int failCount = 0;
 
-            for (UserVacationPolicy uvp : targets) {
+            for (VacationGrantSchedule schedule : targets) {
                 try {
-                    VacationPolicy policy = uvp.getVacationPolicy();
+                    VacationPolicy policy = schedule.getVacationPolicy();
                     VacationType vacationType = policy.getVacationType();
 
                     // 효력 발생일과 만료일 계산
@@ -128,7 +128,7 @@ public class VacationGrantScheduler {
                     // VacationGrant 생성
                     String desc = policy.getName() + "에 의한 휴가 부여";
                     VacationGrant vacationGrant = VacationGrant.createVacationGrant(
-                            uvp.getUser(),
+                            schedule.getUser(),
                             policy,
                             desc,
                             vacationType,
@@ -141,11 +141,11 @@ public class VacationGrantScheduler {
 
                     // 다음 부여일 갱신 (현재 부여일 기준으로 재계산)
                     LocalDate newNextGrantDate = repeatGrantService.calculateNextGrantDate(policy, today);
-                    uvp.updateGrantHistory(startDate, newNextGrantDate);
+                    schedule.updateGrantHistory(startDate, newNextGrantDate);
 
                     successCount++;
                     log.info("휴가 부여 완료 - User: {}, Policy: {}, VacationType: {}, GrantTime: {}, StartDate: {}, ExpiryDate: {}, NextGrantDate: {}",
-                            uvp.getUser().getId(),
+                            schedule.getUser().getId(),
                             policy.getName(),
                             vacationType.name(),
                             policy.getGrantTime(),
@@ -154,8 +154,8 @@ public class VacationGrantScheduler {
                             newNextGrantDate);
 
                 } catch (Exception e) {
-                    log.error("휴가 부여 실패 - UserVacationPolicy ID: {}, Error: {}",
-                            uvp.getId(), e.getMessage(), e);
+                    log.error("휴가 부여 실패 - VacationGrantSchedule ID: {}, Error: {}",
+                            schedule.getId(), e.getMessage(), e);
                     failCount++;
                     // 개별 실패는 스킵하고 계속 진행
                 }

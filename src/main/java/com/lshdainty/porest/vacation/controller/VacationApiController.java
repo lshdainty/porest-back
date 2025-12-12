@@ -364,24 +364,12 @@ public class VacationApiController implements VacationApi {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('VACATION_POLICY_MANAGE')")
-    public ApiResponse assignVacationPoliciesToUser(String userId, VacationApiDto.AssignVacationPoliciesToUserReq data) {
-        List<Long> assignedPolicyIds = vacationService.assignVacationPoliciesToUser(userId, data.getVacationPolicyIds());
-
-        return ApiResponse.success(new VacationApiDto.AssignVacationPoliciesToUserResp(
-                userId,
-                assignedPolicyIds
-        ));
-    }
-
-    @Override
     @PreAuthorize("hasAuthority('VACATION_READ')")
     public ApiResponse getUserAssignedVacationPolicies(String userId, GrantMethod grantMethod) {
         List<VacationPolicyServiceDto> policies = vacationService.getUserAssignedVacationPolicies(userId, grantMethod);
 
         List<VacationApiDto.GetUserAssignedVacationPoliciesResp> resp = policies.stream()
                 .map(vp -> new VacationApiDto.GetUserAssignedVacationPoliciesResp(
-                        vp.getUserVacationPolicyId(),
                         vp.getId(),
                         vp.getName(),
                         vp.getDesc(),
@@ -436,29 +424,6 @@ public class VacationApiController implements VacationApi {
                 .toList();
 
         return ApiResponse.success(resp);
-    }
-
-    @Override
-    @PreAuthorize("hasAuthority('VACATION_POLICY_MANAGE')")
-    public ApiResponse revokeVacationPolicyFromUser(String userId, Long vacationPolicyId) {
-        Long userVacationPolicyId = vacationService.revokeVacationPolicyFromUser(userId, vacationPolicyId);
-
-        return ApiResponse.success(new VacationApiDto.RevokeVacationPolicyFromUserResp(
-                userId,
-                vacationPolicyId,
-                userVacationPolicyId
-        ));
-    }
-
-    @Override
-    @PreAuthorize("hasAuthority('VACATION_POLICY_MANAGE')")
-    public ApiResponse revokeVacationPoliciesFromUser(String userId, VacationApiDto.RevokeVacationPoliciesFromUserReq data) {
-        List<Long> revokedPolicyIds = vacationService.revokeVacationPoliciesFromUser(userId, data.getVacationPolicyIds());
-
-        return ApiResponse.success(new VacationApiDto.RevokeVacationPoliciesFromUserResp(
-                userId,
-                revokedPolicyIds
-        ));
     }
 
     @Override

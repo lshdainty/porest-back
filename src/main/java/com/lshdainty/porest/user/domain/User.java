@@ -8,9 +8,11 @@ import com.lshdainty.porest.permission.domain.Role;
 import com.lshdainty.porest.permission.domain.UserRole;
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.user.type.StatusType;
-import com.lshdainty.porest.vacation.domain.UserVacationPolicy;
+import com.lshdainty.porest.vacation.domain.UserVacationPlan;
 import com.lshdainty.porest.vacation.domain.VacationApproval;
 import com.lshdainty.porest.vacation.domain.VacationGrant;
+import com.lshdainty.porest.vacation.domain.VacationPlan;
+import com.lshdainty.porest.vacation.domain.VacationPolicy;
 import com.lshdainty.porest.vacation.domain.VacationUsage;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -197,12 +199,12 @@ public class User extends AuditingFields {
     private List<VacationUsage> vacationUsages = new ArrayList<>();
 
     /**
-     * 유저 휴가 정책 목록<br>
-     * 사용자에게 적용된 휴가 정책 매핑 목록
+     * 유저 휴가 플랜 목록<br>
+     * 사용자에게 적용된 휴가 플랜 매핑 목록
      */
     @BatchSize(size = 100)
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<UserVacationPolicy> userVacationPolicies = new ArrayList<>();
+    private List<UserVacationPlan> userVacationPlans = new ArrayList<>();
 
     /**
      * 유저 부서 목록<br>
@@ -536,5 +538,52 @@ public class User extends AuditingFields {
                 })
                 .distinct()
                 .toList();
+    }
+
+    /* 휴가 플랜 관리 편의 메소드 */
+
+    /**
+     * 휴가 플랜 목록 조회<br>
+     * UserVacationPlan에서 VacationPlan만 추출하여 반환
+     *
+     * @return 휴가 플랜 리스트
+     */
+    public List<VacationPlan> getVacationPlans() {
+        return this.userVacationPlans.stream()
+                .filter(uvp -> YNType.isN(uvp.getIsDeleted()))
+                .map(UserVacationPlan::getVacationPlan)
+                .filter(plan -> YNType.isN(plan.getIsDeleted()))
+                .toList();
+    }
+
+    /**
+     * 모든 휴가 정책 조회<br>
+     * 사용자에게 할당된 모든 플랜들의 정책을 중복 제거하여 반환
+     *
+     * @return 휴가 정책 리스트
+     */
+    public List<VacationPolicy> getAllVacationPolicies() {
+        return this.userVacationPlans.stream()
+                .filter(uvp -> YNType.isN(uvp.getIsDeleted()))
+                .map(UserVacationPlan::getVacationPlan)
+                .filter(plan -> YNType.isN(plan.getIsDeleted()))
+                .flatMap(plan -> plan.getPolicies().stream())
+                .distinct()
+                .toList();
+    }
+
+    /**
+     * 특정 휴가 플랜 보유 여부 확인<br>
+     * 사용자가 특정 플랜을 가지고 있는지 확인
+     *
+     * @param planCode 확인할 플랜 코드
+     * @return 플랜 보유 여부
+     */
+    public boolean hasVacationPlan(String planCode) {
+        return this.userVacationPlans.stream()
+                .filter(uvp -> YNType.isN(uvp.getIsDeleted()))
+                .map(UserVacationPlan::getVacationPlan)
+                .filter(plan -> YNType.isN(plan.getIsDeleted()))
+                .anyMatch(plan -> plan.getCode().equals(planCode));
     }
 }

@@ -42,7 +42,8 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class VacationServiceImpl implements VacationService {
     private final VacationPolicyRepository vacationPolicyRepository;
-    private final UserVacationPolicyRepository userVacationPolicyRepository;
+    private final UserVacationPlanRepository userVacationPlanRepository;
+    private final VacationPlanPolicyRepository vacationPlanPolicyRepository;
     private final HolidayRepository holidayRepository;
     private final UserService userService;
     private final VacationPolicyStrategyFactory vacationPolicyStrategyFactory;
@@ -628,25 +629,7 @@ public class VacationServiceImpl implements VacationService {
         // 4. 휴가 정책 소프트 삭제
         vacationPolicy.deleteVacationPolicy();
 
-        // 5. 해당 휴가 정책을 사용하는 모든 UserVacationPolicy를 소프트 삭제
-        List<UserVacationPolicy> userVacationPolicies = userVacationPolicyRepository.findByVacationPolicyId(vacationPolicyId);
-        int deletedUserVacationPolicyCount = 0;
-
-        for (UserVacationPolicy uvp : userVacationPolicies) {
-            // 이미 삭제된 경우 스킵
-            if (YNType.isY(uvp.getIsDeleted())) {
-                continue;
-            }
-
-            // UserVacationPolicy 소프트 삭제
-            uvp.deleteUserVacationPolicy();
-            deletedUserVacationPolicyCount++;
-        }
-
-        log.info("Deleted {} user vacation policy assignments for vacation policy {}",
-                deletedUserVacationPolicyCount, vacationPolicyId);
-
-        // 6. 해당 휴가 정책으로 부여된 모든 VacationGrant 회수 처리
+        // 5. 해당 휴가 정책으로 부여된 모든 VacationGrant 회수 처리
         List<VacationGrant> grants = vacationGrantRepository.findByPolicyId(vacationPolicyId);
         int revokedGrantCount = 0;
 
@@ -669,61 +652,22 @@ public class VacationServiceImpl implements VacationService {
         return vacationPolicyId;
     }
 
-    @Transactional
-    @Override
-    public List<Long> assignVacationPoliciesToUser(String userId, List<Long> vacationPolicyIds) {
-        // 1. 유저 존재 확인
-        User user = userService.checkUserExist(userId);
-
-        // 2. 할당할 휴가 정책들의 유효성 검증
-        List<VacationPolicy> vacationPolicies = new ArrayList<>();
-        for (Long policyId : vacationPolicyIds) {
-            VacationPolicy policy = validateAndGetVacationPolicy(policyId);
-            vacationPolicies.add(policy);
-        }
-
-        // 3. 중복 할당 체크 및 필터링
-        List<Long> assignedPolicyIds = new ArrayList<>();
-        List<UserVacationPolicy> userVacationPolicies = new ArrayList<>();
-
-        for (VacationPolicy policy : vacationPolicies) {
-            // 이미 할당된 정책인지 확인
-            boolean alreadyAssigned = userVacationPolicyRepository.existsByUserIdAndVacationPolicyId(userId, policy.getId());
-
-            if (alreadyAssigned) {
-                log.warn("User {} already has vacation policy {}, skipping", userId, policy.getId());
-                continue;
-            }
-
-            // UserVacationPolicy 생성
-            UserVacationPolicy userVacationPolicy = UserVacationPolicy.createUserVacationPolicy(user, policy);
-            userVacationPolicies.add(userVacationPolicy);
-            assignedPolicyIds.add(policy.getId());
-        }
-
-        // 4. 일괄 저장
-        if (!userVacationPolicies.isEmpty()) {
-            userVacationPolicyRepository.saveAll(userVacationPolicies);
-            log.info("Assigned {} vacation policies to user {}", userVacationPolicies.size(), userId);
-        }
-
-        return assignedPolicyIds;
-    }
-
     @Override
     public List<VacationPolicyServiceDto> getUserAssignedVacationPolicies(String userId, GrantMethod grantMethod) {
         // 유저 존재 확인
         userService.checkUserExist(userId);
 
-        // 유저에게 할당된 휴가 정책 조회
-        List<UserVacationPolicy> userVacationPolicies = userVacationPolicyRepository.findByUserId(userId);
+        // 유저에게 할당된 휴가 정책 조회 (Plan 기반)
+        List<UserVacationPlan> userVacationPlans = userVacationPlanRepository.findByUserIdWithPlanAndPolicies(userId);
 
-        return userVacationPolicies.stream()
+        // Plan에 포함된 정책들을 중복 없이 추출
+        return userVacationPlans.stream()
+                .filter(uvp -> YNType.isN(uvp.getIsDeleted()))
+                .flatMap(uvp -> uvp.getVacationPlan().getPolicies().stream())
+                .distinct()
                 // grantMethod 필터링 (null이면 모두 반환)
-                .filter(uvp -> grantMethod == null || uvp.getVacationPolicy().getGrantMethod() == grantMethod)
-                .map(uvp -> {
-                    VacationPolicy policy = uvp.getVacationPolicy();
-
+                .filter(policy -> grantMethod == null || policy.getGrantMethod() == grantMethod)
+                .map(policy -> {
                     // 반복 부여 정책일 경우 다국어 설명 생성
                     String repeatGrantDescription = null;
                     if (policy.getGrantMethod() == GrantMethod.REPEAT_GRANT) {
@@ -731,7 +675,6 @@ public class VacationServiceImpl implements VacationService {
                     }
 
                     return VacationPolicyServiceDto.builder()
-                            .userVacationPolicyId(uvp.getId())
                             .id(policy.getId())
                             .name(policy.getName())
                             .desc(policy.getDesc())
@@ -754,120 +697,6 @@ public class VacationServiceImpl implements VacationService {
                             .build();
                 })
                 .toList();
-    }
-
-    @Transactional
-    @Override
-    public Long revokeVacationPolicyFromUser(String userId, Long vacationPolicyId) {
-        // 1. 유저 존재 확인
-        userService.checkUserExist(userId);
-
-        // 2. 휴가 정책 존재 확인
-        validateAndGetVacationPolicy(vacationPolicyId);
-
-        // 3. UserVacationPolicy 조회
-        UserVacationPolicy userVacationPolicy = userVacationPolicyRepository
-                .findByUserIdAndVacationPolicyId(userId, vacationPolicyId)
-                .orElseThrow(() -> {
-                    log.warn("유저 휴가 정책 조회 실패 - 존재하지 않음: userId={}, policyId={}", userId, vacationPolicyId);
-                    return new EntityNotFoundException(ErrorCode.VACATION_POLICY_NOT_FOUND);
-                });
-
-        // 4. 이미 삭제된 경우 예외 처리
-        if (YNType.isY(userVacationPolicy.getIsDeleted())) {
-            log.warn("유저 휴가 정책 회수 실패 - 이미 삭제됨: userId={}, policyId={}", userId, vacationPolicyId);
-            throw new BusinessRuleViolationException(ErrorCode.VACATION_ALREADY_APPROVED);
-        }
-
-        // 5. 소프트 삭제 수행
-        userVacationPolicy.deleteUserVacationPolicy();
-
-        // 6. 해당 유저에게 해당 정책으로 부여된 VacationGrant 회수 처리
-        List<VacationGrant> userGrants = vacationGrantRepository.findByUserId(userId);
-        int revokedGrantCount = 0;
-
-        for (VacationGrant grant : userGrants) {
-            // 해당 정책으로 부여된 grant인지 확인
-            if (grant.getPolicy().getId().equals(vacationPolicyId)) {
-                // ACTIVE 상태인 grant만 회수 처리
-                if (grant.getStatus() == GrantStatus.ACTIVE) {
-                    grant.revoke();
-                    revokedGrantCount++;
-
-                    log.info("Revoked vacation grant {} from user {} (remainTime: {})", grant.getId(), userId, grant.getRemainTime());
-                }
-            }
-        }
-
-        log.info("Revoked vacation policy {} from user {} ({} grants revoked)", vacationPolicyId, userId, revokedGrantCount);
-
-        return userVacationPolicy.getId();
-    }
-
-    @Transactional
-    @Override
-    public List<Long> revokeVacationPoliciesFromUser(String userId, List<Long> vacationPolicyIds) {
-        // 1. 유저 존재 확인
-        userService.checkUserExist(userId);
-
-        List<Long> revokedIds = new ArrayList<>();
-        int totalRevokedGrants = 0;
-
-        // 2. 각 휴가 정책에 대해 회수 처리
-        for (Long policyId : vacationPolicyIds) {
-            try {
-                // 휴가 정책 존재 확인
-                validateAndGetVacationPolicy(policyId);
-
-                // UserVacationPolicy 조회
-                Optional<UserVacationPolicy> optionalUvp = userVacationPolicyRepository
-                        .findByUserIdAndVacationPolicyId(userId, policyId);
-
-                if (optionalUvp.isEmpty()) {
-                    log.warn("User {} does not have vacation policy {}, skipping", userId, policyId);
-                    continue;
-                }
-
-                UserVacationPolicy userVacationPolicy = optionalUvp.get();
-
-                // 이미 삭제된 경우 스킵
-                if (YNType.isY(userVacationPolicy.getIsDeleted())) {
-                    log.warn("Vacation policy {} already revoked from user {}, skipping", policyId, userId);
-                    continue;
-                }
-
-                // 소프트 삭제 수행
-                userVacationPolicy.deleteUserVacationPolicy();
-
-                // 해당 유저에게 해당 정책으로 부여된 VacationGrant 회수 처리
-                List<VacationGrant> userGrants = vacationGrantRepository.findByUserId(userId);
-                int revokedGrantCount = 0;
-
-                for (VacationGrant grant : userGrants) {
-                    // 해당 정책으로 부여된 grant인지 확인
-                    if (grant.getPolicy().getId().equals(policyId)) {
-                        // ACTIVE 상태인 grant만 회수 처리
-                        if (grant.getStatus() == GrantStatus.ACTIVE) {
-                            grant.revoke();
-                            revokedGrantCount++;
-                        }
-                    }
-                }
-
-                totalRevokedGrants += revokedGrantCount;
-                revokedIds.add(policyId);
-
-                log.info("Revoked vacation policy {} from user {} ({} grants revoked)", policyId, userId, revokedGrantCount);
-
-            } catch (Exception e) {
-                log.error("Failed to revoke vacation policy {} from user {}: {}", policyId, userId, e.getMessage());
-                // 일괄 처리 중 개별 에러는 스킵하고 계속 진행
-            }
-        }
-
-        log.info("Revoked {} vacation policies from user {} ({} total grants revoked)", revokedIds.size(), userId, totalRevokedGrants);
-
-        return revokedIds;
     }
 
     @Transactional
@@ -999,8 +828,8 @@ public class VacationServiceImpl implements VacationService {
             throw new BusinessRuleViolationException(ErrorCode.VACATION_POLICY_NOT_FOUND);
         }
 
-        // 4. 사용자에게 해당 정책이 할당되어 있는지 확인
-        boolean hasPolicy = userVacationPolicyRepository.existsByUserIdAndVacationPolicyId(userId, data.getPolicyId());
+        // 4. 사용자에게 해당 정책이 할당되어 있는지 확인 (Plan 기반)
+        boolean hasPolicy = isUserHasVacationPolicy(userId, data.getPolicyId());
         if (!hasPolicy) {
             log.warn("휴가 신청 실패 - 정책 미할당: userId={}, policyId={}", userId, data.getPolicyId());
             throw new BusinessRuleViolationException(ErrorCode.VACATION_POLICY_NOT_FOUND);
@@ -1533,23 +1362,25 @@ public class VacationServiceImpl implements VacationService {
         // 2. 모든 휴가 정책 조회
         List<VacationPolicy> allPolicies = vacationPolicyRepository.findVacationPolicies();
 
-        // 3. 유저에게 할당된 휴가 정책 조회
-        List<UserVacationPolicy> userVacationPolicies = userVacationPolicyRepository.findByUserId(userId);
+        // 3. 유저에게 할당된 휴가 정책 조회 (Plan 기반)
+        List<UserVacationPlan> userVacationPlans = userVacationPlanRepository.findByUserIdWithPlanAndPolicies(userId);
 
         // 4. 할당된 정책 ID Set 생성 (빠른 조회를 위해)
-        Set<Long> assignedPolicyIds = userVacationPolicies.stream()
-                .map(uvp -> uvp.getVacationPolicy().getId())
+        Set<Long> assignedPolicyIds = userVacationPlans.stream()
+                .filter(uvp -> YNType.isN(uvp.getIsDeleted()))
+                .flatMap(uvp -> uvp.getVacationPlan().getPolicies().stream())
+                .map(VacationPolicy::getId)
                 .collect(Collectors.toSet());
 
         // 5. 할당된 정책과 할당되지 않은 정책 분리
         List<VacationPolicyServiceDto> assignedPolicies = allPolicies.stream()
                 .filter(p -> assignedPolicyIds.contains(p.getId()))
-                .map(p -> convertToPolicyServiceDto(p))
+                .map(this::convertToPolicyServiceDto)
                 .toList();
 
         List<VacationPolicyServiceDto> unassignedPolicies = allPolicies.stream()
                 .filter(p -> !assignedPolicyIds.contains(p.getId()))
-                .map(p -> convertToPolicyServiceDto(p))
+                .map(this::convertToPolicyServiceDto)
                 .toList();
 
         log.info("User {} vacation policy assignment status - assigned: {}, unassigned: {}",
@@ -1593,14 +1424,18 @@ public class VacationServiceImpl implements VacationService {
         // 유저 존재 확인
         userService.checkUserExist(userId);
 
-        // 필터링된 유저 휴가 정책 조회
-        List<UserVacationPolicy> userVacationPolicies =
-                userVacationPolicyRepository.findByUserIdWithFilters(userId, vacationType, grantMethod);
+        // 유저에게 할당된 휴가 정책 조회 (Plan 기반)
+        List<UserVacationPlan> userVacationPlans = userVacationPlanRepository.findByUserIdWithPlanAndPolicies(userId);
 
-        return userVacationPolicies.stream()
-                .map(uvp -> {
-                    VacationPolicy policy = uvp.getVacationPolicy();
-
+        // Plan에 포함된 정책들을 중복 없이 추출하고 필터링
+        return userVacationPlans.stream()
+                .filter(uvp -> YNType.isN(uvp.getIsDeleted()))
+                .flatMap(uvp -> uvp.getVacationPlan().getPolicies().stream())
+                .distinct()
+                // 필터링 (null이면 모두 반환)
+                .filter(policy -> vacationType == null || policy.getVacationType() == vacationType)
+                .filter(policy -> grantMethod == null || policy.getGrantMethod() == grantMethod)
+                .map(policy -> {
                     // 반복 부여 정책일 경우 다국어 설명 생성
                     String repeatGrantDescription = null;
                     if (policy.getGrantMethod() == GrantMethod.REPEAT_GRANT) {
@@ -1700,6 +1535,28 @@ public class VacationServiceImpl implements VacationService {
                             .build();
                 })
                 .toList();
+    }
+
+    // ========================================
+    // Helper Methods (Plan 기반)
+    // ========================================
+
+    /**
+     * 사용자에게 특정 휴가 정책이 할당되어 있는지 확인 (Plan 기반)<br>
+     * 사용자의 Plan에 포함된 정책인지 확인
+     *
+     * @param userId 사용자 ID
+     * @param policyId 휴가 정책 ID
+     * @return 정책 할당 여부
+     */
+    private boolean isUserHasVacationPolicy(String userId, Long policyId) {
+        // 사용자의 Plan 목록 조회
+        List<UserVacationPlan> userPlans = userVacationPlanRepository.findByUserIdWithPlanAndPolicies(userId);
+
+        // Plan에 포함된 정책 중 해당 policyId가 있는지 확인
+        return userPlans.stream()
+                .filter(uvp -> YNType.isN(uvp.getIsDeleted()))
+                .anyMatch(uvp -> uvp.getVacationPlan().hasPolicy(policyId));
     }
 
 }

@@ -57,6 +57,16 @@ public enum ErrorCode {
     VACATION_MINUTE_USAGE_NOT_ALLOWED("VACATION_012", "error.vacation.minute.usage.not.allowed", HttpStatus.BAD_REQUEST),
 
     // ========================================
+    // VACATION PLAN (휴가 플랜)
+    // ========================================
+    VACATION_PLAN_NOT_FOUND("VACATION_PLAN_001", "error.notfound.vacation.plan", HttpStatus.NOT_FOUND),
+    VACATION_PLAN_ALREADY_EXISTS("VACATION_PLAN_002", "error.duplicate.vacation.plan", HttpStatus.CONFLICT),
+    VACATION_PLAN_POLICY_NOT_FOUND("VACATION_PLAN_003", "error.notfound.vacation.plan.policy", HttpStatus.NOT_FOUND),
+    USER_VACATION_PLAN_NOT_FOUND("VACATION_PLAN_004", "error.notfound.user.vacation.plan", HttpStatus.NOT_FOUND),
+    USER_VACATION_PLAN_ALREADY_EXISTS("VACATION_PLAN_005", "error.duplicate.user.vacation.plan", HttpStatus.CONFLICT),
+    VACATION_PLAN_POLICY_ALREADY_EXISTS("VACATION_PLAN_006", "error.duplicate.vacation.plan.policy", HttpStatus.CONFLICT),
+
+    // ========================================
     // WORK (근무)
     // ========================================
     WORK_NOT_FOUND("WORK_001", "error.notfound.work.history", HttpStatus.NOT_FOUND),

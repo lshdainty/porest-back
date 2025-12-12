@@ -327,29 +327,7 @@ public class VacationApiDto {
     @Getter
     @AllArgsConstructor
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    @Schema(description = "휴가 정책 할당 요청")
-    public static class AssignVacationPoliciesToUserReq {
-        @Schema(description = "할당할 휴가 정책 ID 목록", example = "[1, 2, 3]")
-        private List<Long> vacationPolicyIds;
-    }
-
-    @Getter
-    @AllArgsConstructor
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    @Schema(description = "휴가 정책 할당 응답")
-    public static class AssignVacationPoliciesToUserResp {
-        @Schema(description = "사용자 ID", example = "user123")
-        private String userId;
-
-        @Schema(description = "할당된 휴가 정책 ID 목록", example = "[1, 2, 3]")
-        private List<Long> assignedVacationPolicyIds;
-    }
-
-    @Getter
-    @AllArgsConstructor
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class GetUserAssignedVacationPoliciesResp {
-        private Long userVacationPolicyId;
         private Long vacationPolicyId;
         private String vacationPolicyName;
         private String vacationPolicyDesc;
@@ -370,30 +348,6 @@ public class VacationApiDto {
         private EffectiveType effectiveType;
         private ExpirationType expirationType;
         private String repeatGrantDescription; // 반복 부여 정책의 한국어 설명
-    }
-
-    @Getter
-    @AllArgsConstructor
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    public static class RevokeVacationPolicyFromUserResp {
-        private String userId;
-        private Long vacationPolicyId;
-        private Long userVacationPolicyId;
-    }
-
-    @Getter
-    @AllArgsConstructor
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    public static class RevokeVacationPoliciesFromUserReq {
-        private List<Long> vacationPolicyIds;
-    }
-
-    @Getter
-    @AllArgsConstructor
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    public static class RevokeVacationPoliciesFromUserResp {
-        private String userId;
-        private List<Long> revokedVacationPolicyIds;
     }
 
     @Getter

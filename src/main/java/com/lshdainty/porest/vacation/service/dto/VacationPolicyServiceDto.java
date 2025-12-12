@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 @Getter @Setter
 @Builder
 public class VacationPolicyServiceDto {
-    private Long userVacationPolicyId;
     private Long id;
     private String name;
     private String desc;

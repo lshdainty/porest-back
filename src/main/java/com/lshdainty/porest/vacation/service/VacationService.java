@@ -158,40 +158,13 @@ public interface VacationService {
     Long deleteVacationPolicy(Long vacationPolicyId);
 
     /**
-     * 유저에게 여러 휴가 정책을 일괄 할당
-     *
-     * @param userId 유저 ID
-     * @param vacationPolicyIds 휴가 정책 ID 리스트
-     * @return 할당된 휴가 정책 ID 리스트
-     */
-    List<Long> assignVacationPoliciesToUser(String userId, List<Long> vacationPolicyIds);
-
-    /**
-     * 유저에게 할당된 휴가 정책 조회
+     * 유저에게 할당된 휴가 정책 조회 (Plan 기반)
      *
      * @param userId 유저 ID
      * @param grantMethod 부여 방법 필터 (Optional)
      * @return 유저에게 할당된 휴가 정책 리스트
      */
     List<VacationPolicyServiceDto> getUserAssignedVacationPolicies(String userId, GrantMethod grantMethod);
-
-    /**
-     * 유저에게 부여된 휴가 정책 회수 (단일)
-     *
-     * @param userId 유저 ID
-     * @param vacationPolicyId 휴가 정책 ID
-     * @return 회수된 UserVacationPolicy ID
-     */
-    Long revokeVacationPolicyFromUser(String userId, Long vacationPolicyId);
-
-    /**
-     * 유저에게 부여된 여러 휴가 정책 일괄 회수
-     *
-     * @param userId 유저 ID
-     * @param vacationPolicyIds 휴가 정책 ID 리스트
-     * @return 회수된 UserVacationPolicy ID 리스트
-     */
-    List<Long> revokeVacationPoliciesFromUser(String userId, List<Long> vacationPolicyIds);
 
     /**
      * 관리자가 특정 사용자에게 휴가를 직접 부여
