@@ -2,6 +2,7 @@ package com.lshdainty.porest.vacation.repository;
 
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.vacation.domain.VacationPolicy;
+import com.lshdainty.porest.vacation.type.VacationType;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -40,5 +41,14 @@ public class VacationPolicyJpaRepository implements VacationPolicyRepository {
                 .setParameter("isDeleted", YNType.N)
                 .getSingleResult();
         return count != null && count > 0;
+    }
+
+    @Override
+    public List<VacationPolicy> findByVacationType(VacationType vacationType) {
+        return em.createQuery(
+                        "select vp from VacationPolicy vp where vp.vacationType = :vacationType and vp.isDeleted = :isDeleted", VacationPolicy.class)
+                .setParameter("vacationType", vacationType)
+                .setParameter("isDeleted", YNType.N)
+                .getResultList();
     }
 }

@@ -1,6 +1,7 @@
 package com.lshdainty.porest.vacation.repository;
 
 import com.lshdainty.porest.vacation.domain.VacationPolicy;
+import com.lshdainty.porest.vacation.type.VacationType;
 import com.lshdainty.porest.common.type.YNType;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
@@ -53,5 +54,14 @@ public class VacationPolicyQueryDslRepository implements VacationPolicyRepositor
                         .and(vacationPolicy.isDeleted.eq(YNType.N)))
                 .fetchFirst();
         return count != null;
+    }
+
+    @Override
+    public List<VacationPolicy> findByVacationType(VacationType vacationType) {
+        return query
+                .selectFrom(vacationPolicy)
+                .where(vacationPolicy.vacationType.eq(vacationType)
+                        .and(vacationPolicy.isDeleted.eq(YNType.N)))
+                .fetch();
     }
 }

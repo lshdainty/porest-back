@@ -75,10 +75,23 @@ public class VacationServiceImpl implements VacationService {
             }
         }
 
-        // 4. 주말 리스트 조회
+        // 4. 분단위 사용 가능 여부 검증 (시간 계산 전에 빠르게 검증)
+        if (data.getTimeType().isMinuteBasedType()) {
+            List<VacationPolicy> policies = vacationPolicyRepository.findByVacationType(data.getType());
+            boolean isMinuteUsageAllowed = policies.stream()
+                    .anyMatch(policy -> YNType.isY(policy.getMinuteGrantYn()));
+
+            if (!isMinuteUsageAllowed) {
+                log.warn("휴가 사용 실패 - 분단위 사용 불가: userId={}, vacationType={}, timeType={}",
+                        data.getUserId(), data.getType(), data.getTimeType());
+                throw new BusinessRuleViolationException(ErrorCode.VACATION_MINUTE_USAGE_NOT_ALLOWED);
+            }
+        }
+
+        // 5. 주말 리스트 조회
         List<LocalDate> weekDays = PorestTime.getBetweenDatesByDayOfWeek(data.getStartDate(), data.getEndDate(), new int[]{6, 7});
 
-        // 5. 공휴일 리스트 조회 (사용자의 국가 코드 기반)
+        // 6. 공휴일 리스트 조회 (사용자의 국가 코드 기반)
         CountryCode countryCode = user.getCountryCode();
         List<LocalDate> holidays = holidayRepository.findHolidaysByStartEndDateWithType(
                 data.getStartDate().toLocalDate(),
@@ -91,25 +104,25 @@ public class VacationServiceImpl implements VacationService {
 
         weekDays = PorestTime.addAllDates(weekDays, holidays);
 
-        // 6. 두 날짜 간 모든 날짜 가져오기
+        // 7. 두 날짜 간 모든 날짜 가져오기
         List<LocalDate> betweenDates = PorestTime.getBetweenDates(data.getStartDate(), data.getEndDate());
         log.info("betweenDates : {}, weekDays : {}", betweenDates, weekDays);
 
-        // 7. 사용자가 캘린더에서 선택한 날짜 중 휴일, 공휴일 제거
+        // 8. 사용자가 캘린더에서 선택한 날짜 중 휴일, 공휴일 제거
         betweenDates = PorestTime.removeAllDates(betweenDates, weekDays);
         log.info("remainDays : {}", betweenDates);
 
-        // 8. 등록하려는 총 사용시간 계산
+        // 9. 등록하려는 총 사용시간 계산
         BigDecimal totalUseTime = new BigDecimal("0.0000").add(data.getTimeType().convertToValue(betweenDates.size()));
 
-        // 9. 사용 가능한 VacationGrant 조회 (FIFO: VacationType 일치 + 휴가 시작일이 유효기간 내 + 만료일 가까운 순)
+        // 10. 사용 가능한 VacationGrant 조회 (FIFO: VacationType 일치 + 휴가 시작일이 유효기간 내 + 만료일 가까운 순)
         List<VacationGrant> availableGrants = vacationGrantRepository.findAvailableGrantsByUserIdAndTypeAndDate(
                 data.getUserId(),
                 data.getType(),
                 data.getStartDate()  // 사용자가 사용하려는 휴가 시작일
         );
 
-        // 10. 총 잔여 시간 계산 및 검증
+        // 11. 총 잔여 시간 계산 및 검증
         BigDecimal totalRemainTime = availableGrants.stream()
                 .map(VacationGrant::getRemainTime)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -119,7 +132,7 @@ public class VacationServiceImpl implements VacationService {
             throw new BusinessRuleViolationException(ErrorCode.VACATION_INSUFFICIENT_BALANCE);
         }
 
-        // 11. 통합 기간 휴가 사용 내역 생성
+        // 12. 통합 기간 휴가 사용 내역 생성
         VacationUsage usage = VacationUsage.createVacationUsage(
                 user,
                 data.getDesc(),
@@ -129,7 +142,7 @@ public class VacationServiceImpl implements VacationService {
                 totalUseTime
         );
 
-        // 12. FIFO로 VacationGrant에서 차감
+        // 13. FIFO로 VacationGrant에서 차감
         List<VacationUsageDeduction> deductionsToSave = new ArrayList<>();
         BigDecimal remainingNeedTime = totalUseTime;
 
@@ -163,7 +176,7 @@ public class VacationServiceImpl implements VacationService {
             throw new BusinessRuleViolationException(ErrorCode.VACATION_INSUFFICIENT_BALANCE);
         }
 
-        // 13. 저장
+        // 14. 저장
         vacationUsageRepository.save(usage);
         vacationUsageDeductionRepository.saveAll(deductionsToSave);
 

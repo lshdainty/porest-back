@@ -44,4 +44,14 @@ public enum VacationTimeType implements DisplayType {
     public BigDecimal convertToValue(int dayCount) {
         return expression.apply(BigDecimal.valueOf(dayCount));
     }
+
+    /**
+     * 분단위 휴가 타입인지 확인<br>
+     * HALFTIMEOFF(30분)만 분단위 타입으로 판단
+     *
+     * @return 분단위 타입 여부
+     */
+    public boolean isMinuteBasedType() {
+        return this == HALFTIMEOFF;
+    }
 }

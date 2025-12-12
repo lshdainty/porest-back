@@ -188,4 +188,70 @@ class VacationPolicyJpaRepositoryTest {
         assertThat(findPolicy.isPresent()).isTrue();
         assertThat(findPolicy.get().getApprovalRequiredCount()).isEqualTo(2);
     }
+
+    @Test
+    @DisplayName("휴가 타입으로 정책 조회")
+    void findByVacationType() {
+        // given
+        vacationPolicyRepository.save(VacationPolicy.createManualGrantPolicy(
+                "연차1", "연차 정책1", VacationType.ANNUAL, new BigDecimal("8.0"),
+                YNType.N, YNType.N, EffectiveType.IMMEDIATELY, ExpirationType.END_OF_YEAR
+        ));
+        vacationPolicyRepository.save(VacationPolicy.createManualGrantPolicy(
+                "연차2", "연차 정책2", VacationType.ANNUAL, new BigDecimal("15.0"),
+                YNType.N, YNType.Y, EffectiveType.IMMEDIATELY, ExpirationType.END_OF_YEAR
+        ));
+        vacationPolicyRepository.save(VacationPolicy.createManualGrantPolicy(
+                "건강휴가", "건강검진 휴가", VacationType.HEALTH, new BigDecimal("4.0"),
+                YNType.N, YNType.N, EffectiveType.IMMEDIATELY, ExpirationType.END_OF_YEAR
+        ));
+        em.flush();
+        em.clear();
+
+        // when
+        List<VacationPolicy> annualPolicies = vacationPolicyRepository.findByVacationType(VacationType.ANNUAL);
+        List<VacationPolicy> healthPolicies = vacationPolicyRepository.findByVacationType(VacationType.HEALTH);
+
+        // then
+        assertThat(annualPolicies).hasSize(2);
+        assertThat(annualPolicies).extracting("name").containsExactlyInAnyOrder("연차1", "연차2");
+        assertThat(healthPolicies).hasSize(1);
+        assertThat(healthPolicies.get(0).getName()).isEqualTo("건강휴가");
+    }
+
+    @Test
+    @DisplayName("휴가 타입으로 조회 시 삭제된 정책 제외")
+    void findByVacationTypeExcludesDeleted() {
+        // given
+        VacationPolicy activePolicy = VacationPolicy.createManualGrantPolicy(
+                "활성 연차", "활성", VacationType.ANNUAL, new BigDecimal("8.0"),
+                YNType.N, YNType.N, EffectiveType.IMMEDIATELY, ExpirationType.END_OF_YEAR
+        );
+        VacationPolicy deletedPolicy = VacationPolicy.createManualGrantPolicy(
+                "삭제 연차", "삭제", VacationType.ANNUAL, new BigDecimal("4.0"),
+                YNType.N, YNType.N, EffectiveType.IMMEDIATELY, ExpirationType.END_OF_YEAR
+        );
+        vacationPolicyRepository.save(activePolicy);
+        vacationPolicyRepository.save(deletedPolicy);
+        deletedPolicy.deleteVacationPolicy();
+        em.flush();
+        em.clear();
+
+        // when
+        List<VacationPolicy> policies = vacationPolicyRepository.findByVacationType(VacationType.ANNUAL);
+
+        // then
+        assertThat(policies).hasSize(1);
+        assertThat(policies.get(0).getName()).isEqualTo("활성 연차");
+    }
+
+    @Test
+    @DisplayName("휴가 타입으로 조회 시 해당 타입이 없으면 빈 리스트 반환")
+    void findByVacationTypeEmpty() {
+        // given & when
+        List<VacationPolicy> policies = vacationPolicyRepository.findByVacationType(VacationType.ANNUAL);
+
+        // then
+        assertThat(policies).isEmpty();
+    }
 }

@@ -1,6 +1,7 @@
 package com.lshdainty.porest.vacation.repository;
 
 import com.lshdainty.porest.vacation.domain.VacationPolicy;
+import com.lshdainty.porest.vacation.type.VacationType;
 
 import java.util.List;
 import java.util.Optional;
@@ -38,4 +39,12 @@ public interface VacationPolicyRepository {
      * @return 중복 여부
      */
     boolean existsByName(String name);
+
+    /**
+     * 휴가 타입으로 휴가 정책 목록 조회
+     *
+     * @param vacationType 휴가 타입
+     * @return List&lt;VacationPolicy&gt;
+     */
+    List<VacationPolicy> findByVacationType(VacationType vacationType);
 }

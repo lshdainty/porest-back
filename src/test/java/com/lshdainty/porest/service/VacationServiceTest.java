@@ -1521,6 +1521,241 @@ class VacationServiceTest {
         }
     }
 
+    @Nested
+    @DisplayName("휴가 사용")
+    class UseVacation {
+        @Test
+        @DisplayName("성공 - 분단위 사용이 허용된 정책이 있으면 HALFTIMEOFF 휴가를 사용할 수 있다")
+        void useVacationWithMinuteTypeSuccess() {
+            // given
+            String userId = "user1";
+            User user = createTestUser(userId);
+
+            LocalDateTime startDate = LocalDateTime.of(2025, 6, 2, 9, 0);
+            LocalDateTime endDate = LocalDateTime.of(2025, 6, 2, 9, 30);
+
+            VacationServiceDto data = VacationServiceDto.builder()
+                    .userId(userId)
+                    .type(VacationType.ANNUAL)
+                    .timeType(VacationTimeType.HALFTIMEOFF)
+                    .startDate(startDate)
+                    .endDate(endDate)
+                    .desc("30분 휴가")
+                    .build();
+
+            // 분단위 부여 허용 정책
+            VacationPolicy policyWithMinute = VacationPolicy.createManualGrantPolicy(
+                    "연차(분단위)", "연차 휴가", VacationType.ANNUAL,
+                    new BigDecimal("15.0000"), YNType.N, YNType.Y,
+                    EffectiveType.IMMEDIATELY, ExpirationType.END_OF_YEAR
+            );
+            ReflectionTestUtils.setField(policyWithMinute, "id", 1L);
+
+            VacationGrant grant = VacationGrant.createVacationGrant(
+                    user, policyWithMinute, "휴가 부여", VacationType.ANNUAL, new BigDecimal("15.0000"),
+                    LocalDateTime.of(2025, 1, 1, 0, 0),
+                    LocalDateTime.of(2025, 12, 31, 23, 59)
+            );
+            ReflectionTestUtils.setField(grant, "id", 1L);
+
+            given(userService.checkUserExist(userId)).willReturn(user);
+            // 분단위 검증이 먼저 실행됨
+            given(vacationPolicyRepository.findByVacationType(VacationType.ANNUAL))
+                    .willReturn(List.of(policyWithMinute));
+            // 분단위 검증 통과 후 공휴일 조회
+            given(holidayRepository.findHolidaysByStartEndDateWithType(any(), any(), any(), any()))
+                    .willReturn(List.of());
+            given(vacationGrantRepository.findAvailableGrantsByUserIdAndTypeAndDate(eq(userId), eq(VacationType.ANNUAL), any()))
+                    .willReturn(List.of(grant));
+            willDoNothing().given(vacationUsageRepository).save(any(VacationUsage.class));
+            willDoNothing().given(vacationUsageDeductionRepository).saveAll(anyList());
+
+            // when
+            Long result = vacationService.useVacation(data);
+
+            // then
+            assertThat(result).isNull(); // 저장 후 ID 반환되지만 mock이므로 null
+            then(vacationUsageRepository).should().save(any(VacationUsage.class));
+        }
+
+        @Test
+        @DisplayName("실패 - 분단위 사용이 허용되지 않으면 HALFTIMEOFF 휴가 사용 시 예외가 발생한다")
+        void useVacationWithMinuteTypeFailNotAllowed() {
+            // given
+            String userId = "user1";
+            User user = createTestUser(userId);
+
+            LocalDateTime startDate = LocalDateTime.of(2025, 6, 2, 9, 0);
+            LocalDateTime endDate = LocalDateTime.of(2025, 6, 2, 9, 30);
+
+            VacationServiceDto data = VacationServiceDto.builder()
+                    .userId(userId)
+                    .type(VacationType.ANNUAL)
+                    .timeType(VacationTimeType.HALFTIMEOFF)
+                    .startDate(startDate)
+                    .endDate(endDate)
+                    .desc("30분 휴가")
+                    .build();
+
+            // 분단위 부여 불허 정책
+            VacationPolicy policyWithoutMinute = VacationPolicy.createManualGrantPolicy(
+                    "연차", "연차 휴가", VacationType.ANNUAL,
+                    new BigDecimal("15.0000"), YNType.N, YNType.N,
+                    EffectiveType.IMMEDIATELY, ExpirationType.END_OF_YEAR
+            );
+            ReflectionTestUtils.setField(policyWithoutMinute, "id", 1L);
+
+            given(userService.checkUserExist(userId)).willReturn(user);
+            // 분단위 검증이 먼저 실행되어 실패하므로 holidayRepository는 호출되지 않음
+            given(vacationPolicyRepository.findByVacationType(VacationType.ANNUAL))
+                    .willReturn(List.of(policyWithoutMinute));
+
+            // when & then
+            assertThatThrownBy(() -> vacationService.useVacation(data))
+                    .isInstanceOf(BusinessRuleViolationException.class);
+        }
+
+        @Test
+        @DisplayName("성공 - 분단위 사용이 허용된 정책이 하나라도 있으면 HALFTIMEOFF 사용 가능")
+        void useVacationWithMinuteTypeSuccessWhenAnyPolicyAllows() {
+            // given
+            String userId = "user1";
+            User user = createTestUser(userId);
+
+            LocalDateTime startDate = LocalDateTime.of(2025, 6, 2, 9, 0);
+            LocalDateTime endDate = LocalDateTime.of(2025, 6, 2, 9, 30);
+
+            VacationServiceDto data = VacationServiceDto.builder()
+                    .userId(userId)
+                    .type(VacationType.ANNUAL)
+                    .timeType(VacationTimeType.HALFTIMEOFF)
+                    .startDate(startDate)
+                    .endDate(endDate)
+                    .desc("30분 휴가")
+                    .build();
+
+            // 분단위 부여 불허 정책
+            VacationPolicy policyWithoutMinute = VacationPolicy.createManualGrantPolicy(
+                    "연차", "연차 휴가", VacationType.ANNUAL,
+                    new BigDecimal("15.0000"), YNType.N, YNType.N,
+                    EffectiveType.IMMEDIATELY, ExpirationType.END_OF_YEAR
+            );
+            ReflectionTestUtils.setField(policyWithoutMinute, "id", 1L);
+
+            // 분단위 부여 허용 정책
+            VacationPolicy policyWithMinute = VacationPolicy.createManualGrantPolicy(
+                    "연차(분단위)", "연차 휴가", VacationType.ANNUAL,
+                    new BigDecimal("15.0000"), YNType.N, YNType.Y,
+                    EffectiveType.IMMEDIATELY, ExpirationType.END_OF_YEAR
+            );
+            ReflectionTestUtils.setField(policyWithMinute, "id", 2L);
+
+            VacationGrant grant = VacationGrant.createVacationGrant(
+                    user, policyWithMinute, "휴가 부여", VacationType.ANNUAL, new BigDecimal("15.0000"),
+                    LocalDateTime.of(2025, 1, 1, 0, 0),
+                    LocalDateTime.of(2025, 12, 31, 23, 59)
+            );
+            ReflectionTestUtils.setField(grant, "id", 1L);
+
+            given(userService.checkUserExist(userId)).willReturn(user);
+            // 분단위 검증이 먼저 실행됨
+            given(vacationPolicyRepository.findByVacationType(VacationType.ANNUAL))
+                    .willReturn(List.of(policyWithoutMinute, policyWithMinute));
+            // 분단위 검증 통과 후 공휴일 조회
+            given(holidayRepository.findHolidaysByStartEndDateWithType(any(), any(), any(), any()))
+                    .willReturn(List.of());
+            given(vacationGrantRepository.findAvailableGrantsByUserIdAndTypeAndDate(eq(userId), eq(VacationType.ANNUAL), any()))
+                    .willReturn(List.of(grant));
+            willDoNothing().given(vacationUsageRepository).save(any(VacationUsage.class));
+            willDoNothing().given(vacationUsageDeductionRepository).saveAll(anyList());
+
+            // when
+            Long result = vacationService.useVacation(data);
+
+            // then
+            then(vacationUsageRepository).should().save(any(VacationUsage.class));
+        }
+
+        @Test
+        @DisplayName("성공 - DAYOFF 타입은 분단위 검증을 하지 않는다")
+        void useVacationWithDayoffTypeSkipsMinuteCheck() {
+            // given
+            String userId = "user1";
+            User user = createTestUser(userId);
+
+            LocalDateTime startDate = LocalDateTime.of(2025, 6, 2, 9, 0);
+            LocalDateTime endDate = LocalDateTime.of(2025, 6, 2, 18, 0);
+
+            VacationServiceDto data = VacationServiceDto.builder()
+                    .userId(userId)
+                    .type(VacationType.ANNUAL)
+                    .timeType(VacationTimeType.DAYOFF)
+                    .startDate(startDate)
+                    .endDate(endDate)
+                    .desc("연차")
+                    .build();
+
+            // 분단위 부여 불허 정책 (DAYOFF는 분단위 검증 대상이 아님)
+            VacationPolicy policyWithoutMinute = VacationPolicy.createManualGrantPolicy(
+                    "연차", "연차 휴가", VacationType.ANNUAL,
+                    new BigDecimal("15.0000"), YNType.N, YNType.N,
+                    EffectiveType.IMMEDIATELY, ExpirationType.END_OF_YEAR
+            );
+            ReflectionTestUtils.setField(policyWithoutMinute, "id", 1L);
+
+            VacationGrant grant = VacationGrant.createVacationGrant(
+                    user, policyWithoutMinute, "휴가 부여", VacationType.ANNUAL, new BigDecimal("15.0000"),
+                    LocalDateTime.of(2025, 1, 1, 0, 0),
+                    LocalDateTime.of(2025, 12, 31, 23, 59)
+            );
+            ReflectionTestUtils.setField(grant, "id", 1L);
+
+            given(userService.checkUserExist(userId)).willReturn(user);
+            given(holidayRepository.findHolidaysByStartEndDateWithType(any(), any(), any(), any()))
+                    .willReturn(List.of());
+            given(vacationGrantRepository.findAvailableGrantsByUserIdAndTypeAndDate(eq(userId), eq(VacationType.ANNUAL), any()))
+                    .willReturn(List.of(grant));
+            willDoNothing().given(vacationUsageRepository).save(any(VacationUsage.class));
+            willDoNothing().given(vacationUsageDeductionRepository).saveAll(anyList());
+
+            // when
+            Long result = vacationService.useVacation(data);
+
+            // then - 분단위 검증 로직이 호출되지 않음 (findByVacationType 호출 안됨)
+            then(vacationPolicyRepository).should(never()).findByVacationType(any());
+            then(vacationUsageRepository).should().save(any(VacationUsage.class));
+        }
+
+        @Test
+        @DisplayName("실패 - 해당 VacationType의 정책이 없으면 분단위 사용 불가")
+        void useVacationWithMinuteTypeFailNoPolicies() {
+            // given
+            String userId = "user1";
+            User user = createTestUser(userId);
+
+            LocalDateTime startDate = LocalDateTime.of(2025, 6, 2, 9, 0);
+            LocalDateTime endDate = LocalDateTime.of(2025, 6, 2, 9, 30);
+
+            VacationServiceDto data = VacationServiceDto.builder()
+                    .userId(userId)
+                    .type(VacationType.ANNUAL)
+                    .timeType(VacationTimeType.HALFTIMEOFF)
+                    .startDate(startDate)
+                    .endDate(endDate)
+                    .desc("30분 휴가")
+                    .build();
+
+            given(userService.checkUserExist(userId)).willReturn(user);
+            // 분단위 검증이 먼저 실행되어 실패하므로 holidayRepository는 호출되지 않음
+            given(vacationPolicyRepository.findByVacationType(VacationType.ANNUAL))
+                    .willReturn(List.of());
+
+            // when & then
+            assertThatThrownBy(() -> vacationService.useVacation(data))
+                    .isInstanceOf(BusinessRuleViolationException.class);
+        }
+    }
+
     // 테스트 헬퍼 메서드들
     private User createTestUser(String userId) {
         return User.createUser(userId, "password", "테스트유저", "test@test.com",
