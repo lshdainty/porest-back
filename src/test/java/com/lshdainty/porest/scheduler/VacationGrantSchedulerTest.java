@@ -2,11 +2,11 @@ package com.lshdainty.porest.scheduler;
 
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.user.domain.User;
-import com.lshdainty.porest.vacation.domain.UserVacationPolicy;
 import com.lshdainty.porest.vacation.domain.VacationGrant;
+import com.lshdainty.porest.vacation.domain.VacationGrantSchedule;
 import com.lshdainty.porest.vacation.domain.VacationPolicy;
-import com.lshdainty.porest.vacation.repository.UserVacationPolicyRepository;
 import com.lshdainty.porest.vacation.repository.VacationGrantRepository;
+import com.lshdainty.porest.vacation.repository.VacationGrantScheduleRepository;
 import com.lshdainty.porest.vacation.scheduler.VacationGrantScheduler;
 import com.lshdainty.porest.vacation.service.policy.RepeatGrant;
 import com.lshdainty.porest.vacation.service.policy.factory.VacationPolicyStrategyFactory;
@@ -34,7 +34,7 @@ import static org.mockito.BDDMockito.*;
 class VacationGrantSchedulerTest {
 
     @Mock
-    private UserVacationPolicyRepository userVacationPolicyRepository;
+    private VacationGrantScheduleRepository vacationGrantScheduleRepository;
 
     @Mock
     private VacationGrantRepository vacationGrantRepository;
@@ -103,11 +103,11 @@ class VacationGrantSchedulerTest {
             );
             ReflectionTestUtils.setField(policy, "id", 1L);
 
-            UserVacationPolicy uvp = UserVacationPolicy.createUserVacationPolicy(user, policy);
-            ReflectionTestUtils.setField(uvp, "id", 1L);
+            VacationGrantSchedule schedule = VacationGrantSchedule.createSchedule(user, policy);
+            ReflectionTestUtils.setField(schedule, "id", 1L);
 
             given(strategyFactory.getStrategy(GrantMethod.REPEAT_GRANT)).willReturn(repeatGrant);
-            given(userVacationPolicyRepository.findRepeatGrantTargetsForToday(any())).willReturn(List.of(uvp));
+            given(vacationGrantScheduleRepository.findRepeatGrantTargetsForToday(any())).willReturn(List.of(schedule));
             given(repeatGrant.calculateNextGrantDate(any(), any())).willReturn(LocalDate.of(2026, 1, 1));
             willDoNothing().given(vacationGrantRepository).saveAll(anyList());
 
@@ -115,7 +115,7 @@ class VacationGrantSchedulerTest {
             scheduler.grantVacationsDaily();
 
             // then
-            then(userVacationPolicyRepository).should().findRepeatGrantTargetsForToday(any());
+            then(vacationGrantScheduleRepository).should().findRepeatGrantTargetsForToday(any());
             then(vacationGrantRepository).should().saveAll(anyList());
         }
 
@@ -124,13 +124,13 @@ class VacationGrantSchedulerTest {
         void grantVacationsDailyEmpty() {
             // given
             given(strategyFactory.getStrategy(GrantMethod.REPEAT_GRANT)).willReturn(repeatGrant);
-            given(userVacationPolicyRepository.findRepeatGrantTargetsForToday(any())).willReturn(List.of());
+            given(vacationGrantScheduleRepository.findRepeatGrantTargetsForToday(any())).willReturn(List.of());
 
             // when
             scheduler.grantVacationsDaily();
 
             // then
-            then(userVacationPolicyRepository).should().findRepeatGrantTargetsForToday(any());
+            then(vacationGrantScheduleRepository).should().findRepeatGrantTargetsForToday(any());
             then(vacationGrantRepository).shouldHaveNoMoreInteractions();
         }
     }

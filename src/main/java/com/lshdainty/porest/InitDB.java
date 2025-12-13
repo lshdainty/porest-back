@@ -58,7 +58,7 @@ public class InitDB {
 		initService.initSetSchedule();
 		initService.initSetDues();
 		initService.initSetVacationPolicy();
-		initService.initSetUserVacationPolicy();
+		initService.initSetUserVacationPlan();
 		initService.initSetVacationGrant();
 		initService.initSetHoliday();
 		initService.initSetWorkCode();
@@ -618,71 +618,51 @@ public class InitDB {
 					ExpirationType.ONE_MONTHS_AFTER_GRANT, 1);
 		}
 
-		public void initSetUserVacationPolicy() {
-			// 조사 정책 조회 (재사용)
-			List<VacationPolicy> bereavementPolicies = policyMap.get("조사");
+		public void initSetUserVacationPlan() {
+			// 1. 기본 플랜 생성 (DEFAULT)
+			VacationPlan defaultPlan = VacationPlan.createPlan("DEFAULT", "기본 플랜", "모든 구성원에게 적용되는 기본 휴가 플랜");
+			em.persist(defaultPlan);
 
-			// user1에게 휴가 정책 부여
+			// 2. 7년 근속자용 플랜 생성 (SENIOR)
+			VacationPlan seniorPlan = VacationPlan.createPlan("SENIOR", "7년 근속자 플랜", "7년 이상 근속자에게 추가 적용되는 휴가 플랜");
+			em.persist(seniorPlan);
+
+			// 3. DEFAULT 플랜에 정책 연결
+			int sortOrder = 1;
 			// 반복 부여 휴가 정책: 분기별 연차
-			saveUserVacationPolicy(user1, policyMap.get("1분기 연차").get(0));
-			saveUserVacationPolicy(user1, policyMap.get("2분기 연차").get(0));
-			saveUserVacationPolicy(user1, policyMap.get("3분기 연차").get(0));
-			saveUserVacationPolicy(user1, policyMap.get("4분기 연차").get(0));
+			addPolicyToPlan(defaultPlan, policyMap.get("1분기 연차").get(0), sortOrder++);
+			addPolicyToPlan(defaultPlan, policyMap.get("2분기 연차").get(0), sortOrder++);
+			addPolicyToPlan(defaultPlan, policyMap.get("3분기 연차").get(0), sortOrder++);
+			addPolicyToPlan(defaultPlan, policyMap.get("4분기 연차").get(0), sortOrder++);
 			// 구성원 신청용 휴가 정책
-			saveUserVacationPolicy(user1, policyMap.get("동원훈련").get(0));
-			saveUserVacationPolicy(user1, policyMap.get("동미참훈련").get(0));
-			saveUserVacationPolicy(user1, policyMap.get("예비군").get(0));
-			saveUserVacationPolicy(user1, policyMap.get("예비군(반차)").get(0));
-			saveUserVacationPolicy(user1, policyMap.get("OT").get(0));
-			saveUserVacationPolicy(user1, policyMap.get("결혼").get(0));
-			saveUserVacationPolicy(user1, policyMap.get("출산").get(0));
+			addPolicyToPlan(defaultPlan, policyMap.get("동원훈련").get(0), sortOrder++);
+			addPolicyToPlan(defaultPlan, policyMap.get("동미참훈련").get(0), sortOrder++);
+			addPolicyToPlan(defaultPlan, policyMap.get("예비군").get(0), sortOrder++);
+			addPolicyToPlan(defaultPlan, policyMap.get("예비군(반차)").get(0), sortOrder++);
+			addPolicyToPlan(defaultPlan, policyMap.get("OT").get(0), sortOrder++);
+			addPolicyToPlan(defaultPlan, policyMap.get("결혼").get(0), sortOrder++);
+			addPolicyToPlan(defaultPlan, policyMap.get("출산").get(0), sortOrder++);
+			// 조사 정책들 추가
+			List<VacationPolicy> bereavementPolicies = policyMap.get("조사");
 			if (bereavementPolicies != null) {
 				for (VacationPolicy policy : bereavementPolicies) {
-					saveUserVacationPolicy(user1, policy);
+					addPolicyToPlan(defaultPlan, policy, sortOrder++);
 				}
 			}
 
-			// user2에게 휴가 정책 부여
-			// 반복 부여 휴가 정책: 분기별 연차 + 7년 근속 휴가
-			saveUserVacationPolicy(user2, policyMap.get("1분기 연차").get(0));
-			saveUserVacationPolicy(user2, policyMap.get("2분기 연차").get(0));
-			saveUserVacationPolicy(user2, policyMap.get("3분기 연차").get(0));
-			saveUserVacationPolicy(user2, policyMap.get("4분기 연차").get(0));
-			saveUserVacationPolicy(user2, policyMap.get("7년 근속 휴가").get(0));
-			// 구성원 신청용 휴가 정책
-			saveUserVacationPolicy(user2, policyMap.get("동원훈련").get(0));
-			saveUserVacationPolicy(user2, policyMap.get("동미참훈련").get(0));
-			saveUserVacationPolicy(user2, policyMap.get("예비군").get(0));
-			saveUserVacationPolicy(user2, policyMap.get("예비군(반차)").get(0));
-			saveUserVacationPolicy(user2, policyMap.get("OT").get(0));
-			saveUserVacationPolicy(user2, policyMap.get("결혼").get(0));
-			saveUserVacationPolicy(user2, policyMap.get("출산").get(0));
-			if (bereavementPolicies != null) {
-				for (VacationPolicy policy : bereavementPolicies) {
-					saveUserVacationPolicy(user2, policy);
-				}
-			}
+			// 4. SENIOR 플랜에 7년 근속 휴가 정책 추가
+			addPolicyToPlan(seniorPlan, policyMap.get("7년 근속 휴가").get(0), 1);
 
-			// user3~6에게도 동일하게 분기별 연차 정책 부여
-			for (User user : List.of(user3, user4, user5, user6)) {
-				saveUserVacationPolicy(user, policyMap.get("1분기 연차").get(0));
-				saveUserVacationPolicy(user, policyMap.get("2분기 연차").get(0));
-				saveUserVacationPolicy(user, policyMap.get("3분기 연차").get(0));
-				saveUserVacationPolicy(user, policyMap.get("4분기 연차").get(0));
-				// 구성원 신청용 휴가 정책
-				saveUserVacationPolicy(user, policyMap.get("동원훈련").get(0));
-				saveUserVacationPolicy(user, policyMap.get("동미참훈련").get(0));
-				saveUserVacationPolicy(user, policyMap.get("예비군").get(0));
-				saveUserVacationPolicy(user, policyMap.get("예비군(반차)").get(0));
-				saveUserVacationPolicy(user, policyMap.get("OT").get(0));
-				saveUserVacationPolicy(user, policyMap.get("결혼").get(0));
-				saveUserVacationPolicy(user, policyMap.get("출산").get(0));
-				if (bereavementPolicies != null) {
-					for (VacationPolicy policy : bereavementPolicies) {
-						saveUserVacationPolicy(user, policy);
-					}
-				}
-			}
+			// 5. user1, user3~6에게 DEFAULT 플랜 할당
+			assignPlanToUser(user1, defaultPlan);
+			assignPlanToUser(user3, defaultPlan);
+			assignPlanToUser(user4, defaultPlan);
+			assignPlanToUser(user5, defaultPlan);
+			assignPlanToUser(user6, defaultPlan);
+
+			// 6. user2에게 DEFAULT + SENIOR 플랜 할당 (7년 근속자)
+			assignPlanToUser(user2, defaultPlan);
+			assignPlanToUser(user2, seniorPlan);
 		}
 
 		public void initSetVacationGrant() {
@@ -1158,11 +1138,23 @@ public class InitDB {
 			}
 		}
 
-		private UserVacationPolicy saveUserVacationPolicy(User user, VacationPolicy vacationPolicy) {
-			UserVacationPolicy userVacationPolicy = UserVacationPolicy.createUserVacationPolicy(user,
-					vacationPolicy);
-			em.persist(userVacationPolicy);
-			return userVacationPolicy;
+		private void addPolicyToPlan(VacationPlan plan, VacationPolicy policy, int sortOrder) {
+			VacationPlanPolicy planPolicy = VacationPlanPolicy.createPlanPolicy(plan, policy, sortOrder, YNType.N);
+			em.persist(planPolicy);
+		}
+
+		private void assignPlanToUser(User user, VacationPlan plan) {
+			UserVacationPlan userPlan = UserVacationPlan.createUserVacationPlan(user, plan);
+			em.persist(userPlan);
+
+			// REPEAT_GRANT 정책에 대해 VacationGrantSchedule 생성
+			for (VacationPlanPolicy planPolicy : plan.getVacationPlanPolicies()) {
+				VacationPolicy policy = planPolicy.getVacationPolicy();
+				if (policy.getGrantMethod() == GrantMethod.REPEAT_GRANT) {
+					VacationGrantSchedule schedule = VacationGrantSchedule.createSchedule(user, policy);
+					em.persist(schedule);
+				}
+			}
 		}
 
 		private VacationGrant saveVacationGrant(User user, VacationPolicy policy, VacationType type,

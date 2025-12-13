@@ -345,35 +345,8 @@ public interface VacationApi {
     );
 
     @Operation(
-            summary = "유저에게 여러 휴가 정책을 일괄 할당",
-            description = "특정 사용자에게 여러 휴가 정책을 일괄 할당합니다."
-    )
-    @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "200",
-                    description = "휴가 정책 할당 성공",
-                    content = @Content(schema = @Schema(implementation = VacationApiDto.AssignVacationPoliciesToUserResp.class))
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "403",
-                    description = "권한 없음 (VACATION_POLICY_MANAGE 권한 필요)"
-            )
-    })
-    @PostMapping("/api/v1/users/{userId}/vacation-policies")
-    ApiResponse assignVacationPoliciesToUser(
-            @Parameter(description = "사용자 ID", example = "user123", required = true)
-            @PathVariable("userId") String userId,
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "할당할 휴가 정책 ID 목록",
-                    required = true,
-                    content = @Content(schema = @Schema(implementation = VacationApiDto.AssignVacationPoliciesToUserReq.class))
-            )
-            @RequestBody VacationApiDto.AssignVacationPoliciesToUserReq data
-    );
-
-    @Operation(
-            summary = "유저에게 할당된 휴가 정책 조회",
-            description = "특정 사용자에게 할당된 휴가 정책을 조회합니다."
+            summary = "유저에게 할당된 휴가 정책 조회 (Plan 기반)",
+            description = "특정 사용자에게 할당된 휴가 정책을 조회합니다. (Plan을 통해 할당된 정책)"
     )
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
@@ -415,60 +388,6 @@ public interface VacationApi {
             @RequestParam(value = "vacationType", required = false) VacationType vacationType,
             @Parameter(description = "부여 방식 필터", example = "AUTO")
             @RequestParam(value = "grantMethod", required = false) GrantMethod grantMethod
-    );
-
-    @Operation(
-            summary = "유저에게 부여된 휴가 정책 회수 (단일)",
-            description = "특정 사용자에게 부여된 특정 휴가 정책을 회수합니다."
-    )
-    @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "200",
-                    description = "휴가 정책 회수 성공",
-                    content = @Content(schema = @Schema(implementation = VacationApiDto.RevokeVacationPolicyFromUserResp.class))
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "403",
-                    description = "권한 없음 (VACATION_POLICY_MANAGE 권한 필요)"
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "404",
-                    description = "휴가 정책 할당을 찾을 수 없음"
-            )
-    })
-    @DeleteMapping("/api/v1/users/{userId}/vacation-policies/{vacationPolicyId}")
-    ApiResponse revokeVacationPolicyFromUser(
-            @Parameter(description = "사용자 ID", example = "user123", required = true)
-            @PathVariable("userId") String userId,
-            @Parameter(description = "휴가 정책 ID", example = "1", required = true)
-            @PathVariable("vacationPolicyId") Long vacationPolicyId
-    );
-
-    @Operation(
-            summary = "유저에게 부여된 여러 휴가 정책 일괄 회수",
-            description = "특정 사용자에게 부여된 여러 휴가 정책을 일괄 회수합니다."
-    )
-    @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "200",
-                    description = "휴가 정책 일괄 회수 성공",
-                    content = @Content(schema = @Schema(implementation = VacationApiDto.RevokeVacationPoliciesFromUserResp.class))
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "403",
-                    description = "권한 없음 (VACATION_POLICY_MANAGE 권한 필요)"
-            )
-    })
-    @DeleteMapping("/api/v1/users/{userId}/vacation-policies")
-    ApiResponse revokeVacationPoliciesFromUser(
-            @Parameter(description = "사용자 ID", example = "user123", required = true)
-            @PathVariable("userId") String userId,
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "회수할 휴가 정책 ID 목록",
-                    required = true,
-                    content = @Content(schema = @Schema(implementation = VacationApiDto.RevokeVacationPoliciesFromUserReq.class))
-            )
-            @RequestBody VacationApiDto.RevokeVacationPoliciesFromUserReq data
     );
 
     @Operation(

@@ -53,7 +53,10 @@ class VacationServiceTest {
     private VacationPolicyRepository vacationPolicyRepository;
 
     @Mock
-    private UserVacationPolicyRepository userVacationPolicyRepository;
+    private UserVacationPlanRepository userVacationPlanRepository;
+
+    @Mock
+    private VacationPlanPolicyRepository vacationPlanPolicyRepository;
 
     @Mock
     private HolidayRepository holidayRepository;
@@ -367,8 +370,6 @@ class VacationServiceTest {
 
             given(vacationPolicyRepository.findVacationPolicyById(policyId))
                     .willReturn(Optional.of(policy));
-            given(userVacationPolicyRepository.findByVacationPolicyId(policyId))
-                    .willReturn(List.of());
             given(vacationGrantRepository.findByPolicyId(policyId))
                     .willReturn(List.of());
 
@@ -416,58 +417,6 @@ class VacationServiceTest {
     }
 
     @Nested
-    @DisplayName("유저에게 휴가 정책 할당")
-    class AssignVacationPoliciesToUser {
-        @Test
-        @DisplayName("성공 - 유저에게 휴가 정책이 할당된다")
-        void assignVacationPoliciesToUserSuccess() {
-            // given
-            String userId = "user1";
-            Long policyId = 1L;
-            User user = createTestUser(userId);
-            VacationPolicy policy = createTestPolicy();
-            ReflectionTestUtils.setField(policy, "id", policyId);
-
-            given(userService.checkUserExist(userId)).willReturn(user);
-            given(vacationPolicyRepository.findVacationPolicyById(policyId))
-                    .willReturn(Optional.of(policy));
-            given(userVacationPolicyRepository.existsByUserIdAndVacationPolicyId(userId, policyId))
-                    .willReturn(false);
-            willDoNothing().given(userVacationPolicyRepository).saveAll(anyList());
-
-            // when
-            List<Long> result = vacationService.assignVacationPoliciesToUser(userId, List.of(policyId));
-
-            // then
-            assertThat(result).contains(policyId);
-            then(userVacationPolicyRepository).should().saveAll(anyList());
-        }
-
-        @Test
-        @DisplayName("성공 - 이미 할당된 정책은 스킵된다")
-        void assignVacationPoliciesToUserSkipAlreadyAssigned() {
-            // given
-            String userId = "user1";
-            Long policyId = 1L;
-            User user = createTestUser(userId);
-            VacationPolicy policy = createTestPolicy();
-            ReflectionTestUtils.setField(policy, "id", policyId);
-
-            given(userService.checkUserExist(userId)).willReturn(user);
-            given(vacationPolicyRepository.findVacationPolicyById(policyId))
-                    .willReturn(Optional.of(policy));
-            given(userVacationPolicyRepository.existsByUserIdAndVacationPolicyId(userId, policyId))
-                    .willReturn(true);
-
-            // when
-            List<Long> result = vacationService.assignVacationPoliciesToUser(userId, List.of(policyId));
-
-            // then
-            assertThat(result).isEmpty();
-        }
-    }
-
-    @Nested
     @DisplayName("유저에게 할당된 휴가 정책 조회")
     class GetUserAssignedVacationPolicies {
         @Test
@@ -479,11 +428,17 @@ class VacationServiceTest {
             VacationPolicy policy = createTestPolicy();
             ReflectionTestUtils.setField(policy, "id", 1L);
 
-            UserVacationPolicy uvp = UserVacationPolicy.createUserVacationPolicy(user, policy);
-            ReflectionTestUtils.setField(uvp, "id", 1L);
+            VacationPlan plan = VacationPlan.createPlan("DEFAULT", "기본 플랜", "테스트 플랜");
+            ReflectionTestUtils.setField(plan, "id", 1L);
+            VacationPlanPolicy planPolicy = VacationPlanPolicy.createPlanPolicy(plan, policy, 1, YNType.N);
+            ReflectionTestUtils.setField(planPolicy, "id", 1L);
+            // Plan에 PlanPolicy 추가
+            ReflectionTestUtils.setField(plan, "vacationPlanPolicies", List.of(planPolicy));
+            UserVacationPlan userPlan = UserVacationPlan.createUserVacationPlan(user, plan);
+            ReflectionTestUtils.setField(userPlan, "id", 1L);
 
             given(userService.checkUserExist(userId)).willReturn(user);
-            given(userVacationPolicyRepository.findByUserId(userId)).willReturn(List.of(uvp));
+            given(userVacationPlanRepository.findByUserIdWithPlanAndPolicies(userId)).willReturn(List.of(userPlan));
 
             // when
             List<VacationPolicyServiceDto> result = vacationService.getUserAssignedVacationPolicies(userId, null);
@@ -501,66 +456,13 @@ class VacationServiceTest {
             User user = createTestUser(userId);
 
             given(userService.checkUserExist(userId)).willReturn(user);
-            given(userVacationPolicyRepository.findByUserId(userId)).willReturn(List.of());
+            given(userVacationPlanRepository.findByUserIdWithPlanAndPolicies(userId)).willReturn(List.of());
 
             // when
             List<VacationPolicyServiceDto> result = vacationService.getUserAssignedVacationPolicies(userId, null);
 
             // then
             assertThat(result).isEmpty();
-        }
-    }
-
-    @Nested
-    @DisplayName("유저의 휴가 정책 회수")
-    class RevokeVacationPolicyFromUser {
-        @Test
-        @DisplayName("성공 - 유저의 휴가 정책이 회수된다")
-        void revokeVacationPolicyFromUserSuccess() {
-            // given
-            String userId = "user1";
-            Long policyId = 1L;
-            User user = createTestUser(userId);
-            VacationPolicy policy = createTestPolicy();
-            ReflectionTestUtils.setField(policy, "id", policyId);
-
-            UserVacationPolicy uvp = UserVacationPolicy.createUserVacationPolicy(user, policy);
-            ReflectionTestUtils.setField(uvp, "id", 1L);
-
-            given(userService.checkUserExist(userId)).willReturn(user);
-            given(vacationPolicyRepository.findVacationPolicyById(policyId))
-                    .willReturn(Optional.of(policy));
-            given(userVacationPolicyRepository.findByUserIdAndVacationPolicyId(userId, policyId))
-                    .willReturn(Optional.of(uvp));
-            given(vacationGrantRepository.findByUserId(userId)).willReturn(List.of());
-
-            // when
-            Long result = vacationService.revokeVacationPolicyFromUser(userId, policyId);
-
-            // then
-            assertThat(result).isEqualTo(1L);
-            assertThat(uvp.getIsDeleted()).isEqualTo(YNType.Y);
-        }
-
-        @Test
-        @DisplayName("실패 - 할당되지 않은 정책이면 예외가 발생한다")
-        void revokeVacationPolicyFromUserFailNotAssigned() {
-            // given
-            String userId = "user1";
-            Long policyId = 1L;
-            User user = createTestUser(userId);
-            VacationPolicy policy = createTestPolicy();
-            ReflectionTestUtils.setField(policy, "id", policyId);
-
-            given(userService.checkUserExist(userId)).willReturn(user);
-            given(vacationPolicyRepository.findVacationPolicyById(policyId))
-                    .willReturn(Optional.of(policy));
-            given(userVacationPolicyRepository.findByUserIdAndVacationPolicyId(userId, policyId))
-                    .willReturn(Optional.empty());
-
-            // when & then
-            assertThatThrownBy(() -> vacationService.revokeVacationPolicyFromUser(userId, policyId))
-                    .isInstanceOf(EntityNotFoundException.class);
         }
     }
 
@@ -856,36 +758,6 @@ class VacationServiceTest {
     }
 
     @Nested
-    @DisplayName("다수 유저 휴가 정책 회수")
-    class RevokeVacationPoliciesFromUser {
-        @Test
-        @DisplayName("성공 - 다수의 정책을 회수한다")
-        void revokeVacationPoliciesFromUserSuccess() {
-            // given
-            String userId = "user1";
-            User user = createTestUser(userId);
-            VacationPolicy policy = createTestPolicy();
-            ReflectionTestUtils.setField(policy, "id", 1L);
-
-            UserVacationPolicy uvp = UserVacationPolicy.createUserVacationPolicy(user, policy);
-            ReflectionTestUtils.setField(uvp, "id", 1L);
-
-            given(userService.checkUserExist(userId)).willReturn(user);
-            given(vacationPolicyRepository.findVacationPolicyById(1L))
-                    .willReturn(Optional.of(policy));
-            given(userVacationPolicyRepository.findByUserIdAndVacationPolicyId(userId, 1L))
-                    .willReturn(Optional.of(uvp));
-            given(vacationGrantRepository.findByUserId(userId)).willReturn(List.of());
-
-            // when
-            List<Long> result = vacationService.revokeVacationPoliciesFromUser(userId, List.of(1L));
-
-            // then
-            assertThat(result).hasSize(1);
-        }
-    }
-
-    @Nested
     @DisplayName("유저별 신청 휴가 통계 조회")
     class GetRequestedVacationStatsByUserId {
         @Test
@@ -919,7 +791,7 @@ class VacationServiceTest {
             User user = createTestUser(userId);
 
             given(userService.checkUserExist(userId)).willReturn(user);
-            given(userVacationPolicyRepository.findByUserIdWithFilters(userId, VacationType.ANNUAL, GrantMethod.MANUAL_GRANT))
+            given(userVacationPlanRepository.findByUserIdWithPlanAndPolicies(userId))
                     .willReturn(List.of());
 
             // when
@@ -996,26 +868,6 @@ class VacationServiceTest {
     }
 
     @Nested
-    @DisplayName("정책에 유저 할당")
-    class AssignVacationPoliciesToUserTest {
-        @Test
-        @DisplayName("실패 - 존재하지 않는 정책이면 예외가 발생한다")
-        void assignVacationPoliciesFailPolicyNotFound() {
-            // given
-            String userId = "user1";
-            User user = createTestUser(userId);
-            List<Long> policyIds = List.of(999L);
-
-            given(userService.checkUserExist(userId)).willReturn(user);
-            given(vacationPolicyRepository.findVacationPolicyById(999L)).willReturn(Optional.empty());
-
-            // when & then
-            assertThatThrownBy(() -> vacationService.assignVacationPoliciesToUser(userId, policyIds))
-                    .isInstanceOf(EntityNotFoundException.class);
-        }
-    }
-
-    @Nested
     @DisplayName("휴가 승인")
     class ApproveVacation {
         @Test
@@ -1087,55 +939,6 @@ class VacationServiceTest {
 
             // then
             assertThat(result).isEqualTo(1L);
-        }
-    }
-
-    @Nested
-    @DisplayName("정책에서 유저 제거")
-    class RevokeVacationPoliciesFromUserTest {
-        @Test
-        @DisplayName("성공 - 정책에 할당되지 않은 유저면 스킵한다")
-        void revokeVacationPoliciesSkipNotAssigned() {
-            // given
-            String userId = "user1";
-            User user = createTestUser(userId);
-            Long policyId = 1L;
-            VacationPolicy policy = createTestPolicy();
-            ReflectionTestUtils.setField(policy, "id", policyId);
-
-            given(userService.checkUserExist(userId)).willReturn(user);
-            given(vacationPolicyRepository.findVacationPolicyById(policyId)).willReturn(Optional.of(policy));
-            given(userVacationPolicyRepository.findByUserIdAndVacationPolicyId(userId, policyId))
-                    .willReturn(Optional.empty());
-
-            // when
-            List<Long> result = vacationService.revokeVacationPoliciesFromUser(userId, List.of(policyId));
-
-            // then
-            assertThat(result).isEmpty();
-        }
-    }
-
-    @Nested
-    @DisplayName("유저 할당 정책 조회 (필터)")
-    class GetUserAssignedVacationPoliciesWithFiltersTest {
-        @Test
-        @DisplayName("성공 - 필터 조건으로 유저 할당 정책을 조회한다")
-        void getUserAssignedVacationPoliciesWithFiltersSuccess() {
-            // given
-            String userId = "user1";
-            VacationType vacationType = VacationType.ANNUAL;
-            GrantMethod grantMethod = GrantMethod.MANUAL_GRANT;
-
-            given(userVacationPolicyRepository.findByUserIdWithFilters(userId, vacationType, grantMethod))
-                    .willReturn(List.of());
-
-            // when
-            List<VacationPolicyServiceDto> result = vacationService
-                    .getUserAssignedVacationPoliciesWithFilters(userId, vacationType, grantMethod);
-
-            // then
-            assertThat(result).isEmpty();
         }
     }
 
@@ -1348,12 +1151,18 @@ class VacationServiceTest {
             VacationPolicy policy2 = createTestPolicy();
             ReflectionTestUtils.setField(policy2, "id", 2L);
 
-            UserVacationPolicy uvp = UserVacationPolicy.createUserVacationPolicy(user, policy1);
-            ReflectionTestUtils.setField(uvp, "id", 1L);
+            VacationPlan plan = VacationPlan.createPlan("DEFAULT", "기본 플랜", "테스트 플랜");
+            ReflectionTestUtils.setField(plan, "id", 1L);
+            VacationPlanPolicy planPolicy = VacationPlanPolicy.createPlanPolicy(plan, policy1, 1, YNType.N);
+            ReflectionTestUtils.setField(planPolicy, "id", 1L);
+            // Plan에 PlanPolicy 추가
+            ReflectionTestUtils.setField(plan, "vacationPlanPolicies", List.of(planPolicy));
+            UserVacationPlan userPlan = UserVacationPlan.createUserVacationPlan(user, plan);
+            ReflectionTestUtils.setField(userPlan, "id", 1L);
 
             given(userService.checkUserExist(userId)).willReturn(user);
             given(vacationPolicyRepository.findVacationPolicies()).willReturn(List.of(policy1, policy2));
-            given(userVacationPolicyRepository.findByUserId(userId)).willReturn(List.of(uvp));
+            given(userVacationPlanRepository.findByUserIdWithPlanAndPolicies(userId)).willReturn(List.of(userPlan));
 
             // when
             VacationServiceDto result = vacationService.getVacationPolicyAssignmentStatus(userId);

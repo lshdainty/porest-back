@@ -192,9 +192,21 @@ public class VacationPolicy extends AuditingFields {
     @Column(name = "is_deleted", nullable = false, length = 1)
     private YNType isDeleted;
 
+    /**
+     * 플랜-정책 매핑 목록<br>
+     * 해당 정책이 속한 플랜 매핑 리스트
+     */
     @BatchSize(size = 100)
     @OneToMany(mappedBy = "vacationPolicy", cascade = CascadeType.ALL)
-    private List<UserVacationPolicy> userVacationPolicies = new ArrayList<>();
+    private List<VacationPlanPolicy> vacationPlanPolicies = new ArrayList<>();
+
+    /**
+     * 휴가 부여 스케줄 목록<br>
+     * 해당 정책의 자동 부여 스케줄 리스트
+     */
+    @BatchSize(size = 100)
+    @OneToMany(mappedBy = "vacationPolicy", cascade = CascadeType.ALL)
+    private List<VacationGrantSchedule> grantSchedules = new ArrayList<>();
 
     @BatchSize(size = 100)
     @OneToMany(mappedBy = "policy", cascade = CascadeType.ALL)
