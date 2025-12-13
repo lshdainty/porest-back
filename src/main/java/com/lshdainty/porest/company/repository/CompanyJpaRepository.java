@@ -28,7 +28,11 @@ public class CompanyJpaRepository implements CompanyRepository {
 
     @Override
     public Optional<Company> findById(String id) {
-        return Optional.ofNullable(em.find(Company.class, id));
+        List<Company> result = em.createQuery(
+                        "select c from Company c where c.id = :id", Company.class)
+                .setParameter("id", id)
+                .getResultList();
+        return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
     }
 
     @Override

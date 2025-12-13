@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
 @Table(name = "vacation_grant_schedule",
         uniqueConstraints = @UniqueConstraint(
                 name = "uk_vacation_grant_schedule_user_policy",
-                columnNames = {"user_id", "vacation_policy_id"}
+                columnNames = {"user_no", "vacation_policy_id"}
         ))
 public class VacationGrantSchedule extends AuditingFields {
     /**
@@ -39,7 +39,7 @@ public class VacationGrantSchedule extends AuditingFields {
      * 휴가가 부여될 대상 사용자
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_no", nullable = false)
     private User user;
 
     /**

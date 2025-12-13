@@ -33,7 +33,11 @@ public class UserQueryDslRepository implements UserRepository {
 
     @Override
     public Optional<User> findById(String userId) {
-        return Optional.ofNullable(em.find(User.class, userId));
+        return Optional.ofNullable(query
+                .selectFrom(user)
+                .where(user.id.eq(userId))
+                .fetchOne()
+        );
     }
 
     @Override

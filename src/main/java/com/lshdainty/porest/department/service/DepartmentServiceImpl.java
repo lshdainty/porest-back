@@ -51,11 +51,17 @@ public class DepartmentServiceImpl implements DepartmentService {
             }
         }
 
+        // 부서장 조회 (headUserId가 있는 경우)
+        User headUser = null;
+        if (data.getHeadUserId() != null && !data.getHeadUserId().isEmpty()) {
+            headUser = userService.checkUserExist(data.getHeadUserId());
+        }
+
         Department department = Department.createDepartment(
                 data.getName(),
                 data.getNameKR(),
                 parent,
-                data.getHeadUserId(),
+                headUser,
                 data.getLevel(),
                 data.getDesc(),
                 data.getColor(),
@@ -96,11 +102,17 @@ public class DepartmentServiceImpl implements DepartmentService {
             }
         }
 
+        // 부서장 조회 (headUserId가 있는 경우)
+        User headUser = null;
+        if (data.getHeadUserId() != null && !data.getHeadUserId().isEmpty()) {
+            headUser = userService.checkUserExist(data.getHeadUserId());
+        }
+
         department.updateDepartment(
                 data.getName(),
                 data.getNameKR(),
                 newParent,
-                data.getHeadUserId(),
+                headUser,
                 data.getLevel(),
                 data.getDesc(),
                 data.getColor()
@@ -137,7 +149,7 @@ public class DepartmentServiceImpl implements DepartmentService {
                 .name(department.getName())
                 .nameKR(department.getNameKR())
                 .parentId(department.getParentId())
-                .headUserId(department.getHeadUserId())
+                .headUserId(department.getHeadUser() != null ? department.getHeadUser().getId() : null)
                 .level(department.getLevel())
                 .desc(department.getDesc())
                 .color(department.getColor())
@@ -245,7 +257,7 @@ public class DepartmentServiceImpl implements DepartmentService {
                 .name(department.getName())
                 .nameKR(department.getNameKR())
                 .parentId(department.getParentId())
-                .headUserId(department.getHeadUserId())
+                .headUserId(department.getHeadUser() != null ? department.getHeadUser().getId() : null)
                 .level(department.getLevel())
                 .desc(department.getDesc())
                 .color(department.getColor())

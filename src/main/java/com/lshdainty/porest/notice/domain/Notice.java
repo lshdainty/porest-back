@@ -26,11 +26,11 @@ public class Notice extends AuditingFields {
 
     /**
      * 작성자 객체<br>
-     * 테이블 컬럼은 writer_id<br>
+     * 테이블 컬럼은 user_no<br>
      * 공지사항을 작성한 유저 정보
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_no", nullable = false)
     private User writer;
 
     /**

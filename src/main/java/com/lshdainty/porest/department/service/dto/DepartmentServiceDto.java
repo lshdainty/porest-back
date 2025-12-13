@@ -39,7 +39,7 @@ public class DepartmentServiceDto {
                 .name(department.getName())
                 .nameKR(department.getNameKR())
                 .parentId(department.getParentId())
-                .headUserId(department.getHeadUserId())
+                .headUserId(department.getHeadUser() != null ? department.getHeadUser().getId() : null)
                 .level(department.getLevel())
                 .desc(department.getDesc())
                 .color(department.getColor())

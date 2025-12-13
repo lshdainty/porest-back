@@ -159,7 +159,7 @@ class CompanyServiceTest {
         void deleteFailHasDepartments() {
             // given
             Company company = Company.createCompany("COMPANY001", "테스트 회사", "설명");
-            Department department = Department.createDepartment("개발팀", "개발팀", null, "user1", 1L, "설명", "#FF0000", company);
+            Department department = Department.createDepartment("개발팀", "개발팀", null, null, 1L, "설명", "#FF0000", company);
 
             given(companyRepository.findById("COMPANY001")).willReturn(Optional.of(company));
 

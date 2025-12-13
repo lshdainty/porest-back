@@ -31,7 +31,7 @@ public class UserRole extends AuditingFields {
      * 어떤 사용자에게 역할이 부여되었는지
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_no", nullable = false)
     private User user;
 
     /**

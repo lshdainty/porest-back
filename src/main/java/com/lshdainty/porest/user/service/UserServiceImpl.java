@@ -488,7 +488,10 @@ public class UserServiceImpl implements UserService {
 
         return approverDepartments.stream()
                 .map(dept -> {
-                    User approver = userRepository.findByIdWithRolesAndPermissions(dept.getHeadUserId())
+                    if (dept.getHeadUser() == null) {
+                        return null;
+                    }
+                    User approver = userRepository.findByIdWithRolesAndPermissions(dept.getHeadUser().getId())
                             .orElse(null);
 
                     if (approver == null || YNType.isY(approver.getIsDeleted())) {

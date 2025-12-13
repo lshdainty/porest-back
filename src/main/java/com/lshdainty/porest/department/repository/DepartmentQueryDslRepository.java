@@ -172,8 +172,9 @@ public class DepartmentQueryDslRepository implements DepartmentRepository {
     public List<Department> findByUserIds(List<String> userIds) {
         return query
                 .selectFrom(department)
+                .leftJoin(department.headUser, user).fetchJoin()
                 .where(
-                        department.headUserId.in(userIds),
+                        department.headUser.id.in(userIds),
                         department.isDeleted.eq(YNType.N)
                 )
                 .fetch();
@@ -211,7 +212,7 @@ public class DepartmentQueryDslRepository implements DepartmentRepository {
                     )
                     .fetchOne();
 
-            if (parentDept != null && parentDept.getHeadUserId() != null) {
+            if (parentDept != null && parentDept.getHeadUser() != null) {
                 approverDepartments.add(parentDept);
             }
 

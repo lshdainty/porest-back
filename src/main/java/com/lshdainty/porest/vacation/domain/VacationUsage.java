@@ -28,11 +28,11 @@ public class VacationUsage extends AuditingFields {
 
     /**
      * 유저 객체<br>
-     * 테이블 컬럼은 user_id<br>
+     * 테이블 컬럼은 user_no<br>
      * 어떤 유저가 사용했는지 알기 위해 사용
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_no", nullable = false)
     @Setter
     private User user;
 

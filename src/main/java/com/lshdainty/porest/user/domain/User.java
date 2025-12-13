@@ -36,11 +36,18 @@ import java.util.stream.Collectors;
 @Table(name = "users")
 public class User extends AuditingFields {
     /**
-     * 사용자 아이디<br>
-     * 테이블 관리용 Primary Key
+     * 사용자 순번<br>
+     * 테이블 관리용 Primary Key (자동 생성)
      */
-    @Id
-    @Column(name = "user_id", length = 20)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_no")
+    private Long no;
+
+    /**
+     * 사용자 아이디<br>
+     * 비즈니스 식별자 (고유값)
+     */
+    @Column(name = "user_id", length = 20, unique = true, nullable = false)
     private String id;
 
     /**
