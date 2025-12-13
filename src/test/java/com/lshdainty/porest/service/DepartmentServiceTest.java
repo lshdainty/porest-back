@@ -81,7 +81,7 @@ class DepartmentServiceTest {
         void registChildDepartmentSuccess() {
             // given
             Company company = Company.createCompany("COMPANY001", "테스트 회사", "설명");
-            Department parent = Department.createDepartment("Development", "개발팀", null, "user1", 1L, "설명", "#FF0000", company);
+            Department parent = Department.createDepartment("Development", "개발팀", null, null, 1L, "설명", "#FF0000", company);
             setDepartmentId(parent, 1L);
 
             DepartmentServiceDto data = DepartmentServiceDto.builder()
@@ -112,7 +112,7 @@ class DepartmentServiceTest {
             // given
             Company company1 = Company.createCompany("COMPANY001", "회사1", "설명");
             Company company2 = Company.createCompany("COMPANY002", "회사2", "설명");
-            Department parent = Department.createDepartment("Development", "개발팀", null, "user1", 1L, "설명", "#FF0000", company2);
+            Department parent = Department.createDepartment("Development", "개발팀", null, null, 1L, "설명", "#FF0000", company2);
             setDepartmentId(parent, 1L);
 
             DepartmentServiceDto data = DepartmentServiceDto.builder()
@@ -139,7 +139,7 @@ class DepartmentServiceTest {
         void editSuccess() {
             // given
             Company company = Company.createCompany("COMPANY001", "회사", "설명");
-            Department department = Department.createDepartment("Development", "개발팀", null, "user1", 1L, "설명", "#FF0000", company);
+            Department department = Department.createDepartment("Development", "개발팀", null, null, 1L, "설명", "#FF0000", company);
             setDepartmentId(department, 1L);
 
             given(departmentRepository.findById(1L)).willReturn(Optional.of(department));
@@ -165,7 +165,7 @@ class DepartmentServiceTest {
         void editFailSelfParent() {
             // given
             Company company = Company.createCompany("COMPANY001", "회사", "설명");
-            Department department = Department.createDepartment("Development", "개발팀", null, "user1", 1L, "설명", "#FF0000", company);
+            Department department = Department.createDepartment("Development", "개발팀", null, null, 1L, "설명", "#FF0000", company);
             setDepartmentId(department, 1L);
 
             // 자기 자신을 부모로 설정: findById가 두 번 호출됨 (department, newParent)
@@ -187,9 +187,9 @@ class DepartmentServiceTest {
         void editFailCircularReference() {
             // given
             Company company = Company.createCompany("COMPANY001", "회사", "설명");
-            Department parent = Department.createDepartment("Development", "개발팀", null, "user1", 1L, "설명", "#FF0000", company);
+            Department parent = Department.createDepartment("Development", "개발팀", null, null, 1L, "설명", "#FF0000", company);
             setDepartmentId(parent, 1L);
-            Department child = Department.createDepartment("Backend", "백엔드팀", parent, "user2", 2L, "설명", "#00FF00", company);
+            Department child = Department.createDepartment("Backend", "백엔드팀", parent, null, 2L, "설명", "#00FF00", company);
             setDepartmentId(child, 2L);
 
             // 부모(1L)를 수정할 때 자식(2L)을 부모로 설정하려고 함
@@ -214,9 +214,9 @@ class DepartmentServiceTest {
             Company company1 = Company.createCompany("COMPANY001", "회사1", "설명");
             Company company2 = Company.createCompany("COMPANY002", "회사2", "설명");
 
-            Department department = Department.createDepartment("Development", "개발팀", null, "user1", 1L, "설명", "#FF0000", company1);
+            Department department = Department.createDepartment("Development", "개발팀", null, null, 1L, "설명", "#FF0000", company1);
             setDepartmentId(department, 1L);
-            Department otherDept = Department.createDepartment("Other", "다른팀", null, "user2", 1L, "설명", "#00FF00", company2);
+            Department otherDept = Department.createDepartment("Other", "다른팀", null, null, 1L, "설명", "#00FF00", company2);
             setDepartmentId(otherDept, 2L);
 
             given(departmentRepository.findById(1L)).willReturn(Optional.of(department));
@@ -239,9 +239,9 @@ class DepartmentServiceTest {
             // given
             Company company = Company.createCompany("COMPANY001", "회사", "설명");
 
-            Department department = Department.createDepartment("Backend", "백엔드팀", null, "user1", 2L, "설명", "#FF0000", company);
+            Department department = Department.createDepartment("Backend", "백엔드팀", null, null, 2L, "설명", "#FF0000", company);
             setDepartmentId(department, 1L);
-            Department newParent = Department.createDepartment("Development", "개발팀", null, "user2", 1L, "설명", "#00FF00", company);
+            Department newParent = Department.createDepartment("Development", "개발팀", null, null, 1L, "설명", "#00FF00", company);
             setDepartmentId(newParent, 2L);
 
             given(departmentRepository.findById(1L)).willReturn(Optional.of(department));
@@ -285,7 +285,7 @@ class DepartmentServiceTest {
         void deleteSuccess() {
             // given
             Company company = Company.createCompany("COMPANY001", "회사", "설명");
-            Department department = Department.createDepartment("Development", "개발팀", null, "user1", 1L, "설명", "#FF0000", company);
+            Department department = Department.createDepartment("Development", "개발팀", null, null, 1L, "설명", "#FF0000", company);
             setDepartmentId(department, 1L);
 
             given(departmentRepository.findById(1L)).willReturn(Optional.of(department));
@@ -303,9 +303,9 @@ class DepartmentServiceTest {
         void deleteFailHasChildren() {
             // given
             Company company = Company.createCompany("COMPANY001", "회사", "설명");
-            Department parent = Department.createDepartment("Development", "개발팀", null, "user1", 1L, "설명", "#FF0000", company);
+            Department parent = Department.createDepartment("Development", "개발팀", null, null, 1L, "설명", "#FF0000", company);
             setDepartmentId(parent, 1L);
-            Department child = Department.createDepartment("Backend", "백엔드팀", parent, "user2", 2L, "설명", "#00FF00", company);
+            Department child = Department.createDepartment("Backend", "백엔드팀", parent, null, 2L, "설명", "#00FF00", company);
 
             given(departmentRepository.findById(1L)).willReturn(Optional.of(parent));
 
@@ -319,9 +319,9 @@ class DepartmentServiceTest {
         void deleteSuccessWithDeletedChildren() {
             // given
             Company company = Company.createCompany("COMPANY001", "회사", "설명");
-            Department parent = Department.createDepartment("Development", "개발팀", null, "user1", 1L, "설명", "#FF0000", company);
+            Department parent = Department.createDepartment("Development", "개발팀", null, null, 1L, "설명", "#FF0000", company);
             setDepartmentId(parent, 1L);
-            Department child = Department.createDepartment("Backend", "백엔드팀", parent, "user2", 2L, "설명", "#00FF00", company);
+            Department child = Department.createDepartment("Backend", "백엔드팀", parent, null, 2L, "설명", "#00FF00", company);
             child.deleteDepartment(); // 자식 부서 삭제 처리
 
             given(departmentRepository.findById(1L)).willReturn(Optional.of(parent));
@@ -343,7 +343,7 @@ class DepartmentServiceTest {
         void searchDepartmentByIdSuccess() {
             // given
             Company company = Company.createCompany("COMPANY001", "회사", "설명");
-            Department department = Department.createDepartment("Development", "개발팀", null, "user1", 1L, "설명", "#FF0000", company);
+            Department department = Department.createDepartment("Development", "개발팀", null, null, 1L, "설명", "#FF0000", company);
             setDepartmentId(department, 1L);
 
             given(departmentRepository.findById(1L)).willReturn(Optional.of(department));
@@ -362,9 +362,9 @@ class DepartmentServiceTest {
         void searchDepartmentByIdWithChildrenSuccess() {
             // given
             Company company = Company.createCompany("COMPANY001", "회사", "설명");
-            Department department = Department.createDepartment("Development", "개발팀", null, "user1", 1L, "설명", "#FF0000", company);
+            Department department = Department.createDepartment("Development", "개발팀", null, null, 1L, "설명", "#FF0000", company);
             setDepartmentId(department, 1L);
-            Department child = Department.createDepartment("Backend", "백엔드팀", department, "user2", 2L, "설명", "#00FF00", company);
+            Department child = Department.createDepartment("Backend", "백엔드팀", department, null, 2L, "설명", "#00FF00", company);
             setDepartmentId(child, 2L);
 
             given(departmentRepository.findById(1L)).willReturn(Optional.of(department));
@@ -387,7 +387,7 @@ class DepartmentServiceTest {
         void registUserDepartmentsSuccess() {
             // given
             Company company = Company.createCompany("COMPANY001", "회사", "설명");
-            Department department = Department.createDepartment("Development", "개발팀", null, "user1", 1L, "설명", "#FF0000", company);
+            Department department = Department.createDepartment("Development", "개발팀", null, null, 1L, "설명", "#FF0000", company);
             setDepartmentId(department, 1L);
             User user = User.createUser("user1");
 
@@ -418,7 +418,7 @@ class DepartmentServiceTest {
         void registUserDepartmentsFailAlreadyHasMain() {
             // given
             Company company = Company.createCompany("COMPANY001", "회사", "설명");
-            Department department = Department.createDepartment("Development", "개발팀", null, "user1", 1L, "설명", "#FF0000", company);
+            Department department = Department.createDepartment("Development", "개발팀", null, null, 1L, "설명", "#FF0000", company);
             setDepartmentId(department, 1L);
             User user = User.createUser("user1");
             UserDepartment existingMain = UserDepartment.createUserDepartment(user, department, YNType.Y);
@@ -444,7 +444,7 @@ class DepartmentServiceTest {
         void registUserDepartmentsSuccessNotMain() {
             // given
             Company company = Company.createCompany("COMPANY001", "회사", "설명");
-            Department department = Department.createDepartment("Development", "개발팀", null, "user1", 1L, "설명", "#FF0000", company);
+            Department department = Department.createDepartment("Development", "개발팀", null, null, 1L, "설명", "#FF0000", company);
             setDepartmentId(department, 1L);
             User user = User.createUser("user1");
 
@@ -480,7 +480,7 @@ class DepartmentServiceTest {
         void deleteUserDepartmentsSuccess() {
             // given
             Company company = Company.createCompany("COMPANY001", "회사", "설명");
-            Department department = Department.createDepartment("Development", "개발팀", null, "user1", 1L, "설명", "#FF0000", company);
+            Department department = Department.createDepartment("Development", "개발팀", null, null, 1L, "설명", "#FF0000", company);
             setDepartmentId(department, 1L);
             User user = User.createUser("user1");
             UserDepartment userDepartment = UserDepartment.createUserDepartment(user, department, YNType.N);
@@ -515,7 +515,7 @@ class DepartmentServiceTest {
         void getUsersInAndNotInDepartmentSuccess() {
             // given
             Company company = Company.createCompany("COMPANY001", "회사", "설명");
-            Department department = Department.createDepartment("Development", "개발팀", null, "user1", 1L, "설명", "#FF0000", company);
+            Department department = Department.createDepartment("Development", "개발팀", null, null, 1L, "설명", "#FF0000", company);
             setDepartmentId(department, 1L);
 
             User userIn = User.createUser("user1");
@@ -542,7 +542,7 @@ class DepartmentServiceTest {
         void getUsersInAndNotInDepartmentEmptyUsersIn() {
             // given
             Company company = Company.createCompany("COMPANY001", "회사", "설명");
-            Department department = Department.createDepartment("Development", "개발팀", null, "user1", 1L, "설명", "#FF0000", company);
+            Department department = Department.createDepartment("Development", "개발팀", null, null, 1L, "설명", "#FF0000", company);
             setDepartmentId(department, 1L);
 
             User userNotIn = User.createUser("user1");
@@ -569,7 +569,7 @@ class DepartmentServiceTest {
         void checkDepartmentExistsSuccess() {
             // given
             Company company = Company.createCompany("COMPANY001", "회사", "설명");
-            Department department = Department.createDepartment("Development", "개발팀", null, "user1", 1L, "설명", "#FF0000", company);
+            Department department = Department.createDepartment("Development", "개발팀", null, null, 1L, "설명", "#FF0000", company);
             setDepartmentId(department, 1L);
 
             given(departmentRepository.findById(1L)).willReturn(Optional.of(department));
@@ -597,7 +597,7 @@ class DepartmentServiceTest {
         void checkDepartmentExistsFailDeleted() {
             // given
             Company company = Company.createCompany("COMPANY001", "회사", "설명");
-            Department department = Department.createDepartment("Development", "개발팀", null, "user1", 1L, "설명", "#FF0000", company);
+            Department department = Department.createDepartment("Development", "개발팀", null, null, 1L, "설명", "#FF0000", company);
             department.deleteDepartment();
 
             given(departmentRepository.findById(1L)).willReturn(Optional.of(department));

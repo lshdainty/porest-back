@@ -890,12 +890,13 @@ public class VacationServiceImpl implements VacationService {
                 userService.checkUserExist(approverId);
             }
 
-            // 6-4. 승인자가 부서장인지 확인 (headUserId로 검증)
+            // 6-4. 승인자가 부서장인지 확인 (headUser로 검증)
             List<Department> departments = departmentRepository.findByUserIds(approverIds);
 
             // 부서장이 아닌 승인자 찾기
             Set<String> headUserIds = departments.stream()
-                    .map(Department::getHeadUserId)
+                    .filter(dept -> dept.getHeadUser() != null)
+                    .map(dept -> dept.getHeadUser().getId())
                     .collect(Collectors.toSet());
 
             List<String> nonHeadApprovers = approverIds.stream()
@@ -909,7 +910,8 @@ public class VacationServiceImpl implements VacationService {
 
             // 6-5. 승인자를 부서 레벨 순서로 정렬 (레벨 오름차순: 하위 부서장 먼저)
             Map<String, Department> approverDepartmentMap = departments.stream()
-                    .collect(Collectors.toMap(Department::getHeadUserId, dept -> dept));
+                    .filter(dept -> dept.getHeadUser() != null)
+                    .collect(Collectors.toMap(dept -> dept.getHeadUser().getId(), dept -> dept));
 
             approverIds.sort((id1, id2) -> {
                 Department dept1 = approverDepartmentMap.get(id1);

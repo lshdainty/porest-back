@@ -24,7 +24,11 @@ public class UserJpaRepository implements UserRepository {
 
     @Override
     public Optional<User> findById(String userId) {
-        return Optional.ofNullable(em.find(User.class, userId));
+        List<User> result = em.createQuery(
+                        "select u from User u where u.id = :userId", User.class)
+                .setParameter("userId", userId)
+                .getResultList();
+        return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
     }
 
     @Override

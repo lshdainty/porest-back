@@ -19,11 +19,19 @@ import java.util.Objects;
 @Table(name = "company")
 public class Company extends AuditingFields {
     /**
-     * 회사 아이디<br>
-     * 테이블 관리용 Primary Key
+     * 회사 순번<br>
+     * 테이블 관리용 Primary Key (자동 생성)
      */
     @Id
-    @Column(name = "company_id", length = 50)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "company_no")
+    private Long no;
+
+    /**
+     * 회사 아이디<br>
+     * 비즈니스 식별자 (고유값)
+     */
+    @Column(name = "company_id", length = 50, unique = true, nullable = false)
     private String id;
 
     /**

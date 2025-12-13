@@ -33,7 +33,7 @@ public class WorkHistory extends AuditingFields {
      * 근무자
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_no", nullable = false)
     private User user;
 
     /**

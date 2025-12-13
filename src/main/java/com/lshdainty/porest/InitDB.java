@@ -1012,8 +1012,7 @@ public class InitDB {
 		public Department saveDepartment(String name, String nameKR, Department parent, User leader, Long level,
 				String desc,
 				String color, Company company) {
-			String headUserId = (leader != null) ? leader.getId() : null;
-			Department department = Department.createDepartment(name, nameKR, parent, headUserId, level,
+			Department department = Department.createDepartment(name, nameKR, parent, leader, level,
 					desc,
 					color, company);
 			em.persist(department);

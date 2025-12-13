@@ -128,7 +128,7 @@ public class DepartmentJpaRepository implements DepartmentRepository {
     @Override
     public List<Department> findByUserIds(List<String> userIds) {
         return em.createQuery(
-                "select d from Department d where d.headUserId in :userIds and d.isDeleted = :isDeleted", Department.class)
+                "select d from Department d left join fetch d.headUser where d.headUser.id in :userIds and d.isDeleted = :isDeleted", Department.class)
                 .setParameter("userIds", userIds)
                 .setParameter("isDeleted", YNType.N)
                 .getResultList();
@@ -164,7 +164,7 @@ public class DepartmentJpaRepository implements DepartmentRepository {
             }
 
             Department parentDept = parentResult.get(0);
-            if (parentDept.getHeadUserId() != null) {
+            if (parentDept.getHeadUser() != null) {
                 approverDepartments.add(parentDept);
             }
 

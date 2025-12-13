@@ -260,7 +260,7 @@ class UserServiceTest {
                     OriginCompanyType.SKAX, "9 ~ 18", YNType.N, null, null, CountryCode.KR);
 
             Company company = Company.createCompany("회사", "Company", "desc");
-            Department dept = Department.createDepartment("부서", "개발팀", null, "head1", 1L, "desc", "#000", company);
+            Department dept = Department.createDepartment("부서", "개발팀", null, null, 1L, "desc", "#000", company);
             UserDepartment userDept = UserDepartment.createUserDepartment(user, dept, YNType.Y);
 
             given(userRepository.findByIdWithRolesAndPermissions(userId)).willReturn(Optional.of(user));
@@ -282,7 +282,7 @@ class UserServiceTest {
                     OriginCompanyType.SKAX, "9 ~ 18", YNType.N, null, null, CountryCode.KR);
 
             Company company = Company.createCompany("회사", "Company", "desc");
-            Department dept = Department.createDepartment("부서", "개발팀", null, "head1", 1L, "desc", "#000", company);
+            Department dept = Department.createDepartment("부서", "개발팀", null, null, 1L, "desc", "#000", company);
             UserDepartment userDept = UserDepartment.createUserDepartment(user, dept, YNType.Y);
             userDept.deleteUserDepartment();
 
@@ -305,7 +305,7 @@ class UserServiceTest {
                     OriginCompanyType.SKAX, "9 ~ 18", YNType.N, null, null, CountryCode.KR);
 
             Company company = Company.createCompany("회사", "Company", "desc");
-            Department dept = Department.createDepartment("부서", "개발팀", null, "head1", 1L, "desc", "#000", company);
+            Department dept = Department.createDepartment("부서", "개발팀", null, null, 1L, "desc", "#000", company);
             UserDepartment userDept = UserDepartment.createUserDepartment(user, dept, YNType.N);
 
             given(userRepository.findByIdWithRolesAndPermissions(userId)).willReturn(Optional.of(user));
@@ -1048,12 +1048,12 @@ class UserServiceTest {
                     OriginCompanyType.SKAX, "", YNType.N, null, null, CountryCode.KR);
             given(userRepository.findById(userId)).willReturn(Optional.of(user));
 
-            Company company = Company.createCompany("회사", "Company", "desc");
-            Department dept = Department.createDepartment("부서", "부서KR", null, "head1", 1L, "desc", "#000", company);
-            ReflectionTestUtils.setField(dept, "id", 1L);
-
             User approver = User.createUser("head1", "", "부서장", "head@test.com", LocalDate.now(),
                     OriginCompanyType.SKAX, "9 ~ 18", YNType.N, null, null, CountryCode.KR);
+
+            Company company = Company.createCompany("회사", "Company", "desc");
+            Department dept = Department.createDepartment("부서", "부서KR", null, approver, 1L, "desc", "#000", company);
+            ReflectionTestUtils.setField(dept, "id", 1L);
 
             given(departmentRepository.findApproversByUserId(userId)).willReturn(List.of(dept));
             given(userRepository.findByIdWithRolesAndPermissions("head1")).willReturn(Optional.of(approver));
@@ -1077,11 +1077,10 @@ class UserServiceTest {
             given(userRepository.findById(userId)).willReturn(Optional.of(user));
 
             Company company = Company.createCompany("회사", "Company", "desc");
-            Department dept = Department.createDepartment("부서", "부서KR", null, "nonexistent", 1L, "desc", "#000", company);
+            Department dept = Department.createDepartment("부서", "부서KR", null, null, 1L, "desc", "#000", company);
             ReflectionTestUtils.setField(dept, "id", 1L);
 
             given(departmentRepository.findApproversByUserId(userId)).willReturn(List.of(dept));
-            given(userRepository.findByIdWithRolesAndPermissions("nonexistent")).willReturn(Optional.empty());
 
             // when
             List<UserServiceDto> result = userService.getUserApprovers(userId);
@@ -1099,13 +1098,13 @@ class UserServiceTest {
                     OriginCompanyType.SKAX, "", YNType.N, null, null, CountryCode.KR);
             given(userRepository.findById(userId)).willReturn(Optional.of(user));
 
-            Company company = Company.createCompany("회사", "Company", "desc");
-            Department dept = Department.createDepartment("부서", "부서KR", null, "deleted", 1L, "desc", "#000", company);
-            ReflectionTestUtils.setField(dept, "id", 1L);
-
             User deletedApprover = User.createUser("deleted", "", "삭제된부서장", "", LocalDate.now(),
                     OriginCompanyType.SKAX, "", YNType.N, null, null, CountryCode.KR);
             deletedApprover.deleteUser();
+
+            Company company = Company.createCompany("회사", "Company", "desc");
+            Department dept = Department.createDepartment("부서", "부서KR", null, deletedApprover, 1L, "desc", "#000", company);
+            ReflectionTestUtils.setField(dept, "id", 1L);
 
             given(departmentRepository.findApproversByUserId(userId)).willReturn(List.of(dept));
             given(userRepository.findByIdWithRolesAndPermissions("deleted")).willReturn(Optional.of(deletedApprover));

@@ -3,6 +3,7 @@ package com.lshdainty.porest.department.domain;
 import com.lshdainty.porest.common.domain.AuditingFields;
 import com.lshdainty.porest.company.domain.Company;
 import com.lshdainty.porest.common.type.YNType;
+import com.lshdainty.porest.user.domain.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -57,11 +58,12 @@ public class Department extends AuditingFields {
     private Department parent;
 
     /**
-     * 부서장 아이디<br>
-     * 부서를 관리하는 사용자의 아이디
+     * 부서장 객체<br>
+     * 부서를 관리하는 사용자
      */
-    @Column(name = "head_user_id", length = 20)
-    private String headUserId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "head_user_no")
+    private User headUser;
 
     /**
      * 부서 레벨<br>
@@ -86,11 +88,11 @@ public class Department extends AuditingFields {
 
     /**
      * 회사 객체<br>
-     * 테이블 컬럼은 company_id<br>
+     * 테이블 컬럼은 company_no<br>
      * 부서가 속한 회사 정보
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "company_id")
+    @JoinColumn(name = "company_no")
     private Company company;
 
     /**
@@ -138,12 +140,12 @@ public class Department extends AuditingFields {
      *
      * @return Department
      */
-    public static Department createDepartment(String name, String nameKR, Department parent, String headUserId, Long level, String desc, String color, Company company) {
+    public static Department createDepartment(String name, String nameKR, Department parent, User headUser, Long level, String desc, String color, Company company) {
         Department department = new Department();
         department.name = name;
         department.nameKR = nameKR;
         department.addParent(parent);
-        department.headUserId = headUserId;
+        department.headUser = headUser;
         department.level = level;
         department.desc = desc;
         department.color = color;
@@ -157,12 +159,12 @@ public class Department extends AuditingFields {
      * Entity의 경우 Setter없이 Getter만 사용<br>
      * 해당 메소드를 통해 유저 생성할 것
      */
-    public void updateDepartment(String name, String nameKR, Department parent, String headUserId, Long level, String desc, String color) {
+    public void updateDepartment(String name, String nameKR, Department parent, User headUser, Long level, String desc, String color) {
         if (!Objects.isNull(name)) { this.name = name; }
         if (!Objects.isNull(nameKR)) { this.nameKR = nameKR; }
         if (!Objects.isNull(parent)) { this.changeParent(parent); }
-        // 부서장의 경우 잘못 선택한 경우 공란으로 설정가능
-        this.headUserId = headUserId;
+        // 부서장의 경우 잘못 선택한 경우 null로 설정가능
+        this.headUser = headUser;
         if (!Objects.isNull(level)) { this.level = level; }
         if (!Objects.isNull(desc)) { this.desc = desc; }
         // 색상 코드의 경우 잘못 선택한 경우 공란으로 설정가능

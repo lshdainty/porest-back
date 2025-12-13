@@ -354,9 +354,28 @@ class DepartmentJpaRepositoryTest {
     @DisplayName("headUserId로 부서 목록 조회")
     void findByUserIds() {
         // given
-        Department dept1 = Department.createDepartment("개발팀", "개발팀", null, "user1", 1L, "개발 부서", "#FF0000", company);
-        Department dept2 = Department.createDepartment("디자인팀", "디자인팀", null, "user2", 1L, "디자인 부서", "#00FF00", company);
-        Department dept3 = Department.createDepartment("기획팀", "기획팀", null, "user3", 1L, "기획 부서", "#0000FF", company);
+        User headUser1 = User.createUser(
+                "user1", "password", "테스트유저1", "user1@test.com",
+                LocalDate.of(1990, 1, 1), OriginCompanyType.DTOL, "9 ~ 18",
+                YNType.N, null, null, CountryCode.KR
+        );
+        User headUser2 = User.createUser(
+                "user2", "password", "테스트유저2", "user2@test.com",
+                LocalDate.of(1990, 1, 1), OriginCompanyType.DTOL, "9 ~ 18",
+                YNType.N, null, null, CountryCode.KR
+        );
+        User headUser3 = User.createUser(
+                "user3", "password", "테스트유저3", "user3@test.com",
+                LocalDate.of(1990, 1, 1), OriginCompanyType.DTOL, "9 ~ 18",
+                YNType.N, null, null, CountryCode.KR
+        );
+        em.persist(headUser1);
+        em.persist(headUser2);
+        em.persist(headUser3);
+
+        Department dept1 = Department.createDepartment("개발팀", "개발팀", null, headUser1, 1L, "개발 부서", "#FF0000", company);
+        Department dept2 = Department.createDepartment("디자인팀", "디자인팀", null, headUser2, 1L, "디자인 부서", "#00FF00", company);
+        Department dept3 = Department.createDepartment("기획팀", "기획팀", null, headUser3, 1L, "기획 부서", "#0000FF", company);
         departmentRepository.save(dept1);
         departmentRepository.save(dept2);
         departmentRepository.save(dept3);
@@ -379,16 +398,34 @@ class DepartmentJpaRepositoryTest {
                 LocalDate.of(1990, 1, 1), OriginCompanyType.DTOL, "9 ~ 18",
                 YNType.N, null, null, CountryCode.KR
         );
+        User head1 = User.createUser(
+                "head1", "password", "부서장1", "head1@test.com",
+                LocalDate.of(1985, 1, 1), OriginCompanyType.DTOL, "9 ~ 18",
+                YNType.N, null, null, CountryCode.KR
+        );
+        User head2 = User.createUser(
+                "head2", "password", "부서장2", "head2@test.com",
+                LocalDate.of(1985, 1, 1), OriginCompanyType.DTOL, "9 ~ 18",
+                YNType.N, null, null, CountryCode.KR
+        );
+        User head3 = User.createUser(
+                "head3", "password", "부서장3", "head3@test.com",
+                LocalDate.of(1985, 1, 1), OriginCompanyType.DTOL, "9 ~ 18",
+                YNType.N, null, null, CountryCode.KR
+        );
         em.persist(user);
+        em.persist(head1);
+        em.persist(head2);
+        em.persist(head3);
 
         // 부서 계층 생성: 본부 -> 팀 -> 파트
-        Department headquarters = Department.createDepartment("본부", "본부", null, "head1", 1L, "본부", "#FF0000", company);
+        Department headquarters = Department.createDepartment("본부", "본부", null, head1, 1L, "본부", "#FF0000", company);
         departmentRepository.save(headquarters);
 
-        Department team = Department.createDepartment("팀", "팀", headquarters, "head2", 2L, "팀", "#00FF00", company);
+        Department team = Department.createDepartment("팀", "팀", headquarters, head2, 2L, "팀", "#00FF00", company);
         departmentRepository.save(team);
 
-        Department part = Department.createDepartment("파트", "파트", team, "head3", 3L, "파트", "#0000FF", company);
+        Department part = Department.createDepartment("파트", "파트", team, head3, 3L, "파트", "#0000FF", company);
         departmentRepository.save(part);
 
         // user1을 파트에 메인 부서로 등록
@@ -424,9 +461,15 @@ class DepartmentJpaRepositoryTest {
                 LocalDate.of(1990, 1, 1), OriginCompanyType.DTOL, "9 ~ 18",
                 YNType.N, null, null, CountryCode.KR
         );
+        User head1 = User.createUser(
+                "head1", "password", "부서장1", "head1@test.com",
+                LocalDate.of(1985, 1, 1), OriginCompanyType.DTOL, "9 ~ 18",
+                YNType.N, null, null, CountryCode.KR
+        );
         em.persist(user);
+        em.persist(head1);
 
-        Department topDept = Department.createDepartment("최상위", "최상위", null, "head1", 1L, "최상위", "#FF0000", company);
+        Department topDept = Department.createDepartment("최상위", "최상위", null, head1, 1L, "최상위", "#FF0000", company);
         departmentRepository.save(topDept);
 
         departmentRepository.saveUserDepartment(UserDepartment.createUserDepartment(user, topDept, YNType.Y));
