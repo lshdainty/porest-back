@@ -122,7 +122,7 @@ public class HolidayServiceImpl implements HolidayService {
     /**
      * 반복 공휴일을 특정 연도로 변환
      * - 양력: 년도만 변경
-     * - 음력: 음력->양력 변환
+     * - 음력: 음력->양력 변환 (양력/음력 년도 차이 고려)
      */
     private HolidayServiceDto convertToTargetYear(Holiday holiday, int targetYear) {
         LocalDate targetDate;
@@ -130,9 +130,14 @@ public class HolidayServiceImpl implements HolidayService {
 
         // 음력 공휴일이면서 유효한 음력 날짜가 있는 경우
         if (YNType.isY(holiday.getLunarYN()) && isValidLunarDate(holiday.getLunarDate())) {
-            // 음력 공휴일: 음력 날짜의 년도를 변경 후 양력으로 변환
-            targetLunarDate = holiday.getLunarDate().withYear(targetYear);
-            LocalDate convertedDate = convertLunarToSolar(targetYear, targetLunarDate.getMonthValue(), targetLunarDate.getDayOfMonth());
+            // 양력 년도와 음력 년도의 차이 계산
+            // 예: 설날 전날 - 양력 2025-01-28, 음력 2024-12-29 -> yearOffset = 1
+            int yearOffset = holiday.getDate().getYear() - holiday.getLunarDate().getYear();
+            int targetLunarYear = targetYear - yearOffset;
+
+            // 음력 공휴일: 년도 차이를 반영하여 음력 날짜 설정 후 양력으로 변환
+            targetLunarDate = holiday.getLunarDate().withYear(targetLunarYear);
+            LocalDate convertedDate = convertLunarToSolar(targetLunarYear, targetLunarDate.getMonthValue(), targetLunarDate.getDayOfMonth());
 
             // 음력 변환 실패 시 양력 날짜로 폴백
             if (convertedDate != null) {

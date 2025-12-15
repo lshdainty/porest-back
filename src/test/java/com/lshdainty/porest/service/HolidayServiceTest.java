@@ -312,11 +312,12 @@ class HolidayServiceTest {
         }
 
         @Test
-        @DisplayName("성공 - 음력 반복 공휴일 프리뷰")
+        @DisplayName("성공 - 음력 반복 공휴일 프리뷰 (양력/음력 년도가 같은 경우)")
         void getRecurringHolidaysPreviewLunarSuccess() {
             // given
             int targetYear = 2026;
             CountryCode countryCode = CountryCode.KR;
+            // 설날: 양력 2025-01-29, 음력 2025-01-01 (년도 차이 0)
             Holiday lunarHoliday = Holiday.createHoliday(
                     "설날", LocalDate.of(2025, 1, 29), HolidayType.PUBLIC,
                     CountryCode.KR, YNType.Y, LocalDate.of(2025, 1, 1), YNType.Y, null
@@ -329,9 +330,36 @@ class HolidayServiceTest {
 
             // then
             assertThat(result).hasSize(1);
+            // yearOffset = 2025 - 2025 = 0, targetLunarYear = 2026 - 0 = 2026
             assertThat(result.get(0).getLunarDate()).isEqualTo(LocalDate.of(2026, 1, 1));
-            // 양력 날짜는 음력 변환 결과 (2026년 음력 1월 1일의 양력 날짜)
-            assertThat(result.get(0).getDate()).isNotNull();
+            // 양력 날짜는 음력 변환 결과 (2026년 음력 1월 1일 -> 양력 2026-02-17)
+            assertThat(result.get(0).getDate()).isEqualTo(LocalDate.of(2026, 2, 17));
+            assertThat(result.get(0).getIsRecurring()).isEqualTo(YNType.N);
+        }
+
+        @Test
+        @DisplayName("성공 - 음력 반복 공휴일 프리뷰 (양력/음력 년도가 다른 경우 - 설날 전날)")
+        void getRecurringHolidaysPreviewLunarWithYearOffsetSuccess() {
+            // given
+            int targetYear = 2026;
+            CountryCode countryCode = CountryCode.KR;
+            // 설날 전날: 양력 2025-01-28, 음력 2024-12-29 (년도 차이 1)
+            Holiday lunarHoliday = Holiday.createHoliday(
+                    "설날연휴", LocalDate.of(2025, 1, 28), HolidayType.PUBLIC,
+                    CountryCode.KR, YNType.Y, LocalDate.of(2024, 12, 29), YNType.Y, null
+            );
+            given(holidayRepository.findByIsRecurring(YNType.Y, countryCode))
+                    .willReturn(List.of(lunarHoliday));
+
+            // when
+            List<HolidayServiceDto> result = holidayService.getRecurringHolidaysPreview(targetYear, countryCode);
+
+            // then
+            assertThat(result).hasSize(1);
+            // yearOffset = 2025 - 2024 = 1, targetLunarYear = 2026 - 1 = 2025
+            assertThat(result.get(0).getLunarDate()).isEqualTo(LocalDate.of(2025, 12, 29));
+            // 양력 날짜는 음력 변환 결과 (2025년 음력 12월 29일 -> 양력 2026-02-16)
+            assertThat(result.get(0).getDate()).isEqualTo(LocalDate.of(2026, 2, 16));
             assertThat(result.get(0).getIsRecurring()).isEqualTo(YNType.N);
         }
 
