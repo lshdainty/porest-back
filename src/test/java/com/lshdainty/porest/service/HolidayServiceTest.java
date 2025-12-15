@@ -1,11 +1,11 @@
 package com.lshdainty.porest.service;
 
+import com.lshdainty.porest.common.exception.DuplicateException;
 import com.lshdainty.porest.common.exception.EntityNotFoundException;
 import com.lshdainty.porest.common.type.CountryCode;
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.holiday.domain.Holiday;
 import com.lshdainty.porest.holiday.repository.HolidayRepository;
-import com.lshdainty.porest.holiday.service.HolidayService;
 import com.lshdainty.porest.holiday.service.HolidayServiceImpl;
 import com.lshdainty.porest.holiday.service.dto.HolidayServiceDto;
 import com.lshdainty.porest.holiday.type.HolidayType;
@@ -283,6 +283,241 @@ class HolidayServiceTest {
             // when & then
             assertThatThrownBy(() -> holidayService.checkHolidayExist(id))
                     .isInstanceOf(EntityNotFoundException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("반복 공휴일 프리뷰 조회")
+    class GetRecurringHolidaysPreview {
+        @Test
+        @DisplayName("성공 - 양력 반복 공휴일 프리뷰")
+        void getRecurringHolidaysPreviewSolarSuccess() {
+            // given
+            int targetYear = 2026;
+            CountryCode countryCode = CountryCode.KR;
+            Holiday solarHoliday = Holiday.createHoliday(
+                    "광복절", LocalDate.of(2025, 8, 15), HolidayType.PUBLIC,
+                    CountryCode.KR, YNType.N, null, YNType.Y, null
+            );
+            given(holidayRepository.findByIsRecurring(YNType.Y, countryCode))
+                    .willReturn(List.of(solarHoliday));
+
+            // when
+            List<HolidayServiceDto> result = holidayService.getRecurringHolidaysPreview(targetYear, countryCode);
+
+            // then
+            assertThat(result).hasSize(1);
+            assertThat(result.get(0).getDate()).isEqualTo(LocalDate.of(2026, 8, 15));
+            assertThat(result.get(0).getIsRecurring()).isEqualTo(YNType.N);
+        }
+
+        @Test
+        @DisplayName("성공 - 음력 반복 공휴일 프리뷰 (양력/음력 년도가 같은 경우)")
+        void getRecurringHolidaysPreviewLunarSuccess() {
+            // given
+            int targetYear = 2026;
+            CountryCode countryCode = CountryCode.KR;
+            // 설날: 양력 2025-01-29, 음력 2025-01-01 (년도 차이 0)
+            Holiday lunarHoliday = Holiday.createHoliday(
+                    "설날", LocalDate.of(2025, 1, 29), HolidayType.PUBLIC,
+                    CountryCode.KR, YNType.Y, LocalDate.of(2025, 1, 1), YNType.Y, null
+            );
+            given(holidayRepository.findByIsRecurring(YNType.Y, countryCode))
+                    .willReturn(List.of(lunarHoliday));
+
+            // when
+            List<HolidayServiceDto> result = holidayService.getRecurringHolidaysPreview(targetYear, countryCode);
+
+            // then
+            assertThat(result).hasSize(1);
+            // yearOffset = 2025 - 2025 = 0, targetLunarYear = 2026 - 0 = 2026
+            assertThat(result.get(0).getLunarDate()).isEqualTo(LocalDate.of(2026, 1, 1));
+            // 양력 날짜는 음력 변환 결과 (2026년 음력 1월 1일 -> 양력 2026-02-17)
+            assertThat(result.get(0).getDate()).isEqualTo(LocalDate.of(2026, 2, 17));
+            assertThat(result.get(0).getIsRecurring()).isEqualTo(YNType.N);
+        }
+
+        @Test
+        @DisplayName("성공 - 음력 반복 공휴일 프리뷰 (양력/음력 년도가 다른 경우 - 설날 전날)")
+        void getRecurringHolidaysPreviewLunarWithYearOffsetSuccess() {
+            // given
+            int targetYear = 2026;
+            CountryCode countryCode = CountryCode.KR;
+            // 설날 전날: 양력 2025-01-28, 음력 2024-12-29 (년도 차이 1)
+            Holiday lunarHoliday = Holiday.createHoliday(
+                    "설날연휴", LocalDate.of(2025, 1, 28), HolidayType.PUBLIC,
+                    CountryCode.KR, YNType.Y, LocalDate.of(2024, 12, 29), YNType.Y, null
+            );
+            given(holidayRepository.findByIsRecurring(YNType.Y, countryCode))
+                    .willReturn(List.of(lunarHoliday));
+
+            // when
+            List<HolidayServiceDto> result = holidayService.getRecurringHolidaysPreview(targetYear, countryCode);
+
+            // then
+            assertThat(result).hasSize(1);
+            // yearOffset = 2025 - 2024 = 1, targetLunarYear = 2026 - 1 = 2025
+            assertThat(result.get(0).getLunarDate()).isEqualTo(LocalDate.of(2025, 12, 29));
+            // 양력 날짜는 음력 변환 결과 (2025년 음력 12월 29일 -> 양력 2026-02-16)
+            assertThat(result.get(0).getDate()).isEqualTo(LocalDate.of(2026, 2, 16));
+            assertThat(result.get(0).getIsRecurring()).isEqualTo(YNType.N);
+        }
+
+        @Test
+        @DisplayName("성공 - 반복 공휴일이 없으면 빈 리스트")
+        void getRecurringHolidaysPreviewEmpty() {
+            // given
+            given(holidayRepository.findByIsRecurring(YNType.Y, CountryCode.KR))
+                    .willReturn(List.of());
+
+            // when
+            List<HolidayServiceDto> result = holidayService.getRecurringHolidaysPreview(2026, CountryCode.KR);
+
+            // then
+            assertThat(result).isEmpty();
+        }
+
+        @Test
+        @DisplayName("성공 - 음력 공휴일이지만 lunarDate가 null인 경우 양력으로 처리")
+        void getRecurringHolidaysPreviewLunarWithNullLunarDate() {
+            // given
+            int targetYear = 2026;
+            CountryCode countryCode = CountryCode.KR;
+            // 음력 플래그는 Y이지만 lunarDate가 null인 경우
+            Holiday lunarHolidayWithNullDate = Holiday.createHoliday(
+                    "테스트공휴일", LocalDate.of(2025, 5, 5), HolidayType.PUBLIC,
+                    CountryCode.KR, YNType.Y, null, YNType.Y, null
+            );
+            given(holidayRepository.findByIsRecurring(YNType.Y, countryCode))
+                    .willReturn(List.of(lunarHolidayWithNullDate));
+
+            // when
+            List<HolidayServiceDto> result = holidayService.getRecurringHolidaysPreview(targetYear, countryCode);
+
+            // then
+            assertThat(result).hasSize(1);
+            // lunarDate가 null이므로 양력으로 처리되어 년도만 변경
+            assertThat(result.get(0).getDate()).isEqualTo(LocalDate.of(2026, 5, 5));
+            assertThat(result.get(0).getLunarDate()).isNull();
+        }
+
+        @Test
+        @DisplayName("성공 - 음력 공휴일이지만 lunarDate 년도가 0 이하인 경우 양력으로 처리")
+        void getRecurringHolidaysPreviewLunarWithInvalidYear() {
+            // given
+            int targetYear = 2026;
+            CountryCode countryCode = CountryCode.KR;
+            // lunarDate 년도가 0인 경우 (유효하지 않은 음력 날짜)
+            Holiday lunarHolidayWithInvalidYear = Holiday.createHoliday(
+                    "테스트공휴일", LocalDate.of(2025, 5, 5), HolidayType.PUBLIC,
+                    CountryCode.KR, YNType.Y, LocalDate.of(0, 4, 4), YNType.Y, null
+            );
+            given(holidayRepository.findByIsRecurring(YNType.Y, countryCode))
+                    .willReturn(List.of(lunarHolidayWithInvalidYear));
+
+            // when
+            List<HolidayServiceDto> result = holidayService.getRecurringHolidaysPreview(targetYear, countryCode);
+
+            // then
+            assertThat(result).hasSize(1);
+            // lunarDate가 유효하지 않으므로 양력으로 처리되어 년도만 변경
+            assertThat(result.get(0).getDate()).isEqualTo(LocalDate.of(2026, 5, 5));
+            assertThat(result.get(0).getLunarDate()).isNull();
+        }
+
+        @Test
+        @DisplayName("성공 - 음력 변환 실패 시 양력 날짜로 폴백")
+        void getRecurringHolidaysPreviewLunarConversionFailFallback() {
+            // given
+            int targetYear = 2026;
+            CountryCode countryCode = CountryCode.KR;
+            // 음력 달력은 29일 또는 30일까지만 존재하므로 음력 1월 31일은 유효하지 않음
+            // 이 경우 음력 변환이 실패하고 양력 날짜로 폴백해야 함
+            Holiday lunarHolidayWithInvalidLunarDate = Holiday.createHoliday(
+                    "테스트공휴일", LocalDate.of(2025, 5, 5), HolidayType.PUBLIC,
+                    CountryCode.KR, YNType.Y, LocalDate.of(2025, 1, 31), YNType.Y, null
+            );
+            given(holidayRepository.findByIsRecurring(YNType.Y, countryCode))
+                    .willReturn(List.of(lunarHolidayWithInvalidLunarDate));
+
+            // when
+            List<HolidayServiceDto> result = holidayService.getRecurringHolidaysPreview(targetYear, countryCode);
+
+            // then
+            assertThat(result).hasSize(1);
+            // 음력 1월 31일은 존재하지 않으므로 변환 실패 -> 양력 날짜로 폴백
+            assertThat(result.get(0).getDate()).isEqualTo(LocalDate.of(2026, 5, 5));
+            // 음력 날짜는 null로 무효화
+            assertThat(result.get(0).getLunarDate()).isNull();
+        }
+    }
+
+    @Nested
+    @DisplayName("공휴일 일괄 저장")
+    class BulkSaveHolidays {
+        @Test
+        @DisplayName("성공 - 공휴일 일괄 저장")
+        void bulkSaveHolidaysSuccess() {
+            // given
+            List<HolidayServiceDto> holidays = List.of(
+                    HolidayServiceDto.builder()
+                            .name("설날")
+                            .date(LocalDate.of(2026, 2, 17))
+                            .type(HolidayType.PUBLIC)
+                            .countryCode(CountryCode.KR)
+                            .lunarYN(YNType.Y)
+                            .lunarDate(LocalDate.of(2026, 1, 1))
+                            .isRecurring(YNType.N)
+                            .build()
+            );
+            given(holidayRepository.existsByDateAndNameAndCountryCode(any(), any(), any()))
+                    .willReturn(false);
+            willDoNothing().given(holidayRepository).saveAll(anyList());
+
+            // when
+            int result = holidayService.bulkSaveHolidays(holidays);
+
+            // then
+            assertThat(result).isEqualTo(1);
+            then(holidayRepository).should().saveAll(anyList());
+        }
+
+        @Test
+        @DisplayName("실패 - 중복 공휴일 존재 시 예외 발생")
+        void bulkSaveHolidaysFailDuplicate() {
+            // given
+            List<HolidayServiceDto> holidays = List.of(
+                    HolidayServiceDto.builder()
+                            .name("설날")
+                            .date(LocalDate.of(2026, 2, 17))
+                            .type(HolidayType.PUBLIC)
+                            .countryCode(CountryCode.KR)
+                            .lunarYN(YNType.Y)
+                            .isRecurring(YNType.N)
+                            .build()
+            );
+            given(holidayRepository.existsByDateAndNameAndCountryCode(
+                    LocalDate.of(2026, 2, 17), "설날", CountryCode.KR))
+                    .willReturn(true);
+
+            // when & then
+            assertThatThrownBy(() -> holidayService.bulkSaveHolidays(holidays))
+                    .isInstanceOf(DuplicateException.class);
+            then(holidayRepository).should(never()).saveAll(anyList());
+        }
+
+        @Test
+        @DisplayName("성공 - 빈 목록 저장 시 0 반환")
+        void bulkSaveHolidaysEmptyList() {
+            // given
+            List<HolidayServiceDto> holidays = List.of();
+
+            // when
+            int result = holidayService.bulkSaveHolidays(holidays);
+
+            // then
+            assertThat(result).isEqualTo(0);
+            then(holidayRepository).should(never()).saveAll(anyList());
         }
     }
 

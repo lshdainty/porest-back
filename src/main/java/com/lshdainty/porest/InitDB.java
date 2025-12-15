@@ -186,7 +186,7 @@ public class InitDB {
 					"🌅");
 			saveHoliday("임시공휴일(설날)", LocalDate.of(2025, 1, 27), HolidayType.SUBSTITUTE, CountryCode.KR, YNType.N, null,
 					YNType.N, null);
-			saveHoliday("설날연휴", LocalDate.of(2025, 1, 28), HolidayType.PUBLIC, CountryCode.KR, YNType.Y, LocalDate.of(2024, 12, 31),
+			saveHoliday("설날연휴", LocalDate.of(2025, 1, 28), HolidayType.PUBLIC, CountryCode.KR, YNType.Y, LocalDate.of(2024, 12, 29),
 					YNType.Y, "🧧");
 			saveHoliday("설날", LocalDate.of(2025, 1, 29), HolidayType.PUBLIC, CountryCode.KR, YNType.Y, LocalDate.of(2025, 1, 1),
 					YNType.Y, "🧧");
@@ -217,34 +217,13 @@ public class InitDB {
 			saveHoliday("추석", LocalDate.of(2025, 10, 6), HolidayType.PUBLIC, CountryCode.KR, YNType.Y, LocalDate.of(2025, 8, 15),
 					YNType.Y, "🎑");
 			saveHoliday("추석연휴", LocalDate.of(2025, 10, 7), HolidayType.PUBLIC, CountryCode.KR, YNType.Y, LocalDate.of(2025, 8, 16),
-					YNType.Y, "🧧");
+					YNType.Y, "🎑");
 			saveHoliday("대체공휴일(추석)", LocalDate.of(2025, 10, 8), HolidayType.SUBSTITUTE, CountryCode.KR, YNType.N, null,
 					YNType.N, null);
 			saveHoliday("한글날", LocalDate.of(2025, 10, 9), HolidayType.PUBLIC, CountryCode.KR, YNType.N, null, YNType.Y,
 					"📚");
 			saveHoliday("크리스마스", LocalDate.of(2025, 12, 25), HolidayType.PUBLIC, CountryCode.KR, YNType.N, null, YNType.Y,
 					"🎄");
-
-			saveHoliday("권장휴가", LocalDate.of(2025, 1, 31), HolidayType.ETC, CountryCode.KR, YNType.N, null, YNType.N,
-					"🏖");
-			saveHoliday("권장휴가", LocalDate.of(2025, 3, 4), HolidayType.ETC, CountryCode.KR, YNType.N, null, YNType.N,
-					"🏖");
-			saveHoliday("권장휴가", LocalDate.of(2025, 4, 4), HolidayType.ETC, CountryCode.KR, YNType.N, null, YNType.N,
-					"🏖");
-			saveHoliday("권장휴가", LocalDate.of(2025, 5, 2), HolidayType.ETC, CountryCode.KR, YNType.N, null, YNType.N,
-					"🏖");
-			saveHoliday("권장휴가", LocalDate.of(2025, 5, 23), HolidayType.ETC, CountryCode.KR, YNType.N, null, YNType.N,
-					"🏖");
-			saveHoliday("권장휴가", LocalDate.of(2025, 7, 4), HolidayType.ETC, CountryCode.KR, YNType.N, null, YNType.N,
-					"🏖");
-			saveHoliday("권장휴가", LocalDate.of(2025, 8, 14), HolidayType.ETC, CountryCode.KR, YNType.N, null, YNType.N,
-					"🏖");
-			saveHoliday("권장휴가", LocalDate.of(2025, 9, 5), HolidayType.ETC, CountryCode.KR, YNType.N, null, YNType.N,
-					"🏖");
-			saveHoliday("권장휴가", LocalDate.of(2025, 10, 10), HolidayType.ETC, CountryCode.KR, YNType.N, null, YNType.N,
-					"🏖");
-			saveHoliday("권장휴가", LocalDate.of(2025, 11, 14), HolidayType.ETC, CountryCode.KR, YNType.N, null, YNType.N,
-					"🏖");
 		}
 
 		public void initSetRole() {
