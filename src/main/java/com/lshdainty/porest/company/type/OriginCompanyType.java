@@ -9,7 +9,8 @@ public enum OriginCompanyType implements DisplayType {
     BIGXDATA(4L),
     CNTHOTH(5L),
     BUSINESSINSIGHT(6L),
-    AGS(7L);
+    AGS(7L),
+    SYSTEM(999L);
 
     private static final String MESSAGE_KEY_PREFIX = "type.origin.company.";
     private Long orderSeq;
