@@ -247,7 +247,10 @@ public class InitDB {
 				Permission vacationRead = Permission.createPermission("VACATION:READ", "휴가 조회", "본인 휴가 조회",
 						ResourceType.VACATION, ActionType.READ);
 				permissionRepository.save(vacationRead);
-				Permission vacationRequest = Permission.createPermission("VACATION:REQUEST", "휴가 신청", "휴가 신청 및 사용",
+				Permission vacationUse = Permission.createPermission("VACATION:USE", "휴가 사용", "휴가 사용/수정/취소",
+						ResourceType.VACATION, ActionType.WRITE);
+				permissionRepository.save(vacationUse);
+				Permission vacationRequest = Permission.createPermission("VACATION:REQUEST", "휴가 신청", "휴가 신청 및 취소",
 						ResourceType.VACATION, ActionType.REQUEST);
 				permissionRepository.save(vacationRequest);
 				Permission vacationApprove = Permission.createPermission("VACATION:APPROVE", "휴가 승인", "타인 휴가 승인/반려",
@@ -256,7 +259,7 @@ public class InitDB {
 				Permission vacationGrant = Permission.createPermission("VACATION:GRANT", "휴가 부여", "휴가 강제 부여 및 회수",
 						ResourceType.VACATION, ActionType.GRANT);
 				permissionRepository.save(vacationGrant);
-				Permission vacationManage = Permission.createPermission("VACATION:MANAGE", "휴가 정책 관리", "휴가 정책 설정",
+				Permission vacationManage = Permission.createPermission("VACATION:MANAGE", "휴가 전체 관리", "휴가 정책 관리 및 전체 사용자 휴가 요약 조회",
 						ResourceType.VACATION, ActionType.MANAGE);
 				permissionRepository.save(vacationManage);
 
@@ -283,11 +286,17 @@ public class InitDB {
 				permissionRepository.save(scheduleManage);
 
 				// 5. 회사/부서 관리
+				Permission companyRead = Permission.createPermission("COMPANY:READ", "회사/부서 조회", "회사 및 부서 정보 조회",
+						ResourceType.COMPANY, ActionType.READ);
+				permissionRepository.save(companyRead);
 				Permission companyManage = Permission.createPermission("COMPANY:MANAGE", "회사/부서 관리", "회사 및 부서 정보 관리",
 						ResourceType.COMPANY, ActionType.MANAGE);
 				permissionRepository.save(companyManage);
 
 				// 6. 공휴일 관리
+				Permission holidayRead = Permission.createPermission("HOLIDAY:READ", "공휴일 조회", "공휴일 조회",
+						ResourceType.HOLIDAY, ActionType.READ);
+				permissionRepository.save(holidayRead);
 				Permission holidayManage = Permission.createPermission("HOLIDAY:MANAGE", "공휴일 관리", "공휴일 생성/수정/삭제",
 						ResourceType.HOLIDAY, ActionType.MANAGE);
 				permissionRepository.save(holidayManage);
@@ -309,10 +318,7 @@ public class InitDB {
 				Permission noticeRead = Permission.createPermission("NOTICE:READ", "공지사항 조회", "공지사항 조회",
 						ResourceType.NOTICE, ActionType.READ);
 				permissionRepository.save(noticeRead);
-				Permission noticeWrite = Permission.createPermission("NOTICE:WRITE", "공지사항 작성", "공지사항 등록/수정",
-						ResourceType.NOTICE, ActionType.WRITE);
-				permissionRepository.save(noticeWrite);
-				Permission noticeManage = Permission.createPermission("NOTICE:MANAGE", "공지사항 관리", "공지사항 삭제 및 전체 관리",
+				Permission noticeManage = Permission.createPermission("NOTICE:MANAGE", "공지사항 관리", "공지사항 등록/수정/삭제",
 						ResourceType.NOTICE, ActionType.MANAGE);
 				permissionRepository.save(noticeManage);
 
@@ -331,6 +337,7 @@ public class InitDB {
 				adminRole.addPermission(userEdit);
 				adminRole.addPermission(userManage);
 				adminRole.addPermission(vacationRead);
+				adminRole.addPermission(vacationUse);
 				adminRole.addPermission(vacationRequest);
 				adminRole.addPermission(vacationApprove);
 				adminRole.addPermission(vacationGrant);
@@ -341,13 +348,14 @@ public class InitDB {
 				adminRole.addPermission(scheduleRead);
 				adminRole.addPermission(scheduleWrite);
 				adminRole.addPermission(scheduleManage);
+				adminRole.addPermission(companyRead);
 				adminRole.addPermission(companyManage);
+				adminRole.addPermission(holidayRead);
 				adminRole.addPermission(holidayManage);
 				adminRole.addPermission(duesRead);
 				adminRole.addPermission(duesManage);
-                adminRole.addPermission(regulationRead);
+				adminRole.addPermission(regulationRead);
 				adminRole.addPermission(noticeRead);
-				adminRole.addPermission(noticeWrite);
 				adminRole.addPermission(noticeManage);
 				adminRole.addPermission(roleManage);
 				roleRepository.save(adminRole);
@@ -355,7 +363,9 @@ public class InitDB {
 				// MANAGER Role (팀장/관리자 권한)
 				Role managerRole = Role.createRole("MANAGER", "매니저", "승인 및 조회 권한");
 				managerRole.addPermission(userRead);
+                managerRole.addPermission(userEdit);
 				managerRole.addPermission(vacationRead);
+				managerRole.addPermission(vacationUse);
 				managerRole.addPermission(vacationRequest);
 				managerRole.addPermission(vacationApprove);
 				managerRole.addPermission(workRead);
@@ -363,11 +373,12 @@ public class InitDB {
 				managerRole.addPermission(workManage);
 				managerRole.addPermission(scheduleRead);
 				managerRole.addPermission(scheduleWrite);
-				adminRole.addPermission(scheduleManage);
+				managerRole.addPermission(scheduleManage);
+				managerRole.addPermission(companyRead);
+				managerRole.addPermission(holidayRead);
 				managerRole.addPermission(duesRead);
-                managerRole.addPermission(regulationRead);
+				managerRole.addPermission(regulationRead);
 				managerRole.addPermission(noticeRead);
-				managerRole.addPermission(noticeWrite);
 				roleRepository.save(managerRole);
 
 				// USER Role (일반 사용자 권한)
@@ -375,13 +386,16 @@ public class InitDB {
 				userRole.addPermission(userRead);
 				userRole.addPermission(userEdit);
 				userRole.addPermission(vacationRead);
+				userRole.addPermission(vacationUse);
 				userRole.addPermission(vacationRequest);
 				userRole.addPermission(workRead);
 				userRole.addPermission(workWrite);
 				userRole.addPermission(scheduleRead);
 				userRole.addPermission(scheduleWrite);
+				userRole.addPermission(companyRead);
+				userRole.addPermission(holidayRead);
 				userRole.addPermission(duesRead);
-                userRole.addPermission(regulationRead);
+				userRole.addPermission(regulationRead);
 				userRole.addPermission(noticeRead);
 				roleRepository.save(userRole);
 			}
