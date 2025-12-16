@@ -43,7 +43,7 @@ public class AuditingFields {
      * 최종 수정 일자
      */
     @LastModifiedDate
-    @Column(name = "modify_date", nullable = false)
+    @Column(name = "modify_date")
     private LocalDateTime modifyDate;
 
     /**
