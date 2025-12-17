@@ -34,6 +34,9 @@ jobs:
         # Execute Test
       - name: Test with Gradle
         run: ./gradlew --info test
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
         # Generate Test Result Report
       - name: Publish Test Results
