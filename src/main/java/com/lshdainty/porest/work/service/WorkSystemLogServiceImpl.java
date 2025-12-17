@@ -2,7 +2,7 @@ package com.lshdainty.porest.work.service;
 
 import com.lshdainty.porest.work.domain.WorkSystemLog;
 import com.lshdainty.porest.work.repository.WorkSystemLogRepository;
-import com.lshdainty.porest.work.type.OriginSystemType;
+import com.lshdainty.porest.common.type.SystemType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,7 +24,7 @@ public class WorkSystemLogServiceImpl implements WorkSystemLogService {
 
     @Override
     @Transactional
-    public boolean toggleSystemCheck(OriginSystemType code) {
+    public boolean toggleSystemCheck(SystemType code) {
         LocalDate today = LocalDate.now();
         LocalDateTime startOfDay = today.atStartOfDay();
         LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
@@ -47,7 +47,7 @@ public class WorkSystemLogServiceImpl implements WorkSystemLogService {
     }
 
     @Override
-    public boolean isCheckedToday(OriginSystemType code) {
+    public boolean isCheckedToday(SystemType code) {
         LocalDate today = LocalDate.now();
         LocalDateTime startOfDay = today.atStartOfDay();
         LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
@@ -58,15 +58,15 @@ public class WorkSystemLogServiceImpl implements WorkSystemLogService {
     }
 
     @Override
-    public Map<OriginSystemType, Boolean> checkSystemStatusBatch(List<OriginSystemType> codes) {
+    public Map<SystemType, Boolean> checkSystemStatusBatch(List<SystemType> codes) {
         LocalDate today = LocalDate.now();
         LocalDateTime startOfDay = today.atStartOfDay();
         LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
 
-        List<OriginSystemType> checkedCodes = workSystemLogRepository
+        List<SystemType> checkedCodes = workSystemLogRepository
                 .findCodesByPeriodAndCodes(startOfDay, endOfDay, codes);
 
-        Map<OriginSystemType, Boolean> result = codes.stream()
+        Map<SystemType, Boolean> result = codes.stream()
                 .collect(Collectors.toMap(
                         code -> code,
                         checkedCodes::contains

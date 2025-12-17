@@ -4,7 +4,7 @@ import tools.jackson.databind.PropertyNamingStrategies;
 import tools.jackson.databind.annotation.JsonNaming;
 import com.lshdainty.porest.common.type.CountryCode;
 import com.lshdainty.porest.common.type.YNType;
-import com.lshdainty.porest.company.type.OriginCompanyType;
+import com.lshdainty.porest.common.type.CompanyType;
 import com.lshdainty.porest.user.type.StatusType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -37,7 +37,7 @@ public class UserApiDto {
         private LocalDate userBirth;
 
         @Schema(description = "소속 회사", example = "KAKAO")
-        private OriginCompanyType userOriginCompanyType;
+        private CompanyType userCompanyType;
 
         @Schema(description = "근무 시간", example = "09:00-18:00")
         private String userWorkTime;
@@ -100,7 +100,7 @@ public class UserApiDto {
         private List<String> permissions;
 
         @Schema(description = "소속 회사", example = "KAKAO")
-        private OriginCompanyType userOriginCompanyType;
+        private CompanyType userCompanyType;
 
         @Schema(description = "소속 회사명", example = "카카오")
         private String userOriginCompanyName;
@@ -154,7 +154,7 @@ public class UserApiDto {
         private List<String> userRoles;
 
         @Schema(description = "소속 회사", example = "KAKAO")
-        private OriginCompanyType userOriginCompanyType;
+        private CompanyType userCompanyType;
 
         @Schema(description = "근무 시간", example = "09:00-18:00")
         private String userWorkTime;
@@ -208,7 +208,7 @@ public class UserApiDto {
         private List<String> permissions;
 
         @Schema(description = "소속 회사", example = "KAKAO")
-        private OriginCompanyType userOriginCompanyType;
+        private CompanyType userCompanyType;
 
         @Schema(description = "소속 회사명", example = "카카오")
         private String userOriginCompanyName;
@@ -262,7 +262,7 @@ public class UserApiDto {
         private String userEmail;
 
         @Schema(description = "소속 회사", example = "KAKAO")
-        private OriginCompanyType userOriginCompanyType;
+        private CompanyType userCompanyType;
 
         @Schema(description = "근무 시간", example = "09:00-18:00")
         private String userWorkTime;
@@ -289,7 +289,7 @@ public class UserApiDto {
         private String userEmail;
 
         @Schema(description = "소속 회사", example = "KAKAO")
-        private OriginCompanyType userOriginCompanyType;
+        private CompanyType userCompanyType;
 
         @Schema(description = "근무 시간", example = "09:00-18:00")
         private String userWorkTime;
@@ -328,7 +328,7 @@ public class UserApiDto {
         private String userEmail;
 
         @Schema(description = "소속 회사", example = "KAKAO")
-        private OriginCompanyType userOriginCompanyType;
+        private CompanyType userCompanyType;
 
         @Schema(description = "근무 시간", example = "09:00-18:00")
         private String userWorkTime;
@@ -364,7 +364,7 @@ public class UserApiDto {
         private String userEmail;
 
         @Schema(description = "소속 회사", example = "KAKAO")
-        private OriginCompanyType userOriginCompanyType;
+        private CompanyType userCompanyType;
 
         @Schema(description = "근무 시간", example = "09:00-18:00")
         private String userWorkTime;
@@ -391,7 +391,7 @@ public class UserApiDto {
         private String userEmail;
 
         @Schema(description = "소속 회사", example = "KAKAO")
-        private OriginCompanyType userOriginCompanyType;
+        private CompanyType userCompanyType;
 
         @Schema(description = "근무 시간", example = "09:00-18:00")
         private String userWorkTime;

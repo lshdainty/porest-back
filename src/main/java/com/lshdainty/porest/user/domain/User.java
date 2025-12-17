@@ -1,8 +1,9 @@
 package com.lshdainty.porest.user.domain;
 
+import com.lshdainty.porest.common.converter.CompanyTypeConverter;
 import com.lshdainty.porest.common.domain.AuditingFields;
 import com.lshdainty.porest.common.type.CountryCode;
-import com.lshdainty.porest.company.type.OriginCompanyType;
+import com.lshdainty.porest.common.type.CompanyType;
 import com.lshdainty.porest.department.domain.UserDepartment;
 import com.lshdainty.porest.permission.domain.Role;
 import com.lshdainty.porest.permission.domain.UserRole;
@@ -96,9 +97,9 @@ public class User extends AuditingFields {
      * 사용자 원소속 회사<br>
      * 사용자가 원래 속한 회사 정보
      */
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = CompanyTypeConverter.class)
     @Column(name = "user_origin_company", nullable = false, length = 20)
-    private OriginCompanyType company;
+    private CompanyType company;
 
     /**
      * 프로필 파일명<br>
@@ -247,7 +248,7 @@ public class User extends AuditingFields {
      * @return User
      */
     public static User createUser(String id, String pwd, String name, String email, LocalDate birth,
-                                  OriginCompanyType company, String workTime,
+                                  CompanyType company, String workTime,
                                   YNType lunarYN, String profileName, String profileUUID, CountryCode countryCode) {
         User user = new User();
         user.id = id;
@@ -279,7 +280,7 @@ public class User extends AuditingFields {
      * @return User
      */
     public static User createInvitedUser(String id, String name, String email,
-                                       OriginCompanyType company, String workTime, LocalDate joinDate, CountryCode countryCode) {
+                                       CompanyType company, String workTime, LocalDate joinDate, CountryCode countryCode) {
         User user = new User();
         user.id = id;
         user.name = name;
@@ -314,7 +315,7 @@ public class User extends AuditingFields {
      * 초대된 사용자 정보 수정<br>
      * PENDING 상태인 사용자만 수정 가능
      */
-    public void updateInvitedUser(String name, String email, OriginCompanyType company, String workTime, LocalDate joinDate, CountryCode countryCode) {
+    public void updateInvitedUser(String name, String email, CompanyType company, String workTime, LocalDate joinDate, CountryCode countryCode) {
         if (!Objects.isNull(name)) { this.name = name; }
         if (!Objects.isNull(email)) { this.email = email; }
         if (!Objects.isNull(company)) { this.company = company; }
@@ -352,7 +353,7 @@ public class User extends AuditingFields {
      * 해당 메소드를 통해 유저 수정할 것
      */
     public void updateUser(String name, String email, List<Role> roles, LocalDate birth,
-                           OriginCompanyType company, String workTime,
+                           CompanyType company, String workTime,
                            YNType lunarYN, String profileName, String profileUUID, String dashboard, CountryCode countryCode) {
         if (!Objects.isNull(name)) { this.name = name; }
         if (!Objects.isNull(email)) { this.email = email; }

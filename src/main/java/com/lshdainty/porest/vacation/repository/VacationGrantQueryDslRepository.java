@@ -1,7 +1,7 @@
 package com.lshdainty.porest.vacation.repository;
 
 import com.lshdainty.porest.common.type.YNType;
-import com.lshdainty.porest.company.type.OriginCompanyType;
+import com.lshdainty.porest.common.type.DefaultCompanyType;
 import com.lshdainty.porest.vacation.domain.VacationGrant;
 import com.lshdainty.porest.vacation.type.GrantMethod;
 import com.lshdainty.porest.vacation.type.GrantStatus;
@@ -119,7 +119,7 @@ public class VacationGrantQueryDslRepository implements VacationGrantRepository 
                 .join(vacationGrant.policy).fetchJoin()
                 .where(vacationGrant.isDeleted.eq(YNType.N)
                         .and(vacationGrant.status.eq(GrantStatus.ACTIVE))
-                        .and(vacationGrant.user.company.ne(OriginCompanyType.SYSTEM)))
+                        .and(vacationGrant.user.company.ne(DefaultCompanyType.SYSTEM)))
                 .orderBy(vacationGrant.user.id.asc(), vacationGrant.expiryDate.asc())
                 .fetch();
     }

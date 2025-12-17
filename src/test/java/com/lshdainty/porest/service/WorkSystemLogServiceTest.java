@@ -3,6 +3,7 @@ package com.lshdainty.porest.service;
 import com.lshdainty.porest.work.domain.WorkSystemLog;
 import com.lshdainty.porest.work.repository.WorkSystemLogRepository;
 import com.lshdainty.porest.work.service.WorkSystemLogServiceImpl;
+import com.lshdainty.porest.common.type.SystemType;
 import com.lshdainty.porest.work.type.OriginSystemType;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
@@ -117,14 +118,14 @@ class WorkSystemLogServiceTest {
         @DisplayName("성공 - 여러 시스템의 상태를 배치로 확인한다")
         void checkSystemStatusBatchSuccess() {
             // given
-            List<OriginSystemType> codes = List.of(OriginSystemType.ERP, OriginSystemType.MES, OriginSystemType.WMS);
-            List<OriginSystemType> checkedCodes = List.of(OriginSystemType.ERP, OriginSystemType.WMS);
+            List<SystemType> codes = List.of(OriginSystemType.ERP, OriginSystemType.MES, OriginSystemType.WMS);
+            List<SystemType> checkedCodes = List.of(OriginSystemType.ERP, OriginSystemType.WMS);
 
             given(workSystemLogRepository.findCodesByPeriodAndCodes(any(), any(), eq(codes)))
                     .willReturn(checkedCodes);
 
             // when
-            Map<OriginSystemType, Boolean> result = workSystemLogService.checkSystemStatusBatch(codes);
+            Map<SystemType, Boolean> result = workSystemLogService.checkSystemStatusBatch(codes);
 
             // then
             assertThat(result).hasSize(3);
@@ -137,12 +138,12 @@ class WorkSystemLogServiceTest {
         @DisplayName("성공 - 모든 시스템이 체크되지 않았으면 모두 false를 반환한다")
         void checkSystemStatusBatchAllFalse() {
             // given
-            List<OriginSystemType> codes = List.of(OriginSystemType.ERP, OriginSystemType.MES);
+            List<SystemType> codes = List.of(OriginSystemType.ERP, OriginSystemType.MES);
             given(workSystemLogRepository.findCodesByPeriodAndCodes(any(), any(), eq(codes)))
                     .willReturn(List.of());
 
             // when
-            Map<OriginSystemType, Boolean> result = workSystemLogService.checkSystemStatusBatch(codes);
+            Map<SystemType, Boolean> result = workSystemLogService.checkSystemStatusBatch(codes);
 
             // then
             assertThat(result).hasSize(2);
@@ -154,12 +155,12 @@ class WorkSystemLogServiceTest {
         @DisplayName("성공 - 모든 시스템이 체크되었으면 모두 true를 반환한다")
         void checkSystemStatusBatchAllTrue() {
             // given
-            List<OriginSystemType> codes = List.of(OriginSystemType.ERP, OriginSystemType.MES);
+            List<SystemType> codes = List.of(OriginSystemType.ERP, OriginSystemType.MES);
             given(workSystemLogRepository.findCodesByPeriodAndCodes(any(), any(), eq(codes)))
                     .willReturn(codes);
 
             // when
-            Map<OriginSystemType, Boolean> result = workSystemLogService.checkSystemStatusBatch(codes);
+            Map<SystemType, Boolean> result = workSystemLogService.checkSystemStatusBatch(codes);
 
             // then
             assertThat(result).hasSize(2);
@@ -171,12 +172,12 @@ class WorkSystemLogServiceTest {
         @DisplayName("성공 - 빈 리스트를 입력하면 빈 맵을 반환한다")
         void checkSystemStatusBatchEmpty() {
             // given
-            List<OriginSystemType> codes = List.of();
+            List<SystemType> codes = List.of();
             given(workSystemLogRepository.findCodesByPeriodAndCodes(any(), any(), eq(codes)))
                     .willReturn(List.of());
 
             // when
-            Map<OriginSystemType, Boolean> result = workSystemLogService.checkSystemStatusBatch(codes);
+            Map<SystemType, Boolean> result = workSystemLogService.checkSystemStatusBatch(codes);
 
             // then
             assertThat(result).isEmpty();

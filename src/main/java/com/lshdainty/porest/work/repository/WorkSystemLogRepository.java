@@ -1,7 +1,7 @@
 package com.lshdainty.porest.work.repository;
 
 import com.lshdainty.porest.work.domain.WorkSystemLog;
-import com.lshdainty.porest.work.type.OriginSystemType;
+import com.lshdainty.porest.common.type.SystemType;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,7 +28,7 @@ public interface WorkSystemLogRepository {
      * @param code 시스템 코드
      * @return Optional<WorkSystemLog>
      */
-    Optional<WorkSystemLog> findByPeriodAndCode(LocalDateTime startDateTime, LocalDateTime endDateTime, OriginSystemType code);
+    Optional<WorkSystemLog> findByPeriodAndCode(LocalDateTime startDateTime, LocalDateTime endDateTime, SystemType code);
 
     /**
      * 특정 기간 내 여러 시스템 코드의 로그를 배치 조회<br>
@@ -39,7 +39,7 @@ public interface WorkSystemLogRepository {
      * @param codes 시스템 코드 목록
      * @return 해당 기간에 존재하는 시스템 코드 목록
      */
-    List<OriginSystemType> findCodesByPeriodAndCodes(LocalDateTime startDateTime, LocalDateTime endDateTime, List<OriginSystemType> codes);
+    List<SystemType> findCodesByPeriodAndCodes(LocalDateTime startDateTime, LocalDateTime endDateTime, List<SystemType> codes);
 
     /**
      * 시스템 로그 삭제

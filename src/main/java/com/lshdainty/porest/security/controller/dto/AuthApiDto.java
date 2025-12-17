@@ -3,7 +3,7 @@ package com.lshdainty.porest.security.controller.dto;
 import tools.jackson.databind.PropertyNamingStrategies;
 import tools.jackson.databind.annotation.JsonNaming;
 import com.lshdainty.porest.common.type.YNType;
-import com.lshdainty.porest.company.type.OriginCompanyType;
+import com.lshdainty.porest.common.type.CompanyType;
 import java.util.List;
 import com.lshdainty.porest.user.type.StatusType;
 import lombok.AllArgsConstructor;
@@ -67,7 +67,7 @@ public class AuthApiDto {
         private String userId;
         private String userName;
         private String userEmail;
-        private OriginCompanyType userOriginCompanyType;
+        private CompanyType userCompanyType;
         private String userWorkTime;
         private LocalDate joinDate;
         private List<String> userRoles;

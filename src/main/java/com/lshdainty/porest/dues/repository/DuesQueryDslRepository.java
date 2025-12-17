@@ -1,6 +1,6 @@
 package com.lshdainty.porest.dues.repository;
 
-import com.lshdainty.porest.company.type.OriginCompanyType;
+import com.lshdainty.porest.common.type.DefaultCompanyType;
 import com.lshdainty.porest.dues.domain.Dues;
 import com.lshdainty.porest.dues.repository.dto.UsersMonthBirthDuesDto;
 import com.lshdainty.porest.dues.type.DuesCalcType;
@@ -81,7 +81,7 @@ public class DuesQueryDslRepository implements DuesRepository {
                                 "where d.userName = u.name and u.company != :systemCompany " +
                                 "and year(d.date) = :year and d.type = :type and d.calc = :calc " +
                                 "group by d.userName, month(d.date), d.detail", UsersMonthBirthDuesDto.class)
-                .setParameter("systemCompany", OriginCompanyType.SYSTEM)
+                .setParameter("systemCompany", DefaultCompanyType.SYSTEM)
                 .setParameter("year", year)
                 .setParameter("type", DuesType.BIRTH)
                 .setParameter("calc", DuesCalcType.PLUS)

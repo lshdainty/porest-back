@@ -2,6 +2,7 @@ package com.lshdainty.porest.repository;
 
 import com.lshdainty.porest.common.type.CountryCode;
 import com.lshdainty.porest.common.type.YNType;
+import com.lshdainty.porest.common.type.DefaultCompanyType;
 import com.lshdainty.porest.company.type.OriginCompanyType;
 import com.lshdainty.porest.dues.domain.Dues;
 import com.lshdainty.porest.dues.repository.DuesQueryDslRepository;
@@ -212,7 +213,7 @@ class DuesQueryDslRepositoryTest {
         );
         User systemUser = User.createUser(
                 "systemUser", "password", "시스템유저", "system@test.com",
-                LocalDate.of(1990, 1, 1), OriginCompanyType.SYSTEM, "9 ~ 18",
+                LocalDate.of(1990, 1, 1), DefaultCompanyType.SYSTEM, "9 ~ 18",
                 YNType.N, null, null, CountryCode.KR
         );
         em.persist(normalUser);

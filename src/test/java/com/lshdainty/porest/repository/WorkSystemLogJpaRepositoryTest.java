@@ -2,6 +2,7 @@ package com.lshdainty.porest.repository;
 
 import com.lshdainty.porest.work.domain.WorkSystemLog;
 import com.lshdainty.porest.work.repository.WorkSystemLogJpaRepository;
+import com.lshdainty.porest.common.type.SystemType;
 import com.lshdainty.porest.work.type.OriginSystemType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -109,7 +110,7 @@ class WorkSystemLogJpaRepositoryTest {
 
         // when
         LocalDateTime now = LocalDateTime.now();
-        List<OriginSystemType> codes = workSystemLogRepository.findCodesByPeriodAndCodes(
+        List<SystemType> codes = workSystemLogRepository.findCodesByPeriodAndCodes(
                 now.minusMinutes(1), now.plusMinutes(1),
                 List.of(OriginSystemType.ERP, OriginSystemType.MES, OriginSystemType.WMS)
         );
@@ -129,7 +130,7 @@ class WorkSystemLogJpaRepositoryTest {
 
         // when
         // 현재 시간보다 과거 기간으로 조회
-        List<OriginSystemType> codes = workSystemLogRepository.findCodesByPeriodAndCodes(
+        List<SystemType> codes = workSystemLogRepository.findCodesByPeriodAndCodes(
                 LocalDateTime.now().minusDays(10),
                 LocalDateTime.now().minusDays(5),
                 List.of(OriginSystemType.ERP)
@@ -175,7 +176,7 @@ class WorkSystemLogJpaRepositoryTest {
 
         // when
         LocalDateTime now = LocalDateTime.now();
-        List<OriginSystemType> codes = workSystemLogRepository.findCodesByPeriodAndCodes(
+        List<SystemType> codes = workSystemLogRepository.findCodesByPeriodAndCodes(
                 now.minusMinutes(1), now.plusMinutes(1),
                 List.of(OriginSystemType.ERP, OriginSystemType.MES)  // MES는 저장 안함
         );

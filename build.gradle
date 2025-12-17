@@ -25,6 +25,7 @@ configurations {
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
     maven { url 'https://jitpack.io' }
     maven {
@@ -47,8 +48,8 @@ repositories {
 
 dependencies {
     // ==================== Private Codes (GitHub Packages) ====================
-    implementation 'com.lshdainty:porest-back-common:1.0.1'
-    implementation 'com.lshdainty:porest-back-skc:1.0.4'
+    implementation 'com.lshdainty:porest-back-common:1.1.0'
+    implementation 'com.lshdainty:porest-back-skc:1.2.0' // optional: 회사별 타입 사용 시 필요
 
     // ==================== Spring Boot Starters ====================
     implementation 'org.springframework.boot:spring-boot-starter-web'

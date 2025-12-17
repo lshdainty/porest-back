@@ -2,6 +2,7 @@ package com.lshdainty.porest.repository;
 
 import com.lshdainty.porest.common.type.CountryCode;
 import com.lshdainty.porest.common.type.YNType;
+import com.lshdainty.porest.common.type.DefaultCompanyType;
 import com.lshdainty.porest.company.type.OriginCompanyType;
 import com.lshdainty.porest.permission.domain.Permission;
 import com.lshdainty.porest.permission.domain.Role;
@@ -491,7 +492,7 @@ class UserJpaRepositoryTest {
         );
         User systemUser = User.createUser(
                 "systemUser", "password", "시스템유저", "system@test.com",
-                LocalDate.of(1990, 1, 1), OriginCompanyType.SYSTEM, "9 ~ 18",
+                LocalDate.of(1990, 1, 1), DefaultCompanyType.SYSTEM, "9 ~ 18",
                 YNType.N, null, null, CountryCode.KR
         );
         userRepository.save(normalUser);
@@ -505,7 +506,7 @@ class UserJpaRepositoryTest {
         // then
         assertThat(users).hasSize(1);
         assertThat(users.get(0).getId()).isEqualTo("normalUser");
-        assertThat(users.get(0).getCompany()).isNotEqualTo(OriginCompanyType.SYSTEM);
+        assertThat(users.get(0).getCompany()).isNotEqualTo(DefaultCompanyType.SYSTEM);
     }
 
     @Test
@@ -532,7 +533,7 @@ class UserJpaRepositoryTest {
 
         User systemUser = User.createUser(
                 "systemUser", "password", "시스템유저", "system@test.com",
-                LocalDate.of(1990, 1, 1), OriginCompanyType.SYSTEM, "9 ~ 18",
+                LocalDate.of(1990, 1, 1), DefaultCompanyType.SYSTEM, "9 ~ 18",
                 YNType.N, null, null, CountryCode.KR
         );
         systemUser.addRole(role);
@@ -546,6 +547,6 @@ class UserJpaRepositoryTest {
         // then
         assertThat(users).hasSize(1);
         assertThat(users.get(0).getId()).isEqualTo("normalUser");
-        assertThat(users.get(0).getCompany()).isNotEqualTo(OriginCompanyType.SYSTEM);
+        assertThat(users.get(0).getCompany()).isNotEqualTo(DefaultCompanyType.SYSTEM);
     }
 }

@@ -1,7 +1,7 @@
 package com.lshdainty.porest.user.controller;
 
 import com.lshdainty.porest.common.type.YNType;
-import com.lshdainty.porest.company.type.OriginCompanyType;
+import com.lshdainty.porest.common.type.CompanyType;
 import com.lshdainty.porest.user.controller.dto.UserApiDto;
 import com.lshdainty.porest.common.controller.ApiResponse;
 import com.lshdainty.porest.user.service.UserService;
@@ -34,7 +34,7 @@ public class UserApiController implements UserApi {
                 .name(data.getUserName())
                 .email(data.getUserEmail())
                 .birth(data.getUserBirth())
-                .company(data.getUserOriginCompanyType())
+                .company(data.getUserCompanyType())
                 .workTime(data.getUserWorkTime())
                 .lunarYN(data.getLunarYn())
                 .profileUrl(data.getProfileUrl())
@@ -173,7 +173,7 @@ public class UserApiController implements UserApi {
                 .email(data.getUserEmail())
                 .birth(data.getUserBirth())
                 .roleNames(data.getUserRoles())
-                .company(data.getUserOriginCompanyType())
+                .company(data.getUserCompanyType())
                 .workTime(data.getUserWorkTime())
                 .lunarYN(data.getLunarYn())
                 .profileUrl(data.getProfileUrl())
@@ -252,7 +252,7 @@ public class UserApiController implements UserApi {
                 .id(data.getUserId())
                 .name(data.getUserName())
                 .email(data.getUserEmail())
-                .company(data.getUserOriginCompanyType())
+                .company(data.getUserCompanyType())
                 .workTime(data.getUserWorkTime())
                 .joinDate(data.getJoinDate())
                 .countryCode(data.getCountryCode())
@@ -283,7 +283,7 @@ public class UserApiController implements UserApi {
         UserServiceDto result = userService.editInvitedUser(userId, UserServiceDto.builder()
                 .name(data.getUserName())
                 .email(data.getUserEmail())
-                .company(data.getUserOriginCompanyType())
+                .company(data.getUserCompanyType())
                 .workTime(data.getUserWorkTime())
                 .joinDate(data.getJoinDate())
                 .countryCode(data.getCountryCode())
@@ -443,7 +443,7 @@ public class UserApiController implements UserApi {
         return ApiResponse.success();
     }
 
-    private String getTranslatedName(OriginCompanyType type) {
+    private String getTranslatedName(CompanyType type) {
         if (type == null) return null;
         return messageSource.getMessage(type.getMessageKey(), null, LocaleContextHolder.getLocale());
     }

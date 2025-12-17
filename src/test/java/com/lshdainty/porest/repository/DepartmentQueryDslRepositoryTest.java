@@ -2,6 +2,7 @@ package com.lshdainty.porest.repository;
 
 import com.lshdainty.porest.common.type.CountryCode;
 import com.lshdainty.porest.company.domain.Company;
+import com.lshdainty.porest.common.type.DefaultCompanyType;
 import com.lshdainty.porest.company.type.OriginCompanyType;
 import com.lshdainty.porest.department.domain.Department;
 import com.lshdainty.porest.department.domain.UserDepartment;
@@ -494,7 +495,7 @@ class DepartmentQueryDslRepositoryTest {
         );
         User systemUser = User.createUser(
                 "systemUser", "password", "시스템유저", "system@test.com",
-                LocalDate.of(1990, 1, 1), OriginCompanyType.SYSTEM, "9 ~ 18",
+                LocalDate.of(1990, 1, 1), DefaultCompanyType.SYSTEM, "9 ~ 18",
                 YNType.N, null, null, CountryCode.KR
         );
         em.persist(normalUser);
@@ -514,7 +515,7 @@ class DepartmentQueryDslRepositoryTest {
         // then
         assertThat(users).hasSize(1);
         assertThat(users.get(0).getId()).isEqualTo("normalUser");
-        assertThat(users.get(0).getCompany()).isNotEqualTo(OriginCompanyType.SYSTEM);
+        assertThat(users.get(0).getCompany()).isNotEqualTo(DefaultCompanyType.SYSTEM);
     }
 
     @Test
@@ -528,7 +529,7 @@ class DepartmentQueryDslRepositoryTest {
         );
         User systemUser = User.createUser(
                 "systemUser", "password", "시스템유저", "system@test.com",
-                LocalDate.of(1990, 1, 1), OriginCompanyType.SYSTEM, "9 ~ 18",
+                LocalDate.of(1990, 1, 1), DefaultCompanyType.SYSTEM, "9 ~ 18",
                 YNType.N, null, null, CountryCode.KR
         );
         em.persist(normalUser);
@@ -545,7 +546,7 @@ class DepartmentQueryDslRepositoryTest {
         // then
         assertThat(users).hasSize(1);
         assertThat(users.get(0).getId()).isEqualTo("normalUser");
-        assertThat(users.get(0).getCompany()).isNotEqualTo(OriginCompanyType.SYSTEM);
+        assertThat(users.get(0).getCompany()).isNotEqualTo(DefaultCompanyType.SYSTEM);
     }
 
     @Test
@@ -559,7 +560,7 @@ class DepartmentQueryDslRepositoryTest {
         );
         User systemUser = User.createUser(
                 "systemUser", "password", "시스템유저", "system@test.com",
-                LocalDate.of(1990, 1, 1), OriginCompanyType.SYSTEM, "9 ~ 18",
+                LocalDate.of(1990, 1, 1), DefaultCompanyType.SYSTEM, "9 ~ 18",
                 YNType.N, null, null, CountryCode.KR
         );
         em.persist(normalUser);
@@ -579,6 +580,6 @@ class DepartmentQueryDslRepositoryTest {
         // then
         assertThat(userDepartments).hasSize(1);
         assertThat(userDepartments.get(0).getUser().getId()).isEqualTo("normalUser");
-        assertThat(userDepartments.get(0).getUser().getCompany()).isNotEqualTo(OriginCompanyType.SYSTEM);
+        assertThat(userDepartments.get(0).getUser().getCompany()).isNotEqualTo(DefaultCompanyType.SYSTEM);
     }
 }

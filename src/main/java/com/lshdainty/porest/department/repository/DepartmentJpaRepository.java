@@ -1,7 +1,7 @@
 package com.lshdainty.porest.department.repository;
 
 import com.lshdainty.porest.common.type.YNType;
-import com.lshdainty.porest.company.type.OriginCompanyType;
+import com.lshdainty.porest.common.type.DefaultCompanyType;
 import com.lshdainty.porest.department.domain.Department;
 import com.lshdainty.porest.department.domain.UserDepartment;
 import com.lshdainty.porest.user.domain.User;
@@ -90,7 +90,7 @@ public class DepartmentJpaRepository implements DepartmentRepository {
                 "where ud.department.id = :departmentId and ud.isDeleted = :isDeleted and d.isDeleted = :isDeleted and u.isDeleted = :isDeleted and u.company != :systemCompany", User.class)
                 .setParameter("departmentId", departmentId)
                 .setParameter("isDeleted", YNType.N)
-                .setParameter("systemCompany", OriginCompanyType.SYSTEM)
+                .setParameter("systemCompany", DefaultCompanyType.SYSTEM)
                 .getResultList();
     }
 
@@ -102,7 +102,7 @@ public class DepartmentJpaRepository implements DepartmentRepository {
                 "where ud.user.id = u.id and ud.department.id = :departmentId and ud.isDeleted = :isDeleted and d.isDeleted = :isDeleted)", User.class)
                 .setParameter("departmentId", departmentId)
                 .setParameter("isDeleted", YNType.N)
-                .setParameter("systemCompany", OriginCompanyType.SYSTEM)
+                .setParameter("systemCompany", DefaultCompanyType.SYSTEM)
                 .getResultList();
     }
 
@@ -114,7 +114,7 @@ public class DepartmentJpaRepository implements DepartmentRepository {
                 "where ud.department.id = :departmentId and ud.isDeleted = :isDeleted and d.isDeleted = :isDeleted and u.isDeleted = :isDeleted and u.company != :systemCompany", UserDepartment.class)
                 .setParameter("departmentId", departmentId)
                 .setParameter("isDeleted", YNType.N)
-                .setParameter("systemCompany", OriginCompanyType.SYSTEM)
+                .setParameter("systemCompany", DefaultCompanyType.SYSTEM)
                 .getResultList();
     }
 

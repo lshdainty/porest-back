@@ -1,7 +1,7 @@
 package com.lshdainty.porest.user.repository;
 
 import com.lshdainty.porest.common.type.YNType;
-import com.lshdainty.porest.company.type.OriginCompanyType;
+import com.lshdainty.porest.common.type.DefaultCompanyType;
 import com.lshdainty.porest.permission.domain.Role;
 import com.lshdainty.porest.user.domain.User;
 import jakarta.persistence.EntityManager;
@@ -36,7 +36,7 @@ public class UserJpaRepository implements UserRepository {
     public List<User> findUsers() {
         return em.createQuery("select u from User u where u.isDeleted = :isDeleted and u.company != :systemCompany", User.class)
                 .setParameter("isDeleted", YNType.N)
-                .setParameter("systemCompany", OriginCompanyType.SYSTEM)
+                .setParameter("systemCompany", DefaultCompanyType.SYSTEM)
                 .getResultList();
     }
 
@@ -91,7 +91,7 @@ public class UserJpaRepository implements UserRepository {
                 "left join fetch ur.role r " +
                 "where u.isDeleted = :isDeleted and u.company != :systemCompany", User.class)
                 .setParameter("isDeleted", YNType.N)
-                .setParameter("systemCompany", OriginCompanyType.SYSTEM)
+                .setParameter("systemCompany", DefaultCompanyType.SYSTEM)
                 .getResultList();
 
         if (users.isEmpty()) {
@@ -127,7 +127,7 @@ public class UserJpaRepository implements UserRepository {
                 "and u.modifyDate >= :startDate " +
                 "and u.modifyDate < :endDate", User.class)
                 .setParameter("isDeleted", YNType.Y)
-                .setParameter("systemCompany", OriginCompanyType.SYSTEM)
+                .setParameter("systemCompany", DefaultCompanyType.SYSTEM)
                 .setParameter("startDate", startDate)
                 .setParameter("endDate", endDate)
                 .getResultList();

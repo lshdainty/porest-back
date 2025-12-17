@@ -1,7 +1,7 @@
 package com.lshdainty.porest.vacation.repository;
 
 import com.lshdainty.porest.common.type.YNType;
-import com.lshdainty.porest.company.type.OriginCompanyType;
+import com.lshdainty.porest.common.type.DefaultCompanyType;
 import com.lshdainty.porest.vacation.domain.VacationGrant;
 import com.lshdainty.porest.vacation.type.GrantMethod;
 import com.lshdainty.porest.vacation.type.GrantStatus;
@@ -134,7 +134,7 @@ public class VacationGrantJpaRepository implements VacationGrantRepository {
                                 "order by vg.user.id asc, vg.expiryDate asc", VacationGrant.class)
                 .setParameter("isDeleted", YNType.N)
                 .setParameter("status", GrantStatus.ACTIVE)
-                .setParameter("systemCompany", OriginCompanyType.SYSTEM)
+                .setParameter("systemCompany", DefaultCompanyType.SYSTEM)
                 .getResultList();
     }
 
