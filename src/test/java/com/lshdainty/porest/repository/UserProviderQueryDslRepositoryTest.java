@@ -240,4 +240,74 @@ class UserProviderQueryDslRepositoryTest {
         // then
         assertThat(providers).isEmpty();
     }
+
+    @Test
+    @DisplayName("사용자 ID와 프로바이더 타입으로 삭제")
+    void deleteByUserIdAndProviderType() {
+        // given
+        UserProvider googleProvider = UserProvider.createProvider(user, "google", "google_12345");
+        UserProvider kakaoProvider = UserProvider.createProvider(user, "kakao", "kakao_67890");
+        userProviderRepository.save(googleProvider);
+        userProviderRepository.save(kakaoProvider);
+        em.flush();
+        em.clear();
+
+        // when
+        long deletedCount = userProviderRepository.deleteByUserIdAndProviderType("user1", "google");
+        em.flush();
+        em.clear();
+
+        // then
+        assertThat(deletedCount).isEqualTo(1);
+        List<UserProvider> remaining = userProviderRepository.findByUserId("user1");
+        assertThat(remaining).hasSize(1);
+        assertThat(remaining.get(0).getType()).isEqualTo("kakao");
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 프로바이더 삭제 시 0 반환")
+    void deleteByUserIdAndProviderTypeNotExist() {
+        // given
+        UserProvider googleProvider = UserProvider.createProvider(user, "google", "google_12345");
+        userProviderRepository.save(googleProvider);
+        em.flush();
+        em.clear();
+
+        // when
+        long deletedCount = userProviderRepository.deleteByUserIdAndProviderType("user1", "kakao");
+
+        // then
+        assertThat(deletedCount).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("다른 사용자의 프로바이더는 삭제되지 않음")
+    void deleteByUserIdAndProviderTypeOtherUser() {
+        // given
+        User user2 = User.createUser(
+                "user2", "password", "테스트유저2", "user2@test.com",
+                LocalDate.of(1991, 2, 2), OriginCompanyType.DTOL, "9 ~ 18",
+                YNType.N, null, null, CountryCode.KR
+        );
+        em.persist(user2);
+
+        UserProvider provider1 = UserProvider.createProvider(user, "google", "google_user1");
+        UserProvider provider2 = UserProvider.createProvider(user2, "google", "google_user2");
+        userProviderRepository.save(provider1);
+        userProviderRepository.save(provider2);
+        em.flush();
+        em.clear();
+
+        // when
+        long deletedCount = userProviderRepository.deleteByUserIdAndProviderType("user1", "google");
+        em.flush();
+        em.clear();
+
+        // then
+        assertThat(deletedCount).isEqualTo(1);
+        // user2의 프로바이더는 여전히 존재해야 함
+        List<UserProvider> user2Providers = userProviderRepository.findByUserId("user2");
+        assertThat(user2Providers).hasSize(1);
+        assertThat(user2Providers.get(0).getType()).isEqualTo("google");
+    }
 }
