@@ -42,4 +42,13 @@ public class UserProviderQueryDslRepository implements UserProviderRepository {
                 .where(userProvider.user.id.eq(userId))
                 .fetch();
     }
+
+    @Override
+    public long deleteByUserIdAndProviderType(String userId, String providerType) {
+        return query
+                .delete(userProvider)
+                .where(userProvider.user.id.eq(userId)
+                        .and(userProvider.type.eq(providerType)))
+                .execute();
+    }
 }

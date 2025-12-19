@@ -38,4 +38,14 @@ public class UserProviderJpaRepository implements UserProviderRepository {
                 .setParameter("userId", userId)
                 .getResultList();
     }
+
+    @Override
+    public long deleteByUserIdAndProviderType(String userId, String providerType) {
+        return em.createQuery(
+                "delete from UserProvider up " +
+                "where up.user.id = :userId and up.type = :providerType")
+                .setParameter("userId", userId)
+                .setParameter("providerType", providerType)
+                .executeUpdate();
+    }
 }

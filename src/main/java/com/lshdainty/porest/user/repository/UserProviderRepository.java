@@ -32,4 +32,13 @@ public interface UserProviderRepository {
      * @return 연동된 제공자 목록
      */
     List<UserProvider> findByUserId(String userId);
+
+    /**
+     * 사용자 ID와 프로바이더 타입으로 OAuth 연동 해제 (삭제)
+     *
+     * @param userId 사용자 ID
+     * @param providerType 프로바이더 타입 (예: google, kakao)
+     * @return 삭제된 레코드 수
+     */
+    long deleteByUserIdAndProviderType(String userId, String providerType);
 }

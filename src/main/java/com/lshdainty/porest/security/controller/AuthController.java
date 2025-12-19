@@ -1,6 +1,7 @@
 package com.lshdainty.porest.security.controller;
 
 import com.lshdainty.porest.common.controller.ApiResponse;
+import com.lshdainty.porest.common.exception.EntityNotFoundException;
 import com.lshdainty.porest.common.exception.ErrorCode;
 import com.lshdainty.porest.common.exception.UnauthorizedException;
 import com.lshdainty.porest.common.type.YNType;
@@ -19,6 +20,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
@@ -187,6 +189,35 @@ public class AuthController implements AuthApi {
 
         log.info("연동된 OAuth 제공자 조회: userId={}, count={}", loginUserId, result.size());
         return ApiResponse.success(result);
+    }
+
+    @Override
+    @Transactional
+    public ApiResponse<Void> unlinkOAuth(String provider) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated() ||
+                "anonymousUser".equals(authentication.getPrincipal())) {
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
+        }
+
+        Object principal = authentication.getPrincipal();
+        if (!(principal instanceof UserPrincipal)) {
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
+        }
+
+        UserPrincipal userPrincipal = (UserPrincipal) principal;
+        String loginUserId = userPrincipal.getUser().getId();
+
+        String providerType = provider.toLowerCase();
+        long deletedCount = userProviderRepository.deleteByUserIdAndProviderType(loginUserId, providerType);
+
+        if (deletedCount == 0) {
+            throw new EntityNotFoundException(ErrorCode.OAUTH_PROVIDER_NOT_LINKED);
+        }
+
+        log.info("OAuth 연동 해제 완료: userId={}, provider={}", loginUserId, providerType);
+        return ApiResponse.success(null);
     }
 
     // ========== IP 블랙리스트 관리 (개발 환경 전용) ==========

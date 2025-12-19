@@ -117,6 +117,30 @@ public interface AuthApi {
     @GetMapping("/api/v1/oauth/providers")
     ApiResponse<List<AuthApiDto.LinkedProviderResp>> getLinkedProviders();
 
+    @Operation(
+            summary = "OAuth 연동 해제",
+            description = "현재 로그인된 사용자의 특정 OAuth 제공자 연동을 해제합니다."
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "연동 해제 성공"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "401",
+                    description = "인증 필요 (로그인되지 않음)"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "연동된 제공자를 찾을 수 없음"
+            )
+    })
+    @DeleteMapping("/api/v1/oauth/link/{provider}")
+    ApiResponse<Void> unlinkOAuth(
+            @Parameter(description = "OAuth 제공자 (google, kakao, naver)", example = "google", required = true)
+            @PathVariable String provider
+    );
+
     // ========== IP 블랙리스트 관리 (개발 환경 전용) ==========
 
     @Operation(
