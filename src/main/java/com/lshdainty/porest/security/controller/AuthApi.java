@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Set;
 
 @Tag(name = "Auth", description = "인증 및 보안 API")
@@ -74,60 +75,70 @@ public interface AuthApi {
     @GetMapping("/api/v1/login/check")
     ApiResponse<AuthApiDto.LoginUserInfo> getUserInfo();
 
+    // ========== OAuth 연동 관리 ==========
+
     @Operation(
-            summary = "초대 토큰 유효성 검증",
-            description = "초대 토큰의 유효성을 검증하고 초대된 사용자 정보를 반환합니다. 검증 성공 시 세션에 토큰과 사용자 정보를 저장합니다."
+            summary = "OAuth 연동 시작",
+            description = "로그인된 사용자의 소셜 계정 연동을 시작합니다. 세션에 연동 정보를 저장하고 OAuth 인증 URL을 반환합니다."
     )
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "200",
-                    description = "토큰 검증 성공",
-                    content = @Content(schema = @Schema(implementation = AuthApiDto.ValidateInvitationResp.class))
+                    description = "OAuth 연동 시작 성공",
+                    content = @Content(schema = @Schema(implementation = AuthApiDto.OAuthLinkStartResp.class))
             ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "400",
-                    description = "유효하지 않은 토큰"
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "404",
-                    description = "토큰에 해당하는 사용자를 찾을 수 없음"
+                    responseCode = "401",
+                    description = "인증 필요 (로그인되지 않음)"
             )
     })
-    @GetMapping("/oauth2/signup/validate")
-    ApiResponse<AuthApiDto.ValidateInvitationResp> validateInvitationToken(
-            @Parameter(description = "초대 토큰", example = "abc123def456", required = true)
-            @RequestParam("token") String token,
+    @PostMapping("/api/v1/oauth/link/start")
+    ApiResponse<AuthApiDto.OAuthLinkStartResp> startOAuthLink(
+            @Parameter(description = "OAuth 제공자 (google, kakao, naver)", example = "google", required = true)
+            @RequestParam String provider,
             HttpSession session
     );
 
     @Operation(
-            summary = "초대받은 사용자 회원가입 완료",
-            description = "초대받은 사용자의 추가 정보(생년월일, 음력여부)를 입력받아 회원가입을 완료합니다. 완료 후 세션 정보를 정리합니다."
+            summary = "연동된 OAuth 제공자 목록 조회",
+            description = "현재 로그인된 사용자에게 연동된 OAuth 제공자 목록을 조회합니다."
     )
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "200",
-                    description = "회원가입 완료 성공",
-                    content = @Content(schema = @Schema(implementation = AuthApiDto.CompleteInvitationResp.class))
+                    description = "조회 성공",
+                    content = @Content(schema = @Schema(implementation = AuthApiDto.LinkedProviderResp.class))
             ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "400",
-                    description = "유효하지 않은 토큰 또는 요청 데이터"
+                    responseCode = "401",
+                    description = "인증 필요 (로그인되지 않음)"
+            )
+    })
+    @GetMapping("/api/v1/oauth/providers")
+    ApiResponse<List<AuthApiDto.LinkedProviderResp>> getLinkedProviders();
+
+    @Operation(
+            summary = "OAuth 연동 해제",
+            description = "현재 로그인된 사용자의 특정 OAuth 제공자 연동을 해제합니다."
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "연동 해제 성공"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "401",
+                    description = "인증 필요 (로그인되지 않음)"
             ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "404",
-                    description = "토큰에 해당하는 사용자를 찾을 수 없음"
+                    description = "연동된 제공자를 찾을 수 없음"
             )
     })
-    @PostMapping("/oauth2/signup/invitation/complete")
-    ApiResponse<AuthApiDto.CompleteInvitationResp> completeInvitedUserRegistration(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "회원가입 완료 정보 (초대 토큰, 생년월일, 음력여부)",
-                    required = true,
-                    content = @Content(schema = @Schema(implementation = AuthApiDto.CompleteInvitationReq.class))
-            )
-            @RequestBody AuthApiDto.CompleteInvitationReq data,
-            HttpSession session
+    @DeleteMapping("/api/v1/oauth/link/{provider}")
+    ApiResponse<Void> unlinkOAuth(
+            @Parameter(description = "OAuth 제공자 (google, kakao, naver)", example = "google", required = true)
+            @PathVariable String provider
     );
 
     // ========== IP 블랙리스트 관리 (개발 환경 전용) ==========

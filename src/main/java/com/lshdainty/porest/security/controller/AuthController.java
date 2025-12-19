@@ -1,13 +1,13 @@
 package com.lshdainty.porest.security.controller;
 
 import com.lshdainty.porest.common.controller.ApiResponse;
+import com.lshdainty.porest.common.exception.EntityNotFoundException;
 import com.lshdainty.porest.common.exception.ErrorCode;
 import com.lshdainty.porest.common.exception.UnauthorizedException;
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.security.controller.dto.AuthApiDto;
 import com.lshdainty.porest.security.principal.UserPrincipal;
 import com.lshdainty.porest.security.service.IpBlacklistService;
-import com.lshdainty.porest.security.service.SecurityService;
 import com.lshdainty.porest.user.domain.User;
 import com.lshdainty.porest.user.service.UserService;
 import com.lshdainty.porest.user.service.dto.UserServiceDto;
@@ -20,12 +20,16 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import com.lshdainty.porest.permission.domain.Role;
+import com.lshdainty.porest.user.domain.UserProvider;
+import com.lshdainty.porest.user.repository.UserProviderRepository;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -33,10 +37,10 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @Tag(name = "Auth", description = "인증/보안 API")
 public class AuthController implements AuthApi {
-    private final SecurityService securityService;
     private final UserService userService;
     private final BCryptPasswordEncoder passwordEncoder;
     private final IpBlacklistService ipBlacklistService;
+    private final UserProviderRepository userProviderRepository;
 
     /**
      * CSRF 토큰 발급
@@ -114,7 +118,9 @@ public class AuthController implements AuthApi {
                 allPermissions,  // 모든 권한 코드
                 YNType.Y,
                 StringUtils.hasText(user.getProfileName()) && StringUtils.hasText(user.getProfileUUID()) ?
-                        userService.generateProfileUrl(user.getProfileName(), user.getProfileUUID()) : null
+                        userService.generateProfileUrl(user.getProfileName(), user.getProfileUUID()) : null,
+                user.getPasswordChangeRequired(),  // 비밀번호 변경 필요 여부
+                user.getInvitationStatus()  // 초대 상태
         );
 
         log.info("user info : {}, {}, {}, roles: {}, permissions: {}, {}",
@@ -124,46 +130,94 @@ public class AuthController implements AuthApi {
         return ApiResponse.success(result);
     }
 
+    // ========== OAuth 연동 관리 ==========
+
     @Override
-    public ApiResponse<AuthApiDto.ValidateInvitationResp> validateInvitationToken(String token, HttpSession session) {
-        UserServiceDto user = securityService.validateInvitationToken(token);
+    public ApiResponse<AuthApiDto.OAuthLinkStartResp> startOAuthLink(String provider, HttpSession session) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        // ✅ 검증 성공 시 세션에 초대 토큰과 사용자 정보 저장
-        session.setAttribute("invitationToken", token);
-        session.setAttribute("oauthStep", "signup");
-        session.setAttribute("invitedUserId", user.getId()); // 추가 보안
+        if (authentication == null || !authentication.isAuthenticated() ||
+                "anonymousUser".equals(authentication.getPrincipal())) {
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
+        }
 
-        return ApiResponse.success(new AuthApiDto.ValidateInvitationResp(
-                user.getId(),
-                user.getName(),
-                user.getEmail(),
-                user.getCompany(),
-                user.getWorkTime(),
-                user.getJoinDate(),
-                user.getRoleNames(),
-                user.getInvitationSentAt(),
-                user.getInvitationExpiresAt(),
-                user.getInvitationStatus()
-        ));
+        Object principal = authentication.getPrincipal();
+        if (!(principal instanceof UserPrincipal)) {
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
+        }
+
+        UserPrincipal userPrincipal = (UserPrincipal) principal;
+        String loginUserId = userPrincipal.getUser().getId();
+
+        // 세션에 OAuth 연동 정보 저장
+        session.setAttribute("oauthStep", "link");
+        session.setAttribute("loginUserId", loginUserId);
+
+        log.info("OAuth 연동 시작: userId={}, provider={}", loginUserId, provider);
+
+        // OAuth 인증 URL 반환
+        String authUrl = "/oauth2/authorization/" + provider.toLowerCase();
+        return ApiResponse.success(new AuthApiDto.OAuthLinkStartResp(authUrl));
     }
 
     @Override
-    public ApiResponse<AuthApiDto.CompleteInvitationResp> completeInvitedUserRegistration(AuthApiDto.CompleteInvitationReq data, HttpSession session) {
-        String userId = userService.completeInvitedUserRegistration(UserServiceDto.builder()
-                .invitationToken(data.getInvitationToken())
-                .birth(data.getUserBirth())
-                .lunarYN(data.getLunarYn())
-                .build()
-        );
+    public ApiResponse<List<AuthApiDto.LinkedProviderResp>> getLinkedProviders() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        // 회원가입 완료 후 세션 정리
-        if (userId != null) {
-            session.removeAttribute("invitationToken");
-            session.removeAttribute("oauthStep");
-            session.removeAttribute("invitedUserId");
+        if (authentication == null || !authentication.isAuthenticated() ||
+                "anonymousUser".equals(authentication.getPrincipal())) {
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
         }
 
-        return ApiResponse.success(new AuthApiDto.CompleteInvitationResp(userId));
+        Object principal = authentication.getPrincipal();
+        if (!(principal instanceof UserPrincipal)) {
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
+        }
+
+        UserPrincipal userPrincipal = (UserPrincipal) principal;
+        String loginUserId = userPrincipal.getUser().getId();
+
+        List<UserProvider> providers = userProviderRepository.findByUserId(loginUserId);
+
+        List<AuthApiDto.LinkedProviderResp> result = providers.stream()
+                .map(p -> new AuthApiDto.LinkedProviderResp(
+                        p.getSeq(),
+                        p.getType(),
+                        p.getCreateDate()
+                ))
+                .collect(Collectors.toList());
+
+        log.info("연동된 OAuth 제공자 조회: userId={}, count={}", loginUserId, result.size());
+        return ApiResponse.success(result);
+    }
+
+    @Override
+    @Transactional
+    public ApiResponse<Void> unlinkOAuth(String provider) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated() ||
+                "anonymousUser".equals(authentication.getPrincipal())) {
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
+        }
+
+        Object principal = authentication.getPrincipal();
+        if (!(principal instanceof UserPrincipal)) {
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
+        }
+
+        UserPrincipal userPrincipal = (UserPrincipal) principal;
+        String loginUserId = userPrincipal.getUser().getId();
+
+        String providerType = provider.toLowerCase();
+        long deletedCount = userProviderRepository.deleteByUserIdAndProviderType(loginUserId, providerType);
+
+        if (deletedCount == 0) {
+            throw new EntityNotFoundException(ErrorCode.OAUTH_PROVIDER_NOT_LINKED);
+        }
+
+        log.info("OAuth 연동 해제 완료: userId={}, provider={}", loginUserId, providerType);
+        return ApiResponse.success(null);
     }
 
     // ========== IP 블랙리스트 관리 (개발 환경 전용) ==========

@@ -29,4 +29,23 @@ public class UserProviderJpaRepository implements UserProviderRepository {
                 .getResultList();
         return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
     }
+
+    @Override
+    public List<UserProvider> findByUserId(String userId) {
+        return em.createQuery(
+                "select up from UserProvider up " +
+                "where up.user.id = :userId", UserProvider.class)
+                .setParameter("userId", userId)
+                .getResultList();
+    }
+
+    @Override
+    public long deleteByUserIdAndProviderType(String userId, String providerType) {
+        return em.createQuery(
+                "delete from UserProvider up " +
+                "where up.user.id = :userId and up.type = :providerType")
+                .setParameter("userId", userId)
+                .setParameter("providerType", providerType)
+                .executeUpdate();
+    }
 }
