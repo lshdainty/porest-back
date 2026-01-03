@@ -94,6 +94,7 @@ class VacationGrantSchedulerTest {
         @DisplayName("성공 - 부여 대상 정책에 휴가를 부여한다")
         void grantVacationsDailySuccess() {
             // given
+            LocalDate today = LocalDate.now();
             User user = User.createUser("user1");
             VacationPolicy policy = VacationPolicy.createRepeatGrantPolicy(
                     "연차", "연차 정책", VacationType.ANNUAL,
@@ -108,7 +109,10 @@ class VacationGrantSchedulerTest {
 
             given(strategyFactory.getStrategy(GrantMethod.REPEAT_GRANT)).willReturn(repeatGrant);
             given(vacationGrantScheduleRepository.findRepeatGrantTargetsForToday(any())).willReturn(List.of(schedule));
-            given(repeatGrant.calculateNextGrantDate(any(), any())).willReturn(LocalDate.of(2026, 1, 1));
+            // 첫 번째 호출(today.minusDays(1)): expectedGrantDate로 today 반환 → 부여 대상
+            // 두 번째 호출(today): newNextGrantDate로 내년 반환
+            given(repeatGrant.calculateNextGrantDate(any(), eq(today.minusDays(1)))).willReturn(today);
+            given(repeatGrant.calculateNextGrantDate(any(), eq(today))).willReturn(LocalDate.of(2027, 1, 1));
             willDoNothing().given(vacationGrantRepository).saveAll(anyList());
 
             // when

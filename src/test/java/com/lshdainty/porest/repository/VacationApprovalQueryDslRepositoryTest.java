@@ -317,7 +317,7 @@ class VacationApprovalQueryDslRepositoryTest {
         em.clear();
 
         // when
-        List<Long> result = vacationApprovalRepository.findAllVacationGrantIdsByApproverIdAndYear("approver1", 2025);
+        List<Long> result = vacationApprovalRepository.findAllVacationGrantIdsByApproverIdAndYear("approver1", 2026);
 
         // then
         assertThat(result).hasSize(1);
@@ -332,8 +332,8 @@ class VacationApprovalQueryDslRepositoryTest {
         em.flush();
         em.clear();
 
-        // when - 2024년으로 조회
-        List<Long> result = vacationApprovalRepository.findAllVacationGrantIdsByApproverIdAndYear("approver1", 2024);
+        // when - 2025년으로 조회
+        List<Long> result = vacationApprovalRepository.findAllVacationGrantIdsByApproverIdAndYear("approver1", 2025);
 
         // then
         assertThat(result).isEmpty();
@@ -343,7 +343,7 @@ class VacationApprovalQueryDslRepositoryTest {
     @DisplayName("승인자 ID와 연도로 조회 시 없으면 빈 리스트 반환")
     void findAllVacationGrantIdsByApproverIdAndYearEmpty() {
         // when
-        List<Long> result = vacationApprovalRepository.findAllVacationGrantIdsByApproverIdAndYear("nonexistent", 2025);
+        List<Long> result = vacationApprovalRepository.findAllVacationGrantIdsByApproverIdAndYear("nonexistent", 2026);
 
         // then
         assertThat(result).isEmpty();

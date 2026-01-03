@@ -553,15 +553,15 @@ class VacationGrantJpaRepositoryTest {
         em.persist(onRequestPolicy);
 
         VacationGrant pendingGrant = VacationGrant.createPendingVacationGrant(
-                user, onRequestPolicy, "2025년 신청", VacationType.ANNUAL, new BigDecimal("1.0"),
-                LocalDateTime.of(2025, 6, 15, 9, 0), LocalDateTime.of(2025, 6, 15, 18, 0), "개인 사유"
+                user, onRequestPolicy, "2026년 신청", VacationType.ANNUAL, new BigDecimal("1.0"),
+                LocalDateTime.of(2026, 6, 15, 9, 0), LocalDateTime.of(2026, 6, 15, 18, 0), "개인 사유"
         );
         em.persist(pendingGrant);
         em.flush();
         em.clear();
 
         // when
-        List<VacationGrant> grants = vacationGrantRepository.findAllRequestedVacationsByUserIdAndYear("user1", 2025);
+        List<VacationGrant> grants = vacationGrantRepository.findAllRequestedVacationsByUserIdAndYear("user1", 2026);
 
         // then
         assertThat(grants).hasSize(1);

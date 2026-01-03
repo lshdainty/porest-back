@@ -37,7 +37,7 @@ public class VacationGrantScheduler {
      * 매일 자정(00:00)에 실행<br>
      * cron: "초 분 시 일 월 요일"
      */
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
     @Transactional
     public void expireVacationsDaily() {
         LocalDateTime now = LocalDateTime.now();
@@ -91,7 +91,7 @@ public class VacationGrantScheduler {
      * 매일 자정(00:00)에 실행<br>
      * cron: "초 분 시 일 월 요일"
      */
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
     @Transactional
     public void grantVacationsDaily() {
         LocalDate today = LocalDate.now();
@@ -115,9 +115,28 @@ public class VacationGrantScheduler {
             int successCount = 0;
             int failCount = 0;
 
+            int skipCount = 0;
+
             for (VacationGrantSchedule schedule : targets) {
                 try {
                     VacationPolicy policy = schedule.getVacationPolicy();
+
+                    // 오늘이 정책의 실제 부여 예정일인지 검증
+                    LocalDate expectedGrantDate = repeatGrantService.calculateNextGrantDate(policy, today.minusDays(1));
+
+                    if (expectedGrantDate == null || !today.equals(expectedGrantDate)) {
+                        // 오늘 부여 대상이 아님 → nextGrantDate만 갱신하고 skip
+                        LocalDate newNextGrantDate = repeatGrantService.calculateNextGrantDate(policy, today);
+                        schedule.updateNextGrantDate(newNextGrantDate);
+                        skipCount++;
+                        log.info("휴가 부여 대상 아님 (skip) - User: {}, Policy: {}, ExpectedDate: {}, NextGrantDate: {}",
+                                schedule.getUser().getId(),
+                                policy.getName(),
+                                expectedGrantDate,
+                                newNextGrantDate);
+                        continue;
+                    }
+
                     VacationType vacationType = policy.getVacationType();
 
                     // 효력 발생일과 만료일 계산
@@ -140,8 +159,9 @@ public class VacationGrantScheduler {
                     grantsToSave.add(vacationGrant);
 
                     // 다음 부여일 갱신 (현재 부여일 기준으로 재계산)
+                    // lastGrantedAt은 실제 부여 시점(today), startDate는 휴가 유효기간 시작일
                     LocalDate newNextGrantDate = repeatGrantService.calculateNextGrantDate(policy, today);
-                    schedule.updateGrantHistory(startDate, newNextGrantDate);
+                    schedule.updateGrantHistory(today.atStartOfDay(), newNextGrantDate);
 
                     successCount++;
                     log.info("휴가 부여 완료 - User: {}, Policy: {}, VacationType: {}, GrantTime: {}, StartDate: {}, ExpiryDate: {}, NextGrantDate: {}",
@@ -167,8 +187,8 @@ public class VacationGrantScheduler {
                 log.info("VacationGrant {} 건 저장 완료", grantsToSave.size());
             }
 
-            log.info("========== 휴가 자동 부여 스케줄러 완료 ========== 성공: {}, 실패: {}, 총: {}",
-                    successCount, failCount, targets.size());
+            log.info("========== 휴가 자동 부여 스케줄러 완료 ========== 성공: {}, 실패: {}, 스킵: {}, 총: {}",
+                    successCount, failCount, skipCount, targets.size());
 
         } catch (Exception e) {
             log.error("휴가 자동 부여 스케줄러 실행 중 오류 발생", e);

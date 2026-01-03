@@ -353,13 +353,22 @@ public class RepeatGrant implements VacationPolicyStrategy {
      */
     private LocalDate calculateNextYearlyDate(LocalDate firstDate, LocalDate baseDate, int interval,
                                                Integer specificMonths, Integer specificDays) {
-        int yearsDiff = baseDate.getYear() - firstDate.getYear();
-        int nextYearOffset = ((yearsDiff / interval) + 1) * interval;
-        int nextYear = firstDate.getYear() + nextYearOffset;
-
         // 월/일 결정
         int targetMonth = specificMonths != null ? specificMonths : firstDate.getMonthValue();
         int targetDay = specificDays != null ? specificDays : firstDate.getDayOfMonth();
+
+        // 현재 년도의 타겟 날짜 확인
+        LocalDate targetThisYear = adjustToValidDate(baseDate.getYear(), targetMonth, targetDay);
+
+        // 올해 타겟 날짜가 baseDate 이후이고, firstDate 이후라면 올해 날짜 반환
+        if (targetThisYear.isAfter(baseDate) && !targetThisYear.isBefore(firstDate)) {
+            return targetThisYear;
+        }
+
+        // 기존 로직: 다음 년도 계산
+        int yearsDiff = baseDate.getYear() - firstDate.getYear();
+        int nextYearOffset = ((yearsDiff / interval) + 1) * interval;
+        int nextYear = firstDate.getYear() + nextYearOffset;
 
         // 해당 월의 유효한 날짜로 조정
         LocalDate nextDate = adjustToValidDate(nextYear, targetMonth, targetDay);

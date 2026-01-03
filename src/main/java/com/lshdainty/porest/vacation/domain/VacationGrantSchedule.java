@@ -140,4 +140,14 @@ public class VacationGrantSchedule extends AuditingFields {
         this.lastGrantedAt = lastGrantedAt;
         this.nextGrantDate = nextGrantDate;
     }
+
+    /**
+     * 다음 부여 예정일만 갱신<br>
+     * 스케줄러에서 휴가 부여 대상이 아닌 경우 다음 부여 예정일만 갱신할 때 사용
+     *
+     * @param nextGrantDate 다음 부여 예정일
+     */
+    public void updateNextGrantDate(LocalDate nextGrantDate) {
+        this.nextGrantDate = nextGrantDate;
+    }
 }
