@@ -224,4 +224,12 @@ public interface UserService {
      * @param newPasswordConfirm 새로운 비밀번호 확인
      */
     void changePassword(String userId, String currentPassword, String newPassword, String newPasswordConfirm);
+
+    /**
+     * 전체 사용자 엔티티 목록 조회
+     * N+1 문제 방지를 위해 DTO 변환 없이 User 엔티티 직접 반환
+     *
+     * @return 모든 User 엔티티 리스트
+     */
+    List<User> findAllUsers();
 }

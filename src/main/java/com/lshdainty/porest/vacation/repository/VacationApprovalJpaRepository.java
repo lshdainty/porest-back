@@ -86,4 +86,19 @@ public class VacationApprovalJpaRepository implements VacationApprovalRepository
                 .getResultList();
         return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
     }
+
+    @Override
+    public List<VacationApproval> findByVacationGrantIds(List<Long> vacationGrantIds) {
+        if (vacationGrantIds == null || vacationGrantIds.isEmpty()) {
+            return List.of();
+        }
+        return em.createQuery(
+                        "select va from VacationApproval va " +
+                                "join fetch va.vacationGrant " +
+                                "join fetch va.approver " +
+                                "where va.vacationGrant.id in :vacationGrantIds and va.isDeleted = :isDeleted", VacationApproval.class)
+                .setParameter("vacationGrantIds", vacationGrantIds)
+                .setParameter("isDeleted", YNType.N)
+                .getResultList();
+    }
 }

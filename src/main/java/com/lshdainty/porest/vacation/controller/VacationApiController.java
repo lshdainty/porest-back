@@ -565,6 +565,8 @@ public class VacationApiController implements VacationApi {
                     }
 
                     return new VacationApiDto.GetUserRequestedVacationsResp(
+                            v.getUserId(),
+                            v.getUser().getName(),
                             v.getId(),
                             v.getPolicyId(),
                             v.getPolicyName(),
@@ -620,6 +622,8 @@ public class VacationApiController implements VacationApi {
                     }
 
                     return new VacationApiDto.GetUserRequestedVacationsResp(
+                            v.getUserId(),
+                            v.getUser().getName(),
                             v.getId(),
                             v.getPolicyId(),
                             v.getPolicyName(),

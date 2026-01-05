@@ -241,4 +241,35 @@ public class VacationGrantQueryDslRepository implements VacationGrantRepository 
                         .and(vacationGrant.isDeleted.eq(YNType.N)))
                 .fetch();
     }
+
+    @Override
+    public List<VacationGrant> findByUserIdsAndValidPeriod(List<String> userIds, LocalDateTime startOfPeriod, LocalDateTime endOfPeriod) {
+        if (userIds == null || userIds.isEmpty()) {
+            return List.of();
+        }
+        return query
+                .selectFrom(vacationGrant)
+                .join(vacationGrant.user).fetchJoin()
+                .where(vacationGrant.user.id.in(userIds)
+                        .and(vacationGrant.grantDate.loe(endOfPeriod))
+                        .and(vacationGrant.expiryDate.goe(startOfPeriod))
+                        .and(vacationGrant.status.in(GrantStatus.ACTIVE, GrantStatus.EXHAUSTED))
+                        .and(vacationGrant.isDeleted.eq(YNType.N)))
+                .fetch();
+    }
+
+    @Override
+    public List<VacationGrant> findByUserIdsAndStatusesAndPeriod(List<String> userIds, List<GrantStatus> statuses, LocalDateTime startOfPeriod, LocalDateTime endOfPeriod) {
+        if (userIds == null || userIds.isEmpty()) {
+            return List.of();
+        }
+        return query
+                .selectFrom(vacationGrant)
+                .join(vacationGrant.user).fetchJoin()
+                .where(vacationGrant.user.id.in(userIds)
+                        .and(vacationGrant.status.in(statuses))
+                        .and(vacationGrant.requestStartTime.between(startOfPeriod, endOfPeriod))
+                        .and(vacationGrant.isDeleted.eq(YNType.N)))
+                .fetch();
+    }
 }

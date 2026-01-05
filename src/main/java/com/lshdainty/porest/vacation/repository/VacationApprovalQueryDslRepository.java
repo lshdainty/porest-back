@@ -90,4 +90,18 @@ public class VacationApprovalQueryDslRepository implements VacationApprovalRepos
                 .fetchOne();
         return Optional.ofNullable(result);
     }
+
+    @Override
+    public List<VacationApproval> findByVacationGrantIds(List<Long> vacationGrantIds) {
+        if (vacationGrantIds == null || vacationGrantIds.isEmpty()) {
+            return List.of();
+        }
+        return query
+                .selectFrom(vacationApproval)
+                .join(vacationApproval.vacationGrant).fetchJoin()
+                .join(vacationApproval.approver).fetchJoin()
+                .where(vacationApproval.vacationGrant.id.in(vacationGrantIds)
+                        .and(vacationApproval.isDeleted.eq(YNType.N)))
+                .fetch();
+    }
 }

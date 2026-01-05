@@ -168,4 +168,18 @@ public class VacationUsageQueryDslRepository implements VacationUsageRepository 
                 )
                 .fetch();
     }
+
+    @Override
+    public List<VacationUsage> findByUserIdsAndPeriod(List<String> userIds, LocalDateTime startOfPeriod, LocalDateTime endOfPeriod) {
+        if (userIds == null || userIds.isEmpty()) {
+            return List.of();
+        }
+        return query
+                .selectFrom(vacationUsage)
+                .join(vacationUsage.user).fetchJoin()
+                .where(vacationUsage.user.id.in(userIds)
+                        .and(vacationUsage.startDate.between(startOfPeriod, endOfPeriod))
+                        .and(vacationUsage.isDeleted.eq(YNType.N)))
+                .fetch();
+    }
 }

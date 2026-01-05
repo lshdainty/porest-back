@@ -191,4 +191,22 @@ public class VacationUsageJpaRepository implements VacationUsageRepository {
                 .setParameter("isDeleted", YNType.N)
                 .getResultList();
     }
+
+    @Override
+    public List<VacationUsage> findByUserIdsAndPeriod(List<String> userIds, LocalDateTime startOfPeriod, LocalDateTime endOfPeriod) {
+        if (userIds == null || userIds.isEmpty()) {
+            return List.of();
+        }
+        return em.createQuery(
+                        "select vu from VacationUsage vu " +
+                                "join fetch vu.user " +
+                                "where vu.user.id in :userIds " +
+                                "and vu.startDate between :startOfPeriod and :endOfPeriod " +
+                                "and vu.isDeleted = :isDeleted", VacationUsage.class)
+                .setParameter("userIds", userIds)
+                .setParameter("startOfPeriod", startOfPeriod)
+                .setParameter("endOfPeriod", endOfPeriod)
+                .setParameter("isDeleted", YNType.N)
+                .getResultList();
+    }
 }

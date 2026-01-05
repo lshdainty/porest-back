@@ -747,4 +747,12 @@ public class UserServiceImpl implements UserService {
 
         log.info("비밀번호 변경 완료: userId={}", userId);
     }
+
+    @Override
+    public List<User> findAllUsers() {
+        log.debug("전체 사용자 엔티티 목록 조회 시작");
+        List<User> users = userRepository.findUsersWithRolesAndPermissions();
+        log.debug("전체 사용자 엔티티 목록 조회 완료: count={}", users.size());
+        return users;
+    }
 }

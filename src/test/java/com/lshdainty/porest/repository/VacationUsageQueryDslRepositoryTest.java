@@ -496,4 +496,67 @@ class VacationUsageQueryDslRepositoryTest {
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getDesc()).isEqualTo("활성 연차");
     }
+
+    @Test
+    @DisplayName("여러 유저의 기간 내 휴가사용 일괄 조회")
+    void findByUserIdsAndPeriod() {
+        // given
+        User user2 = User.createUser(
+                "user2", "password", "테스트유저2", "user2@test.com",
+                LocalDate.of(1991, 2, 2), OriginCompanyType.DTOL, "9 ~ 18",
+                YNType.N, null, null, CountryCode.KR
+        );
+        em.persist(user2);
+
+        vacationUsageRepository.save(VacationUsage.createVacationUsage(
+                user, "user1 연차", VacationTimeType.DAYOFF,
+                LocalDateTime.of(2025, 6, 15, 9, 0), LocalDateTime.of(2025, 6, 15, 18, 0),
+                new BigDecimal("1.0000")
+        ));
+        vacationUsageRepository.save(VacationUsage.createVacationUsage(
+                user2, "user2 연차", VacationTimeType.DAYOFF,
+                LocalDateTime.of(2025, 6, 20, 9, 0), LocalDateTime.of(2025, 6, 20, 18, 0),
+                new BigDecimal("1.0000")
+        ));
+        em.flush();
+        em.clear();
+
+        // when
+        List<VacationUsage> result = vacationUsageRepository.findByUserIdsAndPeriod(
+                List.of("user1", "user2"),
+                LocalDateTime.of(2025, 6, 1, 0, 0),
+                LocalDateTime.of(2025, 6, 30, 23, 59)
+        );
+
+        // then
+        assertThat(result).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("빈 유저 ID 목록으로 기간 내 휴가사용 조회 시 빈 리스트 반환")
+    void findByUserIdsAndPeriodEmpty() {
+        // when
+        List<VacationUsage> result = vacationUsageRepository.findByUserIdsAndPeriod(
+                List.of(),
+                LocalDateTime.of(2025, 6, 1, 0, 0),
+                LocalDateTime.of(2025, 6, 30, 23, 59)
+        );
+
+        // then
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    @DisplayName("null 유저 ID 목록으로 기간 내 휴가사용 조회 시 빈 리스트 반환")
+    void findByUserIdsAndPeriodNull() {
+        // when
+        List<VacationUsage> result = vacationUsageRepository.findByUserIdsAndPeriod(
+                null,
+                LocalDateTime.of(2025, 6, 1, 0, 0),
+                LocalDateTime.of(2025, 6, 30, 23, 59)
+        );
+
+        // then
+        assertThat(result).isEmpty();
+    }
 }

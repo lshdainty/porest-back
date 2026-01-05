@@ -171,4 +171,32 @@ public interface VacationGrantRepository {
      * @return 조건에 맞는 VacationGrant 리스트
      */
     List<VacationGrant> findByUserIdAndStatusesAndPeriod(String userId, List<GrantStatus> statuses, LocalDateTime startOfPeriod, LocalDateTime endOfPeriod);
+
+    /**
+     * 여러 사용자의 특정 기간 내에 유효한 VacationGrant 일괄 조회
+     * - grantDate <= endOfPeriod
+     * - expiryDate >= startOfPeriod
+     * - status: ACTIVE 또는 EXHAUSTED
+     * - isDeleted == N
+     *
+     * @param userIds 사용자 ID 리스트
+     * @param startOfPeriod 조회 기간 시작일
+     * @param endOfPeriod 조회 기간 종료일
+     * @return 해당 기간 내 유효한 VacationGrant 리스트
+     */
+    List<VacationGrant> findByUserIdsAndValidPeriod(List<String> userIds, LocalDateTime startOfPeriod, LocalDateTime endOfPeriod);
+
+    /**
+     * 여러 사용자의 특정 상태들 & 특정 기간 내 VacationGrant 일괄 조회
+     * - status IN (상태 리스트)
+     * - requestStartTime이 startOfPeriod와 endOfPeriod 사이에 있음
+     * - isDeleted == N
+     *
+     * @param userIds 사용자 ID 리스트
+     * @param statuses 조회할 상태 리스트 (예: PENDING, PROGRESS)
+     * @param startOfPeriod 조회 기간 시작일
+     * @param endOfPeriod 조회 기간 종료일
+     * @return 조건에 맞는 VacationGrant 리스트
+     */
+    List<VacationGrant> findByUserIdsAndStatusesAndPeriod(List<String> userIds, List<GrantStatus> statuses, LocalDateTime startOfPeriod, LocalDateTime endOfPeriod);
 }

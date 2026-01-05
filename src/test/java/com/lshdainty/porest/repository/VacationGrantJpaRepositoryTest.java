@@ -566,4 +566,138 @@ class VacationGrantJpaRepositoryTest {
         // then
         assertThat(grants).hasSize(1);
     }
+
+    @Test
+    @DisplayName("여러 유저의 기간 내 유효한 휴가부여 일괄 조회")
+    void findByUserIdsAndValidPeriod() {
+        // given
+        User user2 = User.createUser(
+                "user2", "password", "테스트유저2", "user2@test.com",
+                LocalDate.of(1991, 2, 2), OriginCompanyType.DTOL, "9 ~ 18",
+                YNType.N, null, null, CountryCode.KR
+        );
+        em.persist(user2);
+
+        vacationGrantRepository.save(VacationGrant.createVacationGrant(
+                user, policy, "user1 연차", VacationType.ANNUAL, new BigDecimal("8.0"),
+                LocalDateTime.of(2025, 1, 1, 0, 0), LocalDateTime.of(2025, 12, 31, 23, 59)
+        ));
+        vacationGrantRepository.save(VacationGrant.createVacationGrant(
+                user2, policy, "user2 연차", VacationType.ANNUAL, new BigDecimal("8.0"),
+                LocalDateTime.of(2025, 1, 1, 0, 0), LocalDateTime.of(2025, 12, 31, 23, 59)
+        ));
+        em.flush();
+        em.clear();
+
+        // when
+        List<VacationGrant> grants = vacationGrantRepository.findByUserIdsAndValidPeriod(
+                List.of("user1", "user2"),
+                LocalDateTime.of(2025, 6, 1, 0, 0),
+                LocalDateTime.of(2025, 6, 30, 23, 59)
+        );
+
+        // then
+        assertThat(grants).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("빈 유저 ID 목록으로 유효 기간 휴가부여 조회 시 빈 리스트 반환")
+    void findByUserIdsAndValidPeriodEmpty() {
+        // when
+        List<VacationGrant> grants = vacationGrantRepository.findByUserIdsAndValidPeriod(
+                List.of(),
+                LocalDateTime.of(2025, 6, 1, 0, 0),
+                LocalDateTime.of(2025, 6, 30, 23, 59)
+        );
+
+        // then
+        assertThat(grants).isEmpty();
+    }
+
+    @Test
+    @DisplayName("null 유저 ID 목록으로 유효 기간 휴가부여 조회 시 빈 리스트 반환")
+    void findByUserIdsAndValidPeriodNull() {
+        // when
+        List<VacationGrant> grants = vacationGrantRepository.findByUserIdsAndValidPeriod(
+                null,
+                LocalDateTime.of(2025, 6, 1, 0, 0),
+                LocalDateTime.of(2025, 6, 30, 23, 59)
+        );
+
+        // then
+        assertThat(grants).isEmpty();
+    }
+
+    @Test
+    @DisplayName("여러 유저의 상태와 기간으로 휴가부여 일괄 조회")
+    void findByUserIdsAndStatusesAndPeriod() {
+        // given
+        User user2 = User.createUser(
+                "user2", "password", "테스트유저2", "user2@test.com",
+                LocalDate.of(1991, 2, 2), OriginCompanyType.DTOL, "9 ~ 18",
+                YNType.N, null, null, CountryCode.KR
+        );
+        em.persist(user2);
+
+        VacationPolicy onRequestPolicy = VacationPolicy.createOnRequestPolicy(
+                "신청연차", "신청 정책", VacationType.ANNUAL, new BigDecimal("1.0"),
+                YNType.N, YNType.N, 1, EffectiveType.IMMEDIATELY, ExpirationType.END_OF_YEAR
+        );
+        em.persist(onRequestPolicy);
+
+        VacationGrant pendingGrant1 = VacationGrant.createPendingVacationGrant(
+                user, onRequestPolicy, "user1 신청", VacationType.ANNUAL, new BigDecimal("1.0"),
+                LocalDateTime.of(2025, 6, 15, 9, 0), LocalDateTime.of(2025, 6, 15, 18, 0), "개인 사유"
+        );
+        em.persist(pendingGrant1);
+
+        VacationGrant pendingGrant2 = VacationGrant.createPendingVacationGrant(
+                user2, onRequestPolicy, "user2 신청", VacationType.ANNUAL, new BigDecimal("1.0"),
+                LocalDateTime.of(2025, 6, 20, 9, 0), LocalDateTime.of(2025, 6, 20, 18, 0), "개인 사유"
+        );
+        em.persist(pendingGrant2);
+        em.flush();
+        em.clear();
+
+        // when
+        List<VacationGrant> grants = vacationGrantRepository.findByUserIdsAndStatusesAndPeriod(
+                List.of("user1", "user2"),
+                List.of(GrantStatus.PENDING),
+                LocalDateTime.of(2025, 6, 1, 0, 0),
+                LocalDateTime.of(2025, 6, 30, 23, 59)
+        );
+
+        // then
+        assertThat(grants).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("빈 유저 ID 목록으로 상태와 기간 휴가부여 조회 시 빈 리스트 반환")
+    void findByUserIdsAndStatusesAndPeriodEmpty() {
+        // when
+        List<VacationGrant> grants = vacationGrantRepository.findByUserIdsAndStatusesAndPeriod(
+                List.of(),
+                List.of(GrantStatus.PENDING),
+                LocalDateTime.of(2025, 6, 1, 0, 0),
+                LocalDateTime.of(2025, 6, 30, 23, 59)
+        );
+
+        // then
+        assertThat(grants).isEmpty();
+    }
+
+    @Test
+    @DisplayName("null 유저 ID 목록으로 상태와 기간 휴가부여 조회 시 빈 리스트 반환")
+    void findByUserIdsAndStatusesAndPeriodNull() {
+        // when
+        List<VacationGrant> grants = vacationGrantRepository.findByUserIdsAndStatusesAndPeriod(
+                null,
+                List.of(GrantStatus.PENDING),
+                LocalDateTime.of(2025, 6, 1, 0, 0),
+                LocalDateTime.of(2025, 6, 30, 23, 59)
+        );
+
+        // then
+        assertThat(grants).isEmpty();
+    }
 }

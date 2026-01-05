@@ -61,4 +61,18 @@ public class VacationUsageDeductionJpaRepository implements VacationUsageDeducti
                 .setParameter("isDeleted", YNType.N)
                 .getResultList();
     }
+
+    @Override
+    public List<VacationUsageDeduction> findByUsageIds(List<Long> usageIds) {
+        if (usageIds == null || usageIds.isEmpty()) {
+            return List.of();
+        }
+        return em.createQuery(
+                        "select vud from VacationUsageDeduction vud " +
+                                "join fetch vud.usage " +
+                                "join fetch vud.grant " +
+                                "where vud.usage.id in :usageIds", VacationUsageDeduction.class)
+                .setParameter("usageIds", usageIds)
+                .getResultList();
+    }
 }

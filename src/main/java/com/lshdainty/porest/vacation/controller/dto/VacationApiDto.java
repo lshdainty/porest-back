@@ -480,6 +480,8 @@ public class VacationApiDto {
     @AllArgsConstructor
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class GetUserRequestedVacationsResp {
+        private String applicantId;
+        private String applicantName;
         private Long vacationGrantId;
         private Long policyId;
         private String policyName;

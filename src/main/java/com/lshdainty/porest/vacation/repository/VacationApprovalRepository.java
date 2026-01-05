@@ -57,4 +57,12 @@ public interface VacationApprovalRepository {
      * @return VacationApproval Optional
      */
     Optional<VacationApproval> findByIdWithVacationGrantAndUser(Long id);
+
+    /**
+     * 여러 VacationGrant ID로 VacationApproval 일괄 조회
+     *
+     * @param vacationGrantIds VacationGrant ID 리스트
+     * @return VacationApproval 리스트
+     */
+    List<VacationApproval> findByVacationGrantIds(List<Long> vacationGrantIds);
 }

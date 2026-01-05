@@ -359,6 +359,42 @@ class UserServiceTest {
     }
 
     @Nested
+    @DisplayName("전체 유저 엔티티 조회")
+    class FindAllUsers {
+        @Test
+        @DisplayName("성공 - 유저 엔티티 목록을 반환한다")
+        void findAllUsersSuccess() {
+            // given
+            List<User> users = List.of(
+                    User.createUser("user1", "", "이서준", "", LocalDate.now(), OriginCompanyType.SKAX, "", YNType.N, null, null, CountryCode.KR),
+                    User.createUser("user2", "", "김서연", "", LocalDate.now(), OriginCompanyType.SKAX, "", YNType.N, null, null, CountryCode.KR)
+            );
+            given(userRepository.findUsersWithRolesAndPermissions()).willReturn(users);
+
+            // when
+            List<User> result = userService.findAllUsers();
+
+            // then
+            then(userRepository).should().findUsersWithRolesAndPermissions();
+            assertThat(result).hasSize(2);
+            assertThat(result).extracting("name").containsExactly("이서준", "김서연");
+        }
+
+        @Test
+        @DisplayName("성공 - 유저가 없으면 빈 리스트를 반환한다")
+        void findAllUsersEmptyList() {
+            // given
+            given(userRepository.findUsersWithRolesAndPermissions()).willReturn(List.of());
+
+            // when
+            List<User> result = userService.findAllUsers();
+
+            // then
+            assertThat(result).isEmpty();
+        }
+    }
+
+    @Nested
     @DisplayName("유저 수정")
     class EditUser {
         @Test

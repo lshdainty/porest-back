@@ -64,4 +64,17 @@ public class VacationUsageDeductionQueryDslRepository implements VacationUsageDe
                         .and(vacationUsageDeduction.usage.isDeleted.eq(YNType.N)))
                 .fetch();
     }
+
+    @Override
+    public List<VacationUsageDeduction> findByUsageIds(List<Long> usageIds) {
+        if (usageIds == null || usageIds.isEmpty()) {
+            return List.of();
+        }
+        return query
+                .selectFrom(vacationUsageDeduction)
+                .join(vacationUsageDeduction.usage).fetchJoin()
+                .join(vacationUsageDeduction.grant).fetchJoin()
+                .where(vacationUsageDeduction.usage.id.in(usageIds))
+                .fetch();
+    }
 }

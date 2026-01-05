@@ -287,4 +287,45 @@ public class VacationGrantJpaRepository implements VacationGrantRepository {
                 .setParameter("isDeleted", YNType.N)
                 .getResultList();
     }
+
+    @Override
+    public List<VacationGrant> findByUserIdsAndValidPeriod(List<String> userIds, LocalDateTime startOfPeriod, LocalDateTime endOfPeriod) {
+        if (userIds == null || userIds.isEmpty()) {
+            return List.of();
+        }
+        return em.createQuery(
+                        "select vg from VacationGrant vg " +
+                                "join fetch vg.user " +
+                                "where vg.user.id in :userIds " +
+                                "and vg.grantDate <= :endOfPeriod " +
+                                "and vg.expiryDate >= :startOfPeriod " +
+                                "and vg.status in :statuses " +
+                                "and vg.isDeleted = :isDeleted", VacationGrant.class)
+                .setParameter("userIds", userIds)
+                .setParameter("startOfPeriod", startOfPeriod)
+                .setParameter("endOfPeriod", endOfPeriod)
+                .setParameter("statuses", List.of(GrantStatus.ACTIVE, GrantStatus.EXHAUSTED))
+                .setParameter("isDeleted", YNType.N)
+                .getResultList();
+    }
+
+    @Override
+    public List<VacationGrant> findByUserIdsAndStatusesAndPeriod(List<String> userIds, List<GrantStatus> statuses, LocalDateTime startOfPeriod, LocalDateTime endOfPeriod) {
+        if (userIds == null || userIds.isEmpty()) {
+            return List.of();
+        }
+        return em.createQuery(
+                        "select vg from VacationGrant vg " +
+                                "join fetch vg.user " +
+                                "where vg.user.id in :userIds " +
+                                "and vg.status in :statuses " +
+                                "and vg.requestStartTime between :startOfPeriod and :endOfPeriod " +
+                                "and vg.isDeleted = :isDeleted", VacationGrant.class)
+                .setParameter("userIds", userIds)
+                .setParameter("statuses", statuses)
+                .setParameter("startOfPeriod", startOfPeriod)
+                .setParameter("endOfPeriod", endOfPeriod)
+                .setParameter("isDeleted", YNType.N)
+                .getResultList();
+    }
 }

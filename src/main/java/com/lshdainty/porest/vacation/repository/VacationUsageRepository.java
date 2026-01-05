@@ -116,4 +116,15 @@ public interface VacationUsageRepository {
      * @return VacationUsage 리스트
      */
     List<VacationUsage> findByUserIdsAndPeriodForDaily(List<String> userIds, LocalDateTime startDateTime, LocalDateTime endDateTime);
+
+    /**
+     * 여러 사용자의 특정 기간 내 VacationUsage 일괄 조회
+     * startDate가 startOfPeriod와 endOfPeriod 사이에 있는 휴가 사용 내역 조회
+     *
+     * @param userIds 사용자 ID 리스트
+     * @param startOfPeriod 조회 기간 시작일
+     * @param endOfPeriod 조회 기간 종료일
+     * @return 해당 기간 내 VacationUsage 리스트
+     */
+    List<VacationUsage> findByUserIdsAndPeriod(List<String> userIds, LocalDateTime startOfPeriod, LocalDateTime endOfPeriod);
 }

@@ -334,30 +334,41 @@ public class VacationServiceImpl implements VacationService {
 
     @Override
     public List<VacationServiceDto> getVacationUsagesByPeriod(LocalDateTime startDate, LocalDateTime endDate) {
-        // 기간에 맞는 휴가 사용 내역 조회 (startDate 기준)
+        // 1. 기간에 맞는 휴가 사용 내역 조회 (startDate 기준)
         List<VacationUsage> usages = vacationUsageRepository.findByPeriodWithUser(startDate, endDate);
 
-        // VacationServiceDto로 변환
-        return usages.stream()
-                .map(usage -> {
-                    // VacationUsageDeduction에서 첫 번째 grant의 type 조회
-                    List<VacationUsageDeduction> deductions = vacationUsageDeductionRepository.findByUsageId(usage.getId());
-                    VacationType vacationType = null;
-                    if (!deductions.isEmpty()) {
-                        vacationType = deductions.get(0).getGrant().getType();
-                    }
+        if (usages.isEmpty()) {
+            return List.of();
+        }
 
-                    return VacationServiceDto.builder()
-                            .id(usage.getId())
-                            .user(usage.getUser())
-                            .desc(usage.getDesc())
-                            .timeType(usage.getType())
-                            .startDate(usage.getStartDate())
-                            .endDate(usage.getEndDate())
-                            .usedTime(usage.getUsedTime())
-                            .type(vacationType)
-                            .build();
-                })
+        // 2. 모든 usage ID 추출
+        List<Long> usageIds = usages.stream()
+                .map(VacationUsage::getId)
+                .toList();
+
+        // 3. IN 쿼리로 한번에 모든 deduction 조회
+        List<VacationUsageDeduction> allDeductions = vacationUsageDeductionRepository.findByUsageIds(usageIds);
+
+        // 4. usageId -> VacationType 매핑 (첫 번째 grant의 type)
+        Map<Long, VacationType> vacationTypeMap = allDeductions.stream()
+                .collect(Collectors.toMap(
+                        d -> d.getUsage().getId(),
+                        d -> d.getGrant().getType(),
+                        (existing, replacement) -> existing
+                ));
+
+        // 5. VacationServiceDto로 변환
+        return usages.stream()
+                .map(usage -> VacationServiceDto.builder()
+                        .id(usage.getId())
+                        .user(usage.getUser())
+                        .desc(usage.getDesc())
+                        .timeType(usage.getType())
+                        .startDate(usage.getStartDate())
+                        .endDate(usage.getEndDate())
+                        .usedTime(usage.getUsedTime())
+                        .type(vacationTypeMap.get(usage.getId()))
+                        .build())
                 .toList();
     }
 
@@ -1143,26 +1154,44 @@ public class VacationServiceImpl implements VacationService {
                     .toList();
         }
 
+        if (grants.isEmpty()) {
+            return List.of();
+        }
+
+        // 모든 grant ID 추출
+        List<Long> grantIds = grants.stream()
+                .map(VacationGrant::getId)
+                .toList();
+
+        // IN 쿼리로 한번에 모든 approval 조회
+        List<VacationApproval> allApprovals = vacationApprovalRepository.findByVacationGrantIds(grantIds);
+
+        // grantId -> List<VacationApprovalServiceDto> 매핑
+        Map<Long, List<VacationApprovalServiceDto>> approvalMap = allApprovals.stream()
+                .collect(Collectors.groupingBy(
+                        approval -> approval.getVacationGrant().getId(),
+                        Collectors.collectingAndThen(
+                                Collectors.toList(),
+                                list -> list.stream()
+                                        .sorted((a1, a2) -> Integer.compare(a1.getApprovalOrder(), a2.getApprovalOrder()))
+                                        .map(approval -> VacationApprovalServiceDto.builder()
+                                                .id(approval.getId())
+                                                .approverId(approval.getApprover().getId())
+                                                .approverName(approval.getApprover().getName())
+                                                .approvalOrder(approval.getApprovalOrder())
+                                                .approvalStatus(approval.getApprovalStatus())
+                                                .approvalDate(approval.getApprovalDate())
+                                                .rejectionReason(approval.getRejectionReason())
+                                                .build())
+                                        .toList()
+                        )
+                ));
+
         // VacationServiceDto로 변환
         return grants.stream()
                 .map(grant -> {
                     // 현재 승인 대기 중인 승인자 조회
                     User currentApprover = grant.getCurrentPendingApprover();
-
-                    // 승인자 목록 조회 (approvalOrder 순서대로 정렬됨)
-                    List<VacationApproval> approvals = vacationApprovalRepository.findByVacationGrantId(grant.getId());
-                    List<VacationApprovalServiceDto> approvers = approvals.stream()
-                            .sorted((a1, a2) -> Integer.compare(a1.getApprovalOrder(), a2.getApprovalOrder()))
-                            .map(approval -> VacationApprovalServiceDto.builder()
-                                    .id(approval.getId())
-                                    .approverId(approval.getApprover().getId())
-                                    .approverName(approval.getApprover().getName())
-                                    .approvalOrder(approval.getApprovalOrder())
-                                    .approvalStatus(approval.getApprovalStatus())
-                                    .approvalDate(approval.getApprovalDate())
-                                    .rejectionReason(approval.getRejectionReason())
-                                    .build())
-                            .toList();
 
                     return VacationServiceDto.builder()
                             .id(grant.getId())
@@ -1184,7 +1213,7 @@ public class VacationServiceImpl implements VacationService {
                             .createDate(grant.getCreateDate())
                             .currentApproverId(currentApprover != null ? currentApprover.getId() : null)
                             .currentApproverName(currentApprover != null ? currentApprover.getName() : null)
-                            .approvers(approvers)
+                            .approvers(approvalMap.getOrDefault(grant.getId(), List.of()))
                             .build();
                 })
                 .toList();
@@ -1198,28 +1227,48 @@ public class VacationServiceImpl implements VacationService {
         // ON_REQUEST 방식의 모든 휴가 신청 내역 조회 (년도 필터링 포함)
         List<VacationGrant> grants = vacationGrantRepository.findAllRequestedVacationsByUserIdAndYear(userId, year);
 
+        if (grants.isEmpty()) {
+            return List.of();
+        }
+
+        // 모든 grant ID 추출
+        List<Long> grantIds = grants.stream()
+                .map(VacationGrant::getId)
+                .toList();
+
+        // IN 쿼리로 한번에 모든 approval 조회
+        List<VacationApproval> allApprovals = vacationApprovalRepository.findByVacationGrantIds(grantIds);
+
+        // grantId -> List<VacationApprovalServiceDto> 매핑
+        Map<Long, List<VacationApprovalServiceDto>> approvalMap = allApprovals.stream()
+                .collect(Collectors.groupingBy(
+                        approval -> approval.getVacationGrant().getId(),
+                        Collectors.collectingAndThen(
+                                Collectors.toList(),
+                                list -> list.stream()
+                                        .sorted((a1, a2) -> Integer.compare(a1.getApprovalOrder(), a2.getApprovalOrder()))
+                                        .map(approval -> VacationApprovalServiceDto.builder()
+                                                .id(approval.getId())
+                                                .approverId(approval.getApprover().getId())
+                                                .approverName(approval.getApprover().getName())
+                                                .approvalOrder(approval.getApprovalOrder())
+                                                .approvalStatus(approval.getApprovalStatus())
+                                                .approvalDate(approval.getApprovalDate())
+                                                .rejectionReason(approval.getRejectionReason())
+                                                .build())
+                                        .toList()
+                        )
+                ));
+
         return grants.stream()
                 .map(grant -> {
                     // 현재 승인 대기 중인 승인자 조회
                     User currentApprover = grant.getCurrentPendingApprover();
 
-                    // 승인자 목록 조회 (approvalOrder 순서대로 정렬됨)
-                    List<VacationApproval> approvals = vacationApprovalRepository.findByVacationGrantId(grant.getId());
-                    List<VacationApprovalServiceDto> approvers = approvals.stream()
-                            .sorted((a1, a2) -> Integer.compare(a1.getApprovalOrder(), a2.getApprovalOrder()))
-                            .map(approval -> VacationApprovalServiceDto.builder()
-                                    .id(approval.getId())
-                                    .approverId(approval.getApprover().getId())
-                                    .approverName(approval.getApprover().getName())
-                                    .approvalOrder(approval.getApprovalOrder())
-                                    .approvalStatus(approval.getApprovalStatus())
-                                    .approvalDate(approval.getApprovalDate())
-                                    .rejectionReason(approval.getRejectionReason())
-                                    .build())
-                            .toList();
-
                     return VacationServiceDto.builder()
                             .id(grant.getId())
+                            .userId(grant.getUser().getId())
+                            .user(grant.getUser())
                             .policyId(grant.getPolicy().getId())
                             .policyName(grant.getPolicy().getName())
                             .type(grant.getType())
@@ -1236,7 +1285,7 @@ public class VacationServiceImpl implements VacationService {
                             .createDate(grant.getCreateDate())
                             .currentApproverId(currentApprover != null ? currentApprover.getId() : null)
                             .currentApproverName(currentApprover != null ? currentApprover.getName() : null)
-                            .approvers(approvers)
+                            .approvers(approvalMap.getOrDefault(grant.getId(), List.of()))
                             .build();
                 })
                 .toList();
@@ -1477,12 +1526,36 @@ public class VacationServiceImpl implements VacationService {
         LocalDateTime startOfYear = LocalDateTime.of(year, 1, 1, 0, 0, 0);
         LocalDateTime endOfYear = LocalDateTime.of(year, 12, 31, 23, 59, 59);
 
-        // 모든 사용자 조회
-        List<User> allUsers = userService.searchUsers().stream()
-                .map(dto -> userService.checkUserExist(dto.getId()))
+        // 모든 사용자 조회 (N+1 방지: 단일 쿼리로 조회)
+        List<User> allUsers = userService.findAllUsers();
+
+        if (allUsers.isEmpty()) {
+            return List.of();
+        }
+
+        // 모든 사용자 ID 추출
+        List<String> userIds = allUsers.stream()
+                .map(User::getId)
                 .toList();
 
-        // 각 사용자별 휴가 통계 계산
+        // IN 쿼리로 한번에 모든 휴가 데이터 조회 (N+1 방지)
+        List<VacationGrant> allValidGrants = vacationGrantRepository
+                .findByUserIdsAndValidPeriod(userIds, startOfYear, endOfYear);
+        List<VacationUsage> allUsages = vacationUsageRepository
+                .findByUserIdsAndPeriod(userIds, startOfYear, endOfYear);
+        List<VacationGrant> allPendingGrants = vacationGrantRepository
+                .findByUserIdsAndStatusesAndPeriod(userIds,
+                        List.of(GrantStatus.PENDING, GrantStatus.PROGRESS), startOfYear, endOfYear);
+
+        // userId 기준으로 Map 그룹핑
+        Map<String, List<VacationGrant>> validGrantsMap = allValidGrants.stream()
+                .collect(Collectors.groupingBy(g -> g.getUser().getId()));
+        Map<String, List<VacationUsage>> usagesMap = allUsages.stream()
+                .collect(Collectors.groupingBy(u -> u.getUser().getId()));
+        Map<String, List<VacationGrant>> pendingGrantsMap = allPendingGrants.stream()
+                .collect(Collectors.groupingBy(g -> g.getUser().getId()));
+
+        // 각 사용자별 휴가 통계 계산 (Map lookup으로 O(1) 조회)
         return allUsers.stream()
                 .map(user -> {
                     // 부서명 조회
@@ -1491,9 +1564,10 @@ public class VacationServiceImpl implements VacationService {
                             .map(ud -> ud.getDepartment().getName())
                             .orElse("");
 
-                    // 해당 년도에 유효한 휴가 부여 내역 조회 (ACTIVE + EXHAUSTED)
-                    List<VacationGrant> validGrants = vacationGrantRepository
-                            .findByUserIdAndValidPeriod(user.getId(), startOfYear, endOfYear);
+                    // Map에서 해당 사용자의 휴가 데이터 조회
+                    List<VacationGrant> validGrants = validGrantsMap.getOrDefault(user.getId(), List.of());
+                    List<VacationUsage> usages = usagesMap.getOrDefault(user.getId(), List.of());
+                    List<VacationGrant> pendingGrants = pendingGrantsMap.getOrDefault(user.getId(), List.of());
 
                     // 총 휴가 일수 계산 (부여받은 grantTime 합계)
                     BigDecimal totalVacationDays = validGrants.stream()
@@ -1501,22 +1575,13 @@ public class VacationServiceImpl implements VacationService {
                             .filter(Objects::nonNull)
                             .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-                    // 사용 휴가 일수 계산 (해당 년도에 사용한 휴가)
-                    List<VacationUsage> usages = vacationUsageRepository
-                            .findByUserIdAndPeriod(user.getId(), startOfYear, endOfYear);
+                    // 사용 휴가 일수 계산
                     BigDecimal usedVacationDays = usages.stream()
                             .map(VacationUsage::getUsedTime)
                             .filter(Objects::nonNull)
                             .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-                    // 사용 예정 휴가 일수 계산 (승인 대기 중인 휴가: PENDING, PROGRESS)
-                    List<VacationGrant> pendingGrants = vacationGrantRepository
-                            .findByUserIdAndStatusesAndPeriod(
-                                    user.getId(),
-                                    List.of(GrantStatus.PENDING, GrantStatus.PROGRESS),
-                                    startOfYear,
-                                    endOfYear
-                            );
+                    // 사용 예정 휴가 일수 계산
                     BigDecimal scheduledVacationDays = pendingGrants.stream()
                             .map(VacationGrant::getGrantTime)
                             .filter(Objects::nonNull)
