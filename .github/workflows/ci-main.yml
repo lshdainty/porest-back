@@ -113,22 +113,24 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # [3] Jenkins 배포 트리거 (main push만 - 개발 자동 배포)
-  trigger-deploy:
+  # [3] Jenkins Dev 배포 트리거 (main push만)
+  trigger-dev-deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
-      - name: Trigger Jenkins Deployment
+      - name: Trigger Jenkins Dev Deployment
         run: |
-          curl -X POST "${{ secrets.JENKINS_URL }}/job/porest-back-deploy/build" \
+          curl -X POST "${{ secrets.JENKINS_URL }}/job/porest-back-deploy/buildWithParameters" \
             --user "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_TOKEN }}" \
+            --data-urlencode "DEPLOY_ENV=dev" \
+            --data-urlencode "IMAGE_TAG=latest" \
             --fail --silent --show-error
 
-      - name: Deployment Triggered
-        run: echo "Jenkins 배포 파이프라인이 트리거되었습니다."
+      - name: Dev Deployment Triggered
+        run: echo "Dev deployment triggered with latest image"
 
-  # [4] 릴리스 노트 생성 (tag push만)
+  # [4] 릴리스 생성 및 Prod 배포 트리거 (tag push만)
   create-release:
     needs: build-and-push
     runs-on: ubuntu-latest
@@ -145,6 +147,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Release Created
+      - name: Trigger Jenkins Prod Deployment
         run: |
-          echo "Release ${{ github.ref_name }} created. Docker image: porest/porest-back:${{ github.ref_name }}"
+          curl -X POST "${{ secrets.JENKINS_URL }}/job/porest-back-deploy/buildWithParameters" \
+            --user "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_TOKEN }}" \
+            --data-urlencode "DEPLOY_ENV=prod" \
+            --data-urlencode "IMAGE_TAG=${{ github.ref_name }}" \
+            --fail --silent --show-error
+
+      - name: Release and Prod Deployment Triggered
+        run: |
+          echo "Release ${{ github.ref_name }} created. Prod deployment triggered."
