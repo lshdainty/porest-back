@@ -146,4 +146,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Release Created
-        run: echo "릴리스 ${{ github.ref_name }} 생성 완료. Docker 이미지: porest/porest-back:${{ github.ref_name }}"
+        run: |
+          echo "Release ${{ github.ref_name }} created. Docker image: porest/porest-back:${{ github.ref_name }}"
