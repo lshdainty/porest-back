@@ -40,6 +40,7 @@ spring:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DATABASE:2}
 
 server:
   servlet:
@@ -79,6 +80,9 @@ app:
   email:
     logo:
       path: ${EMAIL_LOGO_PATH:templates/email/logo.png}
+  redis:
+    channel:
+      user-events: ${REDIS_CHANNEL_USER_EVENTS:porest:dev:sso:user-events}
 
 # Swagger 설정
 springdoc:

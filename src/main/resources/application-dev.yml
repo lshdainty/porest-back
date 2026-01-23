@@ -1,4 +1,11 @@
 spring:
+  # Redis 설정 (개발 환경)
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+      database: 3  # HR Dev
+
   # DB 연결 드라이버 설정
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
@@ -94,6 +101,9 @@ file:
 app:
   frontend:
     base-url: ${FRONTEND_BASE_URL}
+  redis:
+    channel:
+      user-events: porest:dev:sso:user-events
 
 # Swagger 설정 - Development 환경에서는 활성화
 springdoc:
