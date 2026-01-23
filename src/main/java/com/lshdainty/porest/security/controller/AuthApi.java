@@ -8,54 +8,12 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Set;
 
 @Tag(name = "Auth", description = "인증 및 보안 API")
 public interface AuthApi {
-
-    @Operation(
-            summary = "CSRF 토큰 발급",
-            description = "앱 시작 시 CSRF 토큰을 쿠키로 발급받습니다. " +
-                    "이후 모든 변경 요청(POST/PUT/DELETE)에는 X-XSRF-TOKEN 헤더로 토큰을 전송해야 합니다."
-    )
-    @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "200",
-                    description = "CSRF 토큰이 XSRF-TOKEN 쿠키에 설정됨"
-            )
-    })
-    @GetMapping("/api/v1/csrf-token")
-    void getCsrfToken(HttpServletRequest request);
-
-    @Operation(
-            summary = "비밀번호 인코딩 (개발/테스트용)",
-            description = "⚠️ 개발 및 테스트 환경에서만 사용 가능합니다. Production 환경에서는 비활성화됩니다."
-    )
-    @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "200",
-                    description = "비밀번호 인코딩 성공",
-                    content = @Content(schema = @Schema(implementation = AuthApiDto.EncodePasswordResp.class))
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "404",
-                    description = "Production 환경에서는 사용 불가"
-            )
-    })
-    @PostMapping("/api/v1/encode-password")
-    ApiResponse<AuthApiDto.EncodePasswordResp> encodePassword(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "인코딩할 비밀번호 정보",
-                    required = true,
-                    content = @Content(schema = @Schema(implementation = AuthApiDto.EncodePasswordReq.class))
-            )
-            @RequestBody AuthApiDto.EncodePasswordReq data
-    );
 
     @Operation(
             summary = "로그인 사용자 정보 조회",
@@ -74,72 +32,6 @@ public interface AuthApi {
     })
     @GetMapping("/api/v1/login/check")
     ApiResponse<AuthApiDto.LoginUserInfo> getUserInfo();
-
-    // ========== OAuth 연동 관리 ==========
-
-    @Operation(
-            summary = "OAuth 연동 시작",
-            description = "로그인된 사용자의 소셜 계정 연동을 시작합니다. 세션에 연동 정보를 저장하고 OAuth 인증 URL을 반환합니다."
-    )
-    @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "200",
-                    description = "OAuth 연동 시작 성공",
-                    content = @Content(schema = @Schema(implementation = AuthApiDto.OAuthLinkStartResp.class))
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "401",
-                    description = "인증 필요 (로그인되지 않음)"
-            )
-    })
-    @PostMapping("/api/v1/oauth/link/start")
-    ApiResponse<AuthApiDto.OAuthLinkStartResp> startOAuthLink(
-            @Parameter(description = "OAuth 제공자 (google, kakao, naver)", example = "google", required = true)
-            @RequestParam String provider,
-            HttpSession session
-    );
-
-    @Operation(
-            summary = "연동된 OAuth 제공자 목록 조회",
-            description = "현재 로그인된 사용자에게 연동된 OAuth 제공자 목록을 조회합니다."
-    )
-    @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "200",
-                    description = "조회 성공",
-                    content = @Content(schema = @Schema(implementation = AuthApiDto.LinkedProviderResp.class))
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "401",
-                    description = "인증 필요 (로그인되지 않음)"
-            )
-    })
-    @GetMapping("/api/v1/oauth/providers")
-    ApiResponse<List<AuthApiDto.LinkedProviderResp>> getLinkedProviders();
-
-    @Operation(
-            summary = "OAuth 연동 해제",
-            description = "현재 로그인된 사용자의 특정 OAuth 제공자 연동을 해제합니다."
-    )
-    @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "200",
-                    description = "연동 해제 성공"
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "401",
-                    description = "인증 필요 (로그인되지 않음)"
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "404",
-                    description = "연동된 제공자를 찾을 수 없음"
-            )
-    })
-    @DeleteMapping("/api/v1/oauth/link/{provider}")
-    ApiResponse<Void> unlinkOAuth(
-            @Parameter(description = "OAuth 제공자 (google, kakao, naver)", example = "google", required = true)
-            @PathVariable String provider
-    );
 
     // ========== IP 블랙리스트 관리 (개발 환경 전용) ==========
 

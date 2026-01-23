@@ -6,15 +6,11 @@ import com.lshdainty.porest.user.controller.dto.UserApiDto;
 import com.lshdainty.porest.common.controller.ApiResponse;
 import com.lshdainty.porest.user.service.UserService;
 import com.lshdainty.porest.user.service.dto.UserServiceDto;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,12 +27,12 @@ public class UserApiController implements UserApi {
     public ApiResponse joinUser(UserApiDto.JoinUserReq data) {
         String userId = userService.joinUser(UserServiceDto.builder()
                 .id(data.getUserId())
-                .pwd(data.getUserPwd())
                 .name(data.getUserName())
                 .email(data.getUserEmail())
                 .birth(data.getUserBirth())
                 .company(data.getUserCompanyType())
                 .workTime(data.getUserWorkTime())
+                .joinDate(data.getJoinDate())
                 .lunarYN(data.getLunarYn())
                 .profileUrl(data.getProfileUrl())
                 .profileUUID(data.getProfileUuid())
@@ -89,11 +85,6 @@ public class UserApiController implements UserApi {
                 getTranslatedName(user.getCompany()),
                 user.getLunarYN(),
                 user.getProfileUrl(),
-                user.getInvitationToken(),
-                user.getInvitationSentAt(),
-                user.getInvitationExpiresAt(),
-                user.getInvitationStatus(),
-                user.getRegisteredAt(),
                 user.getMainDepartmentNameKR(),
                 user.getDashboard(),
                 user.getCountryCode()
@@ -150,11 +141,6 @@ public class UserApiController implements UserApi {
                             getTranslatedName(u.getCompany()),
                             u.getLunarYN(),
                             u.getProfileUrl(),
-                            u.getInvitationToken(),
-                            u.getInvitationSentAt(),
-                            u.getInvitationExpiresAt(),
-                            u.getInvitationStatus(),
-                            u.getRegisteredAt(),
                             u.getMainDepartmentNameKR(),
                             u.getDashboard(),
                             u.getCountryCode()
@@ -244,92 +230,6 @@ public class UserApiController implements UserApi {
     }
 
     /**
-     * 관리자가 사용자 초대
-     */
-    @Override
-    @PreAuthorize("hasAuthority('USER:MANAGE')")
-    public ApiResponse inviteUser(UserApiDto.InviteUserReq data) {
-        UserServiceDto result = userService.inviteUser(UserServiceDto.builder()
-                .id(data.getUserId())
-                .name(data.getUserName())
-                .email(data.getUserEmail())
-                .company(data.getUserCompanyType())
-                .workTime(data.getUserWorkTime())
-                .joinDate(data.getJoinDate())
-                .countryCode(data.getCountryCode())
-                .build()
-        );
-
-        return ApiResponse.success(new UserApiDto.InviteUserResp(
-                result.getId(),
-                result.getName(),
-                result.getEmail(),
-                result.getCompany(),
-                result.getWorkTime(),
-                result.getJoinDate(),
-                result.getRoleNames(),
-                result.getInvitationSentAt(),
-                result.getInvitationExpiresAt(),
-                result.getInvitationStatus(),
-                result.getCountryCode()
-        ));
-    }
-
-    /**
-     * 초대된 사용자 정보 수정
-     */
-    @Override
-    @PreAuthorize("hasAuthority('USER:MANAGE')")
-    public ApiResponse editInvitedUser(String userId, UserApiDto.EditInvitedUserReq data) {
-        UserServiceDto result = userService.editInvitedUser(userId, UserServiceDto.builder()
-                .name(data.getUserName())
-                .email(data.getUserEmail())
-                .company(data.getUserCompanyType())
-                .workTime(data.getUserWorkTime())
-                .joinDate(data.getJoinDate())
-                .countryCode(data.getCountryCode())
-                .build()
-        );
-
-        return ApiResponse.success(new UserApiDto.EditInvitedUserResp(
-                result.getId(),
-                result.getName(),
-                result.getEmail(),
-                result.getCompany(),
-                result.getWorkTime(),
-                result.getJoinDate(),
-                result.getRoleNames(),
-                result.getInvitationSentAt(),
-                result.getInvitationExpiresAt(),
-                result.getInvitationStatus(),
-                result.getCountryCode()
-        ));
-    }
-
-    /**
-     * 초대 이메일 재전송
-     */
-    @Override
-    @PreAuthorize("hasAuthority('USER:MANAGE')")
-    public ApiResponse resendInvitation(String userId) {
-        UserServiceDto result = userService.resendInvitation(userId);
-
-        return ApiResponse.success(new UserApiDto.ResendInvitationResp(
-                result.getId(),
-                result.getName(),
-                result.getEmail(),
-                result.getCompany(),
-                result.getWorkTime(),
-                result.getJoinDate(),
-                result.getRoleNames(),
-                result.getInvitationSentAt(),
-                result.getInvitationExpiresAt(),
-                result.getInvitationStatus(),
-                result.getCountryCode()
-        ));
-    }
-
-    /**
      * 사용자의 메인 부서 존재 여부 확인
      */
     @Override
@@ -409,97 +309,6 @@ public class UserApiController implements UserApi {
                 maxAvailableCount,
                 isAutoApproval
         ));
-    }
-
-    /**
-     * 관리자가 사용자 비밀번호 초기화
-     * PATCH /api/v1/users/{userId}/password
-     */
-    @Override
-    @PreAuthorize("hasAuthority('USER:MANAGE')")
-    public ApiResponse resetPassword(String userId, UserApiDto.ResetPasswordReq data) {
-        userService.resetPassword(userId, data.getNewPassword());
-        return ApiResponse.success();
-    }
-
-    /**
-     * 비밀번호 초기화 요청 (비로그인)
-     * POST /api/v1/users/password/reset-request
-     */
-    @Override
-    public ApiResponse requestPasswordReset(UserApiDto.RequestPasswordResetReq data) {
-        userService.requestPasswordReset(data.getUserId(), data.getEmail());
-        return ApiResponse.success();
-    }
-
-    /**
-     * 본인 비밀번호 변경
-     * PATCH /api/v1/users/me/password
-     */
-    @Override
-    public ApiResponse changePassword(UserApiDto.ChangePasswordReq data) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String userId = authentication.getName();
-        userService.changePassword(userId, data.getCurrentPassword(), data.getNewPassword(), data.getNewPasswordConfirm());
-        return ApiResponse.success();
-    }
-
-    /**
-     * 초대 확인 (회원가입 1단계)
-     * POST /api/v1/users/registration/validate
-     */
-    @Override
-    public ApiResponse<UserApiDto.ValidateRegistrationResp> validateRegistration(UserApiDto.ValidateRegistrationReq data, HttpSession session) {
-        UserServiceDto dto = UserServiceDto.builder()
-                .id(data.getUserId())
-                .name(data.getUserName())
-                .email(data.getUserEmail())
-                .invitationToken(data.getInvitationCode())
-                .build();
-
-        boolean valid = userService.validateRegistration(dto);
-
-        if (valid) {
-            // 세션에 초대된 사용자 ID 저장
-            session.setAttribute("invitedUserId", data.getUserId());
-            session.setAttribute("registrationStep", "validated");
-        }
-
-        return ApiResponse.success(new UserApiDto.ValidateRegistrationResp(valid, "초대 확인이 완료되었습니다."));
-    }
-
-    /**
-     * 회원가입 완료 (회원가입 2단계)
-     * POST /api/v1/users/registration/complete
-     */
-    @Override
-    public ApiResponse<UserApiDto.CompleteRegistrationResp> completeRegistration(UserApiDto.CompleteRegistrationReq data, HttpSession session) {
-        // 세션에서 초대된 사용자 ID 확인
-        String invitedUserId = (String) session.getAttribute("invitedUserId");
-        String step = (String) session.getAttribute("registrationStep");
-
-        if (invitedUserId == null || !"validated".equals(step)) {
-            throw new com.lshdainty.porest.common.exception.UnauthorizedException(
-                    com.lshdainty.porest.common.exception.ErrorCode.UNAUTHORIZED
-            );
-        }
-
-        UserServiceDto dto = UserServiceDto.builder()
-                .newUserId(data.getNewUserId())
-                .email(data.getNewUserEmail())
-                .newPassword(data.getPassword())
-                .newPasswordConfirm(data.getPasswordConfirm())
-                .birth(data.getUserBirth())
-                .lunarYN(data.getLunarYn())
-                .build();
-
-        String newUserId = userService.completeRegistration(dto, invitedUserId);
-
-        // 세션 정리
-        session.removeAttribute("invitedUserId");
-        session.removeAttribute("registrationStep");
-
-        return ApiResponse.success(new UserApiDto.CompleteRegistrationResp(newUserId));
     }
 
     private String getTranslatedName(CompanyType type) {

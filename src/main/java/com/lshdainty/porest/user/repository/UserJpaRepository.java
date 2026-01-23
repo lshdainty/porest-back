@@ -74,15 +74,6 @@ public class UserJpaRepository implements UserRepository {
     }
 
     @Override
-    public Optional<User> findByInvitationToken(String token) {
-        List<User> result = em.createQuery("select u from User u where u.invitationToken = :token and u.isDeleted = :isDeleted", User.class)
-                .setParameter("token", token)
-                .setParameter("isDeleted", YNType.N)
-                .getResultList();
-        return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
-    }
-
-    @Override
     public List<User> findUsersWithRolesAndPermissions() {
         // 1단계: User + UserRole + Role 조회
         List<User> users = em.createQuery(

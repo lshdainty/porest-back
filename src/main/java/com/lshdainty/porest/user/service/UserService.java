@@ -103,50 +103,6 @@ public interface UserService {
     UserServiceDto copyTempProfileToOrigin(UserServiceDto data);
 
     /**
-     * 관리자가 사용자를 초대하여 생성
-     *
-     * @param data 초대할 사용자 정보
-     * @return 초대된 사용자 정보
-     */
-    UserServiceDto inviteUser(UserServiceDto data);
-
-    /**
-     * 초대 이메일 재전송
-     *
-     * @param userId 사용자 ID
-     * @return 재전송된 초대 정보
-     */
-    UserServiceDto resendInvitation(String userId);
-
-    /**
-     * 초대된 사용자 정보 수정
-     *
-     * @param userId 사용자 ID
-     * @param data 수정할 정보
-     * @return 수정된 사용자 정보
-     */
-    UserServiceDto editInvitedUser(String userId, UserServiceDto data);
-
-    /**
-     * 초대 확인 (회원가입 1단계)
-     * 사용자가 입력한 정보(userId, userName, userEmail, invitationCode)가 초대 정보와 일치하는지 확인
-     *
-     * @param data 초대 확인 정보
-     * @return 확인 성공 여부
-     */
-    boolean validateRegistration(UserServiceDto data);
-
-    /**
-     * 회원가입 완료 (회원가입 2단계)
-     * 초대 확인 후 새로운 ID/PW와 추가 정보를 입력하여 회원가입 완료
-     *
-     * @param data 회원가입 완료 정보 (newUserId, newPassword, birth, lunarYN)
-     * @param invitedUserId 세션에서 가져온 초대된 사용자 ID
-     * @return 새로운 사용자 ID
-     */
-    String completeRegistration(UserServiceDto data, String invitedUserId);
-
-    /**
      * 아이디 중복 체크
      *
      * @param userId 확인할 사용자 ID
@@ -188,42 +144,6 @@ public interface UserService {
      * @return User Optional
      */
     Optional<User> getUserWithRolesById(String userId);
-
-    /**
-     * Spring Security용: 초대 토큰으로 User 조회 (역할 및 권한 포함)
-     * 2단계 쿼리로 MultipleBagFetchException 방지
-     *
-     * @param token 초대 토큰
-     * @return User Optional
-     */
-    Optional<User> getUserWithRolesByInvitationToken(String token);
-
-    /**
-     * 관리자가 사용자 비밀번호 초기화
-     *
-     * @param userId 비밀번호를 초기화할 사용자 ID
-     * @param newPassword 새로운 비밀번호 (평문)
-     */
-    void resetPassword(String userId, String newPassword);
-
-    /**
-     * 사용자 비밀번호 초기화 요청 (비로그인 상태)
-     * ID와 이메일 일치 확인 후 임시 비밀번호 발급 및 이메일 발송
-     *
-     * @param userId 사용자 ID
-     * @param email 사용자 이메일
-     */
-    void requestPasswordReset(String userId, String email);
-
-    /**
-     * 로그인 사용자 본인 비밀번호 변경
-     *
-     * @param userId 사용자 ID
-     * @param currentPassword 현재 비밀번호
-     * @param newPassword 새로운 비밀번호
-     * @param newPasswordConfirm 새로운 비밀번호 확인
-     */
-    void changePassword(String userId, String currentPassword, String newPassword, String newPasswordConfirm);
 
     /**
      * 전체 사용자 엔티티 목록 조회

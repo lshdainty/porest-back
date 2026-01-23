@@ -1,7 +1,6 @@
 package com.lshdainty.porest.security.controller;
 
 import com.lshdainty.porest.common.controller.ApiResponse;
-import com.lshdainty.porest.common.exception.EntityNotFoundException;
 import com.lshdainty.porest.common.exception.ErrorCode;
 import com.lshdainty.porest.common.exception.UnauthorizedException;
 import com.lshdainty.porest.common.type.YNType;
@@ -10,17 +9,12 @@ import com.lshdainty.porest.security.principal.UserPrincipal;
 import com.lshdainty.porest.security.service.IpBlacklistService;
 import com.lshdainty.porest.user.domain.User;
 import com.lshdainty.porest.user.service.UserService;
-import com.lshdainty.porest.user.service.dto.UserServiceDto;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
@@ -28,47 +22,19 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.lshdainty.porest.permission.domain.Role;
-import com.lshdainty.porest.user.domain.UserProvider;
-import com.lshdainty.porest.user.repository.UserProviderRepository;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * 인증/보안 API 컨트롤러
+ * JWT 토큰으로 인증된 사용자 정보 조회 및 IP 블랙리스트 관리를 담당합니다.
+ */
 @RestController
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Auth", description = "인증/보안 API")
 public class AuthController implements AuthApi {
     private final UserService userService;
-    private final BCryptPasswordEncoder passwordEncoder;
     private final IpBlacklistService ipBlacklistService;
-    private final UserProviderRepository userProviderRepository;
-
-    /**
-     * CSRF 토큰 발급
-     * 이 메서드가 호출되면 Spring Security가 자동으로 CSRF 토큰을 생성하고
-     * XSRF-TOKEN 쿠키에 담아 응답합니다.
-     */
-    @Override
-    public void getCsrfToken(HttpServletRequest request) {
-        // Spring Security가 자동으로 CSRF 토큰을 생성하고 쿠키에 담아줍니다.
-        log.debug("CSRF token requested from: {}", request.getRemoteAddr());
-    }
-
-    /**
-     * 비밀번호 인코딩 (개발/테스트 환경 전용)
-     * Production 환경에서는 404 에러가 발생합니다.
-     */
-    @Override
-    @Profile({"local", "dev"})  // local, dev 프로파일에서만 활성화
-    public ApiResponse<AuthApiDto.EncodePasswordResp> encodePassword(AuthApiDto.EncodePasswordReq data) {
-        log.warn("⚠️ Development tool accessed - Password encoding request");
-
-        String encodedPassword = passwordEncoder.encode(data.getUserPwd());
-
-        return ApiResponse.success(new AuthApiDto.EncodePasswordResp(
-                data.getUserPwd(),
-                encodedPassword
-        ));
-    }
 
     @Override
     public ApiResponse<AuthApiDto.LoginUserInfo> getUserInfo() {
@@ -119,8 +85,8 @@ public class AuthController implements AuthApi {
                 YNType.Y,
                 StringUtils.hasText(user.getProfileName()) && StringUtils.hasText(user.getProfileUUID()) ?
                         userService.generateProfileUrl(user.getProfileName(), user.getProfileUUID()) : null,
-                user.getPasswordChangeRequired(),  // 비밀번호 변경 필요 여부
-                user.getInvitationStatus()  // 초대 상태
+                YNType.N,  // 비밀번호 변경 필요 여부 (SSO에서 관리)
+                null  // 초대 상태 (SSO에서 관리)
         );
 
         log.info("user info : {}, {}, {}, roles: {}, permissions: {}, {}",
@@ -128,96 +94,6 @@ public class AuthController implements AuthApi {
                 result.getUserRoles(), result.getPermissions(), result.getProfileUrl());
 
         return ApiResponse.success(result);
-    }
-
-    // ========== OAuth 연동 관리 ==========
-
-    @Override
-    public ApiResponse<AuthApiDto.OAuthLinkStartResp> startOAuthLink(String provider, HttpSession session) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated() ||
-                "anonymousUser".equals(authentication.getPrincipal())) {
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
-        }
-
-        Object principal = authentication.getPrincipal();
-        if (!(principal instanceof UserPrincipal)) {
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
-        }
-
-        UserPrincipal userPrincipal = (UserPrincipal) principal;
-        String loginUserId = userPrincipal.getUser().getId();
-
-        // 세션에 OAuth 연동 정보 저장
-        session.setAttribute("oauthStep", "link");
-        session.setAttribute("loginUserId", loginUserId);
-
-        log.info("OAuth 연동 시작: userId={}, provider={}", loginUserId, provider);
-
-        // OAuth 인증 URL 반환
-        String authUrl = "/oauth2/authorization/" + provider.toLowerCase();
-        return ApiResponse.success(new AuthApiDto.OAuthLinkStartResp(authUrl));
-    }
-
-    @Override
-    public ApiResponse<List<AuthApiDto.LinkedProviderResp>> getLinkedProviders() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated() ||
-                "anonymousUser".equals(authentication.getPrincipal())) {
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
-        }
-
-        Object principal = authentication.getPrincipal();
-        if (!(principal instanceof UserPrincipal)) {
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
-        }
-
-        UserPrincipal userPrincipal = (UserPrincipal) principal;
-        String loginUserId = userPrincipal.getUser().getId();
-
-        List<UserProvider> providers = userProviderRepository.findByUserId(loginUserId);
-
-        List<AuthApiDto.LinkedProviderResp> result = providers.stream()
-                .map(p -> new AuthApiDto.LinkedProviderResp(
-                        p.getSeq(),
-                        p.getType(),
-                        p.getCreateDate()
-                ))
-                .collect(Collectors.toList());
-
-        log.info("연동된 OAuth 제공자 조회: userId={}, count={}", loginUserId, result.size());
-        return ApiResponse.success(result);
-    }
-
-    @Override
-    @Transactional
-    public ApiResponse<Void> unlinkOAuth(String provider) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated() ||
-                "anonymousUser".equals(authentication.getPrincipal())) {
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
-        }
-
-        Object principal = authentication.getPrincipal();
-        if (!(principal instanceof UserPrincipal)) {
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
-        }
-
-        UserPrincipal userPrincipal = (UserPrincipal) principal;
-        String loginUserId = userPrincipal.getUser().getId();
-
-        String providerType = provider.toLowerCase();
-        long deletedCount = userProviderRepository.deleteByUserIdAndProviderType(loginUserId, providerType);
-
-        if (deletedCount == 0) {
-            throw new EntityNotFoundException(ErrorCode.OAUTH_PROVIDER_NOT_LINKED);
-        }
-
-        log.info("OAuth 연동 해제 완료: userId={}, provider={}", loginUserId, providerType);
-        return ApiResponse.success(null);
     }
 
     // ========== IP 블랙리스트 관리 (개발 환경 전용) ==========

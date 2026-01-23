@@ -5,7 +5,6 @@ import tools.jackson.databind.annotation.JsonNaming;
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.user.type.StatusType;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -44,42 +43,4 @@ public class AuthApiDto {
         private String permissionCode;         // 권한 코드 (예: USER:READ, VACATION:APPROVE)
         private String permissionName;         // 권한 이름 (예: 사용자 조회, 휴가 승인)
     }
-
-    @Getter
-    @AllArgsConstructor
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    public static class EncodePasswordReq {
-        private String userPwd;
-    }
-
-    @Getter
-    @AllArgsConstructor
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    public static class EncodePasswordResp {
-        private String originalPw;
-        private String encodedPw;
-    }
-
-    /**
-     * OAuth 연동 시작 응답 DTO
-     */
-    @Getter
-    @AllArgsConstructor
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    public static class OAuthLinkStartResp {
-        private String authUrl;
-    }
-
-    /**
-     * 연동된 OAuth 제공자 정보 DTO
-     */
-    @Getter
-    @AllArgsConstructor
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    public static class LinkedProviderResp {
-        private Long seq;
-        private String providerType;
-        private LocalDateTime linkedAt;
-    }
-
 }

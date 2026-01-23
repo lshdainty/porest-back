@@ -7,14 +7,12 @@ import com.lshdainty.porest.common.converter.CompanyTypeJsonDeserializer;
 import com.lshdainty.porest.common.type.CountryCode;
 import com.lshdainty.porest.common.type.YNType;
 import com.lshdainty.porest.common.type.CompanyType;
-import com.lshdainty.porest.user.type.StatusType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 public class UserApiDto {
@@ -25,9 +23,6 @@ public class UserApiDto {
     public static class JoinUserReq {
         @Schema(description = "사용자 ID", example = "user123")
         private String userId;
-
-        @Schema(description = "사용자 비밀번호", example = "password123!")
-        private String userPwd;
 
         @Schema(description = "사용자 이름", example = "홍길동")
         private String userName;
@@ -44,6 +39,9 @@ public class UserApiDto {
 
         @Schema(description = "근무 시간", example = "09:00-18:00")
         private String userWorkTime;
+
+        @Schema(description = "입사일", example = "2024-01-01")
+        private LocalDate joinDate;
 
         @Schema(description = "음력 여부", example = "N")
         private YNType lunarYn;
@@ -114,21 +112,6 @@ public class UserApiDto {
 
         @Schema(description = "프로필 이미지 URL")
         private String profileUrl;
-
-        @Schema(description = "초대 토큰")
-        private String invitationToken;
-
-        @Schema(description = "초대 전송 시각")
-        private LocalDateTime invitationSentAt;
-
-        @Schema(description = "초대 만료 시각")
-        private LocalDateTime invitationExpiresAt;
-
-        @Schema(description = "초대 상태", example = "PENDING")
-        private StatusType invitationStatus;
-
-        @Schema(description = "등록 시각")
-        private LocalDateTime registeredAt;
 
         @Schema(description = "메인 부서명 (한글)", example = "개발팀")
         private String mainDepartmentNameKr;
@@ -251,179 +234,6 @@ public class UserApiDto {
 
         @Schema(description = "프로필 이미지 UUID")
         private String profileUuid;
-    }
-
-    @Getter
-    @AllArgsConstructor
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    @Schema(description = "사용자 초대 요청")
-    public static class InviteUserReq {
-        @Schema(description = "사용자 ID", example = "user123")
-        private String userId;
-
-        @Schema(description = "사용자 이름", example = "홍길동")
-        private String userName;
-
-        @Schema(description = "사용자 이메일", example = "user@example.com")
-        private String userEmail;
-
-        @Schema(description = "소속 회사", example = "KAKAO")
-        @JsonDeserialize(using = CompanyTypeJsonDeserializer.class)
-        private CompanyType userCompanyType;
-
-        @Schema(description = "근무 시간", example = "09:00-18:00")
-        private String userWorkTime;
-
-        @Schema(description = "입사일", example = "2024-01-01")
-        private LocalDate joinDate;
-
-        @Schema(description = "국가 코드", example = "KR")
-        private CountryCode countryCode;
-    }
-
-    @Getter
-    @AllArgsConstructor
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    @Schema(description = "사용자 초대 응답")
-    public static class InviteUserResp {
-        @Schema(description = "사용자 ID", example = "user123")
-        private String userId;
-
-        @Schema(description = "사용자 이름", example = "홍길동")
-        private String userName;
-
-        @Schema(description = "사용자 이메일", example = "user@example.com")
-        private String userEmail;
-
-        @Schema(description = "소속 회사", example = "KAKAO")
-        @JsonDeserialize(using = CompanyTypeJsonDeserializer.class)
-        private CompanyType userCompanyType;
-
-        @Schema(description = "근무 시간", example = "09:00-18:00")
-        private String userWorkTime;
-
-        @Schema(description = "입사일", example = "2024-01-01")
-        private LocalDate joinDate;
-
-        @Schema(description = "역할 목록", example = "[\"ADMIN\"]")
-        private List<String> userRoles;
-
-        @Schema(description = "초대 전송 시각")
-        private LocalDateTime invitationSentAt;
-
-        @Schema(description = "초대 만료 시각")
-        private LocalDateTime invitationExpiresAt;
-
-        @Schema(description = "초대 상태", example = "PENDING")
-        private StatusType invitationStatus;
-
-        @Schema(description = "국가 코드", example = "KR")
-        private CountryCode countryCode;
-    }
-
-    @Getter
-    @AllArgsConstructor
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    @Schema(description = "초대 이메일 재전송 응답")
-    public static class ResendInvitationResp {
-        @Schema(description = "사용자 ID", example = "user123")
-        private String userId;
-
-        @Schema(description = "사용자 이름", example = "홍길동")
-        private String userName;
-
-        @Schema(description = "사용자 이메일", example = "user@example.com")
-        private String userEmail;
-
-        @Schema(description = "소속 회사", example = "KAKAO")
-        @JsonDeserialize(using = CompanyTypeJsonDeserializer.class)
-        private CompanyType userCompanyType;
-
-        @Schema(description = "근무 시간", example = "09:00-18:00")
-        private String userWorkTime;
-
-        @Schema(description = "입사일", example = "2024-01-01")
-        private LocalDate joinDate;
-
-        @Schema(description = "역할 목록", example = "[\"ADMIN\"]")
-        private List<String> userRoles;
-
-        @Schema(description = "초대 전송 시각")
-        private LocalDateTime invitationSentAt;
-
-        @Schema(description = "초대 만료 시각")
-        private LocalDateTime invitationExpiresAt;
-
-        @Schema(description = "초대 상태", example = "PENDING")
-        private StatusType invitationStatus;
-
-        @Schema(description = "국가 코드", example = "KR")
-        private CountryCode countryCode;
-    }
-
-    @Getter
-    @AllArgsConstructor
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    @Schema(description = "초대된 사용자 수정 요청")
-    public static class EditInvitedUserReq {
-        @Schema(description = "사용자 이름", example = "홍길동")
-        private String userName;
-
-        @Schema(description = "사용자 이메일", example = "user@example.com")
-        private String userEmail;
-
-        @Schema(description = "소속 회사", example = "KAKAO")
-        @JsonDeserialize(using = CompanyTypeJsonDeserializer.class)
-        private CompanyType userCompanyType;
-
-        @Schema(description = "근무 시간", example = "09:00-18:00")
-        private String userWorkTime;
-
-        @Schema(description = "입사일", example = "2024-01-01")
-        private LocalDate joinDate;
-
-        @Schema(description = "국가 코드", example = "KR")
-        private CountryCode countryCode;
-    }
-
-    @Getter
-    @AllArgsConstructor
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    @Schema(description = "초대된 사용자 수정 응답")
-    public static class EditInvitedUserResp {
-        @Schema(description = "사용자 ID", example = "user123")
-        private String userId;
-
-        @Schema(description = "사용자 이름", example = "홍길동")
-        private String userName;
-
-        @Schema(description = "사용자 이메일", example = "user@example.com")
-        private String userEmail;
-
-        @Schema(description = "소속 회사", example = "KAKAO")
-        @JsonDeserialize(using = CompanyTypeJsonDeserializer.class)
-        private CompanyType userCompanyType;
-
-        @Schema(description = "근무 시간", example = "09:00-18:00")
-        private String userWorkTime;
-
-        @Schema(description = "입사일", example = "2024-01-01")
-        private LocalDate joinDate;
-
-        @Schema(description = "역할 목록", example = "[\"ADMIN\"]")
-        private List<String> userRoles;
-
-        @Schema(description = "초대 전송 시각")
-        private LocalDateTime invitationSentAt;
-
-        @Schema(description = "초대 만료 시각")
-        private LocalDateTime invitationExpiresAt;
-
-        @Schema(description = "초대 상태", example = "PENDING")
-        private StatusType invitationStatus;
-
-        @Schema(description = "국가 코드", example = "KR")
-        private CountryCode countryCode;
     }
 
     @Getter
@@ -552,102 +362,4 @@ public class UserApiDto {
         private String permissionName;
     }
 
-    @Getter
-    @AllArgsConstructor
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    @Schema(description = "비밀번호 초기화 요청")
-    public static class ResetPasswordReq {
-        @Schema(description = "새로운 비밀번호", example = "newPassword123!")
-        private String newPassword;
-    }
-
-    @Getter
-    @AllArgsConstructor
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    @Schema(description = "비밀번호 초기화 요청 (비로그인)")
-    public static class RequestPasswordResetReq {
-        @Schema(description = "사용자 ID", example = "user123")
-        private String userId;
-
-        @Schema(description = "사용자 이메일", example = "user@example.com")
-        private String email;
-    }
-
-    @Getter
-    @AllArgsConstructor
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    @Schema(description = "비밀번호 변경 요청")
-    public static class ChangePasswordReq {
-        @Schema(description = "현재 비밀번호", example = "currentPassword123!")
-        private String currentPassword;
-
-        @Schema(description = "새 비밀번호", example = "newPassword123!")
-        private String newPassword;
-
-        @Schema(description = "새 비밀번호 확인", example = "newPassword123!")
-        private String newPasswordConfirm;
-    }
-
-    @Getter
-    @AllArgsConstructor
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    @Schema(description = "초대 확인 요청 (회원가입 1단계)")
-    public static class ValidateRegistrationReq {
-        @Schema(description = "임시 사용자 ID", example = "temp_user123")
-        private String userId;
-
-        @Schema(description = "사용자 이름", example = "홍길동")
-        private String userName;
-
-        @Schema(description = "사용자 이메일", example = "user@example.com")
-        private String userEmail;
-
-        @Schema(description = "8자리 초대 코드", example = "A3B7K9X2")
-        private String invitationCode;
-    }
-
-    @Getter
-    @AllArgsConstructor
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    @Schema(description = "초대 확인 응답 (회원가입 1단계)")
-    public static class ValidateRegistrationResp {
-        @Schema(description = "검증 성공 여부", example = "true")
-        private boolean valid;
-
-        @Schema(description = "메시지", example = "초대 확인이 완료되었습니다.")
-        private String message;
-    }
-
-    @Getter
-    @AllArgsConstructor
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    @Schema(description = "회원가입 완료 요청 (회원가입 2단계)")
-    public static class CompleteRegistrationReq {
-        @Schema(description = "새로운 사용자 ID", example = "user123")
-        private String newUserId;
-
-        @Schema(description = "새로운 이메일", example = "user@example.com")
-        private String newUserEmail;
-
-        @Schema(description = "비밀번호", example = "newPassword123!")
-        private String password;
-
-        @Schema(description = "비밀번호 확인", example = "newPassword123!")
-        private String passwordConfirm;
-
-        @Schema(description = "생년월일", example = "1990-01-01")
-        private LocalDate userBirth;
-
-        @Schema(description = "음력 여부", example = "N")
-        private YNType lunarYn;
-    }
-
-    @Getter
-    @AllArgsConstructor
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    @Schema(description = "회원가입 완료 응답 (회원가입 2단계)")
-    public static class CompleteRegistrationResp {
-        @Schema(description = "등록된 사용자 ID", example = "user123")
-        private String userId;
-    }
 }

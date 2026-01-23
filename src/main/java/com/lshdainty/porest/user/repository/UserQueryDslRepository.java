@@ -81,16 +81,6 @@ public class UserQueryDslRepository implements UserRepository {
     }
 
     @Override
-    public Optional<User> findByInvitationToken(String token) {
-        User result = query
-                .selectFrom(user)
-                .where(user.invitationToken.eq(token)
-                        .and(user.isDeleted.eq(YNType.N)))
-                .fetchOne();
-        return Optional.ofNullable(result);
-    }
-
-    @Override
     public List<User> findUsersWithRolesAndPermissions() {
         // 1단계: User + UserRole + Role 조회
         List<User> users = query

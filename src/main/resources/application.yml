@@ -34,6 +34,13 @@ spring:
       hibernate:
         default_batch_fetch_size: 100
 
+  # Redis 설정
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+
 server:
   servlet:
     session:
@@ -88,6 +95,10 @@ springdoc:
   default-consumes-media-type: application/json
   default-produces-media-type: application/json
   enable-querydsl: false
+
+# JWT 설정 (SSO와 동일한 secret 키 사용)
+jwt:
+  secret: ${JWT_SECRET:your-256-bit-secret-key-for-jwt-signing-must-be-at-least-32-characters}
 
 # 보안 설정
 security:

@@ -48,14 +48,6 @@ public interface UserRepository {
     List<User> findUsersWithRolesAndPermissions();
 
     /**
-     * 초대 토큰으로 유저 검색
-     *
-     * @param token 초대 토큰
-     * @return Optional&lt;User&gt;
-     */
-    Optional<User> findByInvitationToken(String token);
-
-    /**
      * 삭제된 유저 중 modifyDate가 특정 기간 내인 유저 조회
      *
      * @param startDate 조회 시작일

@@ -2,21 +2,18 @@ package com.lshdainty.porest.user.service.dto;
 
 import com.lshdainty.porest.common.type.CountryCode;
 import com.lshdainty.porest.common.type.CompanyType;
-import com.lshdainty.porest.user.type.StatusType;
 import com.lshdainty.porest.common.type.YNType;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter @Setter
 @Builder
 public class UserServiceDto {
     private String id;
-    private String pwd;
     private String name;
     private String email;
     private List<String> roleNames;
@@ -31,19 +28,6 @@ public class UserServiceDto {
     private String profileUrl;
     private String profileUUID;
     private String dashboard;
-
-    // 초대 관련 필드
-    private String invitationToken;
-    private LocalDateTime invitationSentAt; // 초대 토큰 생성 시간
-    private LocalDateTime invitationExpiresAt; // 초대 토큰 만료 시간
-    private StatusType invitationStatus; // 초대 상태
-    private LocalDateTime registeredAt; // 회원가입 완료 시간
-    private YNType passwordChangeRequired; // 비밀번호 변경 필요 여부
-
-    // 회원가입 완료 관련 필드 (세션 기반)
-    private String newUserId; // 새로운 ID
-    private String newPassword; // 새 비밀번호
-    private String newPasswordConfirm; // 새 비밀번호 확인
 
     // 메인 부서 정보
     private String mainDepartmentNameKR; // 메인 부서의 한글명
