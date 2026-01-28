@@ -100,9 +100,14 @@ springdoc:
   default-produces-media-type: application/json
   enable-querydsl: false
 
-# JWT 설정 (SSO와 동일한 secret 키 사용)
+# JWT 설정
 jwt:
+  # SSO JWT 검증용 secret (SSO와 동일한 키 사용)
   secret: ${JWT_SECRET:your-256-bit-secret-key-for-jwt-signing-must-be-at-least-32-characters}
+  # HR JWT 발급용 secret (별도 키 사용, 미설정 시 SSO secret 사용)
+  hr-secret: ${JWT_HR_SECRET:hr-service-256-bit-secret-key-for-jwt-signing-must-be-at-least-32-chars}
+  # HR Access Token 만료 시간 (밀리초, 기본 1시간)
+  hr-access-expiration: ${JWT_HR_ACCESS_EXPIRATION:3600000}
 
 # 보안 설정
 security:

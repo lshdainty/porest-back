@@ -59,6 +59,7 @@ public class SecurityConfig {
                 // 인증 없이 접근 가능한 경로
                 .requestMatchers(
                         "/",
+                        "/api/v1/auth/exchange", // 토큰 교환 API (SSO JWT로 HR JWT 발급)
                         "/actuator/health",      // Health check
                         "/actuator/prometheus",  // Prometheus metrics
                         "/actuator/metrics/**",  // Metrics
